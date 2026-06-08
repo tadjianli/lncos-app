@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getRdvStore } from "@/lib/rdv-store";
+import { useState } from "react";
 import type { Popup } from "@/lib/rdv-store";
+import { usePopups } from "@/lib/admin-supabase";
 import { Icon } from "@/components/shared/Icon";
 
 type Tab = "list" | "analytics" | "tips";
@@ -262,32 +262,22 @@ function TipsView() {
 /* ── Root Popups module ─────────────────────────────────────────────── */
 export function PopupsModule() {
   const [tab, setTab] = useState<Tab>("list");
-  const [popups, setPopups] = useState<Popup[]>([]);
   const [editingPopup, setEditingPopup] = useState<Popup | null>(null);
-
-  const reload = useCallback(() => {
-    setPopups(getRdvStore().get<Popup>("popups"));
-  }, []);
-
-  useEffect(() => {
-    reload();
-    const unsub = getRdvStore().on("popups", reload);
-    return unsub;
-  }, [reload]);
+  const { popups, updatePopup, insertPopup, deletePopup } = usePopups();
 
   function handleToggle(id: string) {
-    const p = getRdvStore().find<Popup>("popups", id);
-    if (p) getRdvStore().update<Popup>("popups", id, { enabled: !p.enabled });
+    const p = popups.find((x) => x.id === id);
+    if (p) updatePopup(id, { enabled: !p.enabled });
   }
 
-  function handleSave(patch: Partial<Popup>) {
+  async function handleSave(patch: Partial<Popup>) {
     if (!editingPopup) return;
     if (editingPopup.id === "__new__") {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id: _id, ...rest } = patch as Popup;
-      getRdvStore().insert<Popup>("popups", rest as Omit<Popup, "id"> & { id?: string } as Popup);
+      void _id;
+      await insertPopup(rest as Omit<Popup, "id">);
     } else {
-      getRdvStore().update<Popup>("popups", editingPopup.id, patch);
+      await updatePopup(editingPopup.id, patch);
     }
     setEditingPopup(null);
   }
@@ -395,7 +385,7 @@ export function PopupsModule() {
                       <button className="adm-act" onClick={() => setEditingPopup(p)}>
                         <Icon name="edit" size={14} />
                       </button>
-                      <button className="adm-act danger" onClick={() => getRdvStore().remove("popups", p.id)}>
+                      <button className="adm-act danger" onClick={() => deletePopup(p.id)}>
                         <Icon name="trash" size={14} />
                       </button>
                     </div>
