@@ -8,8 +8,10 @@ import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
+import { useHomeSectionsStore } from "@/lib/stores";
 import { products, categories, feed, byId } from "@/lib/data";
 import type { Product } from "@/lib/data";
+import type { HomeSection, ProductSource } from "@/lib/home-sections";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
 
@@ -639,29 +641,194 @@ function NewsletterBlock() {
 /* ─── Home page ─────────────────────────────────────────────── */
 
 export default function HomePage() {
-  // Stable store references — each selector gets a stable identity across renders
-  const addToCart      = useStore((s) => s.addToCart);
-  const toggleFav      = useStore((s) => s.toggleFav);
-  const favs           = useStore((s) => s.favs);
-  const openProduct    = useStore((s) => s.openProduct);
-  const openSideMenu   = useStore((s) => s.openSideMenu);
-  const openSearch     = useStore((s) => s.openSearch);
-  const openListing    = useStore((s) => s.openListing);
-  const isFav          = useStore((s) => s.isFav);
+  /* ── Store selectors ──────────────────────────────────────── */
+  const addToCart    = useStore((s) => s.addToCart);
+  const toggleFav    = useStore((s) => s.toggleFav);
+  const openProduct  = useStore((s) => s.openProduct);
+  const openSideMenu = useStore((s) => s.openSideMenu);
+  const openSearch   = useStore((s) => s.openSearch);
+  const openListing  = useStore((s) => s.openListing);
+  const isFav        = useStore((s) => s.isFav);
 
-  // Stable callbacks — prevent ProductCard re-renders on unrelated state changes
+  /* ── Section config — driven by home-sections store ──────── */
+  const getVisible    = useHomeSectionsStore((s) => s.getVisible);
+  const activeSections = getVisible({ isMobile: true }); // client is always mobile-first
+
+  /* ── Stable callbacks ─────────────────────────────────────── */
   const handleAdd  = useCallback((p: Product) => addToCart(p), [addToCart]);
   const handleFav  = useCallback((id: string) => toggleFav(id), [toggleFav]);
   const handleOpen = useCallback((p: Product) => openProduct(p), [openProduct]);
 
+  /* ── Pre-resolved product lists by source ─────────────────── */
   const flashProducts = products.filter((p) => p.tag === "Flash");
+  const _bestRaw      = products.filter((p) => p.tag === "Best-seller").concat(products.slice(0, 3));
+  const _seenBest     = new Set<string>();
+  const bestProducts  = _bestRaw.filter((p) => !_seenBest.has(p.id) && !!_seenBest.add(p.id));
+  const newProducts   = products.filter((p) => p.tag === "Nouveau");
 
-  // Best-sellers deduplicated
-  const _bestRaw = products.filter((p) => p.tag === "Best-seller").concat(products.slice(0, 3));
-  const _seenBest = new Set<string>();
-  const bestProducts = _bestRaw.filter((p) => !_seenBest.has(p.id) && !!_seenBest.add(p.id));
+  const productsBySource: Record<ProductSource, Product[]> = {
+    flash: flashProducts,
+    best:  bestProducts,
+    new:   newProducts,
+    reco:  products.slice(0, 4),
+  };
 
-  const newProducts = products.filter((p) => p.tag === "Nouveau");
+  /* ── Section renderer (dispatch to inline components) ─────── */
+  const renderSection = useCallback(
+    (section: HomeSection, i: number): React.ReactNode => {
+      if (!section.enabled) return null;
+      const isFirst = section.type === "hero" || i === 0;
+      const mt = isFirst ? 0 : section.type === "products" && i < 4 ? 26 : 34;
+
+      switch (section.type) {
+        case "hero":
+          return (
+            <div key={section.id} className="home-z">
+              <HeroSection onDiscover={() => openListing(null)} />
+            </div>
+          );
+
+        case "trust":
+          return (
+            <div key={section.id} className="home-z">
+              <TrustStrip />
+            </div>
+          );
+
+        case "products": {
+          const source     = (section.source ?? "flash") as ProductSource;
+          const prods      = productsBySource[source] ?? [];
+          const isGrid     = section.variant === "grid";
+          const isFirst    = source === "flash";
+          return (
+            <div
+              key={section.id}
+              className="home-z home-section"
+              style={{ marginTop: mt, padding: "0 18px" }}
+            >
+              {isFirst ? (
+                <>
+                  <FlashHead title={section.title} />
+                  <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
+                    {prods.map((p, pi) => (
+                      <ProductCard
+                        key={p.id + "-" + source + "-" + pi}
+                        p={p}
+                        onOpen={handleOpen}
+                        onFav={handleFav}
+                        isFav={isFav(p.id)}
+                        onAdd={handleAdd}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : isGrid ? (
+                <Reveal>
+                  <SectionHead title={section.title} />
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {prods.map((p, pi) => (
+                      <ProductCard
+                        key={p.id + "-" + source + "-" + pi}
+                        p={p}
+                        wide
+                        onOpen={handleOpen}
+                        onFav={handleFav}
+                        isFav={isFav(p.id)}
+                        onAdd={handleAdd}
+                      />
+                    ))}
+                  </div>
+                </Reveal>
+              ) : (
+                <Reveal>
+                  <SectionHead title={section.title} action="Voir tout" />
+                  <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
+                    {prods.slice(0, 5).map((p, pi) => (
+                      <ProductCard
+                        key={p.id + "-" + source + "-" + pi}
+                        p={p}
+                        onOpen={handleOpen}
+                        onFav={handleFav}
+                        isFav={isFav(p.id)}
+                        onAdd={handleAdd}
+                      />
+                    ))}
+                  </div>
+                </Reveal>
+              )}
+            </div>
+          );
+        }
+
+        case "routine":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <RoutineSection onAdd={handleAdd} />
+              </Reveal>
+            </div>
+          );
+
+        case "promo":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <EditoPromo />
+              </Reveal>
+            </div>
+          );
+
+        case "bento":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <div style={{ padding: "0 18px", marginBottom: 14 }}>
+                <div className="rev-sec-eyebrow">
+                  <Icon name="heart" size={13} color="var(--gold)" /> {section.subtitle ?? "Self-care"}
+                </div>
+                <h3 className="rev-sec-title" style={{ marginTop: 4 }}>
+                  {section.title}
+                </h3>
+              </div>
+              <Reveal>
+                <BentoSelfCare />
+              </Reveal>
+            </div>
+          );
+
+        case "quote":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <QuoteSection />
+              </Reveal>
+            </div>
+          );
+
+        case "reels":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <ReelsSection />
+              </Reveal>
+            </div>
+          );
+
+        case "newsletter":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <NewsletterBlock />
+              </Reveal>
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [handleAdd, handleFav, handleOpen, isFav, openListing, productsBySource]
+  );
 
   return (
     <AppShell>
@@ -671,137 +838,13 @@ export default function HomePage() {
       {/* Top bar */}
       <TopBar onMenuClick={openSideMenu} onSearchClick={openSearch} />
 
-      {/* Scrollable content — fills remaining flex space in AppShell */}
+      {/* Scrollable content — dynamic section order driven by home-sections store */}
       <div
         className="noscroll"
         style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 28 }}
       >
-        {/* Hero */}
-        <div className="home-z">
-          <HeroSection onDiscover={() => openListing(null)} />
-        </div>
-
-        {/* Trust strip */}
-        <div className="home-z">
-          <TrustStrip />
-        </div>
-
-        {/* Flash sale */}
-        <div className="home-z" style={{ marginTop: 26, padding: "0 18px" }}>
-          <FlashHead title="Ventes Flash" />
-          <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
-            {flashProducts.map((p, i) => (
-              <ProductCard
-                key={p.id + "-flash-" + i}
-                p={p}
-                onOpen={handleOpen}
-                onFav={handleFav}
-                isFav={isFav(p.id)}
-                onAdd={handleAdd}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Routine */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <Reveal>
-            <RoutineSection onAdd={handleAdd} />
-          </Reveal>
-        </div>
-
-        {/* Best sellers */}
-        <div className="home-z home-section" style={{ marginTop: 32, padding: "0 18px" }}>
-          <Reveal>
-            <SectionHead title="Best-sellers" action="Voir tout" />
-            <div
-              className="scroll-row"
-              style={{ padding: "4px 0 8px" }}
-            >
-              {bestProducts.slice(0, 5).map((p, i) => (
-                <ProductCard
-                  key={p.id + "-best-" + i}
-                  p={p}
-                  onOpen={handleOpen}
-                  onFav={handleFav}
-                  isFav={isFav(p.id)}
-                  onAdd={handleAdd}
-                />
-              ))}
-            </div>
-          </Reveal>
-        </div>
-
-        {/* Editorial promo */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <Reveal>
-            <EditoPromo />
-          </Reveal>
-        </div>
-
-        {/* Bento self-care */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <div style={{ padding: "0 18px", marginBottom: 14 }}>
-            <div className="rev-sec-eyebrow">
-              <Icon name="heart" size={13} color="var(--gold)" /> Self-care
-            </div>
-            <h3 className="rev-sec-title" style={{ marginTop: 4 }}>
-              L&apos;univers LN COS
-            </h3>
-          </div>
-          <Reveal>
-            <BentoSelfCare />
-          </Reveal>
-        </div>
-
-        {/* New arrivals grid */}
-        <div className="home-z home-section" style={{ marginTop: 34, padding: "0 18px" }}>
-          <Reveal>
-            <SectionHead title="Nouveautés" />
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 12,
-              }}
-            >
-              {newProducts.map((p, i) => (
-                <ProductCard
-                  key={p.id + "-new-" + i}
-                  p={p}
-                  wide
-                  onOpen={handleOpen}
-                  onFav={handleFav}
-                  isFav={isFav(p.id)}
-                  onAdd={handleAdd}
-                />
-              ))}
-            </div>
-          </Reveal>
-        </div>
-
-        {/* Quote */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <Reveal>
-            <QuoteSection />
-          </Reveal>
-        </div>
-
-        {/* Reels */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <Reveal>
-            <ReelsSection />
-          </Reveal>
-        </div>
-
-        {/* Newsletter */}
-        <div className="home-z home-section" style={{ marginTop: 34 }}>
-          <Reveal>
-            <NewsletterBlock />
-          </Reveal>
-        </div>
+        {activeSections.map((section, i) => renderSection(section, i))}
       </div>
-
     </AppShell>
   );
 }
