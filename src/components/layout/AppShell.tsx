@@ -34,6 +34,8 @@ const SearchScreen        = lazy(() => import("@/components/commerce/SearchScree
 const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then(m => ({ default: m.LoyaltyScreen })));
 const NotificationsScreen = lazy(() => import("@/components/profile/NotificationsScreen").then(m => ({ default: m.NotificationsScreen })));
 const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then(m => ({ default: m.OrdersScreen })));
+// z:90 — full-shell overlays (cover main + nav)
+const ReelsScreen         = lazy(() => import("@/components/commerce/ReelsScreen").then(m => ({ default: m.ReelsScreen })));
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -146,6 +148,11 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
       {overlay?.type === "side-menu" && (
         <SideMenu onClose={closeOverlay} />
       )}
+      <Suspense fallback={null}>
+        {overlay?.type === "reels" && (
+          <ReelsScreen onClose={closeOverlay} />
+        )}
+      </Suspense>
 
       {/* ── Toast — floats above nav ────────────────────────── */}
       {toast && (

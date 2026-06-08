@@ -46,6 +46,229 @@ interface Draft {
   notes: string;
 }
 
+/* ─── Booking Confirmation Screen ────────────────────────────── */
+function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: () => void }) {
+  const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
+  const total = svcPrice(draft.serviceId, draft.extrasIds);
+  const durMin = svcMin(draft.serviceId, draft.extrasIds);
+  const staffMember = draft.staffId === "any"
+    ? null
+    : staff.find((s) => s.id === draft.staffId) ?? null;
+  const staffName = staffMember ? staffMember.name : "Premier disponible";
+  // Generate a stable-ish 4-digit reference from the draft
+  const ref = String(Math.floor(1000 + Math.abs(draft.serviceId.charCodeAt(0) * 37 + (draft.date?.getDate() ?? 0) * 13) % 9000));
+
+  return (
+    <>
+      <style>{`
+        @keyframes badgePop {
+          from { transform: scale(0); opacity: 0; }
+          to   { transform: scale(1); opacity: 1; }
+        }
+        @keyframes floatUp {
+          0%   { transform: translateY(0) scale(1); opacity: 1; }
+          100% { transform: translateY(-32px) scale(0); opacity: 0; }
+        }
+      `}</style>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100%",
+          background: "var(--noir)",
+          animation: "fadeIn .6s ease both",
+        }}
+      >
+        <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 32 }}>
+
+          {/* Success celebration header */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 60, paddingLeft: 18, paddingRight: 18 }}>
+            {/* Badge + confetti */}
+            <div style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              {/* Confetti dots */}
+              {[
+                { top: -8,  left: -16, delay: "0s" },
+                { top: -12, left: 20,  delay: ".15s" },
+                { top: 8,   left: -22, delay: ".3s" },
+                { top: 16,  left: 24,  delay: ".45s" },
+              ].map((pos, i) => (
+                <span
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: pos.top,
+                    left: pos.left,
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "var(--gold)",
+                    animation: `floatUp 1.2s ease ${pos.delay} both`,
+                    willChange: "transform",
+                  }}
+                />
+              ))}
+              {/* Gold check circle */}
+              <div
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: "50%",
+                  background: "var(--gold-grad)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "var(--glow-gold)",
+                  animation: "badgePop .6s cubic-bezier(.34,1.56,.64,1) .2s both",
+                  willChange: "transform",
+                }}
+              >
+                <Icon name="check" size={42} color="#1a1306" stroke={2.8} />
+              </div>
+            </div>
+
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", marginTop: 24, marginBottom: 0, textAlign: "center" }}>
+              Rendez-vous confirmé !
+            </h1>
+            <p style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 10, textAlign: "center", lineHeight: 1.5 }}>
+              Un email de confirmation vous a été envoyé.
+            </p>
+          </div>
+
+          {/* Booking summary card — cream luxury surface */}
+          <div
+            style={{
+              background: "linear-gradient(160deg, #FAF0E4 0%, #F2E4D0 100%)",
+              borderRadius: "var(--r-xl)",
+              border: "1px solid rgba(212,175,55,.35)",
+              padding: "24px 22px",
+              margin: "24px 18px 0",
+              boxShadow: "0 20px 50px -20px rgba(0,0,0,.5), var(--glow-gold)",
+            }}
+          >
+            {/* Label */}
+            <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: ".18em", color: "rgba(0,0,0,.5)", fontWeight: 700 }}>
+              VOTRE RÉSERVATION
+            </div>
+
+            {/* Service name */}
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#1a1306", marginTop: 8 }}>
+              {svc.name}
+            </div>
+
+            {/* Date + time */}
+            {draft.date && (
+              <div style={{ fontSize: 15, color: "rgba(0,0,0,.7)", marginTop: 6 }}>
+                {fmtDate(draft.date)}{draft.time ? ` à ${draft.time}` : ""}
+              </div>
+            )}
+
+            {/* Staff name */}
+            <div style={{ fontSize: 13, color: "rgba(0,0,0,.5)", marginTop: 4 }}>
+              {staffName}
+            </div>
+
+            {/* Gold hairline divider */}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(212,175,55,.6), rgba(212,175,55,.1))", margin: "16px 0" }} />
+
+            {/* Staff avatar + label row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: staffMember ? staffMember.color + "33" : "rgba(212,175,55,.25)",
+                  display: "grid",
+                  placeItems: "center",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: staffMember ? staffMember.color : "#b8902b",
+                  flex: "0 0 auto",
+                }}
+              >
+                {staffMember ? staffMember.name[0] : <Icon name="sparkle" size={16} color="#b8902b" />}
+              </div>
+              <span style={{ fontSize: 12, color: "rgba(0,0,0,.5)" }}>Votre prestataire</span>
+            </div>
+
+            {/* Gold hairline divider */}
+            <div style={{ height: 1, background: "linear-gradient(90deg, rgba(212,175,55,.6), rgba(212,175,55,.1))", margin: "16px 0" }} />
+
+            {/* Duration + price row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 13, color: "rgba(0,0,0,.6)" }}>
+                {fmtDur(durMin)} · {total} €
+              </span>
+              {/* Reference pill */}
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "4px 10px",
+                  borderRadius: "var(--r-pill)",
+                  background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+                  color: "#1a1306",
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: ".06em",
+                }}
+              >
+                #LN-{ref}
+              </span>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div style={{ padding: "28px 18px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+            <Link
+              href="/rdv/appointments"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                padding: "16px 24px",
+                borderRadius: "var(--r-pill)",
+                background: "var(--gold-grad)",
+                color: "#1a1306",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+                boxShadow: "var(--glow-gold)",
+                WebkitTapHighlightColor: "transparent",
+                touchAction: "manipulation",
+              }}
+            >
+              <Icon name="calCheck" size={17} color="#1a1306" />
+              Voir mes rendez-vous
+            </Link>
+
+            <button
+              onClick={onReset}
+              style={{
+                width: "100%",
+                padding: "15px 24px",
+                borderRadius: "var(--r-pill)",
+                background: "transparent",
+                border: "1.5px solid rgba(212,175,55,.4)",
+                color: "var(--ink-soft)",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                WebkitTapHighlightColor: "transparent",
+                touchAction: "manipulation",
+              }}
+            >
+              Retour à l'accueil
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
+}
+
 function BookingWizard({
   initialService,
   onClose,
@@ -114,7 +337,10 @@ function BookingWizard({
           flex: "0 0 auto",
         }}
       >
-        <button onClick={back} style={{ color: "var(--ink-soft)" }}>
+        <button
+          onClick={back}
+          style={{ color: "var(--ink-soft)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
+        >
           <Icon name="chevL" size={22} />
         </button>
         <div style={{ textAlign: "center" }}>
@@ -123,7 +349,10 @@ function BookingWizard({
           </div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginTop: 2 }}>{STEPS[step]}</div>
         </div>
-        <button onClick={onClose} style={{ color: "var(--ink-mute)" }}>
+        <button
+          onClick={onClose}
+          style={{ color: "var(--ink-mute)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
+        >
           <Icon name="x" size={20} />
         </button>
       </div>
@@ -145,7 +374,7 @@ function BookingWizard({
                   ? true
                   : services.some((s) => s.id === draft.serviceId && s.cat === c.id);
                 return (
-                  <button key={c.id} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: "var(--charcoal)", color: "var(--ink-soft)", border: "1px solid rgba(255,255,255,.07)" }}>
+                  <button key={c.id} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: "var(--charcoal)", color: "var(--ink-soft)", border: "1px solid rgba(255,255,255,.07)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
                     {c.name}
                   </button>
                 );
@@ -156,7 +385,7 @@ function BookingWizard({
                 <button
                   key={s.id}
                   onClick={() => setDraft((d) => ({ ...d, serviceId: s.id }))}
-                  style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, borderRadius: "var(--r-md)", textAlign: "left", background: draft.serviceId === s.id ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: draft.serviceId === s.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%" }}
+                  style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, borderRadius: "var(--r-md)", textAlign: "left", background: draft.serviceId === s.id ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: draft.serviceId === s.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                 >
                   <span style={{ width: 44, height: 44, borderRadius: 12, flex: "0 0 auto", background: s.color + "22", display: "grid", placeItems: "center" }}>
                     <Icon name="scissors" size={20} color={s.color} />
@@ -188,7 +417,7 @@ function BookingWizard({
                   <button
                     key={e.id}
                     onClick={() => setDraft((d) => ({ ...d, extrasIds: on ? d.extrasIds.filter((x) => x !== e.id) : [...d.extrasIds, e.id] }))}
-                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: "var(--r-md)", textAlign: "left", background: on ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: on ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%" }}
+                    style={{ display: "flex", alignItems: "center", gap: 13, padding: "13px 14px", borderRadius: "var(--r-md)", textAlign: "left", background: on ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: on ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                   >
                     <span style={{ width: 26, height: 26, borderRadius: 8, background: on ? "var(--gold-grad)" : "var(--charcoal-2)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
                       <Icon name={on ? "check" : "plus"} size={14} color={on ? "#1a1306" : "var(--ink-mute)"} stroke={2.4} />
@@ -213,31 +442,91 @@ function BookingWizard({
         {step === 2 && (
           <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Any */}
+              {/* Any — special "Toutes disponibilités" card with sparkle + pink tint */}
               <button
                 onClick={() => setDraft((d) => ({ ...d, staffId: "any" }))}
-                style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, borderRadius: "var(--r-md)", textAlign: "left", background: draft.staffId === "any" ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: draft.staffId === "any" ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 13,
+                  padding: 0,
+                  borderRadius: "var(--r-lg)",
+                  textAlign: "left",
+                  background: draft.staffId === "any" ? "rgba(212,175,55,.08)" : "var(--charcoal)",
+                  border: draft.staffId === "any" ? "2px solid var(--gold)" : "1px solid rgba(255,255,255,.05)",
+                  boxShadow: draft.staffId === "any" ? "var(--glow-gold), transform 0s" : "none",
+                  transform: draft.staffId === "any" ? "scale(1.01)" : "scale(1)",
+                  width: "100%",
+                  overflow: "hidden",
+                  WebkitTapHighlightColor: "transparent",
+                  touchAction: "manipulation",
+                  transition: "transform 0.2s var(--ease-lux), border 0.2s var(--ease-lux), box-shadow 0.2s var(--ease-lux)",
+                }}
               >
-                <span style={{ width: 50, height: 50, borderRadius: "50%", flex: "0 0 auto", background: "var(--charcoal-2)", display: "grid", placeItems: "center" }}>
-                  <Icon name="sparkle" size={22} color="var(--gold)" />
+                {/* Header strip with pink tint */}
+                <span style={{
+                  width: 80,
+                  height: 80,
+                  flex: "0 0 auto",
+                  background: "linear-gradient(135deg, rgba(247,198,215,.25), rgba(239,169,192,.12))",
+                  display: "grid",
+                  placeItems: "center",
+                }}>
+                  <Icon name="sparkle" size={26} color="var(--gold)" />
                 </span>
-                <div>
+                <div style={{ padding: "14px 14px 14px 0" }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>Peu importe</div>
                   <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>Premier créneau disponible</div>
                 </div>
               </button>
 
-              {/* Staff */}
+              {/* Staff cards */}
               {staff.map((a) => (
                 <button
                   key={a.id}
                   onClick={() => setDraft((d) => ({ ...d, staffId: a.id }))}
-                  style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, borderRadius: "var(--r-md)", textAlign: "left", background: draft.staffId === a.id ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: draft.staffId === a.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)", width: "100%" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0,
+                    padding: 0,
+                    borderRadius: "var(--r-lg)",
+                    textAlign: "left",
+                    background: draft.staffId === a.id ? "rgba(212,175,55,.08)" : "var(--charcoal)",
+                    border: draft.staffId === a.id ? "2px solid var(--gold)" : "1px solid rgba(255,255,255,.05)",
+                    boxShadow: draft.staffId === a.id ? "var(--glow-gold)" : "none",
+                    transform: draft.staffId === a.id ? "scale(1.01)" : "scale(1)",
+                    width: "100%",
+                    overflow: "hidden",
+                    WebkitTapHighlightColor: "transparent",
+                    touchAction: "manipulation",
+                    transition: "transform 0.2s var(--ease-lux), border 0.2s var(--ease-lux), box-shadow 0.2s var(--ease-lux)",
+                  }}
                 >
-                  <span style={{ width: 50, height: 50, borderRadius: "50%", flex: "0 0 auto", background: a.color + "33", display: "grid", placeItems: "center", fontSize: 20, fontWeight: 700, color: a.color }}>
-                    {a.name[0]}
+                  {/* Header strip */}
+                  <span style={{
+                    width: 80,
+                    height: 80,
+                    flex: "0 0 auto",
+                    background: "linear-gradient(135deg, rgba(212,175,55,.15), rgba(212,175,55,.05))",
+                    display: "grid",
+                    placeItems: "center",
+                  }}>
+                    <span style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      background: "var(--gold-grad)",
+                      display: "grid",
+                      placeItems: "center",
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: "#1a1306",
+                    }}>
+                      {a.name[0]}
+                    </span>
                   </span>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, padding: "14px 14px" }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{a.name}</div>
                     <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{a.role}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4 }}>
@@ -263,7 +552,7 @@ function BookingWizard({
                       setDraft((d) => ({ ...d, date: prev }));
                     }
                   }}
-                  style={{ width: 34, height: 34, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--charcoal-2)" }}
+                  style={{ width: 34, height: 34, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--charcoal-2)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                 >
                   <Icon name="chevL" size={18} color="var(--ink)" />
                 </button>
@@ -272,7 +561,7 @@ function BookingWizard({
                 </div>
                 <button
                   onClick={() => setDraft((d) => ({ ...d, date: new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1) }))}
-                  style={{ width: 34, height: 34, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--charcoal-2)" }}
+                  style={{ width: 34, height: 34, borderRadius: "50%", display: "grid", placeItems: "center", background: "var(--charcoal-2)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                 >
                   <Icon name="chevR" size={18} color="var(--ink)" />
                 </button>
@@ -301,7 +590,10 @@ function BookingWizard({
                       onClick={() => setDraft((dr) => ({ ...dr, date: d, time: "" }))}
                       style={{
                         aspectRatio: "1",
-                        borderRadius: 10,
+                        width: "100%",
+                        height: "auto",
+                        minWidth: 0,
+                        borderRadius: "50%",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
@@ -309,11 +601,16 @@ function BookingWizard({
                         gap: 2,
                         background: sel ? "var(--gold-grad)" : disabled ? "transparent" : "var(--charcoal-2)",
                         color: sel ? "#1a1306" : disabled ? "var(--ink-mute)" : "var(--ink)",
-                        border: isToday && !sel ? "1px solid rgba(212,175,55,.5)" : "1px solid transparent",
+                        border: isToday && !sel ? "2px solid var(--gold)" : sel ? "none" : "1px solid transparent",
                         opacity: disabled ? 0.28 : 1,
                         fontWeight: sel ? 800 : 600,
                         fontSize: 13.5,
                         cursor: disabled ? "default" : "pointer",
+                        boxShadow: sel ? "var(--glow-gold)" : "none",
+                        transition: "box-shadow 0.2s var(--ease-lux), background 0.2s var(--ease-lux)",
+                        willChange: "transform",
+                        WebkitTapHighlightColor: "transparent",
+                        touchAction: "manipulation",
                       }}
                     >
                       {d.getDate()}
@@ -360,7 +657,20 @@ function BookingWizard({
                       <button
                         key={t}
                         onClick={() => setDraft((d) => ({ ...d, time: t }))}
-                        style={{ padding: "13px 0", borderRadius: "var(--r-md)", fontWeight: 600, fontSize: 14, background: sel ? "var(--gold-grad)" : "var(--charcoal)", color: sel ? "#1a1306" : "var(--ink)", border: sel ? "none" : "1px solid rgba(255,255,255,.07)" }}
+                        style={{
+                          padding: "12px 8px",
+                          borderRadius: "var(--r-md)",
+                          fontWeight: 600,
+                          fontSize: 14,
+                          background: sel ? "var(--gold-grad)" : "var(--charcoal)",
+                          color: sel ? "#1a1306" : "var(--ink-soft)",
+                          border: sel ? "transparent" : "1px solid rgba(255,255,255,.06)",
+                          boxShadow: sel ? "var(--glow-gold)" : "none",
+                          transition: "background 0.2s var(--ease-lux), box-shadow 0.2s var(--ease-lux), color 0.2s var(--ease-lux)",
+                          willChange: "transform",
+                          WebkitTapHighlightColor: "transparent",
+                          touchAction: "manipulation",
+                        }}
                       >
                         {t}
                       </button>
@@ -494,6 +804,15 @@ export default function RdvPage() {
     setConfirmed(draft);
   }
 
+  // Show full-screen luxury confirmation experience
+  if (confirmed) {
+    return (
+      <AppShell bottomNav={false}>
+        <BookingConfirmationScreen draft={confirmed} onReset={() => setConfirmed(null)} />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <div style={{ position: "relative", display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
@@ -549,7 +868,7 @@ export default function RdvPage() {
                 <button
                   key={c.id}
                   onClick={() => setCat(c.id)}
-                  style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", background: cat === c.id ? "var(--gold-grad)" : "var(--charcoal)", color: cat === c.id ? "#1a1306" : "var(--ink-soft)", border: cat === c.id ? "none" : "1px solid rgba(255,255,255,.07)" }}
+                  style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", background: cat === c.id ? "var(--gold-grad)" : "var(--charcoal)", color: cat === c.id ? "#1a1306" : "var(--ink-soft)", border: cat === c.id ? "none" : "1px solid rgba(255,255,255,.07)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                 >
                   {c.name}
                 </button>
@@ -575,7 +894,7 @@ export default function RdvPage() {
                       </div>
                       <button
                         onClick={() => setBooking({ serviceId: s.id })}
-                        style={{ padding: "8px 16px", borderRadius: "var(--r-pill)", background: "var(--pink-grad)", color: "#3a1020", fontSize: 12, fontWeight: 700 }}
+                        style={{ padding: "8px 16px", borderRadius: "var(--r-pill)", background: "var(--pink-grad)", color: "#3a1020", fontSize: 12, fontWeight: 700, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                       >
                         Réserver
                       </button>
@@ -594,11 +913,6 @@ export default function RdvPage() {
             onClose={() => setBooking(null)}
             onConfirm={handleConfirm}
           />
-        )}
-
-        {/* Confirmation overlay */}
-        {confirmed && (
-          <ConfirmOverlay draft={confirmed} onClose={() => setConfirmed(null)} />
         )}
       </div>
     </AppShell>

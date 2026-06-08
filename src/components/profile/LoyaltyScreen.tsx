@@ -1,33 +1,69 @@
 "use client";
 /**
- * LN COS — Loyalty / VIP screen (from handoff screens-account.jsx LoyaltyScreen)
+ * LN COS — Loyalty / VIP screen — premium redesign
  */
 
+import { useState, useEffect } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader, PinkBtn } from "@/components/shared/ActionButtons";
 
-const POINTS = 1240;
-const NEXT = 2000;
-const PCT = Math.round((POINTS / NEXT) * 100);
-
-const REWARDS = [
-  { i: "gift",    t: "-15% sur tout",         s: "500 pts",   unlocked: true  },
-  { i: "truck",   t: "Livraison express offerte", s: "800 pts",  unlocked: true  },
-  { i: "sparkle", t: "Coffret découverte",     s: "1 500 pts", unlocked: false },
-  { i: "crown",   t: "Soin VIP exclusif",      s: "2 500 pts", unlocked: false },
-];
+/* ─── Data ──────────────────────────────────────────────────────────────── */
 
 const TIERS = [
-  { t: "Argent",  p: "0",     on: false },
-  { t: "Or",      p: "1 000", on: true  },
-  { t: "Platine", p: "2 000", on: false },
+  { key: "bronze",  label: "Bronze",  min: 0    },
+  { key: "argent",  label: "Argent",  min: 500  },
+  { key: "or",      label: "Or",      min: 1000 },
+  { key: "platine", label: "Platine", min: 2000 },
 ];
+
+const USER_PTS = 1240;
+const CURRENT_TIER_IDX = 2; // Or
+
+const REWARDS = [
+  { i: "gift",    t: "-15% sur tout",            s: "500 pts",   unlocked: true  },
+  { i: "truck",   t: "Livraison express offerte", s: "800 pts",   unlocked: true  },
+  { i: "sparkle", t: "Coffret découverte",        s: "1 500 pts", unlocked: false },
+  { i: "crown",   t: "Soin VIP exclusif",         s: "2 500 pts", unlocked: false },
+  { i: "star",    t: "Accès vente privée",         s: "3 000 pts", unlocked: false },
+  { i: "heart",   t: "Cadeau anniversaire",        s: "4 000 pts", unlocked: false },
+];
+
+const TRANSACTIONS = [
+  { d: "4 juin",  t: "Achat #LN-2480",          pts: 240, icon: "bag"   },
+  { d: "28 mai",  t: "Achat #LN-2461",          pts: 100, icon: "bag"   },
+  { d: "15 mai",  t: "Parrainage ami",           pts: 500, icon: "heart" },
+  { d: "1 mai",   t: "Inscription programme",   pts: 400, icon: "crown" },
+];
+
+/* ─── Component ─────────────────────────────────────────────────────────── */
 
 interface LoyaltyScreenProps {
   onClose: () => void;
 }
 
 export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
+  const [mounted, setMounted] = useState(false);
+  const [copied, setCopied]   = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  const nextTier    = TIERS[CURRENT_TIER_IDX + 1];
+  const currTierMin = TIERS[CURRENT_TIER_IDX].min;
+  const nextTierMin = nextTier?.min ?? currTierMin;
+  const ptsInTier   = USER_PTS - currTierMin;
+  const tierRange   = nextTierMin - currTierMin;
+  const pct         = Math.min(100, Math.round((ptsInTier / tierRange) * 100));
+  const ptsToNext   = nextTierMin - USER_PTS;
+
+  function handleCopy() {
+    navigator.clipboard?.writeText("LNCOS-VIP").catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
     <div
       style={{
@@ -37,170 +73,580 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
         display: "flex",
         flexDirection: "column",
         zIndex: 80,
-        animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both",
+        animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both",
       }}
     >
-      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader title="Programme VIP" onBack={onClose} />
+      {/* Header */}
+      <div style={{ flex: "0 0 auto", paddingTop: 16 }}>
+        <SubHeader title="Programme Fidélité" onBack={onClose} />
       </div>
 
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 24px" }}>
-        {/* Points card */}
-        <div
-          style={{
-            borderRadius: "var(--r-lg)",
-            padding: "26px 22px",
-            position: "relative",
-            overflow: "hidden",
-            textAlign: "center",
-            background: "linear-gradient(135deg, #241a10 0%, #2c2012 50%, #1a130b 100%)",
-            border: "1px solid rgba(212,175,55,.35)",
-            marginBottom: 16,
-          }}
-        >
+      {/* Scroll area */}
+      <div
+        className="noscroll"
+        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 28 }}
+      >
+        <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 24 }}>
+
+          {/* ── Points Card (cream luxury) ─────────────────────────────── */}
           <div
             style={{
-              position: "absolute",
-              top: -40,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 200,
-              height: 200,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(212,175,55,.2), transparent 70%)",
+              background: "linear-gradient(135deg, #FAF0E4 0%, #F5E8D6 50%, #EFE0C8 100%)",
+              borderRadius: "var(--r-xl)",
+              padding: "28px 24px 24px",
+              border: "1px solid rgba(212,175,55,.3)",
+              boxShadow: "0 20px 50px -20px rgba(212,175,55,.3)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              willChange: "transform",
             }}
-          />
-          <div style={{ position: "relative" }}>
+          >
+            {/* Crown icon */}
             <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 14,
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+                display: "grid",
+                placeItems: "center",
+                boxShadow: "0 8px 20px -8px rgba(212,175,55,.6)",
+                marginBottom: 8,
+              }}
+            >
+              <Icon name="crown" size={22} color="#1a1306" stroke={2} />
+            </div>
+
+            {/* Points number */}
+            <div
+              style={{
+                fontSize: 52,
+                fontWeight: 700,
+                color: "#8B6914",
+                lineHeight: 1,
+                letterSpacing: "-.02em",
+              }}
+            >
+              {USER_PTS.toLocaleString("fr-FR")}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "rgba(0,0,0,.45)",
+                letterSpacing: ".14em",
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}
+            >
+              Points Fidélité
+            </div>
+
+            {/* Tier badge */}
+            <div
+              style={{
                 padding: "5px 14px",
                 borderRadius: "var(--r-pill)",
-                background: "rgba(212,175,55,.15)",
-                border: "1px solid rgba(212,175,55,.3)",
+                background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+                fontSize: 11,
+                fontWeight: 800,
+                color: "#1a1306",
+                letterSpacing: ".1em",
+                textTransform: "uppercase",
               }}
             >
-              <Icon name="crown" size={14} color="var(--gold)" fill="rgba(212,175,55,.4)" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", letterSpacing: ".08em" }}>
-                NIVEAU OR
-              </span>
+              Membre Or
             </div>
-            <div className="gold-text" style={{ fontSize: 52, fontWeight: 700, lineHeight: 1 }}>
-              {POINTS.toLocaleString("fr")}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 4, letterSpacing: ".06em" }}>
-              POINTS FIDÉLITÉ
-            </div>
-          </div>
-        </div>
 
-        {/* Progress */}
-        <div
-          style={{
-            marginBottom: 16,
-            padding: 18,
-            borderRadius: "var(--r-md)",
-            background: "var(--charcoal)",
-            border: "1px solid rgba(255,255,255,.05)",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 11 }}>
-            <span style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
-              Vers le niveau <span style={{ color: "var(--gold)", fontWeight: 600 }}>Platine</span>
-            </span>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
-              {POINTS} / {NEXT}
-            </span>
-          </div>
-          <div style={{ height: 9, borderRadius: 5, background: "var(--charcoal-2)", overflow: "hidden" }}>
-            <div
-              style={{
-                height: "100%",
-                width: PCT + "%",
-                background: "var(--gold-grad)",
-                borderRadius: 5,
-                transition: "width 1s ease",
-              }}
-            />
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 9 }}>
-            Plus que{" "}
-            <span style={{ color: "var(--gold)", fontWeight: 600 }}>{NEXT - POINTS} points</span>{" "}
-            pour débloquer les avantages Platine.
-          </div>
-        </div>
-
-        {/* Tiers */}
-        <div style={{ display: "flex", gap: 9, marginBottom: 24 }}>
-          {TIERS.map((t) => (
-            <div
-              key={t.t}
-              style={{
-                flex: 1,
-                padding: "13px 8px",
-                borderRadius: "var(--r-md)",
-                textAlign: "center",
-                background: t.on ? "rgba(212,175,55,.1)" : "var(--charcoal)",
-                border: t.on ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.05)",
-              }}
-            >
-              <Icon name="crown" size={20} color={t.on ? "var(--gold)" : "var(--ink-mute)"} fill={t.on ? "rgba(212,175,55,.3)" : "none"} />
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: t.on ? "var(--gold)" : "var(--ink-soft)", marginTop: 6 }}>
-                {t.t}
+            {/* Progress bar */}
+            <div style={{ width: "100%", marginTop: 20 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <span style={{ fontSize: 11, color: "rgba(0,0,0,.5)", fontWeight: 600 }}>
+                  {USER_PTS} pts
+                </span>
+                <span style={{ fontSize: 11, color: "rgba(0,0,0,.5)", fontWeight: 600 }}>
+                  {ptsToNext} pts → Platine
+                </span>
               </div>
-              <div style={{ fontSize: 10, color: "var(--ink-mute)", marginTop: 1 }}>{t.p} pts</div>
-            </div>
-          ))}
-        </div>
 
-        {/* Rewards */}
-        <h3 style={{ margin: "0 0 14px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>
-          Récompenses
-        </h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-          {REWARDS.map((r) => (
+              {/* Track */}
+              <div
+                style={{
+                  position: "relative",
+                  height: 10,
+                  borderRadius: "var(--r-pill)",
+                  background: "rgba(0,0,0,.1)",
+                  overflow: "visible",
+                }}
+              >
+                {/* Tier marker dots at 25%, 50%, 75% */}
+                {[25, 50, 75].map((pos, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: `${pos}%`,
+                      transform: "translate(-50%,-50%)",
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: pos <= pct ? "#B8902B" : "rgba(0,0,0,.2)",
+                      zIndex: 2,
+                    }}
+                  />
+                ))}
+
+                {/* Fill */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: "var(--r-pill)",
+                    background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+                    width: mounted ? `${pct}%` : "0%",
+                    transition: "width 1.2s cubic-bezier(.22,.68,0,1)",
+                    willChange: "width",
+                  }}
+                />
+
+                {/* Glowing dot at progress tip */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: mounted ? `${pct}%` : "0%",
+                    transform: "translate(-50%,-50%)",
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg,#F0D98C,#D4AF37)",
+                    boxShadow: "0 0 10px 3px rgba(212,175,55,.55)",
+                    border: "2.5px solid #FAF0E4",
+                    transition: "left 1.2s cubic-bezier(.22,.68,0,1)",
+                    willChange: "left",
+                    zIndex: 3,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Tier Cards Row ──────────────────────────────────────────── */}
+          <div
+            style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 2 }}
+            className="noscroll"
+          >
+            {TIERS.map((tier, idx) => {
+              const isActive = idx === CURRENT_TIER_IDX;
+              const isPast   = idx < CURRENT_TIER_IDX;
+              const isFuture = idx > CURRENT_TIER_IDX;
+              return (
+                <div
+                  key={tier.key}
+                  style={{
+                    flex: "0 0 80px",
+                    height: 100,
+                    borderRadius: 16,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    background: isActive
+                      ? "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)"
+                      : isPast
+                      ? "var(--charcoal-2)"
+                      : "var(--charcoal)",
+                    border: isActive
+                      ? "none"
+                      : "1px solid rgba(255,255,255,.06)",
+                    boxShadow: isActive ? "var(--glow-gold)" : "none",
+                    opacity: isFuture ? 0.7 : 1,
+                    willChange: "transform",
+                  }}
+                >
+                  <Icon
+                    name={isActive ? "crown" : isPast ? "check" : "lock"}
+                    size={20}
+                    color={
+                      isActive
+                        ? "#1a1306"
+                        : isPast
+                        ? "rgba(255,255,255,.4)"
+                        : "rgba(255,255,255,.3)"
+                    }
+                    stroke={2}
+                  />
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: isActive
+                        ? "#1a1306"
+                        : isPast
+                        ? "rgba(255,255,255,.4)"
+                        : "rgba(255,255,255,.3)",
+                      letterSpacing: ".06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {tier.label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 9.5,
+                      fontWeight: 600,
+                      color: isActive
+                        ? "rgba(0,0,0,.5)"
+                        : "rgba(255,255,255,.25)",
+                      letterSpacing: ".04em",
+                    }}
+                  >
+                    {tier.min === 0 ? "0+" : `${tier.min}+`} pts
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Rewards Grid (2 columns) ────────────────────────────────── */}
+          <div>
             <div
-              key={r.t}
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--ink)",
+                letterSpacing: ".06em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+              }}
+            >
+              Vos Récompenses
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 12,
+              }}
+            >
+              {REWARDS.map((r, i) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: 16,
+                    borderRadius: "var(--r-md)",
+                    background: r.unlocked
+                      ? "rgba(251,239,228,.06)"
+                      : "var(--charcoal)",
+                    border: r.unlocked
+                      ? "1px solid rgba(212,175,55,.25)"
+                      : "1px solid rgba(255,255,255,.05)",
+                    opacity: r.unlocked ? 1 : 0.65,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  {/* Icon square */}
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 12,
+                      background: r.unlocked
+                        ? "linear-gradient(135deg,rgba(240,217,140,.2),rgba(212,175,55,.15))"
+                        : "rgba(255,255,255,.06)",
+                      border: r.unlocked
+                        ? "1px solid rgba(212,175,55,.3)"
+                        : "1px solid rgba(255,255,255,.06)",
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    <Icon
+                      name={r.unlocked ? r.i : "lock"}
+                      size={18}
+                      color={r.unlocked ? "#D4AF37" : "rgba(255,255,255,.3)"}
+                      stroke={1.8}
+                    />
+                  </div>
+
+                  {/* Text */}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: r.unlocked ? "var(--ink)" : "var(--ink-mute)",
+                        lineHeight: 1.35,
+                        marginBottom: 4,
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      } as React.CSSProperties}
+                    >
+                      {r.t}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: r.unlocked ? "var(--gold)" : "var(--ink-mute)",
+                      }}
+                    >
+                      {r.unlocked ? r.s : `${r.s} requis`}
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  {r.unlocked ? (
+                    <button
+                      style={{
+                        width: "100%",
+                        padding: "9px 0",
+                        borderRadius: "var(--r-pill)",
+                        background: "var(--pink-grad)",
+                        color: "#3a1020",
+                        fontWeight: 700,
+                        fontSize: 11.5,
+                        letterSpacing: ".03em",
+                        boxShadow: "0 8px 20px -10px rgba(239,169,192,.6)",
+                        WebkitTapHighlightColor: "transparent",
+                        touchAction: "manipulation",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Utiliser
+                    </button>
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        padding: "9px 0",
+                        borderRadius: "var(--r-pill)",
+                        background: "rgba(255,255,255,.04)",
+                        border: "1px solid rgba(255,255,255,.08)",
+                        color: "var(--ink-mute)",
+                        fontWeight: 600,
+                        fontSize: 11,
+                        textAlign: "center",
+                      }}
+                    >
+                      Verrouillé
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Transaction History ─────────────────────────────────────── */}
+          <div>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--ink)",
+                letterSpacing: ".06em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+              }}
+            >
+              Historique des points
+            </div>
+            <div
+              style={{
+                borderRadius: "var(--r-lg)",
+                background: "var(--charcoal)",
+                border: "1px solid rgba(255,255,255,.06)",
+                overflow: "hidden",
+              }}
+            >
+              {TRANSACTIONS.map((tx, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "14px 16px",
+                    borderBottom:
+                      i < TRANSACTIONS.length - 1
+                        ? "1px solid rgba(255,255,255,.05)"
+                        : "none",
+                  }}
+                >
+                  {/* Icon */}
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "50%",
+                      background: "rgba(212,175,55,.1)",
+                      border: "1px solid rgba(212,175,55,.2)",
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name={tx.icon} size={16} color="#D4AF37" stroke={1.8} />
+                  </div>
+
+                  {/* Text */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "var(--ink)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tx.t}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>
+                      {tx.d}
+                    </div>
+                  </div>
+
+                  {/* Points */}
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "#D4AF37",
+                      flexShrink: 0,
+                    }}
+                  >
+                    +{tx.pts} pts
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Referral Block ──────────────────────────────────────────── */}
+          <div
+            style={{
+              background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+              borderRadius: "var(--r-xl)",
+              padding: "24px 20px",
+              boxShadow: "var(--glow-gold)",
+              willChange: "transform",
+            }}
+          >
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
-                padding: "14px 16px",
-                borderRadius: "var(--r-md)",
-                background: "var(--charcoal)",
-                border: "1px solid rgba(255,255,255,.05)",
-                opacity: r.unlocked ? 1 : 0.55,
+                gap: 10,
+                marginBottom: 6,
+              }}
+            >
+              <Icon name="gift" size={20} color="#1a1306" stroke={2} />
+              <div
+                style={{
+                  fontSize: 16,
+                  fontWeight: 800,
+                  color: "#1a1306",
+                  letterSpacing: "-.01em",
+                }}
+              >
+                Parrainez vos amis
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: "rgba(0,0,0,.6)",
+                marginBottom: 18,
+                lineHeight: 1.4,
+              }}
+            >
+              Gagnez 500 pts pour chaque filleul
+            </div>
+
+            {/* Code pill */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: "rgba(0,0,0,.12)",
+                borderRadius: "var(--r-pill)",
+                padding: "10px 16px",
+                marginBottom: 16,
               }}
             >
               <span
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 12,
-                  background: r.unlocked ? "rgba(212,175,55,.12)" : "var(--charcoal-2)",
-                  display: "grid",
-                  placeItems: "center",
-                  flex: "0 0 auto",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  color: "#1a1306",
+                  letterSpacing: ".08em",
                 }}
               >
-                <Icon name={r.i} size={20} color={r.unlocked ? "var(--gold)" : "var(--ink-mute)"} />
+                LNCOS-VIP
               </span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>{r.t}</div>
-                <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 1 }}>{r.s}</div>
-              </div>
-              {r.unlocked ? (
-                <PinkBtn style={{ width: "auto", padding: "8px 16px", fontSize: 12 }}>
-                  Utiliser
-                </PinkBtn>
-              ) : (
-                <Icon name="clock" size={18} color="var(--ink-mute)" />
-              )}
+              <button
+                onClick={handleCopy}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#1a1306",
+                  WebkitTapHighlightColor: "transparent",
+                  touchAction: "manipulation",
+                  cursor: "pointer",
+                  opacity: 0.75,
+                }}
+              >
+                <Icon
+                  name={copied ? "check" : "send"}
+                  size={14}
+                  color="#1a1306"
+                  stroke={2}
+                />
+                {copied ? "Copié !" : "Copier"}
+              </button>
             </div>
-          ))}
+
+            <button
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: "var(--r-pill)",
+                background: "rgba(0,0,0,.15)",
+                color: "#1a1306",
+                fontWeight: 800,
+                fontSize: 13,
+                letterSpacing: ".1em",
+                textTransform: "uppercase",
+                WebkitTapHighlightColor: "transparent",
+                touchAction: "manipulation",
+                cursor: "pointer",
+                border: "1.5px solid rgba(0,0,0,.2)",
+              }}
+            >
+              Parrainez Maintenant
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
