@@ -1,17 +1,14 @@
 /**
  * LN COS — SumUp API client
  * SERVER-SIDE ONLY. Never import in client components.
+ *
+ * Authentication: direct API key — Authorization: Bearer <SUMUP_CLIENT_SECRET>
+ * No OAuth token exchange required with cc_classic_* / cc_sk_classic_* credentials.
  */
 
 const API = "https://api.sumup.com";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
-
-interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
 
 interface MerchantResponse {
   merchant_code: string;
@@ -30,45 +27,23 @@ export interface SumUpCheckout {
   merchant_code: string;
 }
 
-/* ─── In-process token cache ─────────────────────────────────────── */
+/* ─── Helpers ────────────────────────────────────────────────────── */
 
-let _token: string | null = null;
-let _tokenExp = 0;
-
-async function getToken(): Promise<string> {
-  if (_token && Date.now() < _tokenExp - 60_000) return _token;
-
-  const res = await fetch(`${API}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: process.env.SUMUP_CLIENT_ID!,
-      client_secret: process.env.SUMUP_CLIENT_SECRET!,
-    }).toString(),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`SumUp token [${res.status}]: ${body}`);
-  }
-
-  const data: TokenResponse = await res.json();
-  _token = data.access_token;
-  _tokenExp = Date.now() + data.expires_in * 1000;
-  return _token;
+function apiKey(): string {
+  const key = process.env.SUMUP_CLIENT_SECRET;
+  if (!key) throw new Error("SUMUP_CLIENT_SECRET is not set");
+  return key;
 }
 
 /* ─── Merchant code cache ────────────────────────────────────────── */
 
 let _merchant: { code: string; email: string } | null = null;
 
-async function getMerchant(token: string): Promise<{ code: string; email: string }> {
+async function getMerchant(): Promise<{ code: string; email: string }> {
   if (_merchant) return _merchant;
 
   const res = await fetch(`${API}/v0.1/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${apiKey()}` },
     cache: "no-store",
   });
 
@@ -92,13 +67,12 @@ export async function createCheckout(params: {
   description: string;
   returnUrl: string;
 }): Promise<{ id: string; checkoutUrl: string }> {
-  const token = await getToken();
-  const merchant = await getMerchant(token);
+  const merchant = await getMerchant();
 
   const res = await fetch(`${API}/v0.1/checkouts`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${apiKey()}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -108,7 +82,7 @@ export async function createCheckout(params: {
       merchant_code: merchant.code,
       description: params.description,
       return_url: params.returnUrl,
-      redirect_url: params.returnUrl, // some API versions use this key
+      redirect_url: params.returnUrl,
     }),
     cache: "no-store",
   });
@@ -119,7 +93,6 @@ export async function createCheckout(params: {
   }
 
   const data: SumUpCheckout = await res.json();
-  // Hosted payment page — SumUp appends ?checkout_id=id on redirect back
   const checkoutUrl = `https://pay.sumup.com/b2c/${data.id}`;
 
   return { id: data.id, checkoutUrl };
@@ -127,10 +100,8 @@ export async function createCheckout(params: {
 
 /** Fetch current status of a checkout from SumUp (server-side verification). */
 export async function getCheckoutStatus(checkoutId: string): Promise<SumUpCheckout> {
-  const token = await getToken();
-
   const res = await fetch(`${API}/v0.1/checkouts/${checkoutId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${apiKey()}` },
     cache: "no-store",
   });
 
