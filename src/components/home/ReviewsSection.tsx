@@ -1,8 +1,22 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  animate,
+  useReducedMotion,
+  MotionValue,
+} from "framer-motion";
 import { Icon } from "@/components/shared/Icon";
 import s from "./ReviewsSection.module.css";
+
+/* ─── Constants ──────────────────────────────────────────────────── */
+
+const CARD_WIDTH = 282;
+const GAP = 14;
+const CARD_STEP = CARD_WIDTH + GAP;
 
 /* ─── Static review data ──────────────────────────────────────────── */
 
@@ -59,6 +73,13 @@ const REVIEWS = [
   },
 ];
 
+/* ─── Spring / easing configs ─────────────────────────────────────── */
+
+const SNAP_SPRING    = { type: "spring" as const, stiffness: 300,  damping: 35, mass: 0.8 };
+const CARD_SPRING    = { type: "spring" as const, stiffness: 400,  damping: 40 };
+const DOT_SPRING     = { type: "spring" as const, stiffness: 500,  damping: 30 };
+const ENTRANCE_EASE  = [0.22, 1, 0.36, 1] as const;
+
 /* ─── Filled star ─────────────────────────────────────────────────── */
 
 function Star({ dim }: { dim?: boolean }) {
@@ -75,35 +96,124 @@ function Star({ dim }: { dim?: boolean }) {
   );
 }
 
+/* ─── ReviewCard ── extracted so hooks are always called at component top ── */
+
+interface ReviewCardProps {
+  review: (typeof REVIEWS)[number];
+  index: number;
+  isActive: boolean;
+  trackX: MotionValue<number>;
+  prefersReduced: boolean | null;
+}
+
+function ReviewCard({ review: r, index: i, isActive, trackX, prefersReduced }: ReviewCardProps) {
+  /* Parallax: card interior shifts ±8px as the draggable track moves */
+  const parallaxX = useTransform(
+    trackX,
+    [-(i + 1) * CARD_STEP, -i * CARD_STEP, -(i - 1) * CARD_STEP],
+    [8, 0, -8]
+  );
+
+  return (
+    <motion.article
+      className={s.card}
+      style={{ backfaceVisibility: "hidden" }}
+      /* Entrance animation triggered when card enters viewport */
+      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
+      whileInView={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
+      transition={
+        prefersReduced
+          ? { duration: 0.3 }
+          : { delay: i * 0.06, duration: 0.4, ease: ENTRANCE_EASE }
+      }
+      /* Active/inactive focus state — spring-animated */
+      animate={
+        prefersReduced
+          ? { opacity: isActive ? 1 : 0.72 }
+          : {
+              scale:   isActive ? 1    : 0.96,
+              opacity: isActive ? 1    : 0.72,
+              filter:  isActive ? "brightness(1)" : "brightness(0.85)",
+            }
+      }
+      /* Override the entrance transition for the animate (focus) state */
+      // @ts-ignore — framer-motion supports per-prop transitions via variants; direct override below:
+    >
+      {/* Parallax inner wrapper — subtle depth on drag */}
+      <motion.div
+        className={s.cardInner}
+        style={prefersReduced ? undefined : { x: parallaxX }}
+        transition={CARD_SPRING}
+      >
+        {/* Corner glow */}
+        <div className={s.cardGlow} />
+
+        {/* Avatar · name · date */}
+        <div className={s.cardHead}>
+          <div className={s.avatar} style={{ background: r.avatarGrad }}>
+            {r.initials}
+          </div>
+          <div className={s.cardIdentity}>
+            <div className={s.authorName}>{r.name}</div>
+            <div className={s.verified}>
+              <Icon name="check" size={8} color="#1A1612" stroke={2.8} />
+              Vérifié
+            </div>
+          </div>
+          <span className={s.date}>{r.date}</span>
+        </div>
+
+        {/* Stars */}
+        <div className={s.stars}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star key={n} dim={n > r.rating} />
+          ))}
+        </div>
+
+        {/* Review body */}
+        <p className={s.text}>{r.text}</p>
+
+        {/* Product pill */}
+        <div className={s.productPill}>
+          <Icon name="tag" size={10} color="var(--gold)" />
+          {r.product}
+        </div>
+      </motion.div>
+    </motion.article>
+  );
+}
+
 /* ─── ReviewsSection ──────────────────────────────────────────────── */
 
 export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const prefersReduced = useReducedMotion();
   const [active, setActive] = useState(0);
 
-  /* Track active card via scroll position */
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const first = el.firstElementChild as HTMLElement | null;
-      if (!first) return;
-      const cardW = first.offsetWidth + 14; // card width + gap
-      const idx = Math.round(el.scrollLeft / cardW);
-      setActive(Math.max(0, Math.min(idx, REVIEWS.length - 1)));
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, []);
+  /* The x MotionValue drives the draggable track position */
+  const x = useMotionValue(0);
 
-  const goTo = useCallback((i: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const first = el.firstElementChild as HTMLElement | null;
-    if (!first) return;
-    const cardW = first.offsetWidth + 14;
-    el.scrollTo({ left: i * cardW, behavior: "smooth" });
-  }, []);
+  /* Snap to a specific card index with spring physics */
+  const snapTo = useCallback(
+    (index: number) => {
+      const clamped = Math.max(0, Math.min(index, REVIEWS.length - 1));
+      setActive(clamped);
+      animate(x, -clamped * CARD_STEP, SNAP_SPRING);
+    },
+    [x]
+  );
+
+  /* On drag end: compute nearest snap index and animate there */
+  const onDragEnd = useCallback(() => {
+    const rawIndex = -x.get() / CARD_STEP;
+    snapTo(Math.round(rawIndex));
+  }, [x, snapTo]);
+
+  /* Hard drag bounds: cannot drag past first or last card */
+  const dragConstraints = {
+    left:  -(REVIEWS.length - 1) * CARD_STEP,
+    right: 0,
+  };
 
   return (
     <div className={s.section}>
@@ -133,57 +243,47 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
         </div>
       </div>
 
-      {/* ── Carousel track ── */}
-      <div ref={trackRef} className={s.track}>
-        {REVIEWS.map((r) => (
-          <article key={r.id} className={s.card}>
-            {/* Corner glow */}
-            <div className={s.cardGlow} />
-
-            {/* Avatar · name · date */}
-            <div className={s.cardHead}>
-              <div className={s.avatar} style={{ background: r.avatarGrad }}>
-                {r.initials}
-              </div>
-              <div className={s.cardIdentity}>
-                <div className={s.authorName}>{r.name}</div>
-                <div className={s.verified}>
-                  <Icon name="check" size={8} color="#1A1612" stroke={2.8} />
-                  Vérifié
-                </div>
-              </div>
-              <span className={s.date}>{r.date}</span>
-            </div>
-
-            {/* Stars */}
-            <div className={s.stars}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star key={n} dim={n > r.rating} />
-              ))}
-            </div>
-
-            {/* Review body */}
-            <p className={s.text}>{r.text}</p>
-
-            {/* Product pill */}
-            <div className={s.productPill}>
-              <Icon name="tag" size={10} color="var(--gold)" />
-              {r.product}
-            </div>
-          </article>
-        ))}
+      {/* ── Carousel viewport (clips overflow) ── */}
+      <div className={s.viewport}>
+        {/* Draggable flex track */}
+        <motion.div
+          className={s.track}
+          style={{ x, willChange: "transform" }}
+          drag="x"
+          dragConstraints={dragConstraints}
+          dragElastic={0.1}
+          dragMomentum={true}
+          onDragEnd={onDragEnd}
+        >
+          {REVIEWS.map((r, i) => (
+            <ReviewCard
+              key={r.id}
+              review={r}
+              index={i}
+              isActive={i === active}
+              trackX={x}
+              prefersReduced={prefersReduced}
+            />
+          ))}
+        </motion.div>
       </div>
 
-      {/* ── Pagination dots ── */}
+      {/* ── Pagination dots — spring-animated width ── */}
       <div className={s.dots} role="tablist" aria-label="Avis">
         {REVIEWS.map((_, i) => (
-          <button
+          <motion.button
             key={i}
             role="tab"
             aria-selected={i === active}
             aria-label={`Avis ${i + 1}`}
-            className={`${s.dot}${i === active ? ` ${s.active}` : ""}`}
-            onClick={() => goTo(i)}
+            className={s.dot}
+            animate={{
+              width:      i === active ? 20 : 6,
+              background: i === active ? "var(--gold)" : "var(--charcoal-3)",
+            }}
+            transition={DOT_SPRING}
+            onClick={() => snapTo(i)}
+            style={{ backfaceVisibility: "hidden" }}
           />
         ))}
       </div>

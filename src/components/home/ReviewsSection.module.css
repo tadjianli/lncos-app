@@ -1,4 +1,4 @@
-/* LN COS — Reviews carousel */
+/* LN COS — Reviews carousel (Framer Motion) */
 
 .section {
   position: relative;
@@ -77,20 +77,29 @@
   color: var(--ink-mute);
 }
 
-/* ── Carousel track ── */
+/* ── Carousel viewport — clips overflow, no scroll ── */
+
+.viewport {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  padding: 4px 0 10px;
+}
+
+/* ── Draggable track — Framer Motion controls position ── */
 
 .track {
   display: flex;
   gap: 14px;
-  overflow-x: auto;
-  padding: 4px 18px 10px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-  z-index: 1;
-  scrollbar-width: none;
+  padding: 0 18px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.track::-webkit-scrollbar { display: none; }
+
+.track:active {
+  cursor: grabbing;
+}
 
 /* ── Review card ── */
 
@@ -101,18 +110,24 @@
   background: var(--charcoal-2);
   border: 1px solid rgba(212,175,55,.13);
   border-radius: var(--r-lg);
-  padding: 20px;
-  scroll-snap-align: start;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
   box-shadow: 0 8px 32px -12px rgba(0,0,0,.55);
   transition: border-color 300ms, box-shadow 300ms;
 }
+
 .card:hover {
   border-color: rgba(212,175,55,.28);
   box-shadow: 0 12px 40px -12px rgba(0,0,0,.7), 0 0 0 1px rgba(212,175,55,.08);
+}
+
+/* ── Card inner — receives parallax x transform ── */
+
+.cardInner {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 20px;
+  position: relative;
 }
 
 .cardGlow {
@@ -221,12 +236,13 @@
   align-self: flex-start;
   transition: background 200ms, border-color 200ms;
 }
+
 .productPill:hover {
   background: rgba(212,175,55,.14);
   border-color: rgba(212,175,55,.38);
 }
 
-/* ── Pagination dots ── */
+/* ── Pagination dots — width/background animated by Framer Motion ── */
 
 .dots {
   display: flex;
@@ -238,19 +254,12 @@
 }
 
 .dot {
-  width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--charcoal-3);
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: background 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
-              width    280ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.dot.active {
-  background: var(--gold);
-  width: 20px;
+  /* width and background are driven by Framer Motion animate */
 }
 
 /* ── Swipe hint ── */
