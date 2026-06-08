@@ -78,10 +78,10 @@ export function ReviewsModule() {
         </div>
         <div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "var(--adm-ink)", marginBottom: 2 }}>
-            Système d'avis — bientôt disponible
+            Système d&apos;avis — bientôt disponible
           </div>
           <div style={{ fontSize: 13, color: "var(--adm-ink-mute)" }}>
-            La collecte et modération d'avis sera disponible dans la prochaine phase. Les clients pourront laisser des avis après livraison.
+            La collecte et modération d&apos;avis sera disponible dans la prochaine phase. Les clients pourront laisser des avis après livraison.
           </div>
         </div>
       </div>

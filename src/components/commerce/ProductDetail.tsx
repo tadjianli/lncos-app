@@ -889,7 +889,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                   lineHeight: 1.5,
                 }}
               >
-                * Ingrédient d'origine naturelle certifié. Liste non exhaustive.
+                * Ingrédient d&apos;origine naturelle certifié. Liste non exhaustive.
               </div>
             </AccordionSection>
           </div>

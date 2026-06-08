@@ -30,7 +30,7 @@ export default function AppointmentsPage() {
     return store.on("appointments", load);
   }, []);
 
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
   const upcoming = appts.filter((a) => a.status !== "cancelled" && new Date(a.start).getTime() > now);
   const history  = appts.filter((a) => a.status === "cancelled" || new Date(a.start).getTime() <= now);
 

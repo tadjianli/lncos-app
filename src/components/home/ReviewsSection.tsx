@@ -173,6 +173,8 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
   const [vw, setVw] = useState(360);
   /* skeleton loading state */
   const [loading, setLoading] = useState(true);
+  /* tracks active drag to avoid reading ref during render */
+  const [isDragging, setIsDragging] = useState(false);
 
   const vpRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, id: -1, sx: 0, lastUnit: 0, vel: 0 });
@@ -214,6 +216,7 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
   /* ---- pointer drag handlers ---- */
   const onDown = (e: React.PointerEvent) => {
     dragRef.current = { active: true, id: e.pointerId, sx: e.clientX, lastUnit: 0, vel: 0 };
+    setIsDragging(true);
     try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {}
   };
   const onMove = (e: React.PointerEvent) => {
@@ -231,6 +234,7 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
     const momentum = Math.max(-1, Math.min(1, Math.round(d.vel * 6)));
     const target = Math.round(active + d.lastUnit + momentum);
     d.active = false;
+    setIsDragging(false);
     setActive(target);
     setDrag(0);
   };
@@ -272,7 +276,7 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
           zIndex: 100 - Math.round(aPos * 10),
           filter: blur ? `blur(${blur}px)` : "none",
           /* CSS transition — exactly as handoff (no spring physics) */
-          transition: dragRef.current.active
+          transition: isDragging
             ? "none"
             : "transform .6s cubic-bezier(.22,.7,0,1), opacity .5s ease, filter .5s ease",
           pointerEvents: aPos > 1.5 ? "none" : "auto",

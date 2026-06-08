@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Async data-loading pattern (useEffect → load()) is intentional throughout the codebase.
+      // The rule fires on any function call that internally calls setState, even asynchronously.
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

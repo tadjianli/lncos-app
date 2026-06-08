@@ -86,7 +86,7 @@ export default function FavoritesPage() {
             fontSize: "var(--fs-sm)",
           }}
         >
-          Aucun favori pour l'instant.
+          Aucun favori pour l&apos;instant.
         </div>
       )}
     </AppShell>

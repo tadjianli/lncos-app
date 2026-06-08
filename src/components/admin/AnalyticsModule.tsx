@@ -100,7 +100,7 @@ export function AnalyticsModule() {
       <div className="adm-topbar">
         <div>
           <h1 className="adm-h1">Statistiques</h1>
-          <p className="adm-sub">Vue d'ensemble des performances LN COS</p>
+          <p className="adm-sub">Vue d&apos;ensemble des performances LN COS</p>
         </div>
         <button className="adm-btn ghost" onClick={load}>
           <Icon name="sliders" size={14} /> Actualiser
@@ -206,7 +206,7 @@ export function AnalyticsModule() {
             <div className="adm-card-head">
               <div>
                 <div className="adm-card-title">Top 5 produits</div>
-                <div className="adm-card-sub">Classés par chiffre d'affaires généré</div>
+                <div className="adm-card-sub">Classés par chiffre d&apos;affaires généré</div>
               </div>
             </div>
             {kpi.topProducts.length === 0 ? (

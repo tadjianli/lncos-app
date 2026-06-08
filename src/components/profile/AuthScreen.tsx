@@ -256,7 +256,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
             onClick={onClose}
             style={{ fontSize: 13, color: "var(--ink-mute)", fontWeight: 500, textDecoration: "underline", textDecorationColor: "rgba(255,255,255,.2)", cursor: "pointer", background: "none", border: "none" }}
           >
-            Continuer en tant qu'invité →
+            Continuer en tant qu&apos;invité →
           </button>
         </div>
       </div>

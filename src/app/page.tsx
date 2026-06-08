@@ -445,7 +445,7 @@ function EditoPromo() {
           <Icon name="sparkle" size={11} /> Édition Limitée
         </span>
         <div className="edito-h">
-          L'art de la{" "}
+          L&apos;art de la{" "}
           <span className="it gold-text">séduction</span>
         </div>
         <div className="edito-p">
@@ -513,9 +513,9 @@ function QuoteSection() {
   return (
     <div className="home-quote">
       <div className="home-quote-glow" />
-      <div className="home-quote-mark">"</div>
+      <div className="home-quote-mark">&quot;</div>
       <div className="home-quote-txt">
-        La beauté commence à l'instant où vous décidez d'être{" "}
+        La beauté commence à l&apos;instant où vous décidez d&apos;être{" "}
         <span className="hl">vous-même</span>.
       </div>
       <div className="home-quote-by">— La maison LN COS</div>
@@ -841,7 +841,7 @@ export default function HomePage() {
           return null;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [handleAdd, handleFav, handleOpen, isFav, openListing, productsBySource]
   );
 

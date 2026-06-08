@@ -318,7 +318,7 @@ function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: 
                 touchAction: "manipulation",
               }}
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </button>
           </div>
 
@@ -702,7 +702,7 @@ function BookingWizard({
           <div>
             {!draft.date ? (
               <p style={{ color: "var(--ink-mute)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>
-                Sélectionnez d'abord une date.
+                Sélectionnez d&apos;abord une date.
               </p>
             ) : (
               <>

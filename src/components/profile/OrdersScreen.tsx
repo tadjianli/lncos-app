@@ -255,7 +255,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
               </div>
               <div style={{ fontSize: 10, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--gold)", fontWeight: 700, marginBottom: 10 }}>Connexion requise</div>
               <h3 style={{ margin: "0 0 10px", fontSize: 21, fontWeight: 700, color: "var(--ink)", lineHeight: 1.2 }}>Connectez-vous</h3>
-              <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.55, maxWidth: 230 }}>Créez un compte ou connectez-vous pour voir l'historique de vos commandes.</p>
+              <p style={{ margin: 0, fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.55, maxWidth: 230 }}>Créez un compte ou connectez-vous pour voir l&apos;historique de vos commandes.</p>
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 72, paddingBottom: 40, paddingLeft: 24, paddingRight: 24, textAlign: "center" }}>

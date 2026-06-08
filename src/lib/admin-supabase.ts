@@ -239,6 +239,7 @@ export function useAppointments(weekStart: Date) {
 
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
+  const weekStartKey = weekStart.toISOString();
 
   const load = useCallback(async () => {
     const { data } = await getSupabase()
@@ -250,7 +251,7 @@ export function useAppointments(weekStart: Date) {
     setAppointments((data ?? []).map(dbToAppointment));
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekStart.toISOString()]);
+  }, [weekStartKey]);
 
   useEffect(() => {
     load();

@@ -258,7 +258,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                   Membre Or
                 </div>
                 <div style={{ fontSize: 10, color: "rgba(212,175,55,.4)", fontWeight: 600 }}>
-                  Valable jusqu'au 12/26
+                  Valable jusqu&apos;au 12/26
                 </div>
               </div>
             </div>

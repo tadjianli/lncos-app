@@ -507,7 +507,7 @@ function ServiceModal({ svc, onClose, onSave }: {
   onSave: (s: Service) => void;
 }) {
   const isNew = !svc;
-  const [form, setForm] = useState<Service>(svc ?? {
+  const [form, setForm] = useState<Service>(() => svc ?? {
     id: `svc-${Date.now()}`,
     cat: "manucure",
     name: "",
