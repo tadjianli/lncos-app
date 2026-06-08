@@ -13,11 +13,22 @@
   --color-gold:            var(--gold);
   --color-gold-light:      var(--gold-light);
   --color-gold-muted:      var(--gold-muted);
+  --color-gold-stat:       var(--gold-stat);
   --color-obsidian:        var(--obsidian);
   --color-obsidian-card:   var(--obsidian-card);
   --color-obsidian-border: var(--obsidian-border);
   --color-cream:           var(--cream);
   --color-cream-muted:     var(--cream-muted);
+
+  /* Pink palette */
+  --color-pink:            var(--pink);
+  --color-pink-light:      var(--pink-light);
+  --color-pink-btn:        var(--pink-btn);
+  --color-pink-icon-bg:    var(--pink-icon-bg);
+
+  /* Warm surfaces */
+  --color-surface-warm:    var(--surface-warm);
+  --color-surface-warm2:   var(--surface-warm2);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
@@ -71,11 +82,36 @@
   --gold-light:  #DDB97A;
   --gold-bright: #E8C882;
   --gold-muted:  #9A7A4A;
+  --gold-stat:   #D4A820;
   --gold-dim:    rgba(201, 169, 110, 0.12);
   --gold-glow:   rgba(201, 169, 110, 0.20);
 
+  /* Gold CTA gradient */
+  --gold-cta-from: #B8900C;
+  --gold-cta-mid:  #D4AE20;
+  --gold-cta-to:   #C49A15;
+  --gold-cta-icon: #A07A08;
+
+  /* Pink palette — from Claude Design */
+  --pink:          #EFBDD0;
+  --pink-light:    #F9DDE8;
+  --pink-mid:      #DDA8C0;
+  --pink-btn:      #CC96AE;
+  --pink-icon-bg:  #F5CED8;
+  --pink-icon:     #C07090;
+  --pink-heart:    #E898B8;
+  --pink-dim:      rgba(239, 189, 208, 0.15);
+
+  /* Warm dark surfaces — from Claude Design */
+  --surface-warm:  #1E1812;
+  --surface-warm2: #231D14;
+  --surface-warm3: #2A2118;
+  --icon-warm:     #2E2418;
+  --icon-cool:     #252525;
+  --divider-warm:  rgba(255, 255, 255, 0.07);
+
   /* Obsidian palette */
-  --obsidian:        #080808;
+  --obsidian:        #000000;
   --obsidian-soft:   #0A0A0A;
   --obsidian-card:   #111111;
   --obsidian-raised: #171717;
@@ -84,10 +120,10 @@
   --obsidian-line:   rgba(255, 255, 255, 0.045);
 
   /* Cream palette */
-  --cream:        #F0EBE0;
-  --cream-bright: #FAF6EF;
-  --cream-muted:  #9C9284;
-  --cream-dim:    rgba(240, 235, 224, 0.07);
+  --cream:        #FFFFFF;
+  --cream-bright: #FFFFFF;
+  --cream-muted:  #8A8888;
+  --cream-dim:    rgba(255, 255, 255, 0.07);
 
   /* Shadcn semantic tokens — LN COS wired */
   --background:          #080808;
