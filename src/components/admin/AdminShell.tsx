@@ -18,7 +18,7 @@ export function AdminShell({ children }: AdminShellProps) {
   const handleLogout = useCallback(async () => {
     setLoggingOut(true);
     await getSupabase().auth.signOut();
-    router.push("/admin/login");
+    router.push("/login");
     router.refresh();
   }, [router]);
 
