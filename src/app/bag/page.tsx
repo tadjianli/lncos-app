@@ -3,13 +3,15 @@
  * LN COS — Cart + Checkout pages (from handoff screens-cart.jsx)
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { SubHeader, PinkBtn, GoldBtn } from "@/components/shared/ActionButtons";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
+import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
+import { getSupabase } from "@/lib/supabase";
 
 /* ─── Row helper ─────────────────────────────────────────────── */
 function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?: boolean }) {
@@ -25,20 +27,46 @@ function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?
 
 /* ─── Checkout steps ─────────────────────────────────────────── */
 function StepAddress() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName,  setLastName]  = useState("");
+  const [address,   setAddress]   = useState("");
+  const [zip,       setZip]       = useState("");
+  const [city,      setCity]      = useState("");
+  const [phone,     setPhone]     = useState("");
+
+  useEffect(() => {
+    getSupabase().auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const full = user.user_metadata?.full_name ?? "";
+      const parts = full.trim().split(" ");
+      setFirstName(parts[0] ?? "");
+      setLastName(parts.slice(1).join(" ") ?? "");
+    });
+  }, []);
+
+  const fields: [string, string, React.Dispatch<React.SetStateAction<string>>, boolean][] = [
+    ["Prénom", firstName, setFirstName, true],
+    ["Nom", lastName, setLastName, true],
+    ["Adresse", address, setAddress, false],
+    ["Code postal", zip, setZip, true],
+    ["Ville", city, setCity, true],
+    ["Téléphone", phone, setPhone, false],
+  ];
+
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
       <h3 style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)", margin: "0 0 16px" }}>
         Adresse de livraison
       </h3>
-      {[
-        ["Prénom", "Emma", true], ["Nom", "Dubois", true],
-        ["Adresse", "24 rue de la Beauté", false],
-        ["Code postal", "75008", true], ["Ville", "Paris", true],
-        ["Téléphone", "+33 6 12 34 56 78", false],
-      ].map(([label, value, half]) => (
-        <div key={label as string} style={{ flex: half ? "1 1 0" : "1 1 100%", marginBottom: 14, display: "inline-block", width: half ? "calc(50% - 6px)" : "100%", marginRight: half ? "12px" : 0 }}>
+      {fields.map(([label, value, setter, half]) => (
+        <div key={label} style={{ flex: half ? "1 1 0" : "1 1 100%", marginBottom: 14, display: "inline-block", width: half ? "calc(50% - 6px)" : "100%", marginRight: half ? "12px" : 0 }}>
           <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 500 }}>{label}</div>
-          <div style={{ padding: "13px 16px", borderRadius: "var(--r-sm)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.07)", color: "var(--ink)", fontSize: 13.5 }}>{value}</div>
+          <input
+            value={value}
+            onChange={(e) => setter(e.target.value)}
+            style={{ padding: "13px 16px", borderRadius: "var(--r-sm)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.07)", color: "var(--ink)", fontSize: 13.5, width: "100%", boxSizing: "border-box", outline: "none" }}
+            placeholder={label}
+          />
         </div>
       ))}
     </div>
@@ -279,6 +307,7 @@ function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: ()
   const [orderRef, setOrderRef] = useState("LN-……");
   const cart = useStore((s) => s.cart);
   const clearCart = useStore((s) => s.clearCart);
+  const earnPoints = useLoyaltyStore((s) => s.earnPoints);
 
   const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
   const shipping  = subtotal > 50 ? 0 : 4.90;
@@ -306,7 +335,11 @@ function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: ()
           }),
         });
         const data = await res.json();
-        setOrderRef(data.ref ?? "LN-??????");
+        const ref = data.ref ?? "LN-??????";
+        setOrderRef(ref);
+        // Award 2 loyalty points per euro spent
+        const pts = Math.floor(total * 2);
+        if (pts > 0) earnPoints(pts, `Commande #${ref}`, data.id);
       } catch {
         setOrderRef("LN-??????");
       } finally {

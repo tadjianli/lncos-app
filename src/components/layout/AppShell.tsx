@@ -36,6 +36,7 @@ const NotificationsScreen = lazy(() => import("@/components/profile/Notification
 const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then(m => ({ default: m.OrdersScreen })));
 // z:90 — full-shell overlays (cover main + nav)
 const ReelsScreen         = lazy(() => import("@/components/commerce/ReelsScreen").then(m => ({ default: m.ReelsScreen })));
+const AuthScreen          = lazy(() => import("@/components/profile/AuthScreen").then(m => ({ default: m.AuthScreen })));
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -151,6 +152,9 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
       <Suspense fallback={null}>
         {overlay?.type === "reels" && (
           <ReelsScreen onClose={closeOverlay} />
+        )}
+        {overlay?.type === "auth" && (
+          <AuthScreen onClose={closeOverlay} />
         )}
       </Suspense>
 

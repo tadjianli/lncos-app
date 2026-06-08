@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader, PinkBtn } from "@/components/shared/ActionButtons";
+import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 
 /* ─── Data ──────────────────────────────────────────────────────────────── */
 
@@ -16,23 +17,13 @@ const TIERS = [
   { key: "platine", label: "Platine", min: 2000 },
 ];
 
-const USER_PTS = 1240;
-const CURRENT_TIER_IDX = 2; // Or
-
 const REWARDS = [
-  { i: "gift",    t: "-15% sur tout",            s: "500 pts",   unlocked: true  },
-  { i: "truck",   t: "Livraison express offerte", s: "800 pts",   unlocked: true  },
-  { i: "sparkle", t: "Coffret découverte",        s: "1 500 pts", unlocked: false },
-  { i: "crown",   t: "Soin VIP exclusif",         s: "2 500 pts", unlocked: false },
-  { i: "star",    t: "Accès vente privée",         s: "3 000 pts", unlocked: false },
-  { i: "heart",   t: "Cadeau anniversaire",        s: "4 000 pts", unlocked: false },
-];
-
-const TRANSACTIONS = [
-  { d: "4 juin",  t: "Achat #LN-2480",          pts: 240, icon: "bag"   },
-  { d: "28 mai",  t: "Achat #LN-2461",          pts: 100, icon: "bag"   },
-  { d: "15 mai",  t: "Parrainage ami",           pts: 500, icon: "heart" },
-  { d: "1 mai",   t: "Inscription programme",   pts: 400, icon: "crown" },
+  { i: "gift",    t: "-15% sur tout",            s: "500 pts",   threshold: 500  },
+  { i: "truck",   t: "Livraison express offerte", s: "800 pts",   threshold: 800  },
+  { i: "sparkle", t: "Coffret découverte",        s: "1 500 pts", threshold: 1500 },
+  { i: "crown",   t: "Soin VIP exclusif",         s: "2 500 pts", threshold: 2500 },
+  { i: "star",    t: "Accès vente privée",         s: "3 000 pts", threshold: 3000 },
+  { i: "heart",   t: "Cadeau anniversaire",        s: "4 000 pts", threshold: 4000 },
 ];
 
 /* ─── Component ─────────────────────────────────────────────────────────── */
@@ -42,24 +33,28 @@ interface LoyaltyScreenProps {
 }
 
 export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
+  const userPts      = useLoyaltyStore((s) => s.points);
+  const tierKey      = useLoyaltyStore((s) => s.tier());
+  const transactions = useLoyaltyStore((s) => s.transactions);
+
+  const tierIdx = TIERS.findIndex((t) => t.key === tierKey);
+  const currentTierIdx = tierIdx >= 0 ? tierIdx : 0;
+
   const [mounted, setMounted]     = useState(false);
   const [copied, setCopied]       = useState(false);
   const [displayPts, setDisplayPts] = useState(0);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Mount flag for progress bar
     const t = setTimeout(() => setMounted(true), 60);
 
-    // Animated count-up for points
     const DURATION = 1600;
     const startTime = performance.now();
     const tick = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / DURATION);
-      // cubic ease-out
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayPts(Math.round(eased * USER_PTS));
+      setDisplayPts(Math.round(eased * userPts));
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       }
@@ -70,15 +65,15 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
       clearTimeout(t);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [userPts]);
 
-  const nextTier    = TIERS[CURRENT_TIER_IDX + 1];
-  const currTierMin = TIERS[CURRENT_TIER_IDX].min;
+  const nextTier    = TIERS[currentTierIdx + 1];
+  const currTierMin = TIERS[currentTierIdx].min;
   const nextTierMin = nextTier?.min ?? currTierMin;
-  const ptsInTier   = USER_PTS - currTierMin;
+  const ptsInTier   = userPts - currTierMin;
   const tierRange   = nextTierMin - currTierMin;
-  const pct         = Math.min(100, Math.round((ptsInTier / tierRange) * 100));
-  const ptsToNext   = nextTierMin - USER_PTS;
+  const pct         = Math.min(100, Math.round((ptsInTier / (tierRange || 1)) * 100));
+  const ptsToNext   = nextTierMin - userPts;
 
   function handleCopy() {
     navigator.clipboard?.writeText("LNCOS-VIP").catch(() => {});
@@ -353,7 +348,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                 }}
               >
                 <span style={{ fontSize: 11, color: "rgba(0,0,0,.5)", fontWeight: 600 }}>
-                  {USER_PTS} pts
+                  {userPts} pts
                 </span>
                 <span style={{ fontSize: 11, color: "rgba(0,0,0,.5)", fontWeight: 600 }}>
                   {ptsToNext} pts → Platine
@@ -429,9 +424,9 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
             className="noscroll"
           >
             {TIERS.map((tier, idx) => {
-              const isActive = idx === CURRENT_TIER_IDX;
-              const isPast   = idx < CURRENT_TIER_IDX;
-              const isFuture = idx > CURRENT_TIER_IDX;
+              const isActive = idx === currentTierIdx;
+              const isPast   = idx < currentTierIdx;
+              const isFuture = idx > currentTierIdx;
               return (
                 <div
                   key={tier.key}
@@ -528,13 +523,13 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                   style={{
                     padding: 16,
                     borderRadius: "var(--r-md)",
-                    background: r.unlocked
+                    background: userPts >= r.threshold
                       ? "rgba(251,239,228,.06)"
                       : "var(--charcoal)",
-                    border: r.unlocked
+                    border: userPts >= r.threshold
                       ? "1px solid rgba(212,175,55,.25)"
                       : "1px solid rgba(255,255,255,.05)",
-                    opacity: r.unlocked ? 1 : 0.65,
+                    opacity: userPts >= r.threshold ? 1 : 0.65,
                     display: "flex",
                     flexDirection: "column",
                     gap: 10,
@@ -546,10 +541,10 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                       width: 40,
                       height: 40,
                       borderRadius: 12,
-                      background: r.unlocked
+                      background: userPts >= r.threshold
                         ? "linear-gradient(135deg,rgba(240,217,140,.2),rgba(212,175,55,.15))"
                         : "rgba(255,255,255,.06)",
-                      border: r.unlocked
+                      border: userPts >= r.threshold
                         ? "1px solid rgba(212,175,55,.3)"
                         : "1px solid rgba(255,255,255,.06)",
                       display: "grid",
@@ -557,9 +552,9 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                     }}
                   >
                     <Icon
-                      name={r.unlocked ? r.i : "lock"}
+                      name={userPts >= r.threshold ? r.i : "lock"}
                       size={18}
-                      color={r.unlocked ? "#D4AF37" : "rgba(255,255,255,.3)"}
+                      color={userPts >= r.threshold ? "#D4AF37" : "rgba(255,255,255,.3)"}
                       stroke={1.8}
                     />
                   </div>
@@ -570,7 +565,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                       style={{
                         fontSize: 12,
                         fontWeight: 700,
-                        color: r.unlocked ? "var(--ink)" : "var(--ink-mute)",
+                        color: userPts >= r.threshold ? "var(--ink)" : "var(--ink-mute)",
                         lineHeight: 1.35,
                         marginBottom: 4,
                         overflow: "hidden",
@@ -585,15 +580,15 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                       style={{
                         fontSize: 11,
                         fontWeight: 600,
-                        color: r.unlocked ? "var(--gold)" : "var(--ink-mute)",
+                        color: userPts >= r.threshold ? "var(--gold)" : "var(--ink-mute)",
                       }}
                     >
-                      {r.unlocked ? r.s : `${r.s} requis`}
+                      {userPts >= r.threshold ? r.s : `${r.s} requis`}
                     </div>
                   </div>
 
                   {/* CTA */}
-                  {r.unlocked ? (
+                  {userPts >= r.threshold ? (
                     <button
                       style={{
                         width: "100%",
@@ -656,68 +651,71 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                 overflow: "hidden",
               }}
             >
-              {TRANSACTIONS.map((tx, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "14px 16px",
-                    borderBottom:
-                      i < TRANSACTIONS.length - 1
-                        ? "1px solid rgba(255,255,255,.05)"
-                        : "none",
-                  }}
-                >
-                  {/* Icon */}
+              {transactions.length === 0 ? (
+                <div style={{ padding: "24px 16px", textAlign: "center", color: "var(--ink-mute)", fontSize: 13 }}>
+                  Aucune transaction pour l&apos;instant.
+                </div>
+              ) : transactions.slice(0, 10).map((tx, i) => {
+                const date = new Date(tx.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+                const iconName = tx.description.includes("ommande") ? "bag" : tx.description.includes("inscription") ? "crown" : tx.description.includes("arrainag") ? "heart" : "sparkle";
+                return (
                   <div
+                    key={tx.id}
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "50%",
-                      background: "rgba(212,175,55,.1)",
-                      border: "1px solid rgba(212,175,55,.2)",
-                      display: "grid",
-                      placeItems: "center",
-                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      padding: "14px 16px",
+                      borderBottom:
+                        i < Math.min(transactions.length, 10) - 1
+                          ? "1px solid rgba(255,255,255,.05)"
+                          : "none",
                     }}
                   >
-                    <Icon name={tx.icon} size={16} color="#D4AF37" stroke={1.8} />
-                  </div>
-
-                  {/* Text */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: "var(--ink)",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+                        width: 38,
+                        height: 38,
+                        borderRadius: "50%",
+                        background: tx.type === "redeem" ? "rgba(247,198,215,.1)" : "rgba(212,175,55,.1)",
+                        border: tx.type === "redeem" ? "1px solid rgba(247,198,215,.2)" : "1px solid rgba(212,175,55,.2)",
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
                       }}
                     >
-                      {tx.t}
+                      <Icon name={iconName} size={16} color={tx.type === "redeem" ? "#F7C6D7" : "#D4AF37"} stroke={1.8} />
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>
-                      {tx.d}
-                    </div>
-                  </div>
 
-                  {/* Points */}
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#D4AF37",
-                      flexShrink: 0,
-                    }}
-                  >
-                    +{tx.pts} pts
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "var(--ink)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {tx.description}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>{date}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: tx.type === "redeem" ? "var(--pink)" : "#D4AF37",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {tx.type === "redeem" ? "-" : "+"}{tx.pts} pts
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

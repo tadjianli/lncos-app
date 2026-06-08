@@ -26,7 +26,8 @@ export type OverlayType =
   | "notifications"
   | "orders"
   | "appointments"
-  | "reels";
+  | "reels"
+  | "auth";
 
 export interface Category {
   id: string;
@@ -80,6 +81,7 @@ interface AppStore {
   openOrders: () => void;
   openAppointments: () => void;
   openReels: () => void;
+  openAuth: () => void;
   closeOverlay: () => void;
 }
 
@@ -181,6 +183,9 @@ export const useStore = create<AppStore>()(
       },
       openReels() {
         set({ overlay: { type: "reels" } });
+      },
+      openAuth() {
+        set({ overlay: { type: "auth" } });
       },
       closeOverlay() {
         set({ overlay: null });
