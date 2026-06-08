@@ -496,7 +496,7 @@ export default function RdvPage() {
 
   return (
     <AppShell>
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {/* Page content */}
         <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "6px 0 26px" }}>
           {/* Hero */}

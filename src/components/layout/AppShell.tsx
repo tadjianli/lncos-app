@@ -1,37 +1,44 @@
 "use client";
 /**
  * LN COS — Unified AppShell
- * All client screens render inside this shell.
  *
- * z-index layers:
- *   0   background / ambient
- *  10   main content
- *  30   TopBar
- *  40   BottomNav
- *  70   Toast
- *  80   Product / Search / Listing / Profile overlays
- *  90   Side menu / Booking wizard
+ * Architecture: fixed viewport container — the only element with height.
+ *   html/body  : height 100dvh, overflow hidden (no document scroll)
+ *   AppShell   : position fixed, top→left→right→bottom 0, max-width 480px,
+ *                centered via left:50% + translateX(-50%)
+ *                → flex column, clips at exact viewport height
+ *   main       : flex:1 1 auto, min-height:0, overflow hidden
+ *                → individual screens own their internal scroll
+ *   BottomNav  : flex-shrink:0, in-flow at the bottom of the column
+ *                → NEVER jumps, NEVER decoupled from content
+ *
+ * Overlay z-index layers (all position:absolute within AppShell):
+ *   70  Toast          — floats above nav
+ *   80  Content overlays (product detail, listing, search, profile sub-screens)
+ *       → cover `main` only (nav stays visible)
+ *   90  Shell modals (side menu, booking wizard)
+ *       → cover entire AppShell including nav
  */
 
 import { useEffect, lazy, Suspense } from "react";
 import { BottomNav } from "./BottomNav";
-import { Toast } from "./Toast";
 import { SideMenu } from "./SideMenu";
+import { Toast } from "./Toast";
 import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/store";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 
-// Lazy-load overlay screens to keep initial bundle small
-const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then((m) => ({ default: m.ProductDetail })));
-const ListingScreen       = lazy(() => import("@/components/commerce/ListingScreen").then((m) => ({ default: m.ListingScreen })));
-const SearchScreen        = lazy(() => import("@/components/commerce/SearchScreen").then((m) => ({ default: m.SearchScreen })));
-const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then((m) => ({ default: m.LoyaltyScreen })));
-const NotificationsScreen = lazy(() => import("@/components/profile/NotificationsScreen").then((m) => ({ default: m.NotificationsScreen })));
-const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then((m) => ({ default: m.OrdersScreen })));
+// Lazy-load overlay screens — keep initial bundle small
+const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
+const ListingScreen       = lazy(() => import("@/components/commerce/ListingScreen").then(m => ({ default: m.ListingScreen })));
+const SearchScreen        = lazy(() => import("@/components/commerce/SearchScreen").then(m => ({ default: m.SearchScreen })));
+const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then(m => ({ default: m.LoyaltyScreen })));
+const NotificationsScreen = lazy(() => import("@/components/profile/NotificationsScreen").then(m => ({ default: m.NotificationsScreen })));
+const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then(m => ({ default: m.OrdersScreen })));
 
 interface AppShellProps {
   children: React.ReactNode;
   bottomNav?: boolean;
-  // backward-compat props
+  // legacy props — kept for backward-compat, not used
   topBar?: boolean;
   transparentTopBar?: boolean;
   cartCount?: number;
@@ -39,10 +46,10 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, bottomNav = true }: AppShellProps) {
-  const toast      = useStore(selectToast);
-  const storeCount = useStore(selectCartCount);
-  const overlay    = useStore(selectOverlay);
-  const closeOverlay = useStore((s) => s.closeOverlay);
+  const toast        = useStore(selectToast);
+  const cartCount    = useStore(selectCartCount);
+  const overlay      = useStore(selectOverlay);
+  const closeOverlay = useStore(s => s.closeOverlay);
 
   const mode = typeof window !== "undefined"
     ? getRenderModeFromSearch(window.location.search)
@@ -50,87 +57,110 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
 
   const navVisible = bottomNav && showNav(mode);
 
-  // Lock body scroll when modal overlay is open
-  const isModal = overlay?.type === "booking" || overlay?.type === "side-menu";
+  // When a full-shell modal is open (side menu / booking from rdv page),
+  // prevent any accidental touch-scroll on the body layer.
+  const isShellModal = overlay?.type === "side-menu";
   useEffect(() => {
-    document.body.style.overflow = isModal ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [isModal]);
+    // Body is already overflow:hidden via globals.css — this is a no-op
+    // guard kept for any future dynamic body changes.
+    if (isShellModal) {
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.touchAction = "";
+    }
+    return () => { document.body.style.touchAction = ""; };
+  }, [isShellModal]);
+
+  // Nav height constant used for Toast positioning
+  // 10px top + 26px bottom padding + ~34px icon+label ≈ 70px; safe-area adds more
+  const NAV_H = "calc(4.5rem + env(safe-area-inset-bottom, 0px))";
 
   return (
     <div
       data-render-mode={mode}
       style={{
-        position: "relative",
-        minHeight: "100dvh",
+        /* ─── Fixed viewport container ─────────────────────── */
+        position: "fixed",
+        top: 0,
+        bottom: 0,
+        left: "50%",
+        transform: "translateX(-50%)",
         width: "100%",
         maxWidth: 480,
-        marginLeft: "auto",
-        marginRight: "auto",
-        background: "var(--noir)",
+
+        /* ─── Flex column: content → nav ───────────────────── */
         display: "flex",
         flexDirection: "column",
+
+        /* ─── Appearance ────────────────────────────────────── */
+        background: "var(--noir)",
+
+        /* ─── Clip children to viewport bounds ─────────────── */
+        overflow: "hidden",
+
+        /* ─── Stacking context ──────────────────────────────── */
         isolation: "isolate",
       }}
     >
-      {/* ── Main content ── */}
+      {/* ── Content area (flex:1, clips to its bounds) ─────── */}
+      {/*    z:80 overlays sit here — they cover content, NOT nav */}
       <main
         style={{
           flex: "1 1 auto",
-          paddingBottom: navVisible ? "calc(5rem + env(safe-area-inset-bottom))" : 0,
-          position: "relative",
+          minHeight: 0,          // allow flex child to shrink below content size
+          position: "relative",  // contains absolute overlays
+          overflow: "hidden",    // clips z:80 overlays to content area
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {children}
+
+        {/* ── z:80 content overlays ─────────────────────────── */}
+        <Suspense fallback={null}>
+          {overlay?.type === "product" && overlay.product && (
+            <ProductDetail product={overlay.product} onClose={closeOverlay} />
+          )}
+          {overlay?.type === "listing" && (
+            <ListingScreen category={overlay.category ?? null} onClose={closeOverlay} />
+          )}
+          {overlay?.type === "search" && (
+            <SearchScreen onClose={closeOverlay} />
+          )}
+          {overlay?.type === "loyalty" && (
+            <LoyaltyScreen onClose={closeOverlay} />
+          )}
+          {overlay?.type === "notifications" && (
+            <NotificationsScreen onClose={closeOverlay} />
+          )}
+          {overlay?.type === "orders" && (
+            <OrdersScreen onClose={closeOverlay} />
+          )}
+        </Suspense>
       </main>
 
-      {/* ── Bottom nav (z: 40) ── */}
-      {navVisible && <BottomNav cartCount={storeCount} />}
+      {/* ── BottomNav — in-flow flex child, always at bottom ── */}
+      {navVisible && <BottomNav cartCount={cartCount} />}
 
-      {/* ── Toast (z: 70) ── */}
+      {/* ── z:90 shell modals — cover main + nav ──────────── */}
+      {overlay?.type === "side-menu" && (
+        <SideMenu onClose={closeOverlay} />
+      )}
+
+      {/* ── Toast — floats above nav ────────────────────────── */}
       {toast && (
         <div
           style={{
-            position: "fixed",
-            left: "50%",
-            transform: "translateX(-50%)",
-            bottom: navVisible
-              ? "calc(5.5rem + env(safe-area-inset-bottom))"
-              : "1.5rem",
-            width: "calc(min(480px, 100vw) - 32px)",
-            zIndex: 70,
+            position: "absolute",
+            bottom: navVisible ? `calc(${NAV_H} + 0.75rem)` : "1.25rem",
+            left: "1rem",
+            right: "1rem",
+            zIndex: 75,
             pointerEvents: "none",
           }}
         >
           <Toast msg={toast.msg} icon={toast.icon} />
         </div>
-      )}
-
-      {/* ── Overlays (z: 80) ── */}
-      <Suspense fallback={null}>
-        {overlay?.type === "product" && overlay.product && (
-          <ProductDetail product={overlay.product} onClose={closeOverlay} />
-        )}
-        {overlay?.type === "listing" && (
-          <ListingScreen category={overlay.category ?? null} onClose={closeOverlay} />
-        )}
-        {overlay?.type === "search" && (
-          <SearchScreen onClose={closeOverlay} />
-        )}
-        {overlay?.type === "loyalty" && (
-          <LoyaltyScreen onClose={closeOverlay} />
-        )}
-        {overlay?.type === "notifications" && (
-          <NotificationsScreen onClose={closeOverlay} />
-        )}
-        {overlay?.type === "orders" && (
-          <OrdersScreen onClose={closeOverlay} />
-        )}
-      </Suspense>
-
-      {/* ── Side menu (z: 90) ── */}
-      {overlay?.type === "side-menu" && (
-        <SideMenu onClose={closeOverlay} />
       )}
     </div>
   );

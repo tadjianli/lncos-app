@@ -203,13 +203,12 @@
     padding: 0;
     font-family: var(--font-montserrat, 'Montserrat', system-ui, sans-serif);
     font-size: var(--fs-body);
-    background: var(--noir);
+    /* AppShell sets its own background — body shows behind the 480px boundary */
+    background: #040404;
     color: var(--ink);
-    min-height: 100dvh;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    overflow-x: hidden;
+    /* Lock the document — all scrolling happens inside AppShell containers */
+    height: 100dvh;
+    overflow: hidden;
   }
 
   button { font-family: inherit; cursor: pointer; border: none; background: none; }

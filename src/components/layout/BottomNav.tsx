@@ -1,10 +1,14 @@
 "use client";
+/**
+ * LN COS — Bottom nav
+ * In-flow flex child of AppShell — NOT position:fixed.
+ * AppShell is the fixed container; this element naturally sits at the bottom
+ * of the flex column with zero layout jumps.
+ */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
-
-/* ─── Nav items (exact from handoff ui.jsx BottomNav) ─────── */
 
 const NAV_ITEMS = [
   { href: "/",          id: "home",       icon: "home",   label: "Accueil"    },
@@ -23,22 +27,32 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40"
       style={{
-        flex: "0 0 auto",
+        /* ─── In-flow — NOT fixed ───────────────────────────── */
+        flexShrink: 0,
+
+        /* ─── Layout ────────────────────────────────────────── */
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
-        padding: "10px 8px 26px",
+
+        /* ─── Spacing: top pad + bottom safe-area ───────────── */
+        paddingTop: 10,
+        /* max(26px, safe-area) so home-bar devices get enough room */
+        paddingBottom: "max(26px, env(safe-area-inset-bottom, 0px))",
+        paddingLeft: 8,
+        paddingRight: 8,
+
+        /* ─── Appearance ────────────────────────────────────── */
         background: "rgba(10,10,10,.92)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderTop: "1px solid rgba(212,175,55,.14)",
-        paddingBottom: "max(26px, env(safe-area-inset-bottom))",
       }}
     >
-      {NAV_ITEMS.map((item) => {
-        const active = pathname === item.href;
+      {NAV_ITEMS.map(item => {
+        const active   = pathname === item.href ||
+                         (item.href !== "/" && pathname.startsWith(item.href));
         const showFill = active && (item.id === "favorites" || item.id === "cart");
 
         return (
@@ -81,6 +95,7 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
                     fontWeight: 700,
                     display: "grid",
                     placeItems: "center",
+                    lineHeight: 1,
                   }}
                 >
                   {cartCount}

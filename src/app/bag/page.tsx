@@ -336,7 +336,7 @@ export default function BagPage() {
 
   return (
     <AppShell>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+      <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {screen === "cart" ? (
           <CartScreen onCheckout={() => setScreen("checkout")} />
         ) : (

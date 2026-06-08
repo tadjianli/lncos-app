@@ -664,10 +664,10 @@ export default function HomePage() {
       {/* Top bar */}
       <TopBar onMenuClick={openSideMenu} onSearchClick={openSearch} />
 
-      {/* Scrollable content */}
+      {/* Scrollable content — fills remaining flex space in AppShell */}
       <div
         className="noscroll"
-        style={{ overflowY: "auto", overflowX: "hidden", paddingBottom: 28 }}
+        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 28 }}
       >
         {/* Hero */}
         <div className="home-z">
