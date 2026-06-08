@@ -7,10 +7,11 @@ import { Icon } from "@/components/shared/Icon";
 import { useProducts } from "@/lib/admin-supabase";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
-function ProductEditModal({ product, onClose, onSave }: {
+function ProductEditModal({ product, onClose, onSave, isNew }: {
   product: Product;
   onClose: () => void;
   onSave: (p: Product) => void;
+  isNew?: boolean;
 }) {
   const [form, setForm] = useState({ ...product });
 
@@ -22,7 +23,7 @@ function ProductEditModal({ product, onClose, onSave }: {
     <div className="ab-modal-overlay" onClick={onClose}>
       <div className="ab-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ab-modal-head">
-          <div className="ab-modal-title">Modifier · {product.name}</div>
+          <div className="ab-modal-title">{isNew ? "Nouveau produit" : `Modifier · ${product.name}`}</div>
           <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
         </div>
 
@@ -74,7 +75,7 @@ function ProductEditModal({ product, onClose, onSave }: {
         <div className="ab-modal-foot">
           <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
           <button className="adm-btn gold" onClick={() => onSave(form)}>
-            <Icon name="check" size={15} /> Enregistrer
+            <Icon name="check" size={15} /> {isNew ? "Créer" : "Enregistrer"}
           </button>
         </div>
       </div>
@@ -82,12 +83,35 @@ function ProductEditModal({ product, onClose, onSave }: {
   );
 }
 
+const BLANK_PRODUCT: Product = {
+  id: "__new__",
+  name: "",
+  cat: "visage",
+  price: 0,
+  old: null,
+  ml: "",
+  rating: 5,
+  reviews: 0,
+  tag: null,
+  stock: 0,
+  variants: [],
+  desc: "",
+  ingredients: [],
+};
+
 /* ── Products module ────────────────────────────────────────────────── */
 export function ProductsModule() {
-  const { products, loading, updateProduct, deleteProduct } = useProducts();
+  const { products, loading, updateProduct, insertProduct, deleteProduct } = useProducts();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [creatingProduct, setCreatingProduct] = useState(false);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
 
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
@@ -98,6 +122,19 @@ export function ProductsModule() {
   async function handleSave(updated: Product) {
     await updateProduct(updated.id, updated);
     setEditingProduct(null);
+    showToast("Produit enregistré");
+  }
+
+  async function handleCreate(p: Product) {
+    await insertProduct(p);
+    setCreatingProduct(false);
+    showToast("Produit créé");
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Supprimer ce produit ? Cette action est irréversible.")) return;
+    await deleteProduct(id);
+    showToast("Produit supprimé");
   }
 
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? id;
@@ -118,7 +155,7 @@ export function ProductsModule() {
               {loading ? "Chargement…" : `${products.length} produits · ${products.filter((p) => p.stock === 0).length} épuisés`}
             </div>
           </div>
-          <button className="adm-btn gold">
+          <button className="adm-btn gold" onClick={() => setCreatingProduct(true)}>
             <Icon name="plus" size={15} /> Ajouter un produit
           </button>
         </div>
@@ -201,7 +238,7 @@ export function ProductsModule() {
                           <button className="adm-act" title="Modifier" onClick={() => setEditingProduct(p)}>
                             <Icon name="edit" size={14} />
                           </button>
-                          <button className="adm-act danger" title="Supprimer" onClick={() => deleteProduct(p.id)}>
+                          <button className="adm-act danger" title="Supprimer" onClick={() => handleDelete(p.id)}>
                             <Icon name="trash" size={14} />
                           </button>
                         </div>
@@ -224,6 +261,15 @@ export function ProductsModule() {
 
       {editingProduct && (
         <ProductEditModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={handleSave} />
+      )}
+      {creatingProduct && (
+        <ProductEditModal product={BLANK_PRODUCT} onClose={() => setCreatingProduct(false)} onSave={handleCreate} isNew />
+      )}
+      {toast && (
+        <div className="adm-toast">
+          <Icon name="check" size={14} color="#2F9E68" />
+          {toast}
+        </div>
       )}
     </>
   );

@@ -34,9 +34,11 @@ const NAV_ITEMS: NavItem[] = [
 
 interface AdminSidebarProps {
   onNav?: () => void;
+  onLogout?: () => void;
+  loggingOut?: boolean;
 }
 
-export function AdminSidebar({ onNav }: AdminSidebarProps) {
+export function AdminSidebar({ onNav, onLogout, loggingOut }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -70,7 +72,18 @@ export function AdminSidebar({ onNav }: AdminSidebarProps) {
 
       {/* Footer */}
       <div className="adm-side-foot">
-        <Link href="/" className="adm-navitem">
+        {onLogout && (
+          <button
+            className="adm-navitem adm-navitem-logout"
+            onClick={onLogout}
+            disabled={loggingOut}
+            style={{ border: "none", background: "transparent", cursor: loggingOut ? "default" : "pointer" }}
+          >
+            <Icon name="x" size={17} />
+            <span>{loggingOut ? "Déconnexion…" : "Déconnexion"}</span>
+          </button>
+        )}
+        <Link href="/" className="adm-navitem" onClick={onNav}>
           <Icon name="arrowR" size={18} />
           <span>Voir la boutique</span>
         </Link>

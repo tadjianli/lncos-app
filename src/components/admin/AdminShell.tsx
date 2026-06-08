@@ -38,25 +38,11 @@ export function AdminShell({ children }: AdminShellProps) {
         {mobileNav && (
           <div className="adm-sidebar-scrim" onClick={() => setMobileNav(false)} />
         )}
-        <AdminSidebar onNav={() => setMobileNav(false)} />
+        <AdminSidebar onNav={() => setMobileNav(false)} onLogout={handleLogout} loggingOut={loggingOut} />
       </div>
 
       {/* Main */}
       <main className="adm-main">
-        {/* Logout button — top-right corner */}
-        <button
-          className="adm-logout-btn"
-          onClick={handleLogout}
-          disabled={loggingOut}
-          title="Se déconnecter"
-        >
-          {loggingOut ? (
-            <span style={{ fontSize: 12, opacity: 0.7 }}>…</span>
-          ) : (
-            <Icon name="x" size={15} />
-          )}
-          {!loggingOut && <span>Déconnexion</span>}
-        </button>
         {children}
       </main>
     </div>

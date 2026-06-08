@@ -447,12 +447,32 @@ export function useProducts() {
     setProducts((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
   }, []);
 
+  const insertProduct = useCallback(async (p: Omit<Product, "id" | "rating" | "reviews">) => {
+    const { data } = await getSupabase().from("products").insert({
+      name: p.name,
+      cat: p.cat,
+      price: p.price,
+      old_price: p.old ?? null,
+      ml: p.ml,
+      tag: p.tag,
+      stock: p.stock,
+      description: p.desc,
+      variants: p.variants,
+      ingredients: p.ingredients,
+      rating: 5,
+      reviews: 0,
+    }).select().single();
+    if (data) {
+      setProducts((prev) => [...prev, dbToProduct(data as DbProduct)]);
+    }
+  }, []);
+
   const deleteProduct = useCallback(async (id: string) => {
     await getSupabase().from("products").delete().eq("id", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
-  return { products, loading, updateProduct, deleteProduct, reload: load };
+  return { products, loading, updateProduct, insertProduct, deleteProduct, reload: load };
 }
 
 /* ─── useDashboardKPIs ────────────────────────────────────────────────────── */

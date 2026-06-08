@@ -446,10 +446,23 @@ function CalendarView({ appointments, onSelectAppt }: {
 
 /* ── Availability tab ───────────────────────────────────────────────── */
 function AvailabilityView() {
-  const [avail, setAvail] = useState(availability.map((a) => ({ ...a })));
+  const [avail, setAvail] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("lncos-avail");
+      if (saved) return JSON.parse(saved) as typeof availability;
+    }
+    return availability.map((a) => ({ ...a }));
+  });
+  const [saved, setSaved] = useState(false);
 
   function toggle(day: number) {
     setAvail((prev) => prev.map((a) => a.day === day ? { ...a, closed: !a.closed } : a));
+  }
+
+  function handleSave() {
+    localStorage.setItem("lncos-avail", JSON.stringify(avail));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
@@ -459,7 +472,9 @@ function AvailabilityView() {
           <div className="adm-card-title">Horaires d&apos;ouverture</div>
           <div className="adm-card-sub">Configurez les créneaux disponibles pour vos clientes</div>
         </div>
-        <button className="adm-btn gold sm"><Icon name="check" size={14} /> Enregistrer</button>
+        <button className="adm-btn gold sm" onClick={handleSave}>
+          <Icon name="check" size={14} /> {saved ? "Enregistré ✓" : "Enregistrer"}
+        </button>
       </div>
       {avail.map((av) => (
         <div key={av.day} className="rdv-avail-row">
@@ -485,47 +500,179 @@ function AvailabilityView() {
   );
 }
 
+/* ── Service edit modal ─────────────────────────────────────────────── */
+function ServiceModal({ svc, onClose, onSave }: {
+  svc?: Service;
+  onClose: () => void;
+  onSave: (s: Service) => void;
+}) {
+  const isNew = !svc;
+  const [form, setForm] = useState<Service>(svc ?? {
+    id: `svc-${Date.now()}`,
+    cat: "manucure",
+    name: "",
+    price: 0,
+    min: 60,
+    color: "#D4AF37",
+    active: true,
+    desc: "",
+  });
+
+  function set<K extends keyof Service>(key: K, val: Service[K]) {
+    setForm((p) => ({ ...p, [key]: val }));
+  }
+
+  return (
+    <div className="ab-modal-overlay" onClick={onClose}>
+      <div className="ab-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="ab-modal-head">
+          <div className="ab-modal-title">{isNew ? "Ajouter une prestation" : `Modifier · ${svc.name}`}</div>
+          <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
+        </div>
+        {([
+          { label: "Nom de la prestation", key: "name" as const, type: "text", placeholder: "ex : Vernis semi-permanent" },
+          { label: "Description", key: "desc" as const, type: "text", placeholder: "Courte description" },
+          { label: "Prix (€)", key: "price" as const, type: "number" },
+          { label: "Durée (min)", key: "min" as const, type: "number" },
+        ]).map(({ label, key, type, placeholder }) => (
+          <div key={key} className="ab-field">
+            <label>{label}</label>
+            <input
+              className="ab-input"
+              type={type}
+              value={String(form[key] ?? "")}
+              placeholder={placeholder}
+              onChange={(e) => set(key, (type === "number" ? Number(e.target.value) : e.target.value) as Service[typeof key])}
+            />
+          </div>
+        ))}
+        <div className="ab-field">
+          <label>Catégorie</label>
+          <select className="ab-input" value={form.cat} onChange={(e) => set("cat", e.target.value as Service["cat"])}>
+            <option value="manucure">Manucure</option>
+            <option value="extensions">Extensions</option>
+          </select>
+        </div>
+        <div className="ab-field" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <label style={{ margin: 0 }}>Prestation active</label>
+          <label className="ab-toggle" style={{ cursor: "pointer" }}>
+            <input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} />
+            <div className="ab-toggle-track" />
+            <div className="ab-toggle-thumb" />
+          </label>
+        </div>
+        <div className="ab-modal-foot">
+          <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
+          <button className="adm-btn gold" onClick={() => onSave(form)} disabled={!form.name.trim()}>
+            <Icon name="check" size={15} /> {isNew ? "Créer" : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Services tab ───────────────────────────────────────────────────── */
 function ServicesView() {
+  const [svcList, setSvcList] = useState<Service[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("lncos-services");
+      if (saved) return JSON.parse(saved) as Service[];
+    }
+    return [...services];
+  });
+  const [addingSvc, setAddingSvc] = useState(false);
+  const [editingSvc, setEditingSvc] = useState<Service | null>(null);
+  const [confirmDeleteSvc, setConfirmDeleteSvc] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  function persist(list: Service[]) {
+    setSvcList(list);
+    localStorage.setItem("lncos-services", JSON.stringify(list));
+  }
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
+
+  function handleSave(s: Service) {
+    const existing = svcList.findIndex((x) => x.id === s.id);
+    persist(existing >= 0 ? svcList.map((x) => x.id === s.id ? s : x) : [...svcList, s]);
+    setAddingSvc(false);
+    setEditingSvc(null);
+    showToast(existing >= 0 ? "Prestation mise à jour" : "Prestation créée");
+  }
+
+  function deleteSvc(id: string) {
+    persist(svcList.filter((s) => s.id !== id));
+    setConfirmDeleteSvc(null);
+    showToast("Prestation supprimée");
+  }
+
   return (
-    <div className="adm-card" style={{ padding: 0 }}>
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div className="adm-card-title">Prestations</div>
-          <div className="adm-card-sub">{services.length} services · {services.filter((s) => s.active).length} actifs</div>
+    <>
+      <div className="adm-card" style={{ padding: 0 }}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div className="adm-card-title">Prestations</div>
+            <div className="adm-card-sub">{svcList.length} services · {svcList.filter((s) => s.active).length} actifs</div>
+          </div>
+          <button className="adm-btn gold sm" onClick={() => setAddingSvc(true)}><Icon name="plus" size={14} /> Ajouter</button>
         </div>
-        <button className="adm-btn gold sm"><Icon name="plus" size={14} /> Ajouter</button>
+        {svcList.map((svc) => (
+          <div key={svc.id} className="rdv-svc-row">
+            <div className="rdv-svc-dot" style={{ background: svc.color }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="rdv-svc-name">{svc.name}</div>
+              <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>{svc.desc}</div>
+            </div>
+            <span className="rdv-svc-cat">{svc.cat}</span>
+            <div className="rdv-svc-dur">{svc.min} min</div>
+            <div className="rdv-svc-price">{svc.price} €</div>
+            <div className="adm-rowactions">
+              <button className="adm-act" onClick={() => setEditingSvc(svc)}><Icon name="edit" size={14} /></button>
+              {confirmDeleteSvc === svc.id ? (
+                <button className="adm-act" onClick={() => deleteSvc(svc.id)} style={{ color: "var(--tone-pink)", fontWeight: 700, fontSize: 10, width: "auto", padding: "0 6px" }}>Confirmer</button>
+              ) : (
+                <button className="adm-act danger" onClick={() => setConfirmDeleteSvc(svc.id)}><Icon name="trash" size={14} /></button>
+              )}
+            </div>
+          </div>
+        ))}
+        {svcList.length === 0 && (
+          <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--adm-ink-mute)", fontSize: 13 }}>
+            Aucune prestation — <button className="adm-link" onClick={() => setAddingSvc(true)}>Ajouter la première</button>
+          </div>
+        )}
       </div>
-      {services.map((svc) => (
-        <div key={svc.id} className="rdv-svc-row">
-          <div className="rdv-svc-dot" style={{ background: svc.color }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="rdv-svc-name">{svc.name}</div>
-            <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>{svc.desc}</div>
-          </div>
-          <span className="rdv-svc-cat">{svc.cat}</span>
-          <div className="rdv-svc-dur">{svc.min} min</div>
-          <div className="rdv-svc-price">{svc.price} €</div>
-          <div className="adm-rowactions">
-            <button className="adm-act"><Icon name="edit" size={14} /></button>
-            <button className="adm-act danger"><Icon name="trash" size={14} /></button>
-          </div>
-        </div>
-      ))}
-    </div>
+      {addingSvc && <ServiceModal onClose={() => setAddingSvc(false)} onSave={handleSave} />}
+      {editingSvc && <ServiceModal svc={editingSvc} onClose={() => setEditingSvc(null)} onSave={handleSave} />}
+      {toast && <div className="adm-toast"><Icon name="check" size={14} color="#2F9E68" />{toast}</div>}
+    </>
   );
 }
 
 /* ── Staff tab ──────────────────────────────────────────────────────── */
 function StaffView() {
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
+
   return (
+    <>
     <div className="adm-card" style={{ padding: 0 }}>
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div className="adm-card-title">Prothésistes</div>
           <div className="adm-card-sub">{staff.filter((s) => s.active).length} actives</div>
         </div>
-        <button className="adm-btn ghost sm"><Icon name="plus" size={14} /> Ajouter</button>
+        <button className="adm-btn ghost sm" onClick={() => showToast("Ajout de prothésiste — bientôt disponible")}>
+          <Icon name="plus" size={14} /> Ajouter
+        </button>
       </div>
       {staff.map((s) => (
         <div key={s.id} className="rdv-staff-row">
@@ -545,11 +692,13 @@ function StaffView() {
             <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 3 }}>{s.reviews} avis</div>
           </div>
           <div className="adm-rowactions" style={{ marginLeft: 16 }}>
-            <button className="adm-act"><Icon name="edit" size={14} /></button>
+            <button className="adm-act" onClick={() => showToast("Modification prothésiste — bientôt disponible")}><Icon name="edit" size={14} /></button>
           </div>
         </div>
       ))}
     </div>
+    {toast && <div className="adm-toast"><Icon name="check" size={14} color="#2F9E68" />{toast}</div>}
+    </>
   );
 }
 

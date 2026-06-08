@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSupabaseHomeSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
-import type { HomeSection } from "@/lib/home-sections";
+import type { HomeSection, SectionType } from "@/lib/home-sections";
 import { Icon } from "@/components/shared/Icon";
 
 /* ── icon + color per section type ─────────────────────────────────── */
@@ -108,6 +108,43 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   );
 }
 
+/* ── Add section modal ──────────────────────────────────────────────── */
+function AddSectionModal({ onClose, onAdd }: {
+  onClose: () => void;
+  onAdd: (type: SectionType) => void;
+}) {
+  return (
+    <div className="ab-modal-overlay" onClick={onClose}>
+      <div className="ab-modal" style={{ maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
+        <div className="ab-modal-head">
+          <div className="ab-modal-title">Ajouter une section</div>
+          <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 6, padding: "4px 0 12px" }}>
+          {(Object.entries(SECTION_SCHEMA_REGISTRY) as [SectionType, typeof SECTION_SCHEMA_REGISTRY[SectionType]][]).map(([type, schema]) => {
+            const m = TYPE_META[type] ?? { icon: "sparkle", color: "#B8902B", bg: "rgba(212,175,55,.14)" };
+            return (
+              <button key={type} className="ab-add-type-row" onClick={() => onAdd(type)}>
+                <div className="ab-sec-icon" style={{ background: m.bg, flexShrink: 0 }}>
+                  <Icon name={m.icon} size={18} color={m.color} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--adm-ink)" }}>{schema.label}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>{schema.description}</div>
+                </div>
+                <Icon name="chevR" size={14} color="var(--adm-ink-mute)" />
+              </button>
+            );
+          })}
+        </div>
+        <div className="ab-modal-foot">
+          <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Drag-handle dots ───────────────────────────────────────────────── */
 function DragHandle() {
   return (
@@ -164,6 +201,14 @@ export function AppBuilder() {
   const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabaseHomeSections();
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
+  const [addingSection, setAddingSection] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
 
   // Sync from DB draft on first load (e.g. page refresh mid-edit)
   useEffect(() => {
@@ -241,6 +286,56 @@ export function AppBuilder() {
     setLocalDraft(null);
   }
 
+  async function handleDuplicate(id: string) {
+    await ensureDraft();
+    setLocalDraft((d) => {
+      if (!d) return d;
+      const idx = d.findIndex((s) => s.id === id);
+      if (idx === -1) return d;
+      const copy: HomeSection = { ...d[idx], id: `${d[idx].type}-${Date.now()}`, name: `${d[idx].name} (copie)`, enabled: false };
+      const arr = [...d];
+      arr.splice(idx + 1, 0, copy);
+      saveDraft(arr);
+      return arr;
+    });
+    showToast("Section dupliquée");
+  }
+
+  async function handleDelete(id: string) {
+    await ensureDraft();
+    setLocalDraft((d) => {
+      if (!d) return d;
+      const arr = d.filter((s) => s.id !== id);
+      saveDraft(arr);
+      return arr;
+    });
+    setConfirmDeleteId(null);
+    showToast("Section supprimée");
+  }
+
+  async function handleAddSection(type: SectionType) {
+    await ensureDraft();
+    const schema = SECTION_SCHEMA_REGISTRY[type];
+    const newSec: HomeSection = {
+      id: `${type}-${Date.now()}`,
+      type,
+      name: schema.label,
+      enabled: false,
+      variant: (schema.fields.find((f) => f.key === "variant")?.options?.[0]) ?? "default",
+      title: "",
+      device: "all",
+      audience: "all",
+      schedule: { enabled: false, start: "", end: "" },
+    };
+    setLocalDraft((d) => {
+      const arr = [...(d ?? sections), newSec];
+      saveDraft(arr);
+      return arr;
+    });
+    setAddingSection(false);
+    showToast(`Section « ${schema.label} » ajoutée`);
+  }
+
   const activeCount = sections.filter((s) => s.enabled).length;
 
   return (
@@ -284,7 +379,7 @@ export function AppBuilder() {
                   <div className="ab-list-title">Sections de l&apos;accueil</div>
                   <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
                 </div>
-                <button className="adm-btn ghost sm">
+                <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
                   <Icon name="plus" size={15} />
                   Ajouter
                 </button>
@@ -321,12 +416,18 @@ export function AppBuilder() {
                       <button className="adm-iconbtn sm" title="Modifier" onClick={() => handleEdit(sec)}>
                         <Icon name="edit" size={14} />
                       </button>
-                      <button className="adm-iconbtn sm" title="Dupliquer">
+                      <button className="adm-iconbtn sm" title="Dupliquer" onClick={() => handleDuplicate(sec.id)}>
                         <Icon name="share" size={14} />
                       </button>
-                      <button className="adm-iconbtn sm" title="Supprimer" style={{ color: "var(--tone-pink)" }}>
-                        <Icon name="trash" size={14} />
-                      </button>
+                      {confirmDeleteId === sec.id ? (
+                        <button className="adm-iconbtn sm" title="Confirmer la suppression" style={{ color: "var(--tone-pink)", fontWeight: 700, fontSize: 10, width: "auto", padding: "0 6px" }} onClick={() => handleDelete(sec.id)}>
+                          Confirmer
+                        </button>
+                      ) : (
+                        <button className="adm-iconbtn sm" title="Supprimer" style={{ color: "var(--tone-pink)" }} onClick={() => setConfirmDeleteId(sec.id)}>
+                          <Icon name="trash" size={14} />
+                        </button>
+                      )}
                       <Toggle checked={sec.enabled} onChange={() => handleToggle(sec.id)} />
                     </div>
                   </div>
@@ -347,6 +448,15 @@ export function AppBuilder() {
           onClose={() => setEditingSection(null)}
           onSave={handleSaveEdit}
         />
+      )}
+      {addingSection && (
+        <AddSectionModal onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
+      )}
+      {toast && (
+        <div className="adm-toast">
+          <Icon name="check" size={14} color="#2F9E68" />
+          {toast}
+        </div>
       )}
     </>
   );
