@@ -1,12 +1,11 @@
 "use client";
-/**
- * LN COS — Profile page (from handoff screens-account.jsx ProfileScreen)
- */
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
+import { getSupabase } from "@/lib/supabase";
 
 const MENU = [
   { i: "calendar", t: "Mes rendez-vous",   s: "1 à venir",          href: "/rdv",       gold: true  },
@@ -23,6 +22,20 @@ export default function ProfilePage() {
   const openLoyalty      = useStore((s) => s.openLoyalty);
   const openNotifications = useStore((s) => s.openNotifications);
   const openOrders       = useStore((s) => s.openOrders);
+
+  const [userName, setUserName] = useState("Mon profil");
+  const [userEmail, setUserEmail] = useState("");
+  const [userInitial, setUserInitial] = useState("?");
+
+  useEffect(() => {
+    getSupabase().auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Membre";
+      setUserName(name);
+      setUserEmail(user.email ?? "");
+      setUserInitial(name[0]?.toUpperCase() ?? "M");
+    });
+  }, []);
 
   function handleOverlay(overlay: string) {
     if (overlay === "loyalty")       openLoyalty();
@@ -72,11 +85,11 @@ export default function ProfilePage() {
                 color: "#3a1020",
               }}
             >
-              E
+              {userInitial}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)" }}>Emma Dubois</div>
-              <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 2 }}>emma.d@email.com</div>
+              <div style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)" }}>{userName}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 2 }}>{userEmail}</div>
               <div
                 style={{
                   display: "inline-flex",

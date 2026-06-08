@@ -10,7 +10,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { GoldBtn, PinkBtn, SectionHead } from "@/components/shared/ActionButtons";
-import { getRdvStore } from "@/lib/rdv-store";
+import { getSupabase } from "@/lib/supabase";
 import { services, extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
 import type { Service, Staff } from "@/lib/rdv-data";
 
@@ -335,7 +335,7 @@ function BookingWizard({
 }: {
   initialService?: string | null;
   onClose: () => void;
-  onConfirm: (draft: Draft) => void;
+  onConfirm: (draft: Draft) => void | Promise<void>;
 }) {
   const [step, setStep] = useState(initialService ? 1 : 0);
   const [draft, setDraft] = useState<Draft>({
@@ -834,34 +834,40 @@ export default function RdvPage() {
 
   const list = services.filter((s) => cat === "all" || s.cat === cat);
 
-  function handleConfirm(draft: Draft) {
-    // Persist to rdv-store
-    const store = getRdvStore();
+  async function handleConfirm(draft: Draft) {
     const staffId = draft.staffId === "any"
       ? (staff.find((s) => s.services.includes(draft.serviceId)) ?? staff[0]).id
       : draft.staffId;
     const isoDate = draft.date
       ? (() => { const d = new Date(draft.date); const [h, m] = (draft.time || "10:00").split(":").map(Number); d.setHours(h, m, 0, 0); return d.toISOString(); })()
       : new Date().toISOString();
+    const ref = "LN-" + String(1000 + Math.abs(draft.serviceId.charCodeAt(0) * 37 + (draft.date?.getDate() ?? 0) * 13) % 9000);
 
-    store.insert<Record<string, unknown>>("appointments", {
-      clientId: "me",
-      clientName: draft.name || "Vous",
-      phone: draft.phone,
-      email: "",
-      serviceId: draft.serviceId,
-      staffId,
-      extras: draft.extrasIds,
-      start: isoDate,
-      durationMin: svcMin(draft.serviceId, draft.extrasIds),
-      price: svcPrice(draft.serviceId, draft.extrasIds),
-      deposit: 0,
-      paymentStatus: "unpaid" as const,
-      status: "confirmed" as const,
-      source: "client" as const,
-      notes: draft.notes,
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      const supabase = getSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("appointments").insert({
+        user_id: user?.id ?? null,
+        service_id: draft.serviceId,
+        staff_id: staffId,
+        extras_ids: draft.extrasIds,
+        start_at: isoDate,
+        duration_min: svcMin(draft.serviceId, draft.extrasIds),
+        price: svcPrice(draft.serviceId, draft.extrasIds),
+        deposit: 0,
+        payment_status: "unpaid",
+        status: "confirmed",
+        client_name: draft.name || "Cliente",
+        client_phone: draft.phone || null,
+        client_email: null,
+        notes: draft.notes || null,
+        loyalty_pts_earned: 0,
+        confirmation_ref: ref,
+        source: "client",
+      });
+    } catch (err) {
+      console.error("Appointment insert failed:", err);
+    }
 
     setBooking(null);
     setConfirmed(draft);

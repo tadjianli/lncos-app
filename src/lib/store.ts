@@ -124,7 +124,7 @@ export const useStore = create<AppStore>()(
       },
 
       /* ── Favorites ───────────────────────────── */
-      favs: ["parfum-noir", "rouge-mat"],
+      favs: [],
 
       toggleFav(id) {
         set((s) => ({

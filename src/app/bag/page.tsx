@@ -118,7 +118,7 @@ function StepPayment({ total }: { total: number }) {
   );
 }
 
-function StepConfirm() {
+function StepConfirm({ orderRef }: { orderRef: string }) {
   return (
     <div style={{ textAlign: "center", padding: "40px 0", animation: "fadeUp .4s ease both" }}>
       <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--gold-grad)", display: "grid", placeItems: "center", margin: "0 auto 22px" }}>
@@ -126,10 +126,10 @@ function StepConfirm() {
       </div>
       <h3 style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: "0 0 10px" }}>Commande confirmée !</h3>
       <p style={{ fontSize: 13, color: "var(--ink-mute)", lineHeight: 1.6, margin: "0 0 8px" }}>
-        Merci Emma, votre commande <strong style={{ color: "var(--gold)" }}>#LN-2484</strong> a bien été enregistrée.
+        Votre commande <strong style={{ color: "var(--gold)" }}>#{orderRef}</strong> a bien été enregistrée.
       </p>
       <p style={{ fontSize: 12, color: "var(--ink-mute)", lineHeight: 1.5 }}>
-        Un email de confirmation vous a été envoyé à emma.d@email.com
+        Vous recevrez une confirmation par email.
       </p>
     </div>
   );
@@ -275,6 +275,8 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
 /* ─── Checkout screen ────────────────────────────────────────── */
 function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: () => void }) {
   const [step, setStep] = useState(0);
+  const [placing, setPlacing] = useState(false);
+  const [orderRef, setOrderRef] = useState("LN-……");
   const cart = useStore((s) => s.cart);
   const clearCart = useStore((s) => s.clearCart);
 
@@ -283,9 +285,38 @@ function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: ()
   const total     = subtotal + shipping;
 
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
-  const next = () => {
-    if (step === 2) { clearCart(); setStep(3); }
-    else if (step < 3) setStep(step + 1);
+  const next = async () => {
+    if (step === 2) {
+      setPlacing(true);
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart.map((it) => ({
+              id: it.id,
+              name: it.name,
+              price: it.price,
+              qty: it.qty,
+              variant: it.variant,
+            })),
+            subtotal,
+            shipping_cost: shipping,
+            total,
+          }),
+        });
+        const data = await res.json();
+        setOrderRef(data.ref ?? "LN-??????");
+      } catch {
+        setOrderRef("LN-??????");
+      } finally {
+        setPlacing(false);
+        clearCart();
+        setStep(3);
+      }
+    } else if (step < 3) {
+      setStep(step + 1);
+    }
   };
   const back = () => { if (step === 0) onBack(); else setStep(step - 1); };
 
@@ -314,13 +345,13 @@ function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: ()
         {step === 0 && <StepAddress />}
         {step === 1 && <StepDelivery />}
         {step === 2 && <StepPayment total={total} />}
-        {step === 3 && <StepConfirm />}
+        {step === 3 && <StepConfirm orderRef={orderRef} />}
       </div>
 
       <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
         {step < 3 ? (
-          <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next}>
-            {step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
+          <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
+            {placing ? "Traitement…" : step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
           </PinkBtn>
         ) : (
           <GoldBtn icon="home" onClick={onPlaced}>Retour à l&apos;accueil</GoldBtn>
