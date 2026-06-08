@@ -51,6 +51,9 @@ export interface ToastState {
 /* ─── Store ──────────────────────────────────────────────────────────── */
 
 interface AppStore {
+  /* Hydration sentinel — false until persist rehydrates from localStorage */
+  _storeHydrated: boolean;
+
   /* Cart */
   cart: CartItem[];
   cartCount: number;
@@ -88,6 +91,9 @@ interface AppStore {
 export const useStore = create<AppStore>()(
   persist(
     (set, get) => ({
+      /* ── Hydration ───────────────────────────── */
+      _storeHydrated: false,
+
       /* ── Cart ────────────────────────────────── */
       cart: [],
       cartCount: 0,
@@ -137,7 +143,7 @@ export const useStore = create<AppStore>()(
       },
 
       isFav(id) {
-        return get().favs.includes(id);
+        return get()._storeHydrated && get().favs.includes(id);
       },
 
       /* ── Toast ───────────────────────────────── */
@@ -196,8 +202,11 @@ export const useStore = create<AppStore>()(
       storage: createJSONStorage(() =>
         typeof window !== "undefined" ? localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} }
       ),
-      // Persist cart + favs; ephemeral state (overlay, toast) is not persisted
+      // Persist cart + favs; ephemeral state (overlay, toast, hydration sentinel) is not persisted
       partialize: (s) => ({ cart: s.cart, cartCount: s.cartCount, favs: s.favs }),
+      onRehydrateStorage: () => (state) => {
+        if (state) state._storeHydrated = true;
+      },
     }
   )
 );
