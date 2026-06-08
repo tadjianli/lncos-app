@@ -8,10 +8,14 @@ const ADMIN_PREFIX = "/admin";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isAdminRoute =
-    pathname.startsWith(ADMIN_PREFIX) && pathname !== "/admin/login";
+  if (pathname === "/admin/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = LOGIN_PATH;
+    return NextResponse.redirect(url);
+  }
+
+  const isAdminRoute = pathname.startsWith(ADMIN_PREFIX);
   const isLoginRoute = pathname === LOGIN_PATH;
-  const isLegacyAdminLogin = pathname === "/admin/login";
 
   if (!isAdminRoute && !isLoginRoute) {
     if (isSupabaseConfigured()) {
@@ -19,12 +23,6 @@ export async function middleware(request: NextRequest) {
       return response;
     }
     return NextResponse.next();
-  }
-
-  if (isLegacyAdminLogin) {
-    const url = request.nextUrl.clone();
-    url.pathname = LOGIN_PATH;
-    return NextResponse.redirect(url);
   }
 
   if (!isSupabaseConfigured()) {
