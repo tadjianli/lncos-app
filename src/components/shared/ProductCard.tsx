@@ -12,6 +12,7 @@ interface ProductCardProps {
   isFav?: boolean;
   onAdd?: (p: Product) => void;
   wide?: boolean;
+  priority?: boolean;
 }
 
 export const ProductCard = memo(function ProductCard({
@@ -21,6 +22,7 @@ export const ProductCard = memo(function ProductCard({
   isFav = false,
   onAdd,
   wide = false,
+  priority = false,
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
   const [popping, setPopping] = useState(false);
@@ -68,6 +70,7 @@ export const ProductCard = memo(function ProductCard({
           sizes="(max-width: 480px) 50vw, 150px"
           style={{ objectFit: "cover" }}
           fallbackLabel={p.name}
+          priority={priority}
         />
 
         {/* Tag */}

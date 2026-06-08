@@ -9,8 +9,9 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { useHomeSectionsStore } from "@/lib/stores";
-import { products, categories, feed, byId } from "@/lib/data";
+import { feed, byId as staticById } from "@/lib/data";
 import type { Product } from "@/lib/data";
+import { usePublicProducts } from "@/lib/client-supabase";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
@@ -310,7 +311,7 @@ const ROUTINES = [
 function RoutineSection({ onAdd }: { onAdd: (p: Product) => void }) {
   const [active, setActive] = useState("matin");
   const r = ROUTINES.find((x) => x.id === active)!;
-  const prods = r.steps.map((id) => byId(id)).filter(Boolean) as Product[];
+  const prods = r.steps.map((id) => staticById(id)).filter(Boolean) as Product[];
   const total  = prods.reduce((s, p) => s + p.price, 0);
   const old    = prods.reduce((s, p) => s + (p.old ?? p.price), 0);
   const bundle = Math.round(total * 0.85 * 100) / 100;
@@ -659,6 +660,9 @@ export default function HomePage() {
   const handleFav  = useCallback((id: string) => toggleFav(id), [toggleFav]);
   const handleOpen = useCallback((p: Product) => openProduct(p), [openProduct]);
 
+  /* ── Products from Supabase (falls back to static data) ──── */
+  const { products, byId } = usePublicProducts();
+
   /* ── Pre-resolved product lists by source ─────────────────── */
   const flashProducts = products.filter((p) => p.tag === "Flash");
   const _bestRaw      = products.filter((p) => p.tag === "Best-seller").concat(products.slice(0, 3));
@@ -718,6 +722,7 @@ export default function HomePage() {
                         onFav={handleFav}
                         isFav={isFav(p.id)}
                         onAdd={handleAdd}
+                        priority={pi === 0}
                       />
                     ))}
                   </div>

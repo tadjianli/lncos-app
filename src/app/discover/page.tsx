@@ -3,7 +3,7 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
-import { categories } from "@/lib/data";
+import { usePublicCategories } from "@/lib/client-supabase";
 
 /* ─── Category accent colours / gradients ──────────────────────────── */
 const CAT_META: Record<string, { icon: string; grad: string; accent: string }> = {
@@ -39,6 +39,7 @@ const EDITORIALS = [
 export default function DiscoverPage() {
   const openListing = useStore((s) => s.openListing);
   const openSearch  = useStore((s) => s.openSearch);
+  const { categories } = usePublicCategories();
 
   return (
     <AppShell>
