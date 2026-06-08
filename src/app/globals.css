@@ -933,6 +933,14 @@
   from { opacity: 0; transform: scale(0.93); }
   to   { opacity: 1; transform: scale(1); }
 }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: none; }
+}
 @keyframes badgePop {
   0%   { transform: scale(0.4); opacity: 0; }
   70%  { transform: scale(1.2); }

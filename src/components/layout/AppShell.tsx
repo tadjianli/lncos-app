@@ -1,67 +1,61 @@
 "use client";
 /**
  * LN COS — Unified AppShell
- * All client screens render inside this single shell.
+ * All client screens render inside this shell.
  *
- * Layer stack (z-index):
+ * z-index layers:
  *   0   background / ambient
- *  10   main content (screen)
- *  30   TopBar (fixed top)
- *  40   BottomNav (fixed bottom)
+ *  10   main content
+ *  30   TopBar
+ *  40   BottomNav
  *  70   Toast
- *  80   Overlay (product drawer, search)
- *  90   Modal (booking wizard, side menu)
- * 100   Transition scrim
+ *  80   Product / Search / Listing / Profile overlays
+ *  90   Side menu / Booking wizard
  */
 
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BottomNav } from "./BottomNav";
 import { Toast } from "./Toast";
-import { useStore, selectToast, selectCartCount } from "@/lib/store";
+import { SideMenu } from "./SideMenu";
+import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/store";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
+
+// Lazy-load overlay screens to keep initial bundle small
+const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then((m) => ({ default: m.ProductDetail })));
+const ListingScreen       = lazy(() => import("@/components/commerce/ListingScreen").then((m) => ({ default: m.ListingScreen })));
+const SearchScreen        = lazy(() => import("@/components/commerce/SearchScreen").then((m) => ({ default: m.SearchScreen })));
+const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then((m) => ({ default: m.LoyaltyScreen })));
+const NotificationsScreen = lazy(() => import("@/components/profile/NotificationsScreen").then((m) => ({ default: m.NotificationsScreen })));
+const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then((m) => ({ default: m.OrdersScreen })));
 
 interface AppShellProps {
   children: React.ReactNode;
-  /** Override bottom nav visibility */
   bottomNav?: boolean;
-  /** Passed-through for backward compat */
+  // backward-compat props
   topBar?: boolean;
   transparentTopBar?: boolean;
   cartCount?: number;
   className?: string;
 }
 
-export function AppShell({
-  children,
-  bottomNav = true,
-  // backward-compat props ignored — nav driven by store
-  topBar: _topBar,
-  transparentTopBar: _transparent,
-  cartCount: _cartCount,
-  className: _className,
-}: AppShellProps) {
-  const toast = useStore(selectToast);
-  const storeCartCount = useStore(selectCartCount);
+export function AppShell({ children, bottomNav = true }: AppShellProps) {
+  const toast      = useStore(selectToast);
+  const storeCount = useStore(selectCartCount);
+  const overlay    = useStore(selectOverlay);
+  const closeOverlay = useStore((s) => s.closeOverlay);
 
-  // Determine render mode from URL (only on client)
-  const mode =
-    typeof window !== "undefined"
-      ? getRenderModeFromSearch(window.location.search)
-      : "live";
+  const mode = typeof window !== "undefined"
+    ? getRenderModeFromSearch(window.location.search)
+    : "live";
 
   const navVisible = bottomNav && showNav(mode);
 
-  // Lock body scroll when a modal-level overlay is open
-  const overlay = useStore((s) => s.overlay);
+  // Lock body scroll when modal overlay is open
+  const isModal = overlay?.type === "booking" || overlay?.type === "side-menu";
   useEffect(() => {
-    const isModal = overlay?.type === "booking" || overlay?.type === "side-menu";
-    if (isModal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = isModal ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [overlay]);
+  }, [isModal]);
 
   return (
     <div
@@ -79,38 +73,64 @@ export function AppShell({
         isolation: "isolate",
       }}
     >
-      {/* ── Main content ─────────────────────────────────── */}
+      {/* ── Main content ── */}
       <main
         style={{
           flex: "1 1 auto",
-          paddingBottom: navVisible
-            ? "calc(5rem + env(safe-area-inset-bottom))"
-            : 0,
+          paddingBottom: navVisible ? "calc(5rem + env(safe-area-inset-bottom))" : 0,
           position: "relative",
         }}
       >
         {children}
       </main>
 
-      {/* ── Bottom nav ───────────────────────────────────── */}
-      {navVisible && <BottomNav cartCount={storeCartCount} />}
+      {/* ── Bottom nav (z: 40) ── */}
+      {navVisible && <BottomNav cartCount={storeCount} />}
 
-      {/* ── Toast layer (z: 70) ──────────────────────────── */}
+      {/* ── Toast (z: 70) ── */}
       {toast && (
         <div
           style={{
             position: "fixed",
             left: "50%",
             transform: "translateX(-50%)",
-            bottom: navVisible ? "calc(5.5rem + env(safe-area-inset-bottom))" : "1.5rem",
-            width: "calc(100% - 32px)",
-            maxWidth: "calc(480px - 32px)",
+            bottom: navVisible
+              ? "calc(5.5rem + env(safe-area-inset-bottom))"
+              : "1.5rem",
+            width: "calc(min(480px, 100vw) - 32px)",
             zIndex: 70,
             pointerEvents: "none",
           }}
         >
           <Toast msg={toast.msg} icon={toast.icon} />
         </div>
+      )}
+
+      {/* ── Overlays (z: 80) ── */}
+      <Suspense fallback={null}>
+        {overlay?.type === "product" && overlay.product && (
+          <ProductDetail product={overlay.product} onClose={closeOverlay} />
+        )}
+        {overlay?.type === "listing" && (
+          <ListingScreen category={overlay.category ?? null} onClose={closeOverlay} />
+        )}
+        {overlay?.type === "search" && (
+          <SearchScreen onClose={closeOverlay} />
+        )}
+        {overlay?.type === "loyalty" && (
+          <LoyaltyScreen onClose={closeOverlay} />
+        )}
+        {overlay?.type === "notifications" && (
+          <NotificationsScreen onClose={closeOverlay} />
+        )}
+        {overlay?.type === "orders" && (
+          <OrdersScreen onClose={closeOverlay} />
+        )}
+      </Suspense>
+
+      {/* ── Side menu (z: 90) ── */}
+      {overlay?.type === "side-menu" && (
+        <SideMenu onClose={closeOverlay} />
       )}
     </div>
   );

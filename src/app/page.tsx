@@ -83,7 +83,7 @@ function Reveal({
 
 /* ─── Hero section ──────────────────────────────────────────── */
 
-function HeroSection() {
+function HeroSection({ onDiscover }: { onDiscover?: () => void }) {
   return (
     <div className="home-z" style={{ padding: "16px 18px 0" }}>
       <div
@@ -160,6 +160,7 @@ function HeroSection() {
             </span>
           </h2>
           <button
+            onClick={onDiscover}
             style={{
               padding: "12px 24px",
               borderRadius: "var(--r-pill)",
@@ -637,9 +638,14 @@ function NewsletterBlock() {
 /* ─── Home page ─────────────────────────────────────────────── */
 
 export default function HomePage() {
-  const addToCart = useStore((s) => s.addToCart);
-  const toggleFav = useStore((s) => s.toggleFav);
-  const favs = useStore((s) => s.favs);
+  const addToCart      = useStore((s) => s.addToCart);
+  const toggleFav      = useStore((s) => s.toggleFav);
+  const favs           = useStore((s) => s.favs);
+  const openProduct    = useStore((s) => s.openProduct);
+  const openSideMenu   = useStore((s) => s.openSideMenu);
+  const openSearch     = useStore((s) => s.openSearch);
+  const openListing    = useStore((s) => s.openListing);
+  const isFav          = useStore((s) => s.isFav);
 
   const flashProducts = products.filter((p) => p.tag === "Flash");
 
@@ -656,7 +662,7 @@ export default function HomePage() {
       <HomeAmbient />
 
       {/* Top bar */}
-      <TopBar />
+      <TopBar onMenuClick={openSideMenu} onSearchClick={openSearch} />
 
       {/* Scrollable content */}
       <div
@@ -665,7 +671,7 @@ export default function HomePage() {
       >
         {/* Hero */}
         <div className="home-z">
-          <HeroSection />
+          <HeroSection onDiscover={() => openListing(null)} />
         </div>
 
         {/* Trust strip */}
@@ -689,9 +695,9 @@ export default function HomePage() {
               <ProductCard
                 key={p.id + "-flash-" + i}
                 p={p}
-                onOpen={() => {}}
+                onOpen={openProduct}
                 onFav={toggleFav}
-                isFav={favs.includes(p.id)}
+                isFav={isFav(p.id)}
                 onAdd={addToCart}
               />
             ))}

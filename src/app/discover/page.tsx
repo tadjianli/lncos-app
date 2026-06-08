@@ -2,6 +2,7 @@
 
 import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
+import { useStore } from "@/lib/store";
 import { categories } from "@/lib/data";
 
 const ICONS: Record<string, string> = {
@@ -15,9 +16,12 @@ const ICONS: Record<string, string> = {
 };
 
 export default function DiscoverPage() {
+  const openListing = useStore((s) => s.openListing);
+  const openSearch  = useStore((s) => s.openSearch);
+
   return (
     <AppShell>
-      {/* Sub-header */}
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -27,22 +31,15 @@ export default function DiscoverPage() {
           flex: "0 0 auto",
         }}
       >
-        <h2
-          style={{
-            margin: 0,
-            fontWeight: 600,
-            fontSize: "var(--fs-h2)",
-            color: "var(--ink)",
-          }}
-        >
+        <h2 style={{ margin: 0, fontWeight: 600, fontSize: "var(--fs-h2)", color: "var(--ink)" }}>
           Catégories
         </h2>
-        <button style={{ color: "var(--ink)" }}>
+        <button onClick={openSearch} style={{ color: "var(--ink)" }}>
           <Icon name="search" size={20} />
         </button>
       </div>
 
-      {/* Categories list */}
+      {/* List */}
       <div
         style={{
           padding: "4px 16px 24px",
@@ -54,6 +51,7 @@ export default function DiscoverPage() {
         {categories.map((c, i) => (
           <button
             key={c.id}
+            onClick={() => openListing(c)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -78,32 +76,11 @@ export default function DiscoverPage() {
                 flex: "0 0 auto",
               }}
             >
-              <Icon
-                name={ICONS[c.id] || "sparkle"}
-                size={23}
-                color="#C77B98"
-                stroke={1.6}
-              />
+              <Icon name={ICONS[c.id] || "sparkle"} size={23} color="#C77B98" stroke={1.6} />
             </span>
             <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: "var(--ink)",
-                }}
-              >
-                {c.name}
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  color: "var(--ink-mute)",
-                  marginTop: 2,
-                }}
-              >
-                {c.count} produits
-              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>{c.name}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{c.count} produits</div>
             </div>
             <Icon name="chevR" size={19} color="var(--ink-mute)" />
           </button>

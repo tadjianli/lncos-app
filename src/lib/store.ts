@@ -16,13 +16,29 @@ export interface CartItem extends Product {
   variant: string;
 }
 
-export type OverlayType = "product" | "booking" | "side-menu" | "search";
+export type OverlayType =
+  | "product"
+  | "booking"
+  | "side-menu"
+  | "search"
+  | "listing"
+  | "loyalty"
+  | "notifications"
+  | "orders"
+  | "appointments";
+
+export interface Category {
+  id: string;
+  name: string;
+  count: number;
+}
 
 export interface OverlayState {
   type: OverlayType;
   product?: Product;
   serviceId?: string | null;
   resumeFlag?: boolean;
+  category?: Category | null;
 }
 
 export interface ToastState {
@@ -56,7 +72,12 @@ interface AppStore {
   openProduct: (product: Product) => void;
   openSearch: () => void;
   openSideMenu: () => void;
+  openListing: (category: Category | null) => void;
   openBooking: (serviceId?: string | null, resume?: boolean) => void;
+  openLoyalty: () => void;
+  openNotifications: () => void;
+  openOrders: () => void;
+  openAppointments: () => void;
   closeOverlay: () => void;
 }
 
@@ -138,8 +159,23 @@ export const useStore = create<AppStore>()(
       openSideMenu() {
         set({ overlay: { type: "side-menu" } });
       },
+      openListing(category) {
+        set({ overlay: { type: "listing", category } });
+      },
       openBooking(serviceId = null, resume = false) {
         set({ overlay: { type: "booking", serviceId, resumeFlag: resume } });
+      },
+      openLoyalty() {
+        set({ overlay: { type: "loyalty" } });
+      },
+      openNotifications() {
+        set({ overlay: { type: "notifications" } });
+      },
+      openOrders() {
+        set({ overlay: { type: "orders" } });
+      },
+      openAppointments() {
+        set({ overlay: { type: "appointments" } });
       },
       closeOverlay() {
         set({ overlay: null });
