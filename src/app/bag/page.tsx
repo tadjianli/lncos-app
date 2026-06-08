@@ -1,7 +1,7 @@
 "use client";
 /**
- * LN COS — Cart + Checkout pages (from handoff screens-cart.jsx)
- * Payment: SumUp hosted checkout (redirect flow)
+ * LN COS — Cart + Checkout pages
+ * Payment: Stripe hosted checkout (redirect flow)
  */
 
 import { useState, useEffect } from "react";
@@ -24,7 +24,7 @@ import {
 
 /* ─── Pending checkout shape stored in sessionStorage ────────────── */
 interface PendingCheckout {
-  checkout_id: string;
+  session_id: string;
   items: Array<{ id: string; name: string; price: number; qty: number; variant: string }>;
   subtotal: number;
   shipping_cost: number;
@@ -179,9 +179,9 @@ function StepDelivery({
 function StepPayment({ total }: { total: number }) {
   const [pay, setPay] = useState("card");
   const methods = [
-    { id: "card",   t: "Carte bancaire", s: "paiement sécurisé SumUp",  i: "card"    },
-    { id: "apple",  t: "Apple Pay",      s: "paiement express",          i: "sparkle" },
-    { id: "paypal", t: "PayPal",         s: "payer via PayPal",          i: "card"    },
+    { id: "card",   t: "Carte bancaire", s: "paiement sécurisé Stripe",  i: "card"    },
+    { id: "apple",  t: "Apple Pay",      s: "paiement express",           i: "sparkle" },
+    { id: "paypal", t: "PayPal",         s: "payer via PayPal",           i: "card"    },
   ];
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
@@ -214,7 +214,7 @@ function StepPayment({ total }: { total: number }) {
       </div>
       <div style={{ padding: 16, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(212,175,55,.2)" }}>
         <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 9, display: "flex", alignItems: "center", gap: 7 }}>
-          <Icon name="sparkle" size={13} color="var(--gold)" /> Paiement 100% sécurisé · SSL · SumUp
+          <Icon name="sparkle" size={13} color="var(--gold)" /> Paiement 100% sécurisé · SSL · Stripe
         </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>Total : {total.toFixed(2)} €</div>
       </div>
@@ -276,7 +276,6 @@ function ConfirmingScreen({
           </>
         ) : (
           <>
-            {/* Spinner */}
             <div
               style={{
                 width: 56, height: 56, borderRadius: "50%",
@@ -299,7 +298,7 @@ function ConfirmingScreen({
   );
 }
 
-/* ─── Confirmed screen (standalone confirmation) ─────────────────── */
+/* ─── Confirmed screen ───────────────────────────────────────────── */
 function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
@@ -524,8 +523,8 @@ function CartScreen({
 
 /* ─── Checkout screen ─────────────────────────────────────────────── */
 function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedPromo: Promo | null }) {
-  const [step, setStep]       = useState(0);
-  const [placing, setPlacing] = useState(false);
+  const [step, setStep]         = useState(0);
+  const [placing, setPlacing]   = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
 
@@ -551,7 +550,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
 
   const next = async () => {
     if (step === 2) {
-      // ── Initiate SumUp hosted checkout ──────────────────────────
+      // ── Initiate Stripe hosted checkout ────────────────────────────
       setPlacing(true);
       setPayError(null);
 
@@ -564,27 +563,18 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           variant: it.variant ?? "",
         }));
 
-        // Persist cart snapshot in sessionStorage before leaving the page
-        const snapshot: Omit<PendingCheckout, "checkout_id"> = {
-          items,
-          subtotal,
-          shipping_cost: shippingCost,
-          discount,
-          ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
-          total,
-        };
-
-        const res = await fetch("/api/sumup/checkout", {
+        const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             items,
             subtotal,
             shipping_cost: shippingCost,
+            shipping_method_name: selectedShipping?.name,
             discount,
             ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
             total,
-            returnUrl: `${window.location.origin}/bag`,
+            returnUrl: window.location.origin,
           }),
         });
         const data = await res.json();
@@ -593,15 +583,20 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           throw new Error(data.error ?? "Initialisation du paiement échouée");
         }
 
-        // Store full snapshot (inc. checkout_id) before redirect
-        sessionStorage.setItem(
-          "lncos-pending-checkout",
-          JSON.stringify({ ...snapshot, checkout_id: data.checkout_id } satisfies PendingCheckout)
-        );
+        // Store snapshot in sessionStorage before Stripe redirect
+        const snapshot: PendingCheckout = {
+          session_id: data.session_id,
+          items,
+          subtotal,
+          shipping_cost: shippingCost,
+          discount,
+          ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
+          total,
+        };
+        sessionStorage.setItem("lncos-pending-checkout", JSON.stringify(snapshot));
 
-        // Redirect to SumUp hosted payment page
-        // SumUp will append ?checkout_id=xxx to returnUrl on redirect back
-        window.location.href = data.checkout_url;
+        // Redirect to Stripe hosted checkout page
+        window.location.href = data.session_url;
       } catch (err) {
         sessionStorage.removeItem("lncos-pending-checkout");
         setPayError(err instanceof Error ? err.message : "Erreur lors de l'initialisation du paiement");
@@ -619,7 +614,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
 
   return (
     <>
-      {/* SumUp redirect loading overlay */}
+      {/* Stripe redirect loading overlay */}
       {placing && (
         <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(10,10,10,.97)", display: "grid", placeItems: "center", backdropFilter: "blur(12px)" }}>
           <div style={{ textAlign: "center" }}>
@@ -633,7 +628,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
               }}
             />
             <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>Initialisation du paiement…</div>
-            <div style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>Redirection vers SumUp</div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>Redirection vers Stripe</div>
           </div>
         </div>
       )}
@@ -691,35 +686,35 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
 type Screen = "cart" | "checkout" | "confirming" | "confirmed";
 
 export default function BagPage() {
-  const [screen,       setScreen]       = useState<Screen>("cart");
-  const [confirmedRef, setConfirmedRef] = useState("LN-……");
+  const [screen,        setScreen]        = useState<Screen>("cart");
+  const [confirmedRef,  setConfirmedRef]  = useState("LN-……");
   const [completeError, setCompleteError] = useState<string | null>(null);
-  const [pendingId,    setPendingId]    = useState<string | null>(null);
-  const [appliedPromo, setAppliedPromo] = useState<Promo | null>(null);
+  const [pendingId,     setPendingId]     = useState<string | null>(null);
+  const [appliedPromo,  setAppliedPromo]  = useState<Promo | null>(null);
 
-  const clearCart   = useStore((s) => s.clearCart);
-  const earnPoints  = useLoyaltyStore((s) => s.earnPoints);
+  const clearCart  = useStore((s) => s.clearCart);
+  const earnPoints = useLoyaltyStore((s) => s.earnPoints);
 
-  /** Verify the SumUp checkout server-side and create the Supabase order. */
-  const completeSumUpOrder = async (checkoutId: string) => {
-    const raw = sessionStorage.getItem("lncos-pending-checkout");
+  /** Verify the Stripe session server-side and create the Supabase order. */
+  const completeStripeOrder = async (sessionId: string) => {
+    const raw     = sessionStorage.getItem("lncos-pending-checkout");
     const pending: PendingCheckout | null = raw ? JSON.parse(raw) : null;
 
     setCompleteError(null);
     setScreen("confirming");
 
     try {
-      const res = await fetch("/api/sumup/complete", {
+      const res = await fetch("/api/stripe/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          checkout_id: checkoutId,
-          items: pending?.items ?? [],
-          subtotal: pending?.subtotal ?? 0,
-          shipping_cost: pending?.shipping_cost ?? 0,
-          discount: pending?.discount ?? 0,
+          session_id: sessionId,
+          items:         pending?.items         ?? [],
+          subtotal:      pending?.subtotal       ?? 0,
+          shipping_cost: pending?.shipping_cost  ?? 0,
+          discount:      pending?.discount       ?? 0,
           ...(pending?.promo_code ? { promo_code: pending.promo_code } : {}),
-          total: pending?.total ?? 0,
+          total:         pending?.total          ?? 0,
         }),
       });
       const data = await res.json();
@@ -738,41 +733,34 @@ export default function BagPage() {
       setScreen("confirmed");
     } catch (err) {
       setCompleteError(err instanceof Error ? err.message : "Erreur de vérification du paiement");
-      // Stay on "confirming" so the error UI (in ConfirmingScreen) is visible
     }
   };
 
-  // Detect SumUp return — reads ?checkout_id from URL on mount
+  // Detect Stripe return — reads ?stripe_session_id from URL on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const checkoutId = params.get("checkout_id");
+    const params    = new URLSearchParams(window.location.search);
+    const sessionId = params.get("stripe_session_id");
+    const cancelled = params.get("payment_cancelled");
 
-    if (checkoutId) {
+    if (sessionId) {
       // Clean URL immediately
       window.history.replaceState({}, "", "/bag");
-      setPendingId(checkoutId);
-      completeSumUpOrder(checkoutId);
-    } else {
-      // Check sessionStorage fallback (if SumUp didn't append checkout_id to URL)
-      const raw = sessionStorage.getItem("lncos-pending-checkout");
-      if (raw) {
-        const pending: PendingCheckout | null = JSON.parse(raw);
-        if (pending?.checkout_id) {
-          setPendingId(pending.checkout_id);
-          // Only auto-complete if we were redirected back (not just a fresh /bag visit)
-          // Heuristic: if document.referrer includes sumup or pay.sumup
-          if (document.referrer.includes("sumup") || document.referrer.includes("pay.sumup")) {
-            completeSumUpOrder(pending.checkout_id);
-          }
-        }
-      }
+      setPendingId(sessionId);
+      completeStripeOrder(sessionId);
+    } else if (cancelled) {
+      window.history.replaceState({}, "", "/bag");
+      sessionStorage.removeItem("lncos-pending-checkout");
+      // Stay on cart screen, user can retry
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const retryComplete = () => {
-    const id = pendingId ?? JSON.parse(sessionStorage.getItem("lncos-pending-checkout") || "{}").checkout_id;
-    if (id) completeSumUpOrder(id);
+    const id = pendingId ?? ((): string | null => {
+      try { return JSON.parse(sessionStorage.getItem("lncos-pending-checkout") ?? "{}").session_id ?? null; }
+      catch { return null; }
+    })();
+    if (id) completeStripeOrder(id);
     else setScreen("cart");
   };
 

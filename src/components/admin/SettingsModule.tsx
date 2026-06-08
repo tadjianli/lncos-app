@@ -13,8 +13,7 @@ interface SettingValues {
   saturdayOpen: string;
   saturdayClose: string;
   sundayClosed: boolean;
-  sumupClientId: string;
-  sumupMerchantCode: string;
+  stripePublishableKey: string;
   vatRate: string;
   emailSender: string;
   emailReplyTo: string;
@@ -38,8 +37,7 @@ const DEFAULT_SETTINGS: SettingValues = {
   saturdayOpen: "10:00",
   saturdayClose: "18:00",
   sundayClosed: true,
-  sumupClientId: "",
-  sumupMerchantCode: "",
+  stripePublishableKey: "",
   vatRate: "20",
   emailSender: "LN COS <hello@lncos.fr>",
   emailReplyTo: "",
@@ -196,26 +194,20 @@ export function SettingsModule() {
       title: "Paiement",
       items: [
         {
-          icon: "sliders", label: "SumUp", sub: "Configuration du prestataire de paiement",
+          icon: "sliders", label: "Stripe", sub: "Configuration du prestataire de paiement",
           badge: <ComingSoonBadge />,
           content: (
             <>
               <Field
-                label="Client ID SumUp"
-                value={values.sumupClientId}
-                onChange={(v) => set("sumupClientId", v)}
-                placeholder="cc_classic_..."
-              />
-              <Field
-                label="Code marchand SumUp (optionnel)"
-                value={values.sumupMerchantCode}
-                onChange={(v) => set("sumupMerchantCode", v)}
-                placeholder="MXXXXX"
+                label="Clé publique Stripe (pk_live_...)"
+                value={values.stripePublishableKey}
+                onChange={(v) => set("stripePublishableKey", v)}
+                placeholder="pk_live_..."
               />
               <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,125,216,.06)", border: "1px solid rgba(59,125,216,.15)", borderRadius: 8 }}>
                 <div style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>
-                  Les credentials secrets (SUMUP_CLIENT_ID, SUMUP_CLIENT_SECRET) sont configurés via les variables
-                  d&apos;environnement serveur et ne sont jamais exposés côté client.
+                  La clé secrète (STRIPE_SECRET_KEY) et le secret webhook (STRIPE_WEBHOOK_SECRET) sont configurés
+                  via les variables d&apos;environnement serveur et ne sont jamais exposés côté client.
                 </div>
               </div>
               <SaveRow onSave={save} />
