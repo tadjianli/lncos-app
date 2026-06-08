@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   images: {
@@ -7,6 +8,13 @@ const nextConfig: NextConfig = {
     localPatterns: [
       { pathname: "/assets/**" },
     ],
+  },
+  experimental: {
+    turbo: {
+      // Pin workspace root to this project to avoid confusion from
+      // a stray package-lock.json in the parent directory.
+      root: path.resolve(__dirname),
+    },
   },
 };
 
