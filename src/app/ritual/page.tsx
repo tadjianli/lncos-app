@@ -1,5 +1,4 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { PageHeader } from "@/components/layout/PageHeader";
 import {
   ProductGridCard,
   PerfumeBottle,
@@ -19,7 +18,7 @@ const PRODUCTS = [
     reviewCount: 213,
     tag: "ÉDITION LIMITÉE",
     tagVariant: "limited" as const,
-    bg: PRODUCT_BG.pink,
+    bg: PRODUCT_BG.mauve,         // dusty mauve — muted, not pink
     illustration: <PerfumeBottle />,
   },
   {
@@ -30,7 +29,7 @@ const PRODUCTS = [
     reviewCount: 156,
     tag: "BEST-SELLER",
     tagVariant: "bestseller" as const,
-    bg: PRODUCT_BG.pinkWarm,
+    bg: PRODUCT_BG.rose,          // pale rose — subtle contrast to mauve
     illustration: <LipstickBottle />,
   },
   {
@@ -42,7 +41,7 @@ const PRODUCTS = [
     reviewCount: 98,
     tag: "FLASH",
     tagVariant: "flash" as const,
-    bg: PRODUCT_BG.gold,
+    bg: PRODUCT_BG.amber,         // warm amber — editorial warmth
     illustration: <PaletteBox />,
   },
   {
@@ -51,22 +50,26 @@ const PRODUCTS = [
     price: "19,90 €",
     rating: 4.5,
     reviewCount: 67,
-    bg: PRODUCT_BG.cream,
+    bg: PRODUCT_BG.champagne,     // warm champagne nude
     illustration: <OilBottle />,
   },
 ];
 
-export default function RitualPage() {
+export default function FavorisPage() {
   return (
     <AppShell topBar={false} cartCount={0}>
-      {/* Page title — large left-aligned per design */}
+      {/* Page title */}
       <div className="px-5 pt-14 pb-5">
-        <h1 className="text-[1.75rem] font-bold text-white tracking-[-0.01em] leading-tight">
-          Recommandé pour vous
+        <p className="text-[0.62rem] font-light tracking-[0.28em] uppercase text-[#C9A96E] mb-1">
+          Sélection personnelle
+        </p>
+        <h1 className="text-[1.65rem] font-bold text-white tracking-[-0.02em] leading-tight">
+          Mes Favoris
         </h1>
+        <p className="text-[0.8rem] text-[#666058] mt-1.5">4 produits sauvegardés</p>
       </div>
 
-      {/* 2-column product grid */}
+      {/* Product grid */}
       <div className="px-4 pb-6">
         <div className="grid grid-cols-2 gap-3">
           {PRODUCTS.map((p) => (
@@ -80,6 +83,7 @@ export default function RitualPage() {
               tag={p.tag}
               tagVariant={p.tagVariant}
               bgGradient={p.bg}
+              isFavorited
             >
               {p.illustration}
             </ProductGridCard>

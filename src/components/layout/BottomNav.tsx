@@ -4,19 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
+/* ─── Nav Items ─────────────────────────────────────────────────────────── */
+
 const NAV_ITEMS = [
   {
     href: "/",
     label: "Accueil",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
-          d="M2.5 10.5L11 4l8.5 6.5V18.5a1 1 0 01-1 1h-5v-4.5h-5V19.5h-5a1 1 0 01-1-1V10.5z"
-          stroke={active ? "#C9A96E" : "#5A5550"}
-          strokeWidth="1.35"
+          d="M3 11.5L12 4l9 7.5V21a1 1 0 01-1 1H5a1 1 0 01-1-1V11.5z"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          fill={active ? "rgba(201,169,110,0.10)" : "none"}
+          fill={active ? "rgba(201,169,110,0.12)" : "none"}
+        />
+        <path
+          d="M9 22V16h6v6"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     ),
@@ -25,11 +34,11 @@ const NAV_ITEMS = [
     href: "/discover",
     label: "Catégories",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <rect x="2" y="2" width="8" height="8" rx="2" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
-        <rect x="12" y="2" width="8" height="8" rx="2" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
-        <rect x="2" y="12" width="8" height="8" rx="2" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
-        <rect x="12" y="12" width="8" height="8" rx="2" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="7.5" height="7.5" rx="2" stroke={active ? "#C9A96E" : "#666058"} strokeWidth="1.5" fill={active ? "rgba(201,169,110,0.12)" : "none"} />
+        <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" stroke={active ? "#C9A96E" : "#666058"} strokeWidth="1.5" fill={active ? "rgba(201,169,110,0.12)" : "none"} />
+        <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" stroke={active ? "#C9A96E" : "#666058"} strokeWidth="1.5" fill={active ? "rgba(201,169,110,0.12)" : "none"} />
+        <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2" stroke={active ? "#C9A96E" : "#666058"} strokeWidth="1.5" fill={active ? "rgba(201,169,110,0.12)" : "none"} />
       </svg>
     ),
   },
@@ -37,25 +46,35 @@ const NAV_ITEMS = [
     href: "/bag",
     label: "Panier",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
-          d="M3.5 7h15l-1.8 11H5.3L3.5 7z"
-          stroke={active ? "#C9A96E" : "#5A5550"}
-          strokeWidth="1.35"
+          d="M4 7h16l-2 13H6L4 7z"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
           strokeLinejoin="round"
-          fill={active ? "rgba(201,169,110,0.10)" : "none"}
+          fill={active ? "rgba(201,169,110,0.12)" : "none"}
         />
-        <path d="M8 7V5.5a3 3 0 016 0V7" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" strokeLinecap="round" />
+        <path
+          d="M9 7V5.5a3 3 0 016 0V7"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
   {
     href: "/ritual",
-    label: "Boutique",
+    label: "Favoris",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M3 9.5l8-7 8 7V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
-        <path d="M8 20V13h6v7" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 21C12 21 3 15.5 3 9.5a5 5 0 0110-0.9A5 5 0 0121 9.5c0 6-9 11.5-9 11.5z"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          fill={active ? "rgba(201,169,110,0.12)" : "none"}
+        />
       </svg>
     ),
   },
@@ -63,13 +82,27 @@ const NAV_ITEMS = [
     href: "/profile",
     label: "Profil",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <circle cx="11" cy="7.5" r="3.75" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" fill={active ? "rgba(201,169,110,0.10)" : "none"} />
-        <path d="M3.5 20c0-4.14 3.36-7.5 7.5-7.5s7.5 3.36 7.5 7.5" stroke={active ? "#C9A96E" : "#5A5550"} strokeWidth="1.35" strokeLinecap="round" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle
+          cx="12"
+          cy="8"
+          r="4"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
+          fill={active ? "rgba(201,169,110,0.12)" : "none"}
+        />
+        <path
+          d="M4 20c0-4 3.58-7 8-7s8 3 8 7"
+          stroke={active ? "#C9A96E" : "#666058"}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     ),
   },
 ];
+
+/* ─── Bottom Nav ────────────────────────────────────────────────────────── */
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -78,47 +111,38 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50"
       style={{
-        background: "rgba(4,4,4,0.97)",
-        backdropFilter: "blur(28px) saturate(160%)",
-        WebkitBackdropFilter: "blur(28px) saturate(160%)",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(5,5,5,0.97)",
+        backdropFilter: "blur(24px) saturate(140%)",
+        WebkitBackdropFilter: "blur(24px) saturate(140%)",
+        borderTop: "1px solid rgba(255,255,255,0.055)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <div className="flex items-stretch justify-around h-[4.25rem]">
+      <div className="flex items-center justify-around h-[4.5rem] px-1">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-[0.22rem]",
-                "min-w-[3.25rem] px-1",
-                "transition-all duration-[150ms] ease-out",
-                "active:scale-[0.86] active:duration-[60ms]",
-                active ? "opacity-100" : "opacity-45 hover:opacity-65"
+                "flex flex-col items-center justify-center gap-[3px]",
+                "min-w-[3.5rem] h-full",
+                "transition-opacity duration-[180ms]",
+                "active:opacity-60 active:scale-[0.90] active:transition-none",
+                active ? "opacity-100" : "opacity-40 hover:opacity-60"
               )}
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
             >
-              {/* Gold top-edge indicator */}
-              <span
-                className={cn(
-                  "absolute top-0 left-1/2 -translate-x-1/2 h-[2px] rounded-b-full transition-all duration-300",
-                  active
-                    ? "w-5 bg-[--gold] shadow-[0_0_6px_rgba(201,169,110,0.65)]"
-                    : "w-0 bg-transparent"
-                )}
-              />
-
               {item.icon(active)}
 
               <span
                 className={cn(
-                  "text-[0.5rem] font-light tracking-[0.06em]",
-                  "transition-colors duration-200",
-                  active ? "text-[--gold]" : "text-[#5A5550]"
+                  "text-[0.53rem] font-medium tracking-[0.04em]",
+                  "transition-colors duration-[180ms]",
+                  active ? "text-[#C9A96E]" : "text-[#666058]"
                 )}
               >
                 {item.label}

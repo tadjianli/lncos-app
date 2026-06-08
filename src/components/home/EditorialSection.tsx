@@ -28,7 +28,7 @@ const EDITORIALS = [
 
 export function EditorialSection() {
   return (
-    <Section className="mt-12">
+    <Section className="mt-12 mb-0">
       <SectionHeader eyebrow="Stories" title="Editorial" />
 
       <div className="px-5 flex flex-col gap-3.5">

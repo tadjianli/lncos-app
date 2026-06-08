@@ -59,13 +59,13 @@ export function FeaturedSection() {
       : PRODUCTS.filter((p) => p.category === activeCategory);
 
   return (
-    <Section className="mt-11">
+    <Section className="mt-12">
       <SectionHeader
         eyebrow="Curated Edit"
         title="Featured Products"
         action={
-          <button className="text-[0.58rem] font-light tracking-[0.16em] uppercase text-[--gold] transition-opacity duration-150 hover:opacity-70 active:opacity-50">
-            <span className="border-b border-[rgba(201,169,110,0.3)] pb-px">View All</span>
+          <button className="text-[0.58rem] font-light tracking-[0.2em] uppercase text-[#C9A96E] opacity-75 hover:opacity-100 transition-opacity duration-150 active:opacity-50">
+            Voir tout →
           </button>
         }
       />

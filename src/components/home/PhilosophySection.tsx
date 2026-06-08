@@ -46,7 +46,7 @@ const PILLARS = [
 
 export function PhilosophySection() {
   return (
-    <section className="mt-14 relative overflow-hidden">
+    <section className="mt-12 relative overflow-hidden">
       {/* Ambient gold center glow */}
       <div
         className="absolute inset-0 pointer-events-none"

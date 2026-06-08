@@ -24,7 +24,7 @@ const TESTIMONIALS = [
 
 export function TestimonialsSection() {
   return (
-    <Section className="mt-12">
+    <Section className="mt-12 mb-0">
       <SectionHeader
         eyebrow="Community"
         title="What They Say"

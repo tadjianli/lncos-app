@@ -26,7 +26,7 @@ const STEPS = [
 
 export function RitualSection() {
   return (
-    <Section className="mt-14">
+    <Section className="mt-12">
       <GoldDivider className="mb-12" />
 
       <SectionHeader

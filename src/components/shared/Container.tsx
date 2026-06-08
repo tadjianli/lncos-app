@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+/* ─── Container ─────────────────────────────────────────────────────────── */
+
 interface ContainerProps {
   children: React.ReactNode;
   className?: string;
@@ -20,6 +22,8 @@ export function Container({
   );
 }
 
+/* ─── Section ────────────────────────────────────────────────────────────── */
+
 interface SectionProps {
   children: React.ReactNode;
   className?: string;
@@ -33,6 +37,8 @@ export function Section({ children, className, id }: SectionProps) {
     </section>
   );
 }
+
+/* ─── SectionHeader ─────────────────────────────────────────────────────── */
 
 interface SectionHeaderProps {
   eyebrow?: string;
@@ -55,24 +61,24 @@ export function SectionHeader({
     <div
       className={cn(
         "flex items-end justify-between gap-4 px-5 mb-5",
-        align === "center" && "flex-col items-center text-center",
+        align === "center" && "flex-col items-center text-center mb-6",
         className
       )}
     >
       <div>
         {eyebrow && (
-          <p className="text-[0.58rem] font-light tracking-[0.28em] uppercase text-[--gold] mb-1.5">
+          <p className="text-[0.58rem] font-light tracking-[0.3em] uppercase text-[#C9A96E] mb-2">
             {eyebrow}
           </p>
         )}
         <h2
-          className="font-light tracking-[0.03em] text-[--cream-bright]"
-          style={{ fontFamily: "var(--font-heading)", fontSize: "1.35rem" }}
+          className="font-light text-white leading-tight"
+          style={{ fontFamily: "var(--font-heading)", fontSize: "1.45rem", letterSpacing: "0.025em" }}
         >
           {title}
         </h2>
         {subtitle && (
-          <p className="text-[0.75rem] text-[--cream-muted] mt-1 font-light leading-relaxed">
+          <p className="text-[0.76rem] text-[#666058] mt-1.5 font-light leading-relaxed">
             {subtitle}
           </p>
         )}
@@ -84,16 +90,16 @@ export function SectionHeader({
   );
 }
 
-/* ─── Gold Diamond Divider ──────────────────────────────────────────────── */
+/* ─── GoldDivider ────────────────────────────────────────────────────────── */
 
 export function GoldDivider({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-4 px-5", className)}>
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[rgba(201,169,110,0.22)]" />
-      <svg width="7" height="7" viewBox="0 0 7 7" fill="none" className="flex-shrink-0 opacity-50">
-        <path d="M3.5 0.5l.9 2.1L7 3.5l-2.6.9L3.5 6.5l-.9-2.1L0 3.5l2.6-.9z" fill="#C9A96E" />
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[rgba(201,169,110,0.20)]" />
+      <svg width="6" height="6" viewBox="0 0 6 6" fill="none" className="flex-shrink-0 opacity-40">
+        <path d="M3 0L3.9 2.1 6 3l-2.1.9L3 6l-.9-2.1L0 3l2.1-.9z" fill="#C9A96E" />
       </svg>
-      <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[rgba(201,169,110,0.22)]" />
+      <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[rgba(201,169,110,0.20)]" />
     </div>
   );
 }
