@@ -1,6 +1,7 @@
 "use client";
 /**
  * LN COS — Cart + Checkout pages (from handoff screens-cart.jsx)
+ * Payment: SumUp hosted checkout (redirect flow)
  */
 
 import { useState, useEffect } from "react";
@@ -13,7 +14,16 @@ import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getSupabase } from "@/lib/supabase";
 
-/* ─── Row helper ─────────────────────────────────────────────── */
+/* ─── Pending checkout shape stored in sessionStorage ────────────── */
+interface PendingCheckout {
+  checkout_id: string;
+  items: Array<{ id: string; name: string; price: number; qty: number; variant: string }>;
+  subtotal: number;
+  shipping_cost: number;
+  total: number;
+}
+
+/* ─── Row helper ─────────────────────────────────────────────────── */
 function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?: boolean }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0" }}>
@@ -25,7 +35,7 @@ function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?
   );
 }
 
-/* ─── Checkout steps ─────────────────────────────────────────── */
+/* ─── Checkout steps ──────────────────────────────────────────────── */
 function StepAddress() {
   const [firstName, setFirstName] = useState("");
   const [lastName,  setLastName]  = useState("");
@@ -59,7 +69,16 @@ function StepAddress() {
         Adresse de livraison
       </h3>
       {fields.map(([label, value, setter, half]) => (
-        <div key={label} style={{ flex: half ? "1 1 0" : "1 1 100%", marginBottom: 14, display: "inline-block", width: half ? "calc(50% - 6px)" : "100%", marginRight: half ? "12px" : 0 }}>
+        <div
+          key={label}
+          style={{
+            flex: half ? "1 1 0" : "1 1 100%",
+            marginBottom: 14,
+            display: "inline-block",
+            width: half ? "calc(50% - 6px)" : "100%",
+            marginRight: half ? "12px" : 0,
+          }}
+        >
           <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 500 }}>{label}</div>
           <input
             value={value}
@@ -76,9 +95,9 @@ function StepAddress() {
 function StepDelivery() {
   const [sel, setSel] = useState("express");
   const opts = [
-    { id: "standard", t: "Standard",     s: "3-5 jours ouvrés",     p: "Gratuit", i: "truck" },
-    { id: "express",  t: "Express",       s: "24-48h · suivi inclus", p: "6,90 €",  i: "flame" },
-    { id: "relais",   t: "Point relais",  s: "à proximité · 3-4 jours", p: "2,90 €",  i: "pin"   },
+    { id: "standard", t: "Standard",    s: "3-5 jours ouvrés",      p: "Gratuit", i: "truck"  },
+    { id: "express",  t: "Express",      s: "24-48h · suivi inclus", p: "6,90 €",  i: "flame"  },
+    { id: "relais",   t: "Point relais", s: "à proximité · 3-4 jours", p: "2,90 €", i: "pin"   },
   ];
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
@@ -91,12 +110,8 @@ function StepDelivery() {
             key={o.id}
             onClick={() => setSel(o.id)}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              padding: "15px 16px",
-              borderRadius: "var(--r-md)",
-              textAlign: "left",
+              display: "flex", alignItems: "center", gap: 14, padding: "15px 16px",
+              borderRadius: "var(--r-md)", textAlign: "left",
               background: sel === o.id ? "rgba(212,175,55,.08)" : "var(--charcoal)",
               border: sel === o.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)",
               width: "100%",
@@ -120,9 +135,9 @@ function StepDelivery() {
 function StepPayment({ total }: { total: number }) {
   const [pay, setPay] = useState("card");
   const methods = [
-    { id: "card",   t: "Carte bancaire", s: "•••• 4242",            i: "card" },
-    { id: "apple",  t: "Apple Pay",      s: "paiement express",     i: "sparkle" },
-    { id: "paypal", t: "PayPal",         s: "emma.d@email.com",     i: "card" },
+    { id: "card",   t: "Carte bancaire", s: "paiement sécurisé SumUp",  i: "card"    },
+    { id: "apple",  t: "Apple Pay",      s: "paiement express",          i: "sparkle" },
+    { id: "paypal", t: "PayPal",         s: "payer via PayPal",          i: "card"    },
   ];
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
@@ -131,15 +146,32 @@ function StepPayment({ total }: { total: number }) {
       </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
         {methods.map((m) => (
-          <button key={m.id} onClick={() => setPay(m.id)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: "var(--r-md)", textAlign: "left", background: pay === m.id ? "rgba(212,175,55,.08)" : "var(--charcoal)", border: pay === m.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)", width: "100%" }}>
-            <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}><Icon name={m.i} size={20} color="var(--gold)" /></span>
-            <div style={{ flex: 1 }}><div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.t}</div><div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{m.s}</div></div>
+          <button
+            key={m.id}
+            onClick={() => setPay(m.id)}
+            style={{
+              display: "flex", alignItems: "center", gap: 14, padding: "15px 16px",
+              borderRadius: "var(--r-md)", textAlign: "left",
+              background: pay === m.id ? "rgba(212,175,55,.08)" : "var(--charcoal)",
+              border: pay === m.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)",
+              width: "100%",
+            }}
+          >
+            <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
+              <Icon name={m.i} size={20} color="var(--gold)" />
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.t}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{m.s}</div>
+            </div>
             {pay === m.id && <Icon name="check" size={18} color="var(--gold)" stroke={2.5} />}
           </button>
         ))}
       </div>
       <div style={{ padding: 16, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(212,175,55,.2)" }}>
-        <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 9, display: "flex", alignItems: "center", gap: 7 }}><Icon name="sparkle" size={13} color="var(--gold)" /> Paiement 100% sécurisé · SSL</div>
+        <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 9, display: "flex", alignItems: "center", gap: 7 }}>
+          <Icon name="sparkle" size={13} color="var(--gold)" /> Paiement 100% sécurisé · SSL · SumUp
+        </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>Total : {total.toFixed(2)} €</div>
       </div>
     </div>
@@ -163,14 +195,91 @@ function StepConfirm({ orderRef }: { orderRef: string }) {
   );
 }
 
-/* ─── Cart screen ────────────────────────────────────────────── */
+/* ─── Confirming screen (loading / error) ────────────────────────── */
+function ConfirmingScreen({
+  error,
+  onRetry,
+  onBack,
+}: {
+  error: string | null;
+  onRetry: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
+      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
+        <SubHeader title="Commande" />
+      </div>
+      <div style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 28px", textAlign: "center" }}>
+        {error ? (
+          <>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(194,85,122,.12)", display: "grid", placeItems: "center", marginBottom: 22, border: "1px solid rgba(194,85,122,.25)" }}>
+              <Icon name="x" size={30} color="var(--pink)" />
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)", marginBottom: 10 }}>Vérification échouée</div>
+            <div style={{ fontSize: 13, color: "var(--ink-mute)", lineHeight: 1.6, marginBottom: 28, maxWidth: 280 }}>
+              {error}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 300 }}>
+              <PinkBtn onClick={onRetry}>Réessayer</PinkBtn>
+              <button
+                onClick={onBack}
+                style={{ padding: "14px", borderRadius: "var(--r-pill)", fontSize: 13.5, fontWeight: 600, color: "var(--ink-soft)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.07)" }}
+              >
+                Retour au panier
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Spinner */}
+            <div
+              style={{
+                width: 56, height: 56, borderRadius: "50%",
+                border: "3px solid rgba(212,175,55,.18)",
+                borderTopColor: "var(--gold)",
+                animation: "spin 1s linear infinite",
+                marginBottom: 24,
+              }}
+            />
+            <div style={{ fontSize: 17, fontWeight: 600, color: "var(--ink)", marginBottom: 8 }}>
+              Vérification du paiement…
+            </div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>
+              Merci de patienter
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Confirmed screen (standalone confirmation) ─────────────────── */
+function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () => void }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
+      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
+        <SubHeader title="Commande" />
+      </div>
+      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
+        <StepConfirm orderRef={orderRef} />
+      </div>
+      <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
+        <GoldBtn icon="home" onClick={onHome}>Retour à l&apos;accueil</GoldBtn>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Cart screen ─────────────────────────────────────────────────── */
 function CartScreen({ onCheckout }: { onCheckout: () => void }) {
-  const cart       = useStore((s) => s.cart);
-  const setQty     = useStore((s) => s.setQty);
-  const removeItem = useStore((s) => s.removeFromCart);
+  const cart        = useStore((s) => s.cart);
+  const setQty      = useStore((s) => s.setQty);
+  const removeItem  = useStore((s) => s.removeFromCart);
   const openProduct = useStore((s) => s.openProduct);
 
-  const [promo, setPromo] = useState("");
+  const [promo, setPromo]     = useState("");
   const [applied, setApplied] = useState(false);
 
   const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
@@ -216,15 +325,7 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
           {cart.map((it, i) => (
             <div
               key={it.key}
-              style={{
-                display: "flex",
-                gap: 13,
-                padding: 11,
-                borderRadius: "var(--r-md)",
-                background: "var(--charcoal)",
-                border: "1px solid rgba(255,255,255,.05)",
-                animation: `fadeUp .4s ease ${i * 0.05}s both`,
-              }}
+              style={{ display: "flex", gap: 13, padding: 11, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", animation: `fadeUp .4s ease ${i * 0.05}s both` }}
             >
               <button
                 onClick={() => openProduct(it)}
@@ -263,9 +364,17 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
         <div style={{ display: "flex", gap: 9, marginTop: 18 }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, background: "var(--charcoal)", borderRadius: "var(--r-pill)", padding: "12px 16px", border: "1px solid rgba(255,255,255,.06)" }}>
             <Icon name="tag" size={16} color="var(--gold)" />
-            <input value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="Code promo" style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--ink)", fontSize: 13 }} />
+            <input
+              value={promo}
+              onChange={(e) => setPromo(e.target.value)}
+              placeholder="Code promo"
+              style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--ink)", fontSize: 13 }}
+            />
           </div>
-          <button onClick={() => setApplied(promo.length > 0)} style={{ padding: "0 22px", borderRadius: "var(--r-pill)", background: "var(--charcoal-2)", color: "var(--gold)", fontWeight: 600, fontSize: 13, border: "1px solid rgba(212,175,55,.3)" }}>
+          <button
+            onClick={() => setApplied(promo.length > 0)}
+            style={{ padding: "0 22px", borderRadius: "var(--r-pill)", background: "var(--charcoal-2)", color: "var(--gold)", fontWeight: 600, fontSize: 13, border: "1px solid rgba(212,175,55,.3)" }}
+          >
             Appliquer
           </button>
         </div>
@@ -300,61 +409,105 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
   );
 }
 
-/* ─── Checkout screen ────────────────────────────────────────── */
-function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: () => void }) {
-  const [step, setStep] = useState(0);
+/* ─── Checkout screen ─────────────────────────────────────────────── */
+function CheckoutScreen({ onBack }: { onBack: () => void }) {
+  const [step, setStep]       = useState(0);
   const [placing, setPlacing] = useState(false);
-  const [orderRef, setOrderRef] = useState("LN-……");
+  const [payError, setPayError] = useState<string | null>(null);
+
   const cart = useStore((s) => s.cart);
-  const clearCart = useStore((s) => s.clearCart);
-  const earnPoints = useLoyaltyStore((s) => s.earnPoints);
 
   const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
   const shipping  = subtotal > 50 ? 0 : 4.90;
   const total     = subtotal + shipping;
 
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
+
   const next = async () => {
     if (step === 2) {
+      // ── Initiate SumUp hosted checkout ──────────────────────────
       setPlacing(true);
+      setPayError(null);
+
       try {
-        const res = await fetch("/api/orders", {
+        const items = cart.map((it) => ({
+          id: it.id,
+          name: it.name,
+          price: it.price,
+          qty: it.qty,
+          variant: it.variant ?? "",
+        }));
+
+        // Persist cart snapshot in sessionStorage before leaving the page
+        const snapshot: Omit<PendingCheckout, "checkout_id"> = {
+          items,
+          subtotal,
+          shipping_cost: shipping,
+          total,
+        };
+
+        const res = await fetch("/api/sumup/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: cart.map((it) => ({
-              id: it.id,
-              name: it.name,
-              price: it.price,
-              qty: it.qty,
-              variant: it.variant,
-            })),
+            items,
             subtotal,
             shipping_cost: shipping,
             total,
+            returnUrl: `${window.location.origin}/bag`,
           }),
         });
         const data = await res.json();
-        const ref = data.ref ?? "LN-??????";
-        setOrderRef(ref);
-        // Award 2 loyalty points per euro spent
-        const pts = Math.floor(total * 2);
-        if (pts > 0) earnPoints(pts, `Commande #${ref}`, data.id);
-      } catch {
-        setOrderRef("LN-??????");
-      } finally {
+
+        if (!res.ok || data.error) {
+          throw new Error(data.error ?? "Initialisation du paiement échouée");
+        }
+
+        // Store full snapshot (inc. checkout_id) before redirect
+        sessionStorage.setItem(
+          "lncos-pending-checkout",
+          JSON.stringify({ ...snapshot, checkout_id: data.checkout_id } satisfies PendingCheckout)
+        );
+
+        // Redirect to SumUp hosted payment page
+        // SumUp will append ?checkout_id=xxx to returnUrl on redirect back
+        window.location.href = data.checkout_url;
+      } catch (err) {
+        sessionStorage.removeItem("lncos-pending-checkout");
+        setPayError(err instanceof Error ? err.message : "Erreur lors de l'initialisation du paiement");
         setPlacing(false);
-        clearCart();
-        setStep(3);
       }
     } else if (step < 3) {
       setStep(step + 1);
     }
   };
-  const back = () => { if (step === 0) onBack(); else setStep(step - 1); };
+
+  const back = () => {
+    if (step === 0) onBack();
+    else setStep(step - 1);
+  };
 
   return (
     <>
+      {/* SumUp redirect loading overlay */}
+      {placing && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(10,10,10,.97)", display: "grid", placeItems: "center", backdropFilter: "blur(12px)" }}>
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: 56, height: 56, borderRadius: "50%",
+                border: "3px solid rgba(212,175,55,.18)",
+                borderTopColor: "var(--gold)",
+                animation: "spin 1s linear infinite",
+                margin: "0 auto 22px",
+              }}
+            />
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)", marginBottom: 8 }}>Initialisation du paiement…</div>
+            <div style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>Redirection vers SumUp</div>
+          </div>
+        </div>
+      )}
+
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
         <SubHeader title="Commande" onBack={back} />
       </div>
@@ -378,35 +531,134 @@ function CheckoutScreen({ onBack, onPlaced }: { onBack: () => void; onPlaced: ()
         {step === 0 && <StepAddress />}
         {step === 1 && <StepDelivery />}
         {step === 2 && <StepPayment total={total} />}
-        {step === 3 && <StepConfirm orderRef={orderRef} />}
       </div>
 
+      {/* Error banner */}
+      {payError && !placing && (
+        <div style={{ flex: "0 0 auto", margin: "0 16px", padding: "12px 16px", borderRadius: "var(--r-md)", background: "rgba(194,85,122,.1)", border: "1px solid rgba(194,85,122,.25)", display: "flex", alignItems: "center", gap: 10 }}>
+          <Icon name="x" size={16} color="var(--pink)" />
+          <span style={{ fontSize: 12.5, color: "var(--pink)", flex: 1, lineHeight: 1.4 }}>{payError}</span>
+        </div>
+      )}
+
       <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
-        {step < 3 ? (
-          <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
-            {placing ? "Traitement…" : step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
-          </PinkBtn>
-        ) : (
-          <GoldBtn icon="home" onClick={onPlaced}>Retour à l&apos;accueil</GoldBtn>
-        )}
+        <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
+          {placing ? "Initialisation…" : step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
+        </PinkBtn>
       </div>
     </>
   );
 }
 
-/* ─── Page ────────────────────────────────────────────────────── */
+/* ─── Page ────────────────────────────────────────────────────────── */
+type Screen = "cart" | "checkout" | "confirming" | "confirmed";
+
 export default function BagPage() {
-  const [screen, setScreen] = useState<"cart" | "checkout">("cart");
+  const [screen,       setScreen]       = useState<Screen>("cart");
+  const [confirmedRef, setConfirmedRef] = useState("LN-……");
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [pendingId,    setPendingId]    = useState<string | null>(null);
+
+  const clearCart   = useStore((s) => s.clearCart);
+  const earnPoints  = useLoyaltyStore((s) => s.earnPoints);
+
+  /** Verify the SumUp checkout server-side and create the Supabase order. */
+  const completeSumUpOrder = async (checkoutId: string) => {
+    const raw = sessionStorage.getItem("lncos-pending-checkout");
+    const pending: PendingCheckout | null = raw ? JSON.parse(raw) : null;
+
+    setCompleteError(null);
+    setScreen("confirming");
+
+    try {
+      const res = await fetch("/api/sumup/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          checkout_id: checkoutId,
+          items: pending?.items ?? [],
+          subtotal: pending?.subtotal ?? 0,
+          shipping_cost: pending?.shipping_cost ?? 0,
+          total: pending?.total ?? 0,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? "Vérification du paiement échouée");
+      }
+
+      sessionStorage.removeItem("lncos-pending-checkout");
+      clearCart();
+
+      const pts = Math.floor((pending?.total ?? 0) * 2);
+      if (pts > 0) earnPoints(pts, `Commande #${data.ref ?? data.id}`, data.id);
+
+      setConfirmedRef(data.ref ?? data.id ?? "LN-??????");
+      setScreen("confirmed");
+    } catch (err) {
+      setCompleteError(err instanceof Error ? err.message : "Erreur de vérification du paiement");
+      // Stay on "confirming" so the error UI (in ConfirmingScreen) is visible
+    }
+  };
+
+  // Detect SumUp return — reads ?checkout_id from URL on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkoutId = params.get("checkout_id");
+
+    if (checkoutId) {
+      // Clean URL immediately
+      window.history.replaceState({}, "", "/bag");
+      setPendingId(checkoutId);
+      completeSumUpOrder(checkoutId);
+    } else {
+      // Check sessionStorage fallback (if SumUp didn't append checkout_id to URL)
+      const raw = sessionStorage.getItem("lncos-pending-checkout");
+      if (raw) {
+        const pending: PendingCheckout | null = JSON.parse(raw);
+        if (pending?.checkout_id) {
+          setPendingId(pending.checkout_id);
+          // Only auto-complete if we were redirected back (not just a fresh /bag visit)
+          // Heuristic: if document.referrer includes sumup or pay.sumup
+          if (document.referrer.includes("sumup") || document.referrer.includes("pay.sumup")) {
+            completeSumUpOrder(pending.checkout_id);
+          }
+        }
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const retryComplete = () => {
+    const id = pendingId ?? JSON.parse(sessionStorage.getItem("lncos-pending-checkout") || "{}").checkout_id;
+    if (id) completeSumUpOrder(id);
+    else setScreen("cart");
+  };
 
   return (
     <AppShell>
       <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
-        {screen === "cart" ? (
+        {screen === "cart" && (
           <CartScreen onCheckout={() => setScreen("checkout")} />
-        ) : (
-          <CheckoutScreen
-            onBack={() => setScreen("cart")}
-            onPlaced={() => { setScreen("cart"); window.location.href = "/"; }}
+        )}
+        {screen === "checkout" && (
+          <CheckoutScreen onBack={() => setScreen("cart")} />
+        )}
+        {screen === "confirming" && (
+          <ConfirmingScreen
+            error={completeError}
+            onRetry={retryComplete}
+            onBack={() => {
+              setCompleteError(null);
+              setScreen("cart");
+            }}
+          />
+        )}
+        {screen === "confirmed" && (
+          <ConfirmedScreen
+            orderRef={confirmedRef}
+            onHome={() => { window.location.href = "/"; }}
           />
         )}
       </div>

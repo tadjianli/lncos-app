@@ -13,8 +13,8 @@ interface SettingValues {
   saturdayOpen: string;
   saturdayClose: string;
   sundayClosed: boolean;
-  stripeKey: string;
-  stripeCurrency: string;
+  sumupClientId: string;
+  sumupMerchantCode: string;
   vatRate: string;
   emailSender: string;
   emailReplyTo: string;
@@ -38,8 +38,8 @@ const DEFAULT_SETTINGS: SettingValues = {
   saturdayOpen: "10:00",
   saturdayClose: "18:00",
   sundayClosed: true,
-  stripeKey: "",
-  stripeCurrency: "eur",
+  sumupClientId: "",
+  sumupMerchantCode: "",
   vatRate: "20",
   emailSender: "LN COS <hello@lncos.fr>",
   emailReplyTo: "",
@@ -181,9 +181,9 @@ export function SettingsModule() {
           icon: "bag", label: "Livraison & frais de port", sub: "Zones, tarifs, délais",
           content: (
             <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,125,216,.06)", border: "1px solid rgba(59,125,216,.15)", borderRadius: 8 }}>
-              <div style={{ fontSize: 12.5, color: "var(--tone-blue)", fontWeight: 600 }}>À configurer dans Stripe Shipping</div>
+              <div style={{ fontSize: 12.5, color: "var(--tone-blue)", fontWeight: 600 }}>Règles de livraison</div>
               <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 4 }}>
-                Les règles de livraison sont gérées via le dashboard Stripe. Connectez d&apos;abord votre compte.
+                Livraison offerte à partir de 50 €. Frais standard : 4,90 €. À personnaliser dans le code.
               </div>
             </div>
           ),
@@ -194,14 +194,26 @@ export function SettingsModule() {
       title: "Paiement",
       items: [
         {
-          icon: "sliders", label: "Stripe", sub: "Clés API et configuration de paiement",
+          icon: "sliders", label: "SumUp", sub: "Configuration du prestataire de paiement",
           badge: <ComingSoonBadge />,
           content: (
             <>
-              <Field label="Clé publique Stripe (pk_...)" value={values.stripeKey} onChange={(v) => set("stripeKey", v)} placeholder="pk_live_..." />
+              <Field
+                label="Client ID SumUp"
+                value={values.sumupClientId}
+                onChange={(v) => set("sumupClientId", v)}
+                placeholder="cc_classic_..."
+              />
+              <Field
+                label="Code marchand SumUp (optionnel)"
+                value={values.sumupMerchantCode}
+                onChange={(v) => set("sumupMerchantCode", v)}
+                placeholder="MXXXXX"
+              />
               <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,125,216,.06)", border: "1px solid rgba(59,125,216,.15)", borderRadius: 8 }}>
                 <div style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>
-                  La clé secrète doit être configurée via les variables d&apos;environnement serveur. Ne jamais l&apos;exposer côté client.
+                  Les credentials secrets (SUMUP_CLIENT_ID, SUMUP_CLIENT_SECRET) sont configurés via les variables
+                  d&apos;environnement serveur et ne sont jamais exposés côté client.
                 </div>
               </div>
               <SaveRow onSave={save} />
@@ -214,7 +226,7 @@ export function SettingsModule() {
             <>
               <div className="ab-field" style={{ marginTop: 12 }}>
                 <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5 }}>Devise</label>
-                <select className="ab-input" value={values.stripeCurrency} onChange={(e) => set("stripeCurrency", e.target.value)}>
+                <select className="ab-input" defaultValue="eur">
                   <option value="eur">Euro (€)</option>
                   <option value="usd">US Dollar ($)</option>
                   <option value="gbp">British Pound (£)</option>

@@ -56,8 +56,9 @@ Create `.env.local` at the project root. The `.env.local.example` file provides 
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase Dashboard → Project Settings → API → Project URL | `https://<project-id>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase Dashboard → Project Settings → API → Project API keys → `anon public` | `eyJhbGci...` (JWT) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase Dashboard → Project Settings → API → Project API keys → `service_role secret` | `eyJhbGci...` (JWT) — **never expose in browser** |
-| `STRIPE_SECRET_KEY` | Yes (for checkout/webhooks) | Stripe Dashboard → Developers → API keys → Secret key | `sk_test_...` (test) or `sk_live_...` (production) |
-| `STRIPE_WEBHOOK_SECRET` | Yes (for webhooks) | Stripe Dashboard → Developers → Webhooks → endpoint → Signing secret | `whsec_...` |
+| `SUMUP_CLIENT_ID` | Yes | SumUp Developer Portal → My Apps → OAuth Client | `cc_classic_...` |
+| `SUMUP_CLIENT_SECRET` | Yes | SumUp Developer Portal → My Apps → OAuth Client | `cc_sk_classic_...` — **never expose in browser** |
+| `SUMUP_WEBHOOK_SECRET` | No (recommended) | SumUp Dashboard → Integrations → Webhooks → signing secret | any secret string |
 
 > `NEXT_PUBLIC_*` variables are embedded in the browser bundle. All others are server-only.
 
@@ -70,11 +71,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 
-STRIPE_SECRET_KEY=sk_test_YOUR_KEY
-STRIPE_WEBHOOK_SECRET=whsec_YOUR_SECRET
+SUMUP_CLIENT_ID=cc_classic_YOUR_CLIENT_ID
+SUMUP_CLIENT_SECRET=cc_sk_classic_YOUR_SECRET
+SUMUP_WEBHOOK_SECRET=    # optional — set if you configure a webhook in SumUp Dashboard
 ```
 
-Without `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` the checkout flow and webhook endpoint return `503 Stripe not configured` but the rest of the app still works.
+Without `SUMUP_CLIENT_ID` and `SUMUP_CLIENT_SECRET` the checkout flow returns `503 Payment provider not configured` but the rest of the app still works.
 
 ---
 
@@ -150,50 +152,57 @@ npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/lib/databas
 
 ---
 
-## 5. Stripe Setup
+## 5. SumUp Setup
 
-### 5.1 Create a Stripe account
+### 5.1 Access the SumUp Developer Portal
 
-Go to [stripe.com](https://stripe.com) and create an account. You can use Test mode for local development (no real payments).
+Go to [developer.sumup.com](https://developer.sumup.com) and log in with your SumUp merchant account.
 
-### 5.2 Get API keys
+### 5.2 Create an OAuth Client
 
-**Stripe Dashboard → Developers → API keys**
+**Developer Portal → My Apps → Create App**
 
-- Copy **Secret key** → `STRIPE_SECRET_KEY`
-  - Use `sk_test_...` for local/staging, `sk_live_...` for production.
+1. Choose **OAuth 2.0 — Client Credentials** grant type.
+2. Once created, copy:
+   - **Client ID** → `SUMUP_CLIENT_ID` (starts with `cc_classic_`)
+   - **Client Secret** → `SUMUP_CLIENT_SECRET` (starts with `cc_sk_classic_`)
 
-### 5.3 Create a webhook endpoint
+### 5.3 Configure a webhook endpoint (optional but recommended)
 
-**Stripe Dashboard → Developers → Webhooks → Add endpoint**
+**SumUp Dashboard → Integrations → Webhooks → Add endpoint**
 
 | Field | Value |
 |---|---|
-| **Endpoint URL** | `https://your-domain.com/api/webhooks/stripe` (production) or use Stripe CLI for local testing |
-| **Listen to** | Select specific events (see below) |
+| **Endpoint URL** | `https://your-domain.com/api/sumup/webhook` |
+| **Events** | `CHECKOUT_STATUS_CHANGED` |
 
-Events the app handles:
+Set a webhook signing secret → `SUMUP_WEBHOOK_SECRET`.
 
-| Event | Action |
-|---|---|
-| `payment_intent.succeeded` | Creates an order in the `orders` table with status `paid` |
-| `payment_intent.payment_failed` | Logs the failure (extend here to notify customers) |
+The webhook is a **backup** for the primary redirect flow. If a user closes their browser after paying (before being redirected back), the webhook ensures the order still gets created.
 
-Copy the **Signing secret** (`whsec_...`) → `STRIPE_WEBHOOK_SECRET`.
+### 5.4 Payment flow
 
-### 5.4 Local webhook testing with Stripe CLI
+```
+User clicks "Payer" in the app
+  → POST /api/sumup/checkout    (server creates SumUp checkout)
+  → User redirected to https://pay.sumup.com/b2c/{checkout_id}
+  → User pays on SumUp hosted page
+  → SumUp redirects to /bag?checkout_id={checkout_id}
+  → POST /api/sumup/complete    (server verifies payment + creates Supabase order)
+  → Confirmation screen shown
+```
+
+### 5.5 Local testing
+
+SumUp does not have a CLI forwarding tool. For local webhook testing, use a tunnel:
 
 ```bash
-# Install Stripe CLI (macOS)
-brew install stripe/stripe-cli/stripe
-
-# Login
-stripe login
-
-# Forward events to your local server
-stripe listen --forward-to localhost:3000/api/webhooks/stripe
-# The CLI prints a webhook signing secret — paste it into STRIPE_WEBHOOK_SECRET for local testing
+# Using ngrok (example)
+ngrok http 3000
+# Set the ngrok URL as the webhook endpoint in SumUp Dashboard
 ```
+
+For the checkout redirect, set your app's `window.location.origin` to the ngrok URL or simply test the return flow manually by visiting `/bag?checkout_id=TEST_ID`.
 
 ---
 
@@ -227,8 +236,9 @@ Add every variable from Section 3 to Vercel:
 vercel env add NEXT_PUBLIC_SUPABASE_URL
 vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
 vercel env add SUPABASE_SERVICE_ROLE_KEY
-vercel env add STRIPE_SECRET_KEY
-vercel env add STRIPE_WEBHOOK_SECRET
+vercel env add SUMUP_CLIENT_ID
+vercel env add SUMUP_CLIENT_SECRET
+vercel env add SUMUP_WEBHOOK_SECRET
 ```
 
 You can also manage variables at **Vercel Dashboard → Project → Settings → Environment Variables**.
@@ -242,8 +252,8 @@ vercel --prod   # Production deployment
 
 ### 7.4 After deploying to production
 
-- Update your Stripe webhook endpoint URL to the production domain.
-- Make sure `STRIPE_WEBHOOK_SECRET` in Vercel matches the production webhook's signing secret.
+- Update your SumUp webhook endpoint URL in SumUp Dashboard → Integrations → Webhooks to the production domain.
+- Make sure `SUMUP_WEBHOOK_SECRET` in Vercel matches the secret you configured there.
 
 ---
 
@@ -320,10 +330,11 @@ This project uses **Tailwind CSS v4** (`tailwindcss@^4`) with the PostCSS plugin
 - CSS Modules are scoped by filename. Make sure you import the `.module.css` file and access the class via the imported object (e.g., `styles.container`), not a plain string.
 - After adding a new CSS Module file, a dev server restart may be needed.
 
-### Stripe checkout not working locally
+### SumUp checkout not working locally
 
-- Ensure `STRIPE_SECRET_KEY` is set and starts with `sk_test_` for test mode.
-- For webhooks locally, you must run the Stripe CLI forwarder (see Section 5.4) and use the CLI-printed `whsec_` secret, not the Dashboard secret.
+- Ensure `SUMUP_CLIENT_ID` and `SUMUP_CLIENT_SECRET` are set in `.env.local`.
+- The checkout redirect requires a real origin URL. For local testing, use a tunnel (e.g. ngrok) so SumUp can redirect back to your machine.
+- For webhooks locally, expose your local server via a tunnel and set the tunnel URL as the webhook endpoint in SumUp Dashboard.
 
 ### PWA not working locally
 

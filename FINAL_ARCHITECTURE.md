@@ -47,9 +47,11 @@ src/
 │   │       ├── reviews/
 │   │       └── settings/
 │   └── api/
-│       ├── checkout/route.ts     # POST — create Stripe PaymentIntent
-│       ├── orders/route.ts       # GET list / POST create order
-│       └── webhooks/stripe/route.ts  # Stripe webhook handler
+│       ├── orders/route.ts            # POST — direct order creation
+│       └── sumup/
+│           ├── checkout/route.ts      # POST — create SumUp hosted checkout
+│           ├── complete/route.ts      # POST — verify payment + create Supabase order
+│           └── webhook/route.ts       # POST — backup webhook handler
 │
 ├── components/
 │   ├── home/                     # Homepage section components
@@ -295,8 +297,9 @@ All variables documented in `.env.local.example`.
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | All Supabase client calls | Supabase dashboard → Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | All Supabase client calls | Supabase dashboard → Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | API routes (server only) | Supabase dashboard → Settings → API |
-| `STRIPE_SECRET_KEY` | ✅ for checkout | `/api/checkout`, `/api/orders` | Stripe dashboard → API keys |
-| `STRIPE_WEBHOOK_SECRET` | ✅ for payments | `/api/webhooks/stripe` | `stripe listen --print-secret` |
+| `SUMUP_CLIENT_ID` | ✅ | `/api/sumup/checkout`, `/api/sumup/complete` | SumUp Developer Portal → My Apps → OAuth Client |
+| `SUMUP_CLIENT_SECRET` | ✅ | `/api/sumup/checkout`, `/api/sumup/complete` | SumUp Developer Portal → My Apps → OAuth Client |
+| `SUMUP_WEBHOOK_SECRET` | Optional | `/api/sumup/webhook` | SumUp Dashboard → Integrations → Webhooks |
 
 > **Security**: `SUPABASE_SERVICE_ROLE_KEY` and `STRIPE_SECRET_KEY` must never be exposed to the browser. They have no `NEXT_PUBLIC_` prefix and are only accessible in server-side code.
 
@@ -346,10 +349,10 @@ Admin routes are protected by `src/middleware.ts`. Add admin email addresses to 
 
 ### P0 — Blocks launch
 
-- [ ] **Stripe PaymentElement** — checkout form in `/bag` is not wired; `PaymentElement` from `@stripe/stripe-js` needs to be rendered with the `clientSecret` from `/api/checkout`
-- [ ] **Stripe webhook idempotency** — `/api/webhooks/stripe` should check `stripe_payment_intent` before creating duplicate orders on retry
 - [ ] **`SUPABASE_SERVICE_ROLE_KEY`** — set the actual value in `.env.local` and Vercel env
-- [ ] **`STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`** — set real keys for production
+- [ ] **SumUp checkout redirect** — ensure the production `return_url` matches the live domain (auto-derived from `Host` header in `/api/sumup/checkout`)
+- [ ] **SumUp webhook** — register `https://<domain>/api/sumup/webhook` in SumUp Dashboard → Integrations → Webhooks and set `SUMUP_WEBHOOK_SECRET`
+- [ ] **Supabase migration 003** — apply `supabase/migrations/003_sumup_orders.sql` to production to add `sumup_checkout_id` + `payment_provider` columns
 
 ### P1 — Important
 

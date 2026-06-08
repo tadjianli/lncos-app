@@ -170,6 +170,8 @@ export interface Database {
           estimated_delivery: string | null;
           delivered_at: string | null;
           shipping_address: Json | null;
+          sumup_checkout_id: string | null;
+          payment_provider: string;
           created_at: string;
           updated_at: string;
         };
@@ -185,6 +187,8 @@ export interface Database {
           estimated_delivery?: string | null;
           delivered_at?: string | null;
           shipping_address?: Json | null;
+          sumup_checkout_id?: string | null;
+          payment_provider?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -194,6 +198,8 @@ export interface Database {
           tracking_number?: string | null;
           estimated_delivery?: string | null;
           delivered_at?: string | null;
+          sumup_checkout_id?: string | null;
+          payment_provider?: string;
           updated_at?: string;
         };
         Relationships: [];

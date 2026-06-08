@@ -23,7 +23,7 @@ The design system lives in `src/app/globals.css` via `@theme inline` tokens (`--
 | `products` | Product catalog with variants, stock, images |
 | `categories` | Hierarchical product categories |
 | `profiles` | Customer profiles, loyalty points, `is_admin` flag |
-| `orders` | Orders with status, total, Stripe reference |
+| `orders` | Orders with status, total, SumUp checkout reference |
 | `order_items` | Line items per order |
 | `appointments` | RDV bookings (customer, service, slot, status) |
 | `popups` | Promotional overlays (title, body, CTA, active flag) |
@@ -34,12 +34,15 @@ Two Supabase clients are used:
 - `supabase-server.ts` — server-side client (service role, used in API routes)
 - `admin-supabase.ts` — admin panel client with service role for bypassing RLS
 
-### Payments — Stripe
+### Payments — SumUp
 
-Stripe is wired end-to-end:
-- `POST /api/checkout` — creates a Stripe PaymentIntent and returns `client_secret`
-- `POST /api/webhooks/stripe` — receives `payment_intent.succeeded`, writes order to Supabase
-- `POST /api/orders` — reads customer orders from Supabase
+SumUp hosted checkout is wired end-to-end:
+- `POST /api/sumup/checkout` — creates a SumUp hosted checkout session, returns redirect URL
+- `POST /api/sumup/complete` — verifies payment server-side, creates order in Supabase
+- `POST /api/sumup/webhook` — backup webhook handler for `CHECKOUT_STATUS_CHANGED` events
+- `POST /api/orders` — direct order creation (used internally)
+
+**Flow**: Cart → `/api/sumup/checkout` → SumUp hosted page → return to `/bag?checkout_id=xxx` → `/api/sumup/complete` → order created in Supabase → confirmation screen.
 
 ### PWA
 
@@ -55,7 +58,7 @@ Stripe is wired end-to-end:
 | Styling | Tailwind v4 + CSS Modules |
 | Database | Supabase (PostgreSQL + RLS) |
 | Auth | Supabase Auth (email/password) |
-| Payments | Stripe (PaymentIntents + Webhooks) |
+| Payments | SumUp (Hosted Checkout + Webhooks) |
 | Animations | Framer Motion v12 |
 | State | Zustand v5 (persisted) |
 | Deploy | Vercel |
@@ -71,7 +74,7 @@ Stripe is wired end-to-end:
 | Homepage | `/` | 12 sections driven by App Builder (hero, featured, editorial, philosophy, ritual, reviews, testimonials, newsletter, footer + more) |
 | Product catalog | `/discover` | Listing + search + category filter, Supabase-backed |
 | Product detail | (overlay) | Add-to-bag, variants, favorites |
-| Bag / Cart | `/bag` | Zustand cart, Stripe checkout |
+| Bag / Cart | `/bag` | Zustand cart, SumUp hosted checkout |
 | Orders | `/profile` (tab) | Real orders from Supabase |
 | Loyalty | `/profile` (tab) | Points balance from `profiles.loyalty_points` |
 | Favorites | `/favorites` | Persisted via Zustand |
@@ -95,7 +98,7 @@ Stripe is wired end-to-end:
 | Promotions | `/admin/promotions` | Promo code CRUD — persisted in `localStorage` (Supabase sync pending) |
 | Analytics | `/admin/analytics` | Charts from real Supabase data (orders, appointments, top products) |
 | Reviews | `/admin/reviews` | Stub — "Système d'avis bientôt disponible" |
-| Settings | `/admin/settings` | Expandable forms (store info, Stripe key, email sender). Persisted in `localStorage` — no server write yet |
+| Settings | `/admin/settings` | Expandable forms (store info, SumUp config, email sender). Persisted in `localStorage` — no server write yet |
 
 ### Auth
 
@@ -126,9 +129,8 @@ src/
 │   │   ├── login/
 │   │   └── globals.css       # Admin-specific styles
 │   ├── api/
-│   │   ├── checkout/         # Stripe PaymentIntent creation
-│   │   ├── orders/           # Order read endpoint
-│   │   └── webhooks/stripe/  # Stripe webhook handler
+│   │   ├── orders/           # Direct order creation
+│   │   └── sumup/            # SumUp: checkout · complete · webhook
 │   ├── bag/
 │   ├── discover/
 │   ├── favorites/
@@ -166,9 +168,10 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 
-# Stripe
-STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET
+# SumUp
+SUMUP_CLIENT_ID
+SUMUP_CLIENT_SECRET
+SUMUP_WEBHOOK_SECRET    # optional
 ```
 
 ---
@@ -186,4 +189,4 @@ npx tsc --noEmit     # Type check
 
 ## Deploy
 
-Deploys to Vercel. Set all environment variables in the Vercel project dashboard. The Stripe webhook endpoint is `https://<domain>/api/webhooks/stripe`.
+Deploys to Vercel. Set all environment variables in the Vercel project dashboard. Configure the SumUp webhook endpoint (`https://<domain>/api/sumup/webhook`) in SumUp Dashboard → Integrations → Webhooks.
