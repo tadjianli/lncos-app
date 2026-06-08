@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import { getCheckoutStatus } from "@/lib/sumup";
+import { getCheckoutStatus, SumUpApiError } from "@/lib/sumup";
 
 interface CompleteBody {
   checkout_id: string;
@@ -126,9 +126,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ id: order.id, ref: order.id });
   } catch (err) {
     console.error("[/api/sumup/complete]", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Erreur de vérification du paiement" },
-      { status: 500 }
-    );
+    const message = err instanceof SumUpApiError
+      ? err.userMessage()
+      : err instanceof Error ? err.message : "Erreur de vérification du paiement";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

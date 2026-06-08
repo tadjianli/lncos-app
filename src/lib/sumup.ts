@@ -35,6 +35,52 @@ function apiKey(): string {
   return key;
 }
 
+/**
+ * Parse a SumUp error response into a structured object.
+ * SumUp error bodies are JSON: { title, detail, status, trace_id }
+ */
+async function parseSumUpError(
+  res: Response,
+  context: string
+): Promise<never> {
+  const raw = await res.text();
+  let detail = raw;
+  try {
+    const json = JSON.parse(raw) as { title?: string; detail?: string; status?: number };
+    detail = json.detail ?? json.title ?? raw;
+  } catch {
+    // body was not JSON — use raw text
+  }
+  // Full details for server logs only
+  console.error(`[SumUp] ${context} [${res.status}]:`, raw);
+  throw new SumUpApiError(res.status, detail, context);
+}
+
+export class SumUpApiError extends Error {
+  constructor(
+    public readonly statusCode: number,
+    public readonly detail: string,
+    public readonly context: string
+  ) {
+    super(detail);
+    this.name = "SumUpApiError";
+  }
+
+  /** Human-readable message safe to show in the UI */
+  userMessage(): string {
+    if (this.statusCode === 401) {
+      return "La clé API SumUp est invalide ou expirée. Vérifiez la configuration SUMUP_CLIENT_SECRET.";
+    }
+    if (this.statusCode === 403) {
+      return "Accès refusé par SumUp. Vérifiez les permissions de la clé API.";
+    }
+    if (this.statusCode >= 500) {
+      return "SumUp rencontre une erreur temporaire. Réessayez dans quelques instants.";
+    }
+    return this.detail;
+  }
+}
+
 /* ─── Merchant code cache ────────────────────────────────────────── */
 
 let _merchant: { code: string; email: string } | null = null;
@@ -48,8 +94,7 @@ async function getMerchant(): Promise<{ code: string; email: string }> {
   });
 
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`SumUp /me [${res.status}]: ${body}`);
+    await parseSumUpError(res, "GET /me");
   }
 
   const data: MerchantResponse = await res.json();
@@ -88,8 +133,7 @@ export async function createCheckout(params: {
   });
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`SumUp createCheckout [${res.status}]: ${err}`);
+    await parseSumUpError(res, "POST /checkouts");
   }
 
   const data: SumUpCheckout = await res.json();
@@ -106,8 +150,7 @@ export async function getCheckoutStatus(checkoutId: string): Promise<SumUpChecko
   });
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`SumUp getCheckout [${res.status}]: ${err}`);
+    await parseSumUpError(res, `GET /checkouts/${checkoutId}`);
   }
 
   return res.json() as Promise<SumUpCheckout>;

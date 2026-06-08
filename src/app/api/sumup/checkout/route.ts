@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { createCheckout } from "@/lib/sumup";
+import { createCheckout, SumUpApiError } from "@/lib/sumup";
 
 interface CheckoutItem {
   id: string;
@@ -58,9 +58,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ checkout_id: id, checkout_url: checkoutUrl, reference });
   } catch (err) {
     console.error("[/api/sumup/checkout]", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Initialisation du paiement échouée" },
-      { status: 500 }
-    );
+    const message = err instanceof SumUpApiError
+      ? err.userMessage()
+      : err instanceof Error ? err.message : "Initialisation du paiement échouée";
+    const status = err instanceof SumUpApiError && err.statusCode === 401 ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
