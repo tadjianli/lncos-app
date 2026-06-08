@@ -26,10 +26,10 @@ export function TestimonialsSection() {
   return (
     <Section className="mt-12">
       <SectionHeader
-        eyebrow="Reviews"
+        eyebrow="Community"
         title="What They Say"
       />
-      <div className="scroll-row px-5">
+      <div className="scroll-row px-5 pb-2">
         {TESTIMONIALS.map((t, i) => (
           <TestimonialCard key={i} {...t} />
         ))}

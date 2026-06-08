@@ -1,4 +1,4 @@
-import { Section, SectionHeader, Container } from "@/components/shared/Container";
+import { Section, SectionHeader, Container, GoldDivider } from "@/components/shared/Container";
 import { Button } from "@/components/shared/Button";
 
 const STEPS = [
@@ -26,11 +26,8 @@ const STEPS = [
 
 export function RitualSection() {
   return (
-    <Section className="mt-12">
-      {/* Gold divider */}
-      <div className="px-5 mb-10">
-        <div className="h-px bg-gradient-to-r from-transparent via-[rgba(201,169,110,0.3)] to-transparent" />
-      </div>
+    <Section className="mt-14">
+      <GoldDivider className="mb-12" />
 
       <SectionHeader
         eyebrow="The Method"
@@ -39,37 +36,55 @@ export function RitualSection() {
         align="center"
       />
 
-      <Container className="mt-7">
-        <div className="flex flex-col gap-0">
-          {STEPS.map((step, idx) => (
-            <div key={step.step} className="relative">
-              {/* Connector line */}
-              {idx < STEPS.length - 1 && (
-                <div className="absolute left-[1.375rem] top-10 w-px h-full bg-gradient-to-b from-[rgba(201,169,110,0.25)] to-transparent" />
-              )}
+      <Container className="mt-8">
+        <div className="flex flex-col">
+          {STEPS.map((step, idx) => {
+            const isLast = idx === STEPS.length - 1;
+            return (
+              <div key={step.step} className="relative flex gap-5">
+                {/* Left: step circle + connector */}
+                <div className="flex flex-col items-center flex-shrink-0" style={{ width: "2.75rem" }}>
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                    style={{
+                      background: "rgba(201,169,110,0.05)",
+                      border: "1px solid rgba(201,169,110,0.22)",
+                      boxShadow: "0 0 12px rgba(201,169,110,0.06)",
+                    }}
+                  >
+                    <span className="text-[0.58rem] font-light tracking-[0.18em] text-[--gold]">
+                      {step.step}
+                    </span>
+                  </div>
 
-              <div className="flex gap-5 py-5">
-                {/* Step number */}
-                <div className="flex-shrink-0 w-11 h-11 rounded-full border border-[rgba(201,169,110,0.25)] flex items-center justify-center bg-[rgba(201,169,110,0.04)]">
-                  <span className="text-[0.6rem] font-light tracking-widest text-[--gold]">
-                    {step.step}
-                  </span>
+                  {/* Connector line — dashed gold gradient */}
+                  {!isLast && (
+                    <div className="flex-1 w-px my-1" style={{ minHeight: "2rem" }}>
+                      <div
+                        className="w-full h-full"
+                        style={{
+                          background: "linear-gradient(to bottom, rgba(201,169,110,0.22) 0%, rgba(201,169,110,0.04) 100%)",
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex-1 pt-1.5">
-                  <h3 className="text-sm font-light tracking-[0.12em] uppercase text-[--cream] mb-1.5">
+                {/* Right: content */}
+                <div className={`flex-1 ${isLast ? "pb-0" : "pb-7"} pt-2`}>
+                  <h3 className="text-[0.8rem] font-light tracking-[0.14em] uppercase text-[--cream] mb-1.5">
                     {step.title}
                   </h3>
-                  <p className="text-xs font-light text-[--cream-muted] leading-relaxed">
+                  <p className="text-[0.78rem] font-light text-[--cream-muted] leading-[1.72]">
                     {step.desc}
                   </p>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mt-7">
+        <div className="mt-9">
           <Button variant="outline" size="lg" className="w-full">
             Build Your Ritual
           </Button>

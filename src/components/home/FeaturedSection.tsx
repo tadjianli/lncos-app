@@ -5,11 +5,11 @@ import { Section, SectionHeader } from "@/components/shared/Container";
 import { ProductCard, CategoryCard } from "@/components/shared/Card";
 
 const CATEGORIES = [
-  { label: "All", count: 24 },
-  { label: "Skin", count: 9 },
-  { label: "Eyes", count: 7 },
-  { label: "Lips", count: 5 },
-  { label: "Body", count: 3 },
+  { label: "All",  count: 24 },
+  { label: "Skin", count: 9  },
+  { label: "Eyes", count: 7  },
+  { label: "Lips", count: 5  },
+  { label: "Body", count: 3  },
 ];
 
 const PRODUCTS = [
@@ -19,7 +19,7 @@ const PRODUCTS = [
     subtitle: "Skin Elixir",
     price: "$148",
     tag: "Best Seller",
-    color: "#1A1510",
+    color: "#16130D",
     category: "Skin",
   },
   {
@@ -28,7 +28,7 @@ const PRODUCTS = [
     subtitle: "Eye Treatment",
     price: "$96",
     tag: "New",
-    color: "#100E14",
+    color: "#0F0D14",
     category: "Eyes",
   },
   {
@@ -36,7 +36,7 @@ const PRODUCTS = [
     name: "Golden Hour Glow",
     subtitle: "Illuminating Oil",
     price: "$124",
-    color: "#1A1308",
+    color: "#181308",
     category: "Skin",
   },
   {
@@ -45,7 +45,7 @@ const PRODUCTS = [
     subtitle: "Lip Treatment",
     price: "$68",
     tag: "Limited",
-    color: "#1A0C10",
+    color: "#180B10",
     category: "Lips",
   },
 ];
@@ -59,19 +59,19 @@ export function FeaturedSection() {
       : PRODUCTS.filter((p) => p.category === activeCategory);
 
   return (
-    <Section className="mt-10">
+    <Section className="mt-11">
       <SectionHeader
         eyebrow="Curated Edit"
         title="Featured Products"
         action={
-          <button className="text-[0.6rem] font-light tracking-[0.15em] uppercase text-[--gold] border-b border-[rgba(201,169,110,0.35)] pb-px">
-            View All
+          <button className="text-[0.58rem] font-light tracking-[0.16em] uppercase text-[--gold] transition-opacity duration-150 hover:opacity-70 active:opacity-50">
+            <span className="border-b border-[rgba(201,169,110,0.3)] pb-px">View All</span>
           </button>
         }
       />
 
-      {/* Category Filter */}
-      <div className="scroll-row px-5 mb-5">
+      {/* Category filters */}
+      <div className="scroll-row px-5 mb-5 gap-2">
         {CATEGORIES.map((cat) => (
           <CategoryCard
             key={cat.label}
@@ -83,8 +83,8 @@ export function FeaturedSection() {
         ))}
       </div>
 
-      {/* Product Scroll */}
-      <div className="scroll-row px-5">
+      {/* Product row */}
+      <div className="scroll-row px-5 pb-2">
         {filtered.map((product) => (
           <ProductCard
             key={product.id}

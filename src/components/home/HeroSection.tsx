@@ -2,55 +2,102 @@ import { Button } from "@/components/shared/Button";
 
 export function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden" style={{ minHeight: "88dvh" }}>
-      {/* Background */}
+    <section className="relative w-full overflow-hidden" style={{ minHeight: "92dvh" }}>
+
+      {/* ── Layered background ── */}
+      <div className="absolute inset-0 bg-[--obsidian]" />
+
+      {/* Primary gold halo — top center */}
       <div
         className="absolute inset-0"
         style={{
-          background: `
-            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,169,110,0.08) 0%, transparent 65%),
-            radial-gradient(ellipse 60% 80% at 80% 100%, rgba(201,169,110,0.04) 0%, transparent 60%),
-            #080808
+          background: `radial-gradient(ellipse 90% 55% at 50% -5%, rgba(201,169,110,0.10) 0%, transparent 68%)`,
+        }}
+      />
+
+      {/* Secondary glow — bottom right warmth */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse 70% 50% at 88% 105%, rgba(180,140,80,0.06) 0%, transparent 62%)`,
+        }}
+      />
+
+      {/* Ambient vignette — edges darker */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse 85% 85% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)`,
+        }}
+      />
+
+      {/* Refined grid texture — very subtle */}
+      <div
+        className="absolute inset-0 opacity-[0.018]"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(0deg,   transparent, transparent 59px, rgba(201,169,110,1) 60px),
+            repeating-linear-gradient(90deg,  transparent, transparent 59px, rgba(201,169,110,1) 60px)
           `,
         }}
       />
 
-      {/* Subtle grid texture */}
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(201,169,110,0.5) 80px),
-                            repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(201,169,110,0.5) 80px)`,
-        }}
-      />
-
-      {/* Hero product silhouette area */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Product silhouette — 3 layered blurs for depth */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {/* Outer halo */}
         <div
-          className="w-40 h-64 opacity-[0.06]"
+          className="absolute w-56 h-80 opacity-[0.04] animate-float"
           style={{
-            background: "linear-gradient(135deg, #C9A96E, #E2C98A)",
-            borderRadius: "50% 50% 40% 40% / 60% 60% 40% 40%",
-            filter: "blur(40px)",
+            background: "radial-gradient(ellipse at 50% 40%, #E2C98A, transparent 70%)",
+            filter: "blur(32px)",
+            animationDelay: "0s",
+          }}
+        />
+        {/* Mid glow */}
+        <div
+          className="absolute w-32 h-52 opacity-[0.055] animate-float"
+          style={{
+            background: "radial-gradient(ellipse at 50% 35%, #C9A96E, transparent 65%)",
+            filter: "blur(18px)",
+            animationDelay: "0.6s",
+          }}
+        />
+        {/* Core bright */}
+        <div
+          className="absolute w-14 h-24 opacity-[0.07] animate-float"
+          style={{
+            background: "linear-gradient(160deg, #E2C98A, #C9A96E)",
+            borderRadius: "40% 40% 35% 35% / 50% 50% 40% 40%",
+            filter: "blur(8px)",
+            animationDelay: "1.1s",
           }}
         />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col justify-end h-full px-6" style={{ minHeight: "88dvh", paddingBottom: "2.5rem" }}>
-        <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
-          <p className="text-[0.6rem] font-light tracking-[0.35em] uppercase text-[--gold] mb-4">
-            Collection 2025
-          </p>
+      {/* ── Content ── */}
+      <div
+        className="relative z-10 flex flex-col justify-end h-full px-6"
+        style={{ minHeight: "92dvh", paddingBottom: "3rem" }}
+      >
+        {/* Eyebrow */}
+        <div className="animate-fade-up" style={{ animationDelay: "80ms" }}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-px w-6 bg-[rgba(201,169,110,0.5)]" />
+            <p className="text-[0.58rem] font-light tracking-[0.35em] uppercase text-[--gold]">
+              Collection 2025
+            </p>
+          </div>
         </div>
 
-        <div className="animate-fade-up" style={{ animationDelay: "200ms" }}>
+        {/* Headline */}
+        <div className="animate-fade-up" style={{ animationDelay: "180ms" }}>
           <h1
-            className="font-light text-[--cream] leading-[1.08] mb-3"
+            className="text-[--cream-bright] leading-[1.05] mb-4"
             style={{
               fontFamily: "var(--font-heading)",
-              fontSize: "clamp(2.5rem, 12vw, 3.5rem)",
-              letterSpacing: "0.02em",
+              fontSize: "clamp(2.8rem, 13vw, 3.75rem)",
+              fontWeight: 300,
+              letterSpacing: "0.015em",
             }}
           >
             The Art of
@@ -59,27 +106,38 @@ export function HeroSection() {
           </h1>
         </div>
 
-        <div className="animate-fade-up" style={{ animationDelay: "320ms" }}>
-          <p className="text-xs font-light text-[--cream-muted] leading-relaxed mb-7 max-w-xs">
+        {/* Body */}
+        <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
+          <p className="text-[0.82rem] font-light text-[--cream-muted] leading-[1.72] mb-8 max-w-[30ch]">
             Precision-crafted luxury for those who understand that beauty is a ritual, not a routine.
           </p>
         </div>
 
-        <div className="animate-fade-up flex flex-col gap-3" style={{ animationDelay: "440ms" }}>
-          <Button variant="gold" size="lg" className="w-full">
+        {/* CTAs */}
+        <div className="animate-fade-up flex flex-col gap-3" style={{ animationDelay: "420ms" }}>
+          <Button variant="gold" size="lg" className="w-full text-[0.65rem]">
             Shop the Collection
           </Button>
-          <Button variant="outline" size="lg" className="w-full">
+          <Button variant="outline" size="lg" className="w-full text-[0.65rem]">
             Our Story
           </Button>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="flex flex-col items-center gap-2 mt-8 opacity-40 animate-fade-up" style={{ animationDelay: "600ms" }}>
-          <span className="text-[0.5rem] tracking-[0.25em] uppercase text-[--cream-muted]">
-            Scroll
-          </span>
-          <div className="w-px h-8 bg-gradient-to-b from-[--gold] to-transparent" />
+        {/* Scroll cue */}
+        <div
+          className="animate-fade-up flex flex-col items-center gap-2 mt-10"
+          style={{ animationDelay: "600ms", opacity: 0 }}
+        >
+          <p className="text-[0.5rem] font-light tracking-[0.3em] uppercase text-[--cream-muted] opacity-40">
+            Scroll to explore
+          </p>
+          <div className="relative w-px h-10 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-full bg-gradient-to-b from-[rgba(201,169,110,0.5)] to-transparent" />
+            <div
+              className="absolute inset-x-0 h-4 bg-[--gold] rounded-full"
+              style={{ animation: "slideDown 1.8s ease-in-out infinite" }}
+            />
+          </div>
         </div>
       </div>
     </section>

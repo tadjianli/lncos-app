@@ -19,42 +19,56 @@ export function TopBar({
   return (
     <header
       className={cn(
-        "fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 flex items-center justify-between h-16 px-5",
-        "transition-all duration-300"
+        "fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40",
+        "flex items-center justify-between h-16 px-5",
+        "transition-[background,backdrop-filter,border-color] duration-400"
       )}
       style={
         transparent
-          ? undefined
+          ? {
+              paddingTop: "env(safe-area-inset-top)",
+            }
           : {
-              background: "rgba(8,8,8,0.88)",
-              backdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(255,255,255,0.04)",
+              background: "rgba(7,7,7,0.90)",
+              backdropFilter: "blur(24px) saturate(150%)",
+              WebkitBackdropFilter: "blur(24px) saturate(150%)",
+              borderBottom: "1px solid rgba(255,255,255,0.038)",
+              paddingTop: "env(safe-area-inset-top)",
             }
       }
     >
       {/* Logo */}
-      <Link href="/" className="flex flex-col leading-none">
+      <Link
+        href="/"
+        className="flex flex-col leading-none active:opacity-70 transition-opacity duration-100"
+      >
         <span
-          className="text-gold-gradient font-light tracking-[0.28em] uppercase"
-          style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem" }}
+          className="text-gold-gradient font-light tracking-[0.30em] uppercase"
+          style={{ fontFamily: "var(--font-heading)", fontSize: "1.05rem", letterSpacing: "0.3em" }}
         >
           LN COS
         </span>
-        <span className="text-[0.45rem] font-light tracking-[0.35em] uppercase text-[--cream-muted] mt-px">
+        <span className="text-[0.43rem] font-light tracking-[0.38em] uppercase text-[--cream-muted] mt-[2px] opacity-70">
           Luxury Beauty
         </span>
       </Link>
 
       {/* Actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         {showSearch && (
           <button
-            className="h-9 w-9 flex items-center justify-center rounded-full transition-colors duration-200 hover:bg-[rgba(255,255,255,0.05)] active:scale-90"
+            className={cn(
+              "h-9 w-9 flex items-center justify-center rounded-full",
+              "text-[--cream-muted] hover:text-[--cream]",
+              "transition-all duration-150",
+              "hover:bg-[rgba(255,255,255,0.04)]",
+              "active:scale-[0.88] active:duration-[60ms]"
+            )}
             aria-label="Search"
           >
             <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-              <circle cx="7.5" cy="7.5" r="5.25" stroke="#A89F8E" strokeWidth="1.25" />
-              <path d="M11.5 11.5L15 15" stroke="#A89F8E" strokeWidth="1.25" strokeLinecap="round" />
+              <circle cx="7.5" cy="7.5" r="5" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
           </button>
         )}
@@ -62,25 +76,35 @@ export function TopBar({
         {showCart && (
           <Link
             href="/bag"
-            className="relative h-9 w-9 flex items-center justify-center rounded-full transition-colors duration-200 hover:bg-[rgba(255,255,255,0.05)] active:scale-90"
+            className={cn(
+              "relative h-9 w-9 flex items-center justify-center rounded-full",
+              "text-[--cream-muted] hover:text-[--cream]",
+              "transition-all duration-150",
+              "hover:bg-[rgba(255,255,255,0.04)]",
+              "active:scale-[0.88] active:duration-[60ms]"
+            )}
             aria-label={`Bag (${cartCount} items)`}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path
-                d="M2 5.5h14L14.5 15H3.5L2 5.5z"
-                stroke="#A89F8E"
-                strokeWidth="1.25"
+                d="M2.5 6h13l-1.6 10H4.1L2.5 6z"
+                stroke="currentColor"
+                strokeWidth="1.2"
                 strokeLinejoin="round"
               />
               <path
-                d="M6 5.5V4.5a3 3 0 016 0v1"
-                stroke="#A89F8E"
-                strokeWidth="1.25"
+                d="M6.5 6V5a2.5 2.5 0 015 0v1"
+                stroke="currentColor"
+                strokeWidth="1.2"
                 strokeLinecap="round"
               />
             </svg>
+
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[--gold] text-[--obsidian] text-[0.5rem] font-medium flex items-center justify-center leading-none">
+              <span
+                className="absolute -top-0.5 -right-0.5 h-[1.1rem] w-[1.1rem] rounded-full bg-[--gold] text-[--obsidian] flex items-center justify-center leading-none font-medium animate-badge-pop"
+                style={{ fontSize: "0.48rem" }}
+              >
                 {cartCount > 9 ? "9+" : cartCount}
               </span>
             )}

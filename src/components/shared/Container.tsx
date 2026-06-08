@@ -61,25 +61,39 @@ export function SectionHeader({
     >
       <div>
         {eyebrow && (
-          <p className="text-[0.625rem] font-light tracking-[0.25em] uppercase text-[--gold] mb-1">
+          <p className="text-[0.58rem] font-light tracking-[0.28em] uppercase text-[--gold] mb-1.5">
             {eyebrow}
           </p>
         )}
         <h2
-          className="font-heading text-xl font-light tracking-wide text-[--cream]"
-          style={{ fontFamily: "var(--font-heading)" }}
+          className="font-light tracking-[0.03em] text-[--cream-bright]"
+          style={{ fontFamily: "var(--font-heading)", fontSize: "1.35rem" }}
         >
           {title}
         </h2>
         {subtitle && (
-          <p className="text-xs text-[--cream-muted] mt-0.5 font-light">
+          <p className="text-[0.75rem] text-[--cream-muted] mt-1 font-light leading-relaxed">
             {subtitle}
           </p>
         )}
       </div>
       {action && align === "left" && (
-        <div className="flex-shrink-0">{action}</div>
+        <div className="flex-shrink-0 pb-0.5">{action}</div>
       )}
+    </div>
+  );
+}
+
+/* ─── Gold Diamond Divider ──────────────────────────────────────────────── */
+
+export function GoldDivider({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center gap-4 px-5", className)}>
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[rgba(201,169,110,0.22)]" />
+      <svg width="7" height="7" viewBox="0 0 7 7" fill="none" className="flex-shrink-0 opacity-50">
+        <path d="M3.5 0.5l.9 2.1L7 3.5l-2.6.9L3.5 6.5l-.9-2.1L0 3.5l2.6-.9z" fill="#C9A96E" />
+      </svg>
+      <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[rgba(201,169,110,0.22)]" />
     </div>
   );
 }

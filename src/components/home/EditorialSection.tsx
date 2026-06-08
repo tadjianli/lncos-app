@@ -8,34 +8,31 @@ const EDITORIALS = [
     title: "The 7-Step\nObsidian Ritual",
     subtitle: "Transform your evening routine into a meditative practice with our signature obsidian collection.",
     cta: "Discover the Ritual",
-    bgColor: "linear-gradient(160deg, #0D0C0A 0%, #1A1510 100%)",
-    wide: true,
+    bgColor: "linear-gradient(160deg, #0D0B08 0%, #1A1510 60%, #0F0C08 100%)",
   },
   {
     id: 2,
     eyebrow: "New Arrival",
     title: "Lumière\nEssence",
     cta: "Shop Now",
-    bgColor: "linear-gradient(160deg, #0E0C0A 0%, #16120A 100%)",
-    wide: false,
+    bgColor: "linear-gradient(155deg, #0E0C09 0%, #161208 100%)",
   },
   {
     id: 3,
     eyebrow: "Limited Edition",
     title: "Nocturne\nCollection",
     cta: "Explore",
-    bgColor: "linear-gradient(160deg, #0A0A10 0%, #0E0C16 100%)",
-    wide: false,
+    bgColor: "linear-gradient(155deg, #0A0A10 0%, #0E0B16 100%)",
   },
 ];
 
 export function EditorialSection() {
   return (
-    <Section className="mt-10">
+    <Section className="mt-12">
       <SectionHeader eyebrow="Stories" title="Editorial" />
 
-      <div className="px-5 flex flex-col gap-4">
-        {/* Wide hero editorial */}
+      <div className="px-5 flex flex-col gap-3.5">
+        {/* Hero editorial */}
         <FeatureCard
           eyebrow={EDITORIALS[0].eyebrow}
           title={EDITORIALS[0].title}
@@ -45,8 +42,8 @@ export function EditorialSection() {
           aspectRatio="4/5"
         />
 
-        {/* 2-column smaller */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* 2-column grid */}
+        <div className="grid grid-cols-2 gap-3.5">
           {EDITORIALS.slice(1).map((ed) => (
             <FeatureCard
               key={ed.id}
