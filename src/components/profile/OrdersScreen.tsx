@@ -108,8 +108,8 @@ function StatusChip({ status }: { status: OrderStatus }) {
 /* ─── Delivery progress bar (shipped only) ───────────────────────────── */
 
 function DeliveryProgress({ eta }: { eta?: string }) {
-  const steps = ["Confirmée", "Expédiée", "Livrée"];
-  const currentStep = 1; // "Expédiée"
+  const steps = ["Préparation", "Expédiée", "En livraison", "Livrée"];
+  const currentStep = 2; // "En livraison" — order is actively in transit
 
   return (
     <div style={{ padding: "4px 0 2px" }}>
@@ -420,7 +420,7 @@ function OrderCard({
             willChange: "transform",
           }}
         >
-          <Icon name="chevDown" size={18} />
+          <Icon name="chevD" size={18} />
         </div>
       </button>
 
@@ -508,7 +508,7 @@ function OrderCard({
             }}
           >
             <Icon name="bolt" size={13} />
-            Racheter
+            Commander à nouveau
           </button>
         </div>
       </div>
@@ -550,14 +550,6 @@ export function OrdersScreen({ onClose, onBack }: OrdersScreenProps) {
         willChange: "transform",
       }}
     >
-      {/* Keyframe for gold pulsing dot */}
-      <style>{`
-        @keyframes goldPulse {
-          0%, 100% { box-shadow: 0 0 0 4px rgba(212,175,55,.2); }
-          50%       { box-shadow: 0 0 0 7px rgba(212,175,55,.08); }
-        }
-      `}</style>
-
       {/* Header */}
       <div style={{ paddingTop: 16, flex: "0 0 auto" }}>
         <SubHeader
@@ -640,15 +632,64 @@ export function OrdersScreen({ onClose, onBack }: OrdersScreenProps) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 14,
-                paddingTop: 60,
-                color: "var(--ink-mute)",
+                paddingTop: 72,
+                paddingBottom: 40,
+                paddingLeft: 24,
+                paddingRight: 24,
+                textAlign: "center",
+                animation: "fadeUp .45s var(--ease-lux) both",
               }}
             >
-              <Icon name="bag" size={40} color="var(--charcoal-3)" />
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 500 }}>
-                Aucune commande dans cette catégorie
+              {/* Icon ring */}
+              <div
+                style={{
+                  width: 82,
+                  height: 82,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(212,175,55,.1), rgba(212,175,55,.04))",
+                  border: "1.5px solid rgba(212,175,55,.22)",
+                  display: "grid",
+                  placeItems: "center",
+                  marginBottom: 24,
+                  animation: "ringGlow 3.5s ease-in-out infinite",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="bag" size={34} color="var(--gold)" />
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: ".18em",
+                  textTransform: "uppercase",
+                  color: "var(--gold)",
+                  fontWeight: 700,
+                  marginBottom: 10,
+                }}
+              >
+                Historique vide
+              </div>
+              <h3
+                style={{
+                  margin: "0 0 10px",
+                  fontSize: 21,
+                  fontWeight: 700,
+                  color: "var(--ink)",
+                  lineHeight: 1.2,
+                }}
+              >
+                Aucune commande ici
+              </h3>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13.5,
+                  color: "var(--ink-soft)",
+                  lineHeight: 1.55,
+                  maxWidth: 230,
+                }}
+              >
+                Vos commandes apparaîtront ici après votre prochain achat.
               </p>
             </div>
           ) : (

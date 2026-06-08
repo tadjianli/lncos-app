@@ -94,7 +94,7 @@ const TYPE_ICON: Record<NotifType, { icon: string; bg: string; color: string }> 
 
 /* ─── NotifCard ─────────────────────────────────────────────────────────── */
 
-function NotifCard({ n, allRead }: { n: Notif; allRead: boolean }) {
+function NotifCard({ n, allRead, delay = 0 }: { n: Notif; allRead: boolean; delay?: number }) {
   const isUnread = n.unread && !allRead;
   const cfg = TYPE_ICON[n.type];
 
@@ -111,9 +111,10 @@ function NotifCard({ n, allRead }: { n: Notif; allRead: boolean }) {
         marginBottom: 8,
         position: "relative",
         overflow: "hidden",
-        willChange: "transform",
+        willChange: "transform, opacity",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
+        animation: `notifIn .38s var(--ease-lux) ${delay}s both`,
       }}
     >
       {/* Gold left accent bar for unread */}
@@ -417,6 +418,9 @@ function GroupLabel({ label, first }: { label: string; first?: boolean }) {
   return (
     <div
       style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 2,
         fontSize: 10,
         fontWeight: 700,
         textTransform: "uppercase",
@@ -424,6 +428,14 @@ function GroupLabel({ label, first }: { label: string; first?: boolean }) {
         color: "var(--gold)",
         paddingTop: first ? 8 : 20,
         paddingBottom: 10,
+        /* extend across the scroll-container's 18px gutter */
+        marginLeft: -18,
+        marginRight: -18,
+        paddingLeft: 18,
+        paddingRight: 18,
+        background: "rgba(8,8,8,.90)",
+        backdropFilter: "blur(24px) saturate(1.1)",
+        WebkitBackdropFilter: "blur(24px) saturate(1.1)",
       }}
     >
       {label}
@@ -491,17 +503,17 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
       >
         <GroupLabel label="Aujourd'hui" first />
         {TODAY.map((n, i) => (
-          <NotifCard key={`today-${i}`} n={n} allRead={allRead} />
+          <NotifCard key={`today-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
         ))}
 
         <GroupLabel label="Hier" />
         {YESTERDAY.map((n, i) => (
-          <NotifCard key={`yesterday-${i}`} n={n} allRead={allRead} />
+          <NotifCard key={`yesterday-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
         ))}
 
         <GroupLabel label="Cette semaine" />
         {THIS_WEEK.map((n, i) => (
-          <NotifCard key={`week-${i}`} n={n} allRead={allRead} />
+          <NotifCard key={`week-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
         ))}
       </div>
     </div>

@@ -243,6 +243,65 @@ function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: 
               Voir mes rendez-vous
             </Link>
 
+            {/* Calendar export */}
+            <button
+              onClick={() => {
+                if (!draft.date) return;
+                const [hh, mm] = (draft.time || "12:00").split(":").map(Number);
+                const start = new Date(draft.date);
+                start.setHours(hh, mm, 0, 0);
+                const end = new Date(start.getTime() + svcMin(draft.serviceId, draft.extrasIds) * 60000);
+                const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+                const staffMemberName = draft.staffId === "any"
+                  ? "Premier disponible"
+                  : staff.find((s) => s.id === draft.staffId)?.name ?? "Prestataire";
+                const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
+                const ics = [
+                  "BEGIN:VCALENDAR",
+                  "VERSION:2.0",
+                  "PRODID:-//LN COS//v1.0//FR",
+                  "BEGIN:VEVENT",
+                  `DTSTART:${fmt(start)}`,
+                  `DTEND:${fmt(end)}`,
+                  `SUMMARY:${svc.name} — LN COS`,
+                  `DESCRIPTION:RDV avec ${staffMemberName} · Institut LN COS`,
+                  "LOCATION:Institut LN COS",
+                  "END:VEVENT",
+                  "END:VCALENDAR",
+                ].join("\r\n");
+                const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "rdv-lncos.ics";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }}
+              style={{
+                width: "100%",
+                padding: "15px 24px",
+                borderRadius: "var(--r-pill)",
+                background: "rgba(212,175,55,.08)",
+                border: "1.5px solid rgba(212,175,55,.35)",
+                color: "var(--gold)",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                WebkitTapHighlightColor: "transparent",
+                touchAction: "manipulation",
+                transition: "background .2s var(--ease-lux), transform .18s var(--ease-spring)",
+              }}
+            >
+              <Icon name="calendar" size={17} color="var(--gold)" />
+              Ajouter au calendrier
+            </button>
+
             <button
               onClick={onReset}
               style={{
@@ -250,8 +309,8 @@ function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: 
                 padding: "15px 24px",
                 borderRadius: "var(--r-pill)",
                 background: "transparent",
-                border: "1.5px solid rgba(212,175,55,.4)",
-                color: "var(--ink-soft)",
+                border: "1.5px solid rgba(255,255,255,.1)",
+                color: "var(--ink-mute)",
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer",
@@ -651,7 +710,7 @@ function BookingWizard({
                   {fmtDate(draft.date)} · {fmtDur(durMin)}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
-                  {TIMES.map((t) => {
+                  {TIMES.map((t, ti) => {
                     const sel = draft.time === t;
                     return (
                       <button
@@ -666,7 +725,11 @@ function BookingWizard({
                           color: sel ? "#1a1306" : "var(--ink-soft)",
                           border: sel ? "transparent" : "1px solid rgba(255,255,255,.06)",
                           boxShadow: sel ? "var(--glow-gold)" : "none",
-                          transition: "background 0.2s var(--ease-lux), box-shadow 0.2s var(--ease-lux), color 0.2s var(--ease-lux)",
+                          transform: sel ? "scale(1.04)" : "scale(1)",
+                          transition: "background 0.22s var(--ease-lux), box-shadow 0.22s var(--ease-lux), color 0.22s var(--ease-lux), transform 0.28s var(--ease-spring)",
+                          animation: sel
+                            ? "slotPop .32s var(--ease-spring) both"
+                            : `fadeUp .3s ease ${ti * 0.035}s both`,
                           willChange: "transform",
                           WebkitTapHighlightColor: "transparent",
                           touchAction: "manipulation",

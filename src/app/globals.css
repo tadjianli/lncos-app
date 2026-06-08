@@ -1045,6 +1045,36 @@
   70%  { transform: scale(1.2); }
   100% { transform: scale(1); opacity: 1; }
 }
+@keyframes goldPulse {
+  0%,100% { box-shadow: 0 0 0 4px rgba(212,175,55,.22); }
+  50%     { box-shadow: 0 0 0 8px rgba(212,175,55,.06); }
+}
+@keyframes slotPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes notifIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─── Global button micro-interactions ──────────────────────── */
+
+.gold-btn {
+  transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease-lux);
+}
+.gold-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(212,175,55,.65); }
+.gold-btn:active { transform: scale(.96) translateY(0); }
+
+.pink-btn {
+  transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease-lux);
+}
+.pink-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(247,198,215,.75); }
+.pink-btn:active { transform: scale(.96) translateY(0); }
+
+/* Press feedback: any element tagged with data-press */
+[data-press]:active { transform: scale(.97); transition: transform .12s; }
 
 /* ─── Reels feed ─────────────────────────────────────────────── */
 
