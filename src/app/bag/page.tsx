@@ -134,13 +134,13 @@ function StepDelivery({
             />
           ))}
         </div>
-      ) : methods.length === 0 ? (
+      ) : (methods ?? []).length === 0 ? (
         <div style={{ padding: "32px 0", textAlign: "center", color: "var(--ink-mute)", fontSize: 13 }}>
           Aucune méthode de livraison disponible.
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {methods.map((m, i) => {
+          {(methods ?? []).map((m, i) => {
             const isSelected = selected?.id === m.id;
             const priceLabel = m.isFree ? "Gratuit" : `${m.price.toFixed(2).replace(".", ",")} €`;
             return (
@@ -529,7 +529,8 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const [payError, setPayError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
 
-  const { methods: shippingMethods, loading: shippingLoading } = useActiveShippingMethods();
+  const { methods: shippingMethodsRaw, loading: shippingLoading } = useActiveShippingMethods();
+  const shippingMethods = shippingMethodsRaw ?? [];
 
   // Auto-select first method once methods load
   useEffect(() => {
