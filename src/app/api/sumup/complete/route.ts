@@ -14,6 +14,8 @@ interface CompleteBody {
   }>;
   subtotal?: number;
   shipping_cost?: number;
+  discount?: number;
+  promo_code?: string;
   total?: number;
 }
 
@@ -32,6 +34,8 @@ export async function POST(req: Request) {
       items = [],
       subtotal = 0,
       shipping_cost = 0,
+      discount = 0,
+      promo_code,
       total = 0,
     } = body;
 
@@ -83,6 +87,8 @@ export async function POST(req: Request) {
         user_id: user?.id ?? null,
         subtotal: verifiedSubtotal,
         shipping_cost,
+        discount,
+        ...(promo_code ? { promo_code } : {}),
         total: verifiedTotal,
         status: "preparing",
         payment_status: "paid",
@@ -97,7 +103,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Erreur de création de commande" }, { status: 500 });
     }
 
-    // ── 4. Insert order items ──────────────────────────────────────
+    // ── 4. Increment promo usage count ────────────────────────────
+    if (promo_code) {
+      await supabase.rpc("increment_promo_uses", { promo_code_arg: promo_code });
+    }
+
+    // ── 5. Insert order items ──────────────────────────────────────
     if (items.length > 0) {
       const rows = items.map((it) => ({
         order_id: order.id,

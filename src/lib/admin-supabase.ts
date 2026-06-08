@@ -661,3 +661,151 @@ export function useActiveShippingMethods() {
 
   return { methods, loading };
 }
+
+/* ─── Promo type ──────────────────────────────────────────────────────────── */
+
+export interface Promo {
+  id: string;
+  code: string;
+  description: string;
+  type: "percentage" | "fixed" | "shipping";
+  value: number;
+  isActive: boolean;
+  expiresAt: string | null;
+  maxUses: number | null;
+  currentUses: number;
+  freeShipping: boolean;
+  minimumOrder: number;
+  createdAt: string;
+}
+
+type DbPromo = Database["public"]["Tables"]["promotions"]["Row"];
+
+function dbToPromo(r: DbPromo): Promo {
+  return {
+    id: r.id,
+    code: r.code,
+    description: r.description,
+    type: r.type,
+    value: Number(r.value),
+    isActive: r.is_active,
+    expiresAt: r.expires_at,
+    maxUses: r.max_uses,
+    currentUses: r.current_uses,
+    freeShipping: r.free_shipping,
+    minimumOrder: Number(r.minimum_order),
+    createdAt: r.created_at,
+  };
+}
+
+function promoToDb(p: Partial<Promo>): Partial<Database["public"]["Tables"]["promotions"]["Update"]> {
+  const db: Partial<Database["public"]["Tables"]["promotions"]["Update"]> = {};
+  if (p.code !== undefined) db.code = p.code;
+  if (p.description !== undefined) db.description = p.description;
+  if (p.type !== undefined) db.type = p.type;
+  if (p.value !== undefined) db.value = p.value;
+  if (p.isActive !== undefined) db.is_active = p.isActive;
+  if ("expiresAt" in p) db.expires_at = p.expiresAt ?? null;
+  if ("maxUses" in p) db.max_uses = p.maxUses ?? null;
+  if (p.currentUses !== undefined) db.current_uses = p.currentUses;
+  if (p.freeShipping !== undefined) db.free_shipping = p.freeShipping;
+  if (p.minimumOrder !== undefined) db.minimum_order = p.minimumOrder;
+  return db;
+}
+
+/* ─── usePromos (admin — full CRUD) ──────────────────────────────────────── */
+
+export function usePromos() {
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data } = await getSupabase()
+      .from("promotions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setPromos((data ?? []).map(dbToPromo));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("promos-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "promotions" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, [load]);
+
+  const updatePromo = useCallback(async (id: string, patch: Partial<Promo>) => {
+    await getSupabase().from("promotions").update(promoToDb(patch)).eq("id", id);
+    setPromos((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
+  }, []);
+
+  const insertPromo = useCallback(async (p: Omit<Promo, "id" | "currentUses" | "createdAt">) => {
+    const { data } = await getSupabase()
+      .from("promotions")
+      .insert({
+        code: p.code.toUpperCase().trim(),
+        description: p.description,
+        type: p.type,
+        value: p.value,
+        is_active: p.isActive,
+        expires_at: p.expiresAt ?? null,
+        max_uses: p.maxUses ?? null,
+        free_shipping: p.freeShipping,
+        minimum_order: p.minimumOrder,
+      })
+      .select()
+      .single();
+    if (data) setPromos((prev) => [dbToPromo(data as DbPromo), ...prev]);
+  }, []);
+
+  const deletePromo = useCallback(async (id: string) => {
+    await getSupabase().from("promotions").delete().eq("id", id);
+    setPromos((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  return { promos, loading, updatePromo, insertPromo, deletePromo, reload: load };
+}
+
+/* ─── validatePromoCode (cart — client-side) ─────────────────────────────── */
+
+export async function validatePromoCode(
+  code: string,
+  subtotal: number
+): Promise<{ promo: Promo } | { error: string }> {
+  const { data, error } = await getSupabase()
+    .from("promotions")
+    .select("*")
+    .eq("code", code.toUpperCase().trim())
+    .single();
+
+  if (error || !data) return { error: "Code introuvable" };
+
+  const promo = dbToPromo(data as DbPromo);
+
+  if (!promo.isActive) return { error: "Ce code est inactif" };
+  if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) return { error: "Ce code a expiré" };
+  if (promo.maxUses !== null && promo.currentUses >= promo.maxUses) {
+    return { error: "Ce code a atteint sa limite d'utilisation" };
+  }
+  if (promo.minimumOrder > 0 && subtotal < promo.minimumOrder) {
+    return { error: `Minimum de commande : ${promo.minimumOrder.toFixed(2)} €` };
+  }
+
+  return { promo };
+}
+
+/** Compute item discount (excludes shipping). */
+export function computePromoDiscount(promo: Promo, subtotal: number): number {
+  if (promo.type === "shipping") return 0;
+  if (promo.type === "percentage") return parseFloat((subtotal * (promo.value / 100)).toFixed(2));
+  if (promo.type === "fixed") return Math.min(promo.value, subtotal);
+  return 0;
+}
+
+/** True when the promo grants free shipping (either type=shipping or freeShipping flag). */
+export function promoGrantsFreeShipping(promo: Promo): boolean {
+  return promo.type === "shipping" || promo.freeShipping;
+}

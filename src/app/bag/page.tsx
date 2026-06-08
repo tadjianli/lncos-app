@@ -13,7 +13,14 @@ import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getSupabase } from "@/lib/supabase";
-import { useActiveShippingMethods, type ShippingMethod } from "@/lib/admin-supabase";
+import {
+  useActiveShippingMethods,
+  type ShippingMethod,
+  type Promo,
+  validatePromoCode,
+  computePromoDiscount,
+  promoGrantsFreeShipping,
+} from "@/lib/admin-supabase";
 
 /* ─── Pending checkout shape stored in sessionStorage ────────────── */
 interface PendingCheckout {
@@ -21,6 +28,8 @@ interface PendingCheckout {
   items: Array<{ id: string; name: string; price: number; qty: number; variant: string }>;
   subtotal: number;
   shipping_cost: number;
+  discount: number;
+  promo_code?: string;
   total: number;
 }
 
@@ -308,22 +317,55 @@ function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () =>
 }
 
 /* ─── Cart screen ─────────────────────────────────────────────────── */
-function CartScreen({ onCheckout }: { onCheckout: () => void }) {
+function CartScreen({
+  onCheckout,
+  appliedPromo,
+  onApplyPromo,
+  onRemovePromo,
+}: {
+  onCheckout: () => void;
+  appliedPromo: Promo | null;
+  onApplyPromo: (p: Promo) => void;
+  onRemovePromo: () => void;
+}) {
   const cart        = useStore((s) => s.cart);
   const setQty      = useStore((s) => s.setQty);
   const removeItem  = useStore((s) => s.removeFromCart);
   const openProduct = useStore((s) => s.openProduct);
 
-  const [promo, setPromo]     = useState("");
-  const [applied, setApplied] = useState(false);
+  const [promoInput,   setPromoInput]   = useState(appliedPromo?.code ?? "");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError,   setPromoError]   = useState<string | null>(null);
 
   const { methods: shippingMethods } = useActiveShippingMethods();
   const defaultShipping = shippingMethods[0] ?? null;
 
   const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
-  const discount     = applied ? subtotal * 0.1 : 0;
-  const shippingCost = defaultShipping ? (defaultShipping.isFree ? 0 : defaultShipping.price) : 0;
+  const discount     = appliedPromo ? computePromoDiscount(appliedPromo, subtotal) : 0;
+  const freeShipping = appliedPromo ? promoGrantsFreeShipping(appliedPromo) : false;
+  const shippingCost = freeShipping ? 0 : defaultShipping ? (defaultShipping.isFree ? 0 : defaultShipping.price) : 0;
   const total        = subtotal - discount + shippingCost;
+
+  async function handleApplyPromo() {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    const result = await validatePromoCode(code, subtotal);
+    setPromoLoading(false);
+    if ("error" in result) {
+      setPromoError(result.error);
+    } else {
+      onApplyPromo(result.promo);
+      setPromoError(null);
+    }
+  }
+
+  function handleRemovePromo() {
+    onRemovePromo();
+    setPromoInput("");
+    setPromoError(null);
+  }
 
   if (cart.length === 0) {
     return (
@@ -400,33 +442,63 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
 
         {/* Promo */}
         <div style={{ display: "flex", gap: 9, marginTop: 18 }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, background: "var(--charcoal)", borderRadius: "var(--r-pill)", padding: "12px 16px", border: "1px solid rgba(255,255,255,.06)" }}>
-            <Icon name="tag" size={16} color="var(--gold)" />
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 9, background: "var(--charcoal)", borderRadius: "var(--r-pill)", padding: "12px 16px", border: appliedPromo ? "1px solid rgba(123,201,154,.3)" : "1px solid rgba(255,255,255,.06)" }}>
+            <Icon name="tag" size={16} color={appliedPromo ? "#7BC99A" : "var(--gold)"} />
             <input
-              value={promo}
-              onChange={(e) => setPromo(e.target.value)}
+              value={promoInput}
+              onChange={(e) => { setPromoInput(e.target.value); setPromoError(null); }}
+              onKeyDown={(e) => e.key === "Enter" && !appliedPromo && handleApplyPromo()}
               placeholder="Code promo"
-              style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--ink)", fontSize: 13 }}
+              disabled={!!appliedPromo}
+              style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--ink)", fontSize: 13, opacity: appliedPromo ? 0.7 : 1 }}
             />
           </div>
-          <button
-            onClick={() => setApplied(promo.length > 0)}
-            style={{ padding: "0 22px", borderRadius: "var(--r-pill)", background: "var(--charcoal-2)", color: "var(--gold)", fontWeight: 600, fontSize: 13, border: "1px solid rgba(212,175,55,.3)" }}
-          >
-            Appliquer
-          </button>
+          {appliedPromo ? (
+            <button
+              onClick={handleRemovePromo}
+              style={{ padding: "0 18px", borderRadius: "var(--r-pill)", background: "rgba(194,85,122,.1)", color: "var(--pink)", fontWeight: 600, fontSize: 13, border: "1px solid rgba(194,85,122,.3)" }}
+            >
+              Retirer
+            </button>
+          ) : (
+            <button
+              onClick={handleApplyPromo}
+              disabled={promoLoading || !promoInput.trim()}
+              style={{ padding: "0 22px", borderRadius: "var(--r-pill)", background: "var(--charcoal-2)", color: "var(--gold)", fontWeight: 600, fontSize: 13, border: "1px solid rgba(212,175,55,.3)", opacity: promoLoading || !promoInput.trim() ? 0.5 : 1 }}
+            >
+              {promoLoading ? "…" : "Appliquer"}
+            </button>
+          )}
         </div>
-        {applied && (
+        {appliedPromo && (
           <div style={{ fontSize: 11.5, color: "#7BC99A", marginTop: 9, display: "flex", alignItems: "center", gap: 6 }}>
-            <Icon name="check" size={13} color="#7BC99A" /> Code appliqué · -10%
+            <Icon name="check" size={13} color="#7BC99A" />
+            Code <strong style={{ letterSpacing: ".04em" }}>{appliedPromo.code}</strong> appliqué
+            {discount > 0 && ` · -${discount.toFixed(2)} €`}
+            {freeShipping && " · Livraison offerte"}
+          </div>
+        )}
+        {promoError && (
+          <div style={{ fontSize: 11.5, color: "var(--pink)", marginTop: 9, display: "flex", alignItems: "center", gap: 6 }}>
+            <Icon name="x" size={13} color="var(--pink)" /> {promoError}
           </div>
         )}
 
         {/* Summary */}
         <div style={{ marginTop: 22, padding: 18, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)" }}>
           <Row l="Sous-total" r={`${subtotal.toFixed(2)} €`} />
-          {applied && <Row l="Réduction (10%)" r={`-${discount.toFixed(2)} €`} pink />}
-          <Row l="Livraison" r={shippingCost === 0 ? (defaultShipping?.isFree ? "Gratuit" : "À choisir") : `${shippingCost.toFixed(2)} €`} gold={shippingCost === 0 && !!defaultShipping?.isFree} />
+          {appliedPromo && discount > 0 && (
+            <Row
+              l={`${appliedPromo.code} (${appliedPromo.type === "percentage" ? `-${appliedPromo.value}%` : `-${appliedPromo.value.toFixed(2)} €`})`}
+              r={`-${discount.toFixed(2)} €`}
+              pink
+            />
+          )}
+          <Row
+            l="Livraison"
+            r={freeShipping ? "Gratuit" : shippingCost === 0 ? (defaultShipping?.isFree ? "Gratuit" : "À choisir") : `${shippingCost.toFixed(2)} €`}
+            gold={freeShipping || (shippingCost === 0 && !!defaultShipping?.isFree)}
+          />
           <div style={{ height: 1, background: "rgba(255,255,255,.08)", margin: "12px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>Total</span>
@@ -451,7 +523,7 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
 }
 
 /* ─── Checkout screen ─────────────────────────────────────────────── */
-function CheckoutScreen({ onBack }: { onBack: () => void }) {
+function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedPromo: Promo | null }) {
   const [step, setStep]       = useState(0);
   const [placing, setPlacing] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
@@ -469,8 +541,10 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
   const cart = useStore((s) => s.cart);
 
   const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
-  const shippingCost = selectedShipping ? (selectedShipping.isFree ? 0 : selectedShipping.price) : 0;
-  const total        = subtotal + shippingCost;
+  const discount     = appliedPromo ? computePromoDiscount(appliedPromo, subtotal) : 0;
+  const freeShipping = appliedPromo ? promoGrantsFreeShipping(appliedPromo) : false;
+  const shippingCost = freeShipping ? 0 : selectedShipping ? (selectedShipping.isFree ? 0 : selectedShipping.price) : 0;
+  const total        = subtotal - discount + shippingCost;
 
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
 
@@ -494,6 +568,8 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
           items,
           subtotal,
           shipping_cost: shippingCost,
+          discount,
+          ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
           total,
         };
 
@@ -504,6 +580,8 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
             items,
             subtotal,
             shipping_cost: shippingCost,
+            discount,
+            ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
             total,
             returnUrl: `${window.location.origin}/bag`,
           }),
@@ -616,6 +694,7 @@ export default function BagPage() {
   const [confirmedRef, setConfirmedRef] = useState("LN-……");
   const [completeError, setCompleteError] = useState<string | null>(null);
   const [pendingId,    setPendingId]    = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<Promo | null>(null);
 
   const clearCart   = useStore((s) => s.clearCart);
   const earnPoints  = useLoyaltyStore((s) => s.earnPoints);
@@ -637,6 +716,8 @@ export default function BagPage() {
           items: pending?.items ?? [],
           subtotal: pending?.subtotal ?? 0,
           shipping_cost: pending?.shipping_cost ?? 0,
+          discount: pending?.discount ?? 0,
+          ...(pending?.promo_code ? { promo_code: pending.promo_code } : {}),
           total: pending?.total ?? 0,
         }),
       });
@@ -698,10 +779,15 @@ export default function BagPage() {
     <AppShell>
       <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {screen === "cart" && (
-          <CartScreen onCheckout={() => setScreen("checkout")} />
+          <CartScreen
+            onCheckout={() => setScreen("checkout")}
+            appliedPromo={appliedPromo}
+            onApplyPromo={setAppliedPromo}
+            onRemovePromo={() => setAppliedPromo(null)}
+          />
         )}
         {screen === "checkout" && (
-          <CheckoutScreen onBack={() => setScreen("cart")} />
+          <CheckoutScreen onBack={() => setScreen("cart")} appliedPromo={appliedPromo} />
         )}
         {screen === "confirming" && (
           <ConfirmingScreen

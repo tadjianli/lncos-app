@@ -165,6 +165,8 @@ export interface Database {
           payment_status: "pending" | "paid" | "refunded";
           subtotal: number;
           shipping_cost: number;
+          discount: number;
+          promo_code: string | null;
           total: number;
           tracking_number: string | null;
           estimated_delivery: string | null;
@@ -182,6 +184,8 @@ export interface Database {
           payment_status?: "pending" | "paid" | "refunded";
           subtotal: number;
           shipping_cost?: number;
+          discount?: number;
+          promo_code?: string | null;
           total: number;
           tracking_number?: string | null;
           estimated_delivery?: string | null;
@@ -669,6 +673,50 @@ export interface Database {
         Relationships: [];
       };
 
+      promotions: {
+        Row: {
+          id: string;
+          code: string;
+          description: string;
+          type: "percentage" | "fixed" | "shipping";
+          value: number;
+          is_active: boolean;
+          expires_at: string | null;
+          max_uses: number | null;
+          current_uses: number;
+          free_shipping: boolean;
+          minimum_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          description?: string;
+          type?: "percentage" | "fixed" | "shipping";
+          value?: number;
+          is_active?: boolean;
+          expires_at?: string | null;
+          max_uses?: number | null;
+          current_uses?: number;
+          free_shipping?: boolean;
+          minimum_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          code?: string;
+          description?: string;
+          type?: "percentage" | "fixed" | "shipping";
+          value?: number;
+          is_active?: boolean;
+          expires_at?: string | null;
+          max_uses?: number | null;
+          current_uses?: number;
+          free_shipping?: boolean;
+          minimum_order?: number;
+        };
+        Relationships: [];
+      };
+
       shipping_methods: {
         Row: {
           id: string;
@@ -709,7 +757,12 @@ export interface Database {
     };
 
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      increment_promo_uses: {
+        Args: { promo_code_arg: string };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
   };
 }
