@@ -1,298 +1,374 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  animate,
-  useReducedMotion,
-  MotionValue,
-} from "framer-motion";
+/* ============================================================
+   LN COS — Avis · CARROUSEL CENTRÉ "COVERFLOW" (Apple TV / visionOS)
+   Ported from Claude Design handoff · all motion values preserved exactly
+   ============================================================ */
+
+import { useState, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import s from "./ReviewsSection.module.css";
 
-/* ─── Constants ──────────────────────────────────────────────────── */
+/* ---------- Data ---------- */
 
-const CARD_WIDTH = 282;
-const GAP = 14;
-const CARD_STEP = CARD_WIDTH + GAP;
+interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  date: string;
+  text: string;
+  product?: string;
+  service?: string;
+  staff?: string;
+  verified?: boolean;
+  featured?: boolean;
+  pinned?: boolean;
+}
 
-/* ─── Static review data ──────────────────────────────────────────── */
-
-const REVIEWS = [
+const REVIEWS: Review[] = [
   {
     id: "r1",
     name: "Margaux L.",
-    initials: "ML",
-    avatarGrad: "linear-gradient(135deg, #C2A95A 0%, #8B6914 100%)",
     rating: 5,
     date: "Il y a 2 jours",
     text: "Ce sérum a complètement transformé mon teint en trois semaines. La texture est incomparable — soyeuse, absorbée instantanément. Je ne peux plus m'en passer.",
     product: "Sérum Éclat",
+    verified: true,
+    pinned: true,
   },
   {
     id: "r2",
     name: "Diane K.",
-    initials: "DK",
-    avatarGrad: "linear-gradient(135deg, #C47A9A 0%, #8B3060 100%)",
     rating: 5,
     date: "Il y a 5 jours",
     text: "LN COS comprend que le luxe est dans les détails. Du packaging à la fragrance, chaque élément est intentionnel. Un vrai soin haut de gamme.",
     product: "Parfum Noir",
+    verified: true,
+    featured: true,
   },
   {
     id: "r3",
     name: "Isabelle R.",
-    initials: "IR",
-    avatarGrad: "linear-gradient(135deg, #7A9EC4 0%, #2B5A8B 100%)",
     rating: 5,
     date: "Il y a 1 semaine",
     text: "La collection nocturne est devenue mon rituel du soir. Je me réveille avec un éclat qu'il me fallait autrefois toute une routine de maquillage pour obtenir.",
     product: "Crème Nuit",
+    verified: true,
   },
   {
     id: "r4",
     name: "Camille D.",
-    initials: "CD",
-    avatarGrad: "linear-gradient(135deg, #9EC47A 0%, #4A8B2B 100%)",
     rating: 5,
     date: "Il y a 2 semaines",
     text: "L'huile démaquillante est une révélation. Ma peau n'a jamais été aussi douce et lumineuse. Le parfum d'amande vanillée est absolument divin.",
     product: "Huile Démaq.",
+    verified: true,
   },
   {
     id: "r5",
     name: "Sophie M.",
-    initials: "SM",
-    avatarGrad: "linear-gradient(135deg, #C4A07A 0%, #8B5A2B 100%)",
     rating: 5,
     date: "Il y a 3 semaines",
     text: "Le masque purifiant est mon coup de cœur absolu. En 20 minutes les pores sont resserrés, le teint unifié. Résultat professionnel à la maison.",
     product: "Masque Purifiant",
+    verified: true,
   },
 ];
 
-/* ─── Spring / easing configs ─────────────────────────────────────── */
+/* Pinned/featured cards appear first — same ordering as handoff */
+const LIST = [...REVIEWS].sort(
+  (a, b) => (b.pinned ? 2 : b.featured ? 1 : 0) - (a.pinned ? 2 : a.featured ? 1 : 0)
+);
 
-const SNAP_SPRING    = { type: "spring" as const, stiffness: 300,  damping: 35, mass: 0.8 };
-const CARD_SPRING    = { type: "spring" as const, stiffness: 400,  damping: 40 };
-const DOT_SPRING     = { type: "spring" as const, stiffness: 500,  damping: 30 };
-const ENTRANCE_EASE  = [0.22, 1, 0.36, 1] as const;
+/* ---------- Skeleton ---------- */
 
-/* ─── Filled star ─────────────────────────────────────────────────── */
-
-function Star({ dim }: { dim?: boolean }) {
+function RevSkeleton({ className }: { className?: string }) {
   return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill={dim ? "rgba(212,175,55,.18)" : "var(--gold)"}
-      stroke="none"
-    >
-      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" />
-    </svg>
+    <div className={`${s.inner} ${s.sk} ${className ?? ""}`}>
+      <div className={s.head}>
+        <span className={s.skBox} style={{ width: 46, height: 46, borderRadius: "50%" }} />
+        <div style={{ flex: 1 }}>
+          <span className={s.skBox} style={{ width: "55%", height: 13, marginBottom: 9 }} />
+          <span className={s.skBox} style={{ width: "40%", height: 10 }} />
+        </div>
+      </div>
+      <span className={s.skBox} style={{ width: "100%", height: 12, marginTop: 22 }} />
+      <span className={s.skBox} style={{ width: "92%", height: 12, marginTop: 11 }} />
+      <span className={s.skBox} style={{ width: "78%", height: 12, marginTop: 11 }} />
+      <span className={s.skBox} style={{ width: 130, height: 26, marginTop: 22, borderRadius: 999 }} />
+    </div>
   );
 }
 
-/* ─── ReviewCard ── extracted so hooks are always called at component top ── */
+/* ---------- Card content ---------- */
 
-interface ReviewCardProps {
-  review: (typeof REVIEWS)[number];
-  index: number;
-  isActive: boolean;
-  trackX: MotionValue<number>;
-  prefersReduced: boolean | null;
-}
-
-function ReviewCard({ review: r, index: i, isActive, trackX, prefersReduced }: ReviewCardProps) {
-  /* Parallax: card interior shifts ±8px as the draggable track moves */
-  const parallaxX = useTransform(
-    trackX,
-    [-(i + 1) * CARD_STEP, -i * CARD_STEP, -(i - 1) * CARD_STEP],
-    [8, 0, -8]
-  );
-
+function RevCardContent({ r }: { r: Review }) {
+  const initials = r.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const hasPhoto = false; // no photo URLs in static data
   return (
-    <motion.article
-      className={s.card}
-      style={{ backfaceVisibility: "hidden" }}
-      /* Entrance animation triggered when card enters viewport */
-      initial={prefersReduced ? { opacity: 0 } : { opacity: 0, y: 18 }}
-      whileInView={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -60px 0px" }}
-      transition={
-        prefersReduced
-          ? { duration: 0.3 }
-          : { delay: i * 0.06, duration: 0.4, ease: ENTRANCE_EASE }
-      }
-      /* Active/inactive focus state — spring-animated */
-      animate={
-        prefersReduced
-          ? { opacity: isActive ? 1 : 0.72 }
-          : {
-              scale:   isActive ? 1    : 0.96,
-              opacity: isActive ? 1    : 0.72,
-              filter:  isActive ? "brightness(1)" : "brightness(0.85)",
-            }
-      }
-      /* Override the entrance transition for the animate (focus) state */
-      // @ts-ignore — framer-motion supports per-prop transitions via variants; direct override below:
-    >
-      {/* Parallax inner wrapper — subtle depth on drag */}
-      <motion.div
-        className={s.cardInner}
-        style={prefersReduced ? undefined : { x: parallaxX }}
-        transition={CARD_SPRING}
-      >
-        {/* Corner glow */}
-        <div className={s.cardGlow} />
+    <div className={s.inner}>
+      <span className={s.edge} />
 
-        {/* Avatar · name · date */}
-        <div className={s.cardHead}>
-          <div className={s.avatar} style={{ background: r.avatarGrad }}>
-            {r.initials}
+      <div className={s.head}>
+        <span className={s.av}>
+          {initials}
+          <span className={s.avRing} />
+        </span>
+        <div className={s.headMain}>
+          <div className={s.name}>
+            {r.name}
+            {r.verified && (
+              <span className={s.verif} title="Achat vérifié">
+                <Icon name="check" size={9} stroke={3} />
+              </span>
+            )}
           </div>
-          <div className={s.cardIdentity}>
-            <div className={s.authorName}>{r.name}</div>
-            <div className={s.verified}>
-              <Icon name="check" size={8} color="#1A1612" stroke={2.8} />
-              Vérifié
-            </div>
+          <div className={s.stars}>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <svg key={i} width="12" height="12" viewBox="0 0 24 24"
+                fill={i < r.rating ? "var(--gold)" : "rgba(255,255,255,.16)"}
+                stroke="none">
+                <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" />
+              </svg>
+            ))}
+            <span className={s.date}>{r.date}</span>
           </div>
-          <span className={s.date}>{r.date}</span>
         </div>
+      </div>
 
-        {/* Stars */}
-        <div className={s.stars}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <Star key={n} dim={n > r.rating} />
-          ))}
-        </div>
+      <p className={`${s.text}${hasPhoto ? " " + s.textShort : ""}`}>{r.text}</p>
 
-        {/* Review body */}
-        <p className={s.text}>{r.text}</p>
-
-        {/* Product pill */}
-        <div className={s.productPill}>
-          <Icon name="tag" size={10} color="var(--gold)" />
-          {r.product}
-        </div>
-      </motion.div>
-    </motion.article>
+      <div className={s.foot}>
+        {r.product && (
+          <span className={`${s.chip} ${s.chipProd}`}>
+            <Icon name="bag" size={12} /> {r.product}
+          </span>
+        )}
+        {r.service && (
+          <span className={`${s.chip} ${s.chipRdv}`}>
+            <Icon name="calendar" size={12} /> {r.service}{r.staff ? ` · ${r.staff}` : ""}
+          </span>
+        )}
+        {!r.product && !r.service && (
+          <span className={`${s.chip} ${s.chipProd}`}>
+            <Icon name="sparkle" size={12} /> Cliente vérifiée
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
-/* ─── ReviewsSection ──────────────────────────────────────────────── */
+/* ---------- Carrousel coverflow ---------- */
 
 export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }) {
-  const prefersReduced = useReducedMotion();
+  const len = LIST.length;
+  const avg = LIST.reduce((sum, r) => sum + r.rating, 0) / len;
+
+  /* continuous active index — wraps infinitely */
   const [active, setActive] = useState(0);
+  /* live drag offset in card units */
+  const [drag, setDrag] = useState(0);
+  /* viewport width for responsive cardW */
+  const [vw, setVw] = useState(360);
+  /* skeleton loading state */
+  const [loading, setLoading] = useState(true);
 
-  /* The x MotionValue drives the draggable track position */
-  const x = useMotionValue(0);
+  const vpRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({ active: false, id: -1, sx: 0, lastUnit: 0, vel: 0 });
+  const hoverRef = useRef(false);
 
-  /* Snap to a specific card index with spring physics */
-  const snapTo = useCallback(
-    (index: number) => {
-      const clamped = Math.max(0, Math.min(index, REVIEWS.length - 1));
-      setActive(clamped);
-      animate(x, -clamped * CARD_STEP, SNAP_SPRING);
-    },
-    [x]
-  );
+  /* Measure viewport width */
+  useEffect(() => {
+    const el = vpRef.current;
+    if (!el) return;
+    const set = () => setVw(el.clientWidth || 360);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-  /* On drag end: compute nearest snap index and animate there */
-  const onDragEnd = useCallback(() => {
-    const rawIndex = -x.get() / CARD_STEP;
-    snapTo(Math.round(rawIndex));
-  }, [x, snapTo]);
+  /* Skeleton delay — 650ms exactly as handoff */
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 650);
+    return () => clearTimeout(t);
+  }, []);
 
-  /* Hard drag bounds: cannot drag past first or last card */
-  const dragConstraints = {
-    left:  -(REVIEWS.length - 1) * CARD_STEP,
-    right: 0,
+  /* Autoplay — 5200ms exactly as handoff, pauses on hover/drag */
+  useEffect(() => {
+    if (loading) return;
+    const t = setInterval(() => {
+      if (!hoverRef.current && !dragRef.current.active) {
+        setActive((a) => a + 1);
+      }
+    }, 5200);
+    return () => clearInterval(t);
+  }, [loading]);
+
+  /* Responsive card width — Math.min(288, Math.round(vw * 0.75)) */
+  const cardW = Math.min(288, Math.round(vw * 0.75));
+  /* spacing between card centres — cardW * 0.79 */
+  const SP = cardW * 0.79;
+
+  /* ---- pointer drag handlers ---- */
+  const onDown = (e: React.PointerEvent) => {
+    dragRef.current = { active: true, id: e.pointerId, sx: e.clientX, lastUnit: 0, vel: 0 };
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); } catch {}
+  };
+  const onMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d.active || d.id !== e.pointerId) return;
+    const unit = -(e.clientX - d.sx) / SP;
+    d.vel = unit - d.lastUnit;
+    d.lastUnit = unit;
+    setDrag(unit);
+  };
+  const onUp = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (d.id !== e.pointerId) return;
+    /* velocity-based momentum snap — exactly as handoff */
+    const momentum = Math.max(-1, Math.min(1, Math.round(d.vel * 6)));
+    const target = Math.round(active + d.lastUnit + momentum);
+    d.active = false;
+    setActive(target);
+    setDrag(0);
   };
 
+  const goTo = (absIndex: number) => setActive(absIndex);
+  const curMod = ((active % len) + len) % len;
+
+  /* ---- render window ---- */
+  const WINDOW = 3;
+  const cards: React.ReactNode[] = [];
+  for (let k = -WINDOW; k <= WINDOW; k++) {
+    const abs = active + k;
+    const pos = abs - active - drag;       // 0 = centre
+    const aPos = Math.abs(pos);
+    if (aPos > WINDOW + 0.5) continue;
+    const r = LIST[((abs % len) + len) % len];
+    /* --- exact handoff interpolation formulas --- */
+    const scale   = Math.max(0.8, 1 - aPos * 0.13);
+    const opacity = Math.max(0, 1 - aPos * 0.46);
+    const blur    = aPos < 0.5 ? 0 : Math.min(6, (aPos - 0.25) * 3.2);
+    const dark    = Math.min(0.62, aPos * 0.38);
+    const isCenter = aPos < 0.5;
+
+    const cardClass = [
+      s.card,
+      isCenter ? s.cardCenter : "",
+      r.featured ? s.cardFeat : "",
+      r.pinned   ? s.cardPin  : "",
+    ].filter(Boolean).join(" ");
+
+    cards.push(
+      <article
+        key={abs}
+        className={cardClass}
+        style={{
+          width: cardW,
+          transform: `translate(-50%,-50%) translateX(${pos * SP}px) scale(${scale})`,
+          opacity,
+          zIndex: 100 - Math.round(aPos * 10),
+          filter: blur ? `blur(${blur}px)` : "none",
+          /* CSS transition — exactly as handoff (no spring physics) */
+          transition: dragRef.current.active
+            ? "none"
+            : "transform .6s cubic-bezier(.22,.7,0,1), opacity .5s ease, filter .5s ease",
+          pointerEvents: aPos > 1.5 ? "none" : "auto",
+        }}
+        onClick={() => {
+          if (!isCenter && Math.abs(Math.round(pos)) >= 1) goTo(abs);
+        }}
+      >
+        <RevCardContent r={r} />
+        {!isCenter && <span className={s.veil} style={{ opacity: dark }} />}
+      </article>
+    );
+  }
+
   return (
-    <div className={s.section}>
-      {/* Ambient gold glow */}
-      <div className={s.ambientGlow} />
-
+    <section className={s.section}>
       {/* ── Section header ── */}
-      <div className={s.head}>
-        <div className={s.eyebrow}>
-          <Icon name="sparkle" size={12} color="var(--gold)" />
-          ELLES ADORENT
+      <div className={s.secHead}>
+        <div>
+          <div className={s.secEyebrow}>
+            <Icon name="sparkle" size={13} color="var(--gold)" /> Elles adorent
+          </div>
+          <h3 className={s.secTitle}>{title}</h3>
         </div>
-        <h3 className={s.title}>{title}</h3>
-
-        {/* Global rating block */}
-        <div className={s.ratingGlobal}>
-          <div className={s.ratingStarsRow}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <svg key={n} width="15" height="15" viewBox="0 0 24 24" fill="var(--gold)" stroke="none">
+        <div className={s.secRating}>
+          <div className={s.secStars}>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <svg key={i} width="14" height="14" viewBox="0 0 24 24"
+                fill="var(--gold)" stroke="none">
                 <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" />
               </svg>
             ))}
           </div>
-          <span className={s.globalScore}>4.8</span>
-          <span className={s.globalSep}>·</span>
-          <span className={s.globalCount}>1&nbsp;248 avis</span>
+          <div className={s.secNum}>
+            <b>{avg.toFixed(1)}</b><span>· 1 248 avis</span>
+          </div>
         </div>
       </div>
 
-      {/* ── Carousel viewport (clips overflow) ── */}
-      <div className={s.viewport}>
-        {/* Draggable flex track */}
-        <motion.div
-          className={s.track}
-          style={{ x, willChange: "transform" }}
-          drag="x"
-          dragConstraints={dragConstraints}
-          dragElastic={0.1}
-          dragMomentum={true}
-          onDragEnd={onDragEnd}
-        >
-          {REVIEWS.map((r, i) => (
-            <ReviewCard
-              key={r.id}
-              review={r}
-              index={i}
-              isActive={i === active}
-              trackX={x}
-              prefersReduced={prefersReduced}
-            />
-          ))}
-        </motion.div>
+      {/* ── Viewport ── */}
+      <div
+        className={s.viewport}
+        ref={vpRef}
+        onPointerDown={loading ? undefined : onDown}
+        onPointerMove={loading ? undefined : onMove}
+        onPointerUp={loading ? undefined : onUp}
+        onPointerCancel={loading ? undefined : onUp}
+        onMouseEnter={() => { hoverRef.current = true; }}
+        onMouseLeave={() => {
+          hoverRef.current = false;
+          if (dragRef.current.active) { dragRef.current.active = false; setDrag(0); }
+        }}
+      >
+        <span className={s.glow} style={{ width: cardW + 14 }} />
+        <div className={s.stage}>
+          {loading
+            ? (
+              <article
+                className={`${s.card} ${s.cardCenter}`}
+                style={{
+                  width: Math.min(300, Math.round(vw * 0.78)),
+                  transform: "translate(-50%,-50%)",
+                }}
+              >
+                <RevSkeleton />
+              </article>
+            )
+            : cards}
+        </div>
       </div>
 
-      {/* ── Pagination dots — spring-animated width ── */}
-      <div className={s.dots} role="tablist" aria-label="Avis">
-        {REVIEWS.map((_, i) => (
-          <motion.button
+      {/* ── Dot indicators ── */}
+      <div className={s.dots}>
+        {LIST.map((_, i) => (
+          <button
             key={i}
-            role="tab"
-            aria-selected={i === active}
+            className={`${s.dot}${i === curMod ? " " + s.dotOn : ""}`}
+            onClick={() =>
+              goTo(
+                active +
+                ((i - curMod + len) % len) -
+                (((i - curMod + len) % len) > len / 2 ? len : 0)
+              )
+            }
             aria-label={`Avis ${i + 1}`}
-            className={s.dot}
-            animate={{
-              width:      i === active ? 20 : 6,
-              background: i === active ? "var(--gold)" : "var(--charcoal-3)",
-            }}
-            transition={DOT_SPRING}
-            onClick={() => snapTo(i)}
-            style={{ backfaceVisibility: "hidden" }}
           />
         ))}
       </div>
 
       {/* ── Swipe hint ── */}
       <div className={s.hint}>
-        <Icon name="chevR" size={11} color="var(--ink-mute)" />
+        <span className={s.hintIcon}>
+          <Icon name="share" size={12} />
+        </span>
         Glissez pour parcourir les avis
       </div>
-    </div>
+    </section>
   );
 }
