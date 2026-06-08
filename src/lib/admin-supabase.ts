@@ -595,12 +595,19 @@ export function useShippingMethods() {
   }, [load]);
 
   const updateMethod = useCallback(async (id: string, patch: Partial<ShippingMethod>) => {
-    await getSupabase().from("shipping_methods").update(shippingToDb(patch)).eq("id", id);
+    const { error } = await getSupabase()
+      .from("shipping_methods")
+      .update(shippingToDb(patch))
+      .eq("id", id);
+    if (error) {
+      console.error("[shipping] update error:", error);
+      throw new Error(error.message);
+    }
     setMethods((prev) => prev.map((m) => m.id === id ? { ...m, ...patch } : m));
   }, []);
 
   const insertMethod = useCallback(async (m: Omit<ShippingMethod, "id" | "createdAt">) => {
-    const { data } = await getSupabase()
+    const { data, error } = await getSupabase()
       .from("shipping_methods")
       .insert({
         name: m.name,
@@ -614,21 +621,34 @@ export function useShippingMethods() {
       })
       .select()
       .single();
+    if (error) {
+      console.error("[shipping] insert error:", error);
+      throw new Error(error.message);
+    }
     if (data) setMethods((prev) => [...prev, dbToShipping(data as DbShipping)].sort((a, b) => a.sortOrder - b.sortOrder));
   }, []);
 
   const deleteMethod = useCallback(async (id: string) => {
-    await getSupabase().from("shipping_methods").delete().eq("id", id);
+    const { error } = await getSupabase()
+      .from("shipping_methods")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("[shipping] delete error:", error);
+      throw new Error(error.message);
+    }
     setMethods((prev) => prev.filter((m) => m.id !== id));
   }, []);
 
   const reorderMethods = useCallback(async (reordered: ShippingMethod[]) => {
     setMethods(reordered);
-    await Promise.all(
+    const results = await Promise.all(
       reordered.map((m, i) =>
         getSupabase().from("shipping_methods").update({ sort_order: i }).eq("id", m.id)
       )
     );
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) console.error("[shipping] reorder error:", firstError);
   }, []);
 
   return { methods, loading, updateMethod, insertMethod, deleteMethod, reorderMethods, reload: load };
@@ -738,12 +758,19 @@ export function usePromos() {
   }, [load]);
 
   const updatePromo = useCallback(async (id: string, patch: Partial<Promo>) => {
-    await getSupabase().from("promotions").update(promoToDb(patch)).eq("id", id);
+    const { error } = await getSupabase()
+      .from("promotions")
+      .update(promoToDb(patch))
+      .eq("id", id);
+    if (error) {
+      console.error("[promos] update error:", error);
+      throw new Error(error.message);
+    }
     setPromos((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
   }, []);
 
   const insertPromo = useCallback(async (p: Omit<Promo, "id" | "currentUses" | "createdAt">) => {
-    const { data } = await getSupabase()
+    const { data, error } = await getSupabase()
       .from("promotions")
       .insert({
         code: p.code.toUpperCase().trim(),
@@ -758,11 +785,22 @@ export function usePromos() {
       })
       .select()
       .single();
+    if (error) {
+      console.error("[promos] insert error:", error);
+      throw new Error(error.message);
+    }
     if (data) setPromos((prev) => [dbToPromo(data as DbPromo), ...prev]);
   }, []);
 
   const deletePromo = useCallback(async (id: string) => {
-    await getSupabase().from("promotions").delete().eq("id", id);
+    const { error } = await getSupabase()
+      .from("promotions")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("[promos] delete error:", error);
+      throw new Error(error.message);
+    }
     setPromos((prev) => prev.filter((p) => p.id !== id));
   }, []);
 

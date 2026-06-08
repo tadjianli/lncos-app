@@ -189,13 +189,13 @@ function MethodModal({
 export function ShippingModule() {
   const { methods, loading, updateMethod, insertMethod, deleteMethod, reorderMethods } = useShippingMethods();
   const [modal, setModal] = useState<{ open: boolean; isNew: boolean; method: Omit<ShippingMethod, "id" | "createdAt">; id?: string } | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; error: boolean } | null>(null);
   const [delConfirm, setDelConfirm] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
+  function showToast(msg: string, isError = false) {
+    setToast({ msg: isError ? `Erreur : ${msg}` : msg, error: isError });
+    setTimeout(() => setToast(null), isError ? 6000 : 2500);
   }
 
   function openNew() {
@@ -223,31 +223,48 @@ export function ShippingModule() {
 
   async function handleSave(form: Omit<ShippingMethod, "id" | "createdAt">) {
     setSaving(true);
-    if (modal?.isNew) {
-      await insertMethod(form);
-      showToast("Méthode créée");
-    } else if (modal?.id) {
-      await updateMethod(modal.id, form);
-      showToast("Méthode mise à jour");
+    try {
+      if (modal?.isNew) {
+        await insertMethod(form);
+        showToast("Méthode créée");
+      } else if (modal?.id) {
+        await updateMethod(modal.id, form);
+        showToast("Méthode mise à jour");
+      }
+      setModal(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur inconnue", true);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setModal(null);
   }
 
   async function handleToggleActive(m: ShippingMethod) {
-    await updateMethod(m.id, { isActive: !m.isActive });
-    showToast(m.isActive ? "Méthode désactivée" : "Méthode activée");
+    try {
+      await updateMethod(m.id, { isActive: !m.isActive });
+      showToast(m.isActive ? "Méthode désactivée" : "Méthode activée");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur de mise à jour", true);
+    }
   }
 
   async function handleToggleFree(m: ShippingMethod) {
-    await updateMethod(m.id, { isFree: !m.isFree, price: !m.isFree ? 0 : m.price });
-    showToast(!m.isFree ? "Livraison gratuite activée" : "Prix réactivé");
+    try {
+      await updateMethod(m.id, { isFree: !m.isFree, price: !m.isFree ? 0 : m.price });
+      showToast(!m.isFree ? "Livraison gratuite activée" : "Prix réactivé");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur de mise à jour", true);
+    }
   }
 
   async function handleDelete(id: string) {
-    await deleteMethod(id);
-    setDelConfirm(null);
-    showToast("Méthode supprimée");
+    try {
+      await deleteMethod(id);
+      setDelConfirm(null);
+      showToast("Méthode supprimée");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur de suppression", true);
+    }
   }
 
   async function moveUp(index: number) {
@@ -487,9 +504,12 @@ export function ShippingModule() {
 
       {/* Toast */}
       {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
+        <div
+          className="adm-toast"
+          style={toast.error ? { background: "rgba(194,85,122,.15)", border: "1px solid rgba(194,85,122,.3)", color: "var(--tone-pink)" } : undefined}
+        >
+          <Icon name={toast.error ? "x" : "check"} size={14} color={toast.error ? "var(--tone-pink)" : "#2F9E68"} />
+          {toast.msg}
         </div>
       )}
     </>

@@ -236,35 +236,51 @@ export function PromotionsModule() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Promo | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; error: boolean } | null>(null);
 
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
+  function showToast(msg: string, isError = false) {
+    setToast({ msg: isError ? `Erreur : ${msg}` : msg, error: isError });
+    setTimeout(() => setToast(null), isError ? 6000 : 2500);
   }
 
   async function handleCreate(form: Omit<Promo, "id" | "currentUses" | "createdAt">) {
-    await insertPromo(form);
-    setCreating(false);
-    showToast("Code créé");
+    try {
+      await insertPromo(form);
+      setCreating(false);
+      showToast("Code créé");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur inconnue", true);
+    }
   }
 
   async function handleEdit(form: Omit<Promo, "id" | "currentUses" | "createdAt">) {
     if (!editing) return;
-    await updatePromo(editing.id, form);
-    setEditing(null);
-    showToast("Code mis à jour");
+    try {
+      await updatePromo(editing.id, form);
+      setEditing(null);
+      showToast("Code mis à jour");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur inconnue", true);
+    }
   }
 
   async function handleToggleActive(p: Promo) {
-    await updatePromo(p.id, { isActive: !p.isActive });
-    showToast(p.isActive ? "Code désactivé" : "Code activé");
+    try {
+      await updatePromo(p.id, { isActive: !p.isActive });
+      showToast(p.isActive ? "Code désactivé" : "Code activé");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur de mise à jour", true);
+    }
   }
 
   async function handleDelete(id: string) {
-    await deletePromo(id);
-    setConfirmDeleteId(null);
-    showToast("Code supprimé");
+    try {
+      await deletePromo(id);
+      setConfirmDeleteId(null);
+      showToast("Code supprimé");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Erreur de suppression", true);
+    }
   }
 
   const active = promos.filter((p) => p.isActive).length;
@@ -493,9 +509,12 @@ export function PromotionsModule() {
       )}
 
       {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
+        <div
+          className="adm-toast"
+          style={toast.error ? { background: "rgba(194,85,122,.15)", border: "1px solid rgba(194,85,122,.3)", color: "var(--tone-pink)" } : undefined}
+        >
+          <Icon name={toast.error ? "x" : "check"} size={14} color={toast.error ? "var(--tone-pink)" : "#2F9E68"} />
+          {toast.msg}
         </div>
       )}
     </>
