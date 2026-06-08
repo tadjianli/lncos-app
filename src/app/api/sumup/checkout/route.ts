@@ -31,8 +31,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid checkout data" }, { status: 400 });
     }
 
-    if (!process.env.SUMUP_CLIENT_ID || !process.env.SUMUP_CLIENT_SECRET) {
-      return NextResponse.json({ error: "Payment provider not configured" }, { status: 503 });
+    if (!process.env.SUMUP_CLIENT_SECRET || !process.env.SUMUP_MERCHANT_CODE) {
+      console.error("[/api/sumup/checkout] missing env:", {
+        SUMUP_CLIENT_SECRET: !!process.env.SUMUP_CLIENT_SECRET,
+        SUMUP_MERCHANT_CODE: !!process.env.SUMUP_MERCHANT_CODE,
+      });
+      return NextResponse.json({ error: "Paiement non configuré — contactez l'administrateur" }, { status: 503 });
     }
 
     // Build return URL — use client-supplied if valid, else derive from Host header

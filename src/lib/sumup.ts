@@ -3,18 +3,12 @@
  * SERVER-SIDE ONLY. Never import in client components.
  *
  * Authentication: direct API key — Authorization: Bearer <SUMUP_CLIENT_SECRET>
- * No OAuth token exchange required with cc_classic_* / cc_sk_classic_* credentials.
+ * No OAuth token exchange. No /me round-trip. Merchant code from SUMUP_MERCHANT_CODE.
  */
 
 const API = "https://api.sumup.com";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
-
-interface MerchantResponse {
-  merchant_code: string;
-  email: string;
-  business_name: string;
-}
 
 export type SumUpCheckoutStatus = "PENDING" | "PAID" | "FAILED" | "EXPIRED";
 
@@ -27,7 +21,7 @@ export interface SumUpCheckout {
   merchant_code: string;
 }
 
-/* ─── Helpers ────────────────────────────────────────────────────── */
+/* ─── Credential helpers ─────────────────────────────────────────── */
 
 function apiKey(): string {
   const key = process.env.SUMUP_CLIENT_SECRET;
@@ -35,26 +29,20 @@ function apiKey(): string {
   return key;
 }
 
-/**
- * Parse a SumUp error response into a structured object.
- * SumUp error bodies are JSON: { title, detail, status, trace_id }
- */
-async function parseSumUpError(
-  res: Response,
-  context: string
-): Promise<never> {
-  const raw = await res.text();
-  let detail = raw;
-  try {
-    const json = JSON.parse(raw) as { title?: string; detail?: string; status?: number };
-    detail = json.detail ?? json.title ?? raw;
-  } catch {
-    // body was not JSON — use raw text
-  }
-  // Full details for server logs only
-  console.error(`[SumUp] ${context} [${res.status}]:`, raw);
-  throw new SumUpApiError(res.status, detail, context);
+function merchantCode(): string {
+  const code = process.env.SUMUP_MERCHANT_CODE;
+  if (!code) throw new Error("SUMUP_MERCHANT_CODE is not set — find it in SumUp Dashboard → Profile → Merchant account");
+  return code;
 }
+
+function authHeaders() {
+  return {
+    Authorization: `Bearer ${apiKey()}`,
+    "Content-Type": "application/json",
+  };
+}
+
+/* ─── Error handling ─────────────────────────────────────────────── */
 
 export class SumUpApiError extends Error {
   constructor(
@@ -69,7 +57,7 @@ export class SumUpApiError extends Error {
   /** Human-readable message safe to show in the UI */
   userMessage(): string {
     if (this.statusCode === 401) {
-      return "La clé API SumUp est invalide ou expirée. Vérifiez la configuration SUMUP_CLIENT_SECRET.";
+      return "La clé API SumUp est invalide ou expirée. Vérifiez SUMUP_CLIENT_SECRET dans les variables d'environnement.";
     }
     if (this.statusCode === 403) {
       return "Accès refusé par SumUp. Vérifiez les permissions de la clé API.";
@@ -81,30 +69,25 @@ export class SumUpApiError extends Error {
   }
 }
 
-/* ─── Merchant code cache ────────────────────────────────────────── */
-
-let _merchant: { code: string; email: string } | null = null;
-
-async function getMerchant(): Promise<{ code: string; email: string }> {
-  if (_merchant) return _merchant;
-
-  const res = await fetch(`${API}/v0.1/me`, {
-    headers: { Authorization: `Bearer ${apiKey()}` },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    await parseSumUpError(res, "GET /me");
+async function parseSumUpError(res: Response, context: string): Promise<never> {
+  const raw = await res.text();
+  let detail = raw;
+  try {
+    const json = JSON.parse(raw) as { title?: string; detail?: string };
+    detail = json.detail ?? json.title ?? raw;
+  } catch {
+    // body was not JSON — use raw text
   }
-
-  const data: MerchantResponse = await res.json();
-  _merchant = { code: data.merchant_code, email: data.email };
-  return _merchant;
+  console.error(`[SumUp] ${context} FAILED — status=${res.status} body=${raw} auth=Bearer`);
+  throw new SumUpApiError(res.status, detail, context);
 }
 
 /* ─── Public helpers ─────────────────────────────────────────────── */
 
-/** Create a hosted SumUp checkout and return its id + redirect URL. */
+/**
+ * Create a hosted SumUp checkout and return its id + redirect URL.
+ * Uses direct API key auth (Bearer cc_sk_classic_*). No OAuth needed.
+ */
 export async function createCheckout(params: {
   reference: string;
   amount: number;
@@ -112,23 +95,23 @@ export async function createCheckout(params: {
   description: string;
   returnUrl: string;
 }): Promise<{ id: string; checkoutUrl: string }> {
-  const merchant = await getMerchant();
+  const url = `${API}/v0.1/checkouts`;
+  const payload = {
+    checkout_reference: params.reference,
+    amount: params.amount,
+    currency: params.currency ?? "EUR",
+    merchant_code: merchantCode(),
+    description: params.description,
+    return_url: params.returnUrl,
+    redirect_url: params.returnUrl,
+  };
 
-  const res = await fetch(`${API}/v0.1/checkouts`, {
+  console.log(`[SumUp] POST ${url} auth=Bearer(cc_sk_classic_***) merchant=${payload.merchant_code} amount=${payload.amount} ref=${payload.checkout_reference}`);
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      checkout_reference: params.reference,
-      amount: params.amount,
-      currency: params.currency ?? "EUR",
-      merchant_code: merchant.code,
-      description: params.description,
-      return_url: params.returnUrl,
-      redirect_url: params.returnUrl,
-    }),
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
     cache: "no-store",
   });
 
@@ -137,14 +120,18 @@ export async function createCheckout(params: {
   }
 
   const data: SumUpCheckout = await res.json();
-  const checkoutUrl = `https://pay.sumup.com/b2c/${data.id}`;
+  console.log(`[SumUp] POST /checkouts OK — id=${data.id} status=${data.status}`);
 
+  const checkoutUrl = `https://pay.sumup.com/b2c/${data.id}`;
   return { id: data.id, checkoutUrl };
 }
 
 /** Fetch current status of a checkout from SumUp (server-side verification). */
 export async function getCheckoutStatus(checkoutId: string): Promise<SumUpCheckout> {
-  const res = await fetch(`${API}/v0.1/checkouts/${checkoutId}`, {
+  const url = `${API}/v0.1/checkouts/${checkoutId}`;
+  console.log(`[SumUp] GET ${url} auth=Bearer(cc_sk_classic_***)`);
+
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${apiKey()}` },
     cache: "no-store",
   });
@@ -153,5 +140,7 @@ export async function getCheckoutStatus(checkoutId: string): Promise<SumUpChecko
     await parseSumUpError(res, `GET /checkouts/${checkoutId}`);
   }
 
-  return res.json() as Promise<SumUpCheckout>;
+  const data = await res.json() as SumUpCheckout;
+  console.log(`[SumUp] GET /checkouts/${checkoutId} OK — status=${data.status} amount=${data.amount}`);
+  return data;
 }

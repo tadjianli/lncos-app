@@ -43,8 +43,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "checkout_id requis" }, { status: 400 });
     }
 
-    if (!process.env.SUMUP_CLIENT_ID || !process.env.SUMUP_CLIENT_SECRET) {
-      return NextResponse.json({ error: "Payment provider not configured" }, { status: 503 });
+    if (!process.env.SUMUP_CLIENT_SECRET || !process.env.SUMUP_MERCHANT_CODE) {
+      return NextResponse.json({ error: "Paiement non configuré — contactez l'administrateur" }, { status: 503 });
     }
 
     // ── 1. Verify payment with SumUp ──────────────────────────────
