@@ -4,8 +4,8 @@
  * Renders as a full-screen overlay with slide-up animation.
  */
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useCallback } from "react";
+import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { PinkBtn } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
@@ -20,7 +20,6 @@ interface ProductDetailProps {
 export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
   const [variant, setVariant] = useState(p.variants[0]);
   const [qty, setQty] = useState(1);
-  const [imgError, setImgError] = useState(false);
 
   const addToCart = useStore((s) => s.addToCart);
   const toggleFav = useStore((s) => s.toggleFav);
@@ -43,7 +42,8 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
         display: "flex",
         flexDirection: "column",
         zIndex: 80,
-        animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both",
+        /* Spring-like sheet entry — lux ease with slight overshoot feel */
+        animation: "sheetIn 0.42s cubic-bezier(0.22, 0.68, 0, 1) both",
       }}
     >
       {/* Floating controls */}
@@ -119,18 +119,15 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
             background: "radial-gradient(120% 100% at 50% 30%, #2c2228 0%, #14100f 75%)",
           }}
         >
-          {!imgError ? (
-            <Image
-              src={`/assets/products/${p.id}.png`}
-              alt={p.name}
-              fill
-              sizes="480px"
-              style={{ objectFit: "cover" }}
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="ph" data-label={p.name} style={{ position: "absolute", inset: 0 }} />
-          )}
+          <FadeImage
+            src={`/assets/products/${p.id}.png`}
+            alt={p.name}
+            fill
+            sizes="480px"
+            style={{ objectFit: "cover" }}
+            fallbackLabel={p.name}
+            priority
+          />
           {p.tag && (
             <span
               style={{
@@ -372,12 +369,13 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                   }}
                 >
                   <div style={{ height: 120, position: "relative", background: "#181818" }}>
-                    <Image
+                    <FadeImage
                       src={`/assets/products/${r.id}.png`}
                       alt={r.name}
                       fill
                       sizes="120px"
                       style={{ objectFit: "cover" }}
+                      fallbackLabel={r.name}
                     />
                   </div>
                   <div style={{ padding: "10px 10px 12px" }}>

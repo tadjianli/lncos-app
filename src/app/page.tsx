@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import Image from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { TopBar } from "@/components/layout/TopBar";
@@ -638,6 +638,7 @@ function NewsletterBlock() {
 /* ─── Home page ─────────────────────────────────────────────── */
 
 export default function HomePage() {
+  // Stable store references — each selector gets a stable identity across renders
   const addToCart      = useStore((s) => s.addToCart);
   const toggleFav      = useStore((s) => s.toggleFav);
   const favs           = useStore((s) => s.favs);
@@ -646,6 +647,11 @@ export default function HomePage() {
   const openSearch     = useStore((s) => s.openSearch);
   const openListing    = useStore((s) => s.openListing);
   const isFav          = useStore((s) => s.isFav);
+
+  // Stable callbacks — prevent ProductCard re-renders on unrelated state changes
+  const handleAdd  = useCallback((p: Product) => addToCart(p), [addToCart]);
+  const handleFav  = useCallback((id: string) => toggleFav(id), [toggleFav]);
+  const handleOpen = useCallback((p: Product) => openProduct(p), [openProduct]);
 
   const flashProducts = products.filter((p) => p.tag === "Flash");
 
@@ -682,56 +688,43 @@ export default function HomePage() {
         {/* Flash sale */}
         <div className="home-z" style={{ marginTop: 26, padding: "0 18px" }}>
           <FlashHead title="Ventes Flash" />
-          <div
-            className="noscroll"
-            style={{
-              display: "flex",
-              gap: 12,
-              overflowX: "auto",
-              padding: "0 0 4px",
-            }}
-          >
+          <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
             {flashProducts.map((p, i) => (
               <ProductCard
                 key={p.id + "-flash-" + i}
                 p={p}
-                onOpen={openProduct}
-                onFav={toggleFav}
+                onOpen={handleOpen}
+                onFav={handleFav}
                 isFav={isFav(p.id)}
-                onAdd={addToCart}
+                onAdd={handleAdd}
               />
             ))}
           </div>
         </div>
 
         {/* Routine */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <Reveal>
-            <RoutineSection onAdd={addToCart} />
+            <RoutineSection onAdd={handleAdd} />
           </Reveal>
         </div>
 
         {/* Best sellers */}
-        <div className="home-z" style={{ marginTop: 32, padding: "0 18px" }}>
+        <div className="home-z home-section" style={{ marginTop: 32, padding: "0 18px" }}>
           <Reveal>
             <SectionHead title="Best-sellers" action="Voir tout" />
             <div
-              className="noscroll"
-              style={{
-                display: "flex",
-                gap: 12,
-                overflowX: "auto",
-                padding: "0 0 4px",
-              }}
+              className="scroll-row"
+              style={{ padding: "4px 0 8px" }}
             >
               {bestProducts.slice(0, 5).map((p, i) => (
                 <ProductCard
                   key={p.id + "-best-" + i}
                   p={p}
-                  onOpen={() => {}}
-                  onFav={toggleFav}
-                  isFav={favs.includes(p.id)}
-                  onAdd={addToCart}
+                  onOpen={handleOpen}
+                  onFav={handleFav}
+                  isFav={isFav(p.id)}
+                  onAdd={handleAdd}
                 />
               ))}
             </div>
@@ -739,14 +732,14 @@ export default function HomePage() {
         </div>
 
         {/* Editorial promo */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <Reveal>
             <EditoPromo />
           </Reveal>
         </div>
 
         {/* Bento self-care */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <div style={{ padding: "0 18px", marginBottom: 14 }}>
             <div className="rev-sec-eyebrow">
               <Icon name="heart" size={13} color="var(--gold)" /> Self-care
@@ -761,7 +754,7 @@ export default function HomePage() {
         </div>
 
         {/* New arrivals grid */}
-        <div className="home-z" style={{ marginTop: 34, padding: "0 18px" }}>
+        <div className="home-z home-section" style={{ marginTop: 34, padding: "0 18px" }}>
           <Reveal>
             <SectionHead title="Nouveautés" />
             <div
@@ -776,10 +769,10 @@ export default function HomePage() {
                   key={p.id + "-new-" + i}
                   p={p}
                   wide
-                  onOpen={() => {}}
-                  onFav={toggleFav}
-                  isFav={favs.includes(p.id)}
-                  onAdd={addToCart}
+                  onOpen={handleOpen}
+                  onFav={handleFav}
+                  isFav={isFav(p.id)}
+                  onAdd={handleAdd}
                 />
               ))}
             </div>
@@ -787,21 +780,21 @@ export default function HomePage() {
         </div>
 
         {/* Quote */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <Reveal>
             <QuoteSection />
           </Reveal>
         </div>
 
         {/* Reels */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <Reveal>
             <ReelsSection />
           </Reveal>
         </div>
 
         {/* Newsletter */}
-        <div className="home-z" style={{ marginTop: 34 }}>
+        <div className="home-z home-section" style={{ marginTop: 34 }}>
           <Reveal>
             <NewsletterBlock />
           </Reveal>

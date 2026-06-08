@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="noscroll" style={{ overflowY: "auto", padding: "8px 0 24px" }}>
+      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "8px 0 24px" }}>
         {/* Header row */}
         <div style={{ padding: "0 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 44, marginBottom: 6 }}>
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                     <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.t}</div>
                     {m.s && (
                       <div style={{ fontSize: 11.5, color: m.gold ? "var(--gold)" : "var(--ink-mute)", marginTop: 1 }}>
-                        {m.i === "heart" ? `${favs.length} produits` : m.s}
+                        {(m.i as string) === "heart" ? `${favs.length} produits` : m.s}
                       </div>
                     )}
                   </div>

@@ -196,6 +196,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Prevent rubber-band scroll at document level — app scrolls inside AppShell */
+    overscroll-behavior: none;
   }
 
   body {
@@ -242,9 +244,23 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* Scrollbar suppression */
+  /* Scrollbar suppression + momentum scrolling */
   .noscroll::-webkit-scrollbar { width: 0; height: 0; }
-  .noscroll { scrollbar-width: none; }
+  .noscroll {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* ── Momentum scroll (premium iOS feel) ── */
+  .scroll-y {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
+  }
+  .scroll-y::-webkit-scrollbar { display: none; }
 
   /* ── Horizontal snap scroll ── */
   .scroll-row {
@@ -252,21 +268,49 @@
     gap: var(--sp-3);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 18px;
   }
   .scroll-row::-webkit-scrollbar { display: none; }
+  .scroll-row > .snap { scroll-snap-align: start; }
 
   /* ── Safe area nav padding ── */
   .pb-nav {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 
-  /* ── Skeleton shimmer ── */
+  /* ── Skeleton shimmer — sweeping highlight ── */
   .skeleton {
-    background: linear-gradient(90deg, #1d1d1d 25%, #262626 37%, #1d1d1d 63%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
+    background: linear-gradient(
+      90deg,
+      #1a1a1a 0%,
+      #1a1a1a 25%,
+      #282828 50%,
+      #1a1a1a 75%,
+      #1a1a1a 100%
+    );
+    background-size: 300% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
   }
+
+  /* ── Image fade-in utility ── */
+  .img-fade {
+    opacity: 0;
+    transition: opacity 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .img-fade.loaded { opacity: 1; }
+
+  /* ── Tactile press feedback ── */
+  .press {
+    transition: transform 0.12s cubic-bezier(0.4, 0, 1, 1);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .press:active { transform: scale(0.95); }
+  .press-sm:active { transform: scale(0.93); }
+  .press-lg:active { transform: scale(0.97); }
 
   /* ── Striped image placeholder ── */
   .ph {
@@ -379,6 +423,15 @@
   transform: none;
 }
 
+/* ── Content-visibility for below-fold sections ── */
+/* Defers rendering of sections outside the viewport — big paint perf win */
+.home-section {
+  contain: layout style;
+  content-visibility: auto;
+  /* Estimated height prevents layout shift when section is skipped */
+  contain-intrinsic-size: 0 340px;
+}
+
 /* ─── Product cards ──────────────────────────────────────────── */
 
 .prod-card {
@@ -386,13 +439,22 @@
   will-change: transform;
   border-color: rgba(255,255,255,.1) !important;
   box-shadow: 0 14px 30px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
+  /* Hardware layer — prevents repaints during animations */
+  transform: translateZ(0);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .prod-card:hover {
   transform: translateY(-6px);
   border-color: rgba(212,175,55,.34) !important;
   box-shadow: 0 26px 50px -26px rgba(0,0,0,.95), 0 0 36px -20px rgba(212,175,55,.5);
 }
-.prod-card:active { transform: translateY(-2px) scale(.985); }
+/* Crisp tactile press — instant down, spring up */
+.prod-card:active {
+  transform: scale(.96);
+  transition: transform .08s cubic-bezier(0.4,0,1,1);
+  border-color: rgba(212,175,55,.20) !important;
+}
 .prod-card .prod-imgwrap { transition: transform .5s var(--ease-lux); }
 .prod-card:hover .prod-imgwrap { transform: scale(1.05); }
 
@@ -872,8 +934,46 @@
   to   { opacity: 1; }
 }
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Premium overlay entry — product detail, listing, profile screens ── */
+@keyframes overlayIn {
+  0%   { opacity: 0; transform: translateY(56px); }
+  50%  { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+/* Exit — quick snap down */
+@keyframes overlayOut {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(32px); }
+}
+
+/* ── Sheet slide-up — full-screen takeovers ── */
+@keyframes sheetIn {
+  0%   { transform: translateY(100%); }
+  100% { transform: none; }
+}
+@keyframes sheetOut {
+  from { transform: none; }
+  to   { transform: translateY(100%); }
+}
+
+/* ── Drawer — side menu ── */
+@keyframes drawerIn {
+  0%   { transform: translateX(-100%); }
+  100% { transform: none; }
+}
+@keyframes drawerOut {
+  from { transform: none; }
+  to   { transform: translateX(-100%); }
+}
+
+/* ── Scrim fade ── */
+@keyframes scrimIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 @keyframes floaty {
   0%,100% { transform: translateY(0); }

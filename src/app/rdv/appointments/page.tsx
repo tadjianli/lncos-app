@@ -141,7 +141,7 @@ export default function AppointmentsPage() {
                       <button
                         onClick={() => {
                           const store = getRdvStore();
-                          store.update("appointments", a.id, { status: "cancelled" });
+                          store.update<{ id: string; status: string }>("appointments", a.id, { status: "cancelled" });
                         }}
                         style={{ flex: 1, padding: "10px", borderRadius: "var(--r-pill)", fontSize: 12, fontWeight: 700, border: "1px solid rgba(194,85,122,.3)", color: "#C2557A" }}
                       >

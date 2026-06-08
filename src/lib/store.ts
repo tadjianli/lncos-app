@@ -186,7 +186,6 @@ export const useStore = create<AppStore>()(
       storage: createJSONStorage(() =>
         typeof window !== "undefined" ? localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} }
       ),
-      partialState: true,
       // Persist cart + favs; ephemeral state (overlay, toast) is not persisted
       partialize: (s) => ({ cart: s.cart, cartCount: s.cartCount, favs: s.favs }),
     }

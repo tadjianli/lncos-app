@@ -49,9 +49,10 @@ export function SideMenu({ onClose }: SideMenuProps) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(0,0,0,.6)",
-          backdropFilter: "blur(2px)",
-          animation: "fadeIn .25s ease both",
+          background: "rgba(0,0,0,.65)",
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
+          animation: "scrimIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both",
         }}
       />
 
@@ -63,12 +64,15 @@ export function SideMenu({ onClose }: SideMenuProps) {
           left: 0,
           bottom: 0,
           width: 290,
-          background: "linear-gradient(160deg,#141414,#0a0a0a)",
-          borderRight: "1px solid rgba(212,175,55,.2)",
+          background: "linear-gradient(160deg, #151515, #0c0c0c)",
+          borderRight: "1px solid rgba(212,175,55,.22)",
           display: "flex",
           flexDirection: "column",
           padding: "60px 0 26px",
-          animation: "slideInLeft .3s cubic-bezier(.2,.8,.2,1) both",
+          /* Lux ease drawer — slightly longer for premium feel */
+          animation: "drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both",
+          /* Soft elevation shadow */
+          boxShadow: "8px 0 48px rgba(0,0,0,.7)",
         }}
       >
         {/* Header */}
@@ -104,7 +108,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
                   borderRadius: "var(--r-sm)",
                   textDecoration: "none",
                   color: "var(--ink-soft)",
-                  animation: `fadeUp .4s ease ${i * 0.04}s both`,
+                  animation: `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${0.08 + i * 0.035}s both`,
                 }}
               >
                 <Icon name={l.i} size={21} color="var(--gold)" />
@@ -123,7 +127,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
                   borderRadius: "var(--r-sm)",
                   textAlign: "left",
                   color: "var(--ink-soft)",
-                  animation: `fadeUp .4s ease ${i * 0.04}s both`,
+                  animation: `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${0.08 + i * 0.035}s both`,
                 }}
               >
                 <Icon name={l.i} size={21} color="var(--gold)" />

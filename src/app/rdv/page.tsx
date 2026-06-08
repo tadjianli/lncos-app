@@ -471,7 +471,7 @@ export default function RdvPage() {
       ? (() => { const d = new Date(draft.date); const [h, m] = (draft.time || "10:00").split(":").map(Number); d.setHours(h, m, 0, 0); return d.toISOString(); })()
       : new Date().toISOString();
 
-    store.insert("appointments", {
+    store.insert<Record<string, unknown>>("appointments", {
       clientId: "me",
       clientName: draft.name || "Vous",
       phone: draft.phone,

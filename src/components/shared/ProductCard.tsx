@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, memo, useCallback } from "react";
 import { Icon } from "./Icon";
+import { FadeImage } from "./FadeImage";
 import type { Product } from "@/lib/data";
 
 interface ProductCardProps {
@@ -14,7 +14,7 @@ interface ProductCardProps {
   wide?: boolean;
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   p,
   onOpen,
   onFav,
@@ -24,9 +24,8 @@ export function ProductCard({
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
   const [popping, setPopping] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
-  function handleAdd(e: React.MouseEvent) {
+  const handleAdd = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onAdd?.(p);
     setPopping(true);
@@ -34,7 +33,7 @@ export function ProductCard({
     const id = Date.now();
     setPops((list) => [...list, id]);
     setTimeout(() => setPops((list) => list.filter((x) => x !== id)), 900);
-  }
+  }, [onAdd, p]);
 
   const imgSrc = `/assets/products/${p.id}.png`;
 
@@ -62,22 +61,14 @@ export function ProductCard({
           overflow: "hidden",
         }}
       >
-        {!imgError ? (
-          <Image
-            src={imgSrc}
-            alt={p.name}
-            fill
-            sizes="(max-width: 480px) 50vw, 150px"
-            style={{ objectFit: "cover" }}
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div
-            className="ph"
-            data-label={p.name}
-            style={{ position: "absolute", inset: 0 }}
-          />
-        )}
+        <FadeImage
+          src={imgSrc}
+          alt={p.name}
+          fill
+          sizes="(max-width: 480px) 50vw, 150px"
+          style={{ objectFit: "cover" }}
+          fallbackLabel={p.name}
+        />
 
         {/* Tag */}
         {p.tag && (
@@ -188,4 +179,4 @@ export function ProductCard({
       </div>
     </div>
   );
-}
+});

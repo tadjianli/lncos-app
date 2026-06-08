@@ -21,6 +21,8 @@ export default function DiscoverPage() {
 
   return (
     <AppShell>
+      {/* Scrollable container */}
+      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto" }}>
       {/* Header */}
       <div
         style={{
@@ -86,6 +88,7 @@ export default function DiscoverPage() {
           </button>
         ))}
       </div>
+      </div>{/* end scroll container */}
     </AppShell>
   );
 }

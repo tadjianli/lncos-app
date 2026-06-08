@@ -1,29 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProductCard } from "@/components/shared/ProductCard";
+import { useStore } from "@/lib/store";
 import { products } from "@/lib/data";
-import type { Product } from "@/lib/data";
 
 export default function FavoritesPage() {
-  const [favs, setFavs] = useState<string[]>([
-    "parfum-noir",
-    "rouge-mat",
-    "palette-glow",
-    "huile-demaq",
-  ]);
+  const favs       = useStore((s) => s.favs);
+  const toggleFav  = useStore((s) => s.toggleFav);
+  const isFav      = useStore((s) => s.isFav);
+  const addToCart  = useStore((s) => s.addToCart);
+  const openProduct = useStore((s) => s.openProduct);
 
   const favProducts = products.filter((p) => favs.includes(p.id));
 
-  function toggleFav(id: string) {
-    setFavs((f) =>
-      f.includes(id) ? f.filter((x) => x !== id) : [...f, id]
-    );
-  }
-
   return (
     <AppShell>
+      {/* Scrollable container */}
+      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto" }}>
       {/* Header */}
       <div style={{ padding: "58px 18px 16px" }}>
         <p
@@ -69,10 +63,10 @@ export default function FavoritesPage() {
             key={p.id}
             p={p}
             wide
-            isFav={favs.includes(p.id)}
+            isFav={isFav(p.id)}
             onFav={toggleFav}
-            onAdd={() => {}}
-            onOpen={() => {}}
+            onAdd={addToCart}
+            onOpen={openProduct}
           />
         ))}
       </div>
@@ -89,6 +83,7 @@ export default function FavoritesPage() {
           Aucun favori pour l'instant.
         </div>
       )}
+      </div>{/* end scroll container */}
     </AppShell>
   );
 }

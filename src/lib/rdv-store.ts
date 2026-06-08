@@ -254,7 +254,7 @@ class RdvStore {
   }
 
   notify(n: Omit<Notification, "id" | "read" | "ts">): void {
-    this.insert("notifications", { ...n, read: false, ts: new Date().toISOString() });
+    this.insert<Record<string, unknown>>("notifications", { ...n, read: false, ts: new Date().toISOString() });
   }
 
   async markAllRead(): Promise<void> {
