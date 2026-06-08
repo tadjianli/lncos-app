@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Icon } from "./Icon";
 import type { Product } from "@/lib/data";
 
@@ -23,6 +24,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
   const [popping, setPopping] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
@@ -33,6 +35,8 @@ export function ProductCard({
     setPops((list) => [...list, id]);
     setTimeout(() => setPops((list) => list.filter((x) => x !== id)), 900);
   }
+
+  const imgSrc = `/assets/products/${p.id}.png`;
 
   return (
     <div
@@ -48,7 +52,7 @@ export function ProductCard({
         border: "1px solid rgba(255,255,255,.05)",
       }}
     >
-      {/* Image */}
+      {/* Image area */}
       <div
         className="prod-imgwrap"
         style={{
@@ -58,12 +62,22 @@ export function ProductCard({
           overflow: "hidden",
         }}
       >
-        {/* Product image placeholder with striped pattern */}
-        <div
-          className="ph"
-          data-label={p.name}
-          style={{ position: "absolute", inset: 0 }}
-        />
+        {!imgError ? (
+          <Image
+            src={imgSrc}
+            alt={p.name}
+            fill
+            sizes="(max-width: 480px) 50vw, 150px"
+            style={{ objectFit: "cover" }}
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div
+            className="ph"
+            data-label={p.name}
+            style={{ position: "absolute", inset: 0 }}
+          />
+        )}
 
         {/* Tag */}
         {p.tag && (
@@ -74,32 +88,23 @@ export function ProductCard({
               left: 10,
               padding: "4px 9px",
               borderRadius: "var(--r-pill)",
-              background:
-                p.tag === "Flash"
-                  ? "var(--gold-grad)"
-                  : "rgba(0,0,0,.55)",
+              background: p.tag === "Flash" ? "var(--gold-grad)" : "rgba(0,0,0,.55)",
               backdropFilter: "blur(6px)",
               color: p.tag === "Flash" ? "#1a1306" : "var(--pink)",
               fontSize: 9.5,
               fontWeight: 700,
               letterSpacing: ".05em",
               textTransform: "uppercase",
-              border:
-                p.tag === "Flash"
-                  ? "none"
-                  : "1px solid rgba(247,198,215,.25)",
+              border: p.tag === "Flash" ? "none" : "1px solid rgba(247,198,215,.25)",
             }}
           >
             {p.tag}
           </span>
         )}
 
-        {/* Fav button */}
+        {/* Fav */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onFav?.(p.id);
-          }}
+          onClick={(e) => { e.stopPropagation(); onFav?.(p.id); }}
           style={{
             position: "absolute",
             top: 8,
@@ -140,50 +145,24 @@ export function ProductCard({
           {p.name}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            margin: "6px 0 9px",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 4, margin: "6px 0 9px" }}>
           <Icon name="star" size={12} color="var(--gold)" fill="var(--gold)" />
-          <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>
-            {p.rating}
-          </span>
-          <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>
-            ({p.reviews})
-          </span>
+          <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>{p.rating}</span>
+          <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>({p.reviews})</span>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span
-              style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}
-            >
+            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>
               {p.price.toFixed(2)} €
             </span>
             {p.old && (
-              <span
-                style={{
-                  fontSize: 11,
-                  color: "var(--ink-mute)",
-                  textDecoration: "line-through",
-                }}
-              >
+              <span style={{ fontSize: 11, color: "var(--ink-mute)", textDecoration: "line-through" }}>
                 {p.old.toFixed(2)}
               </span>
             )}
           </div>
 
-          {/* Add button */}
           <button
             onClick={handleAdd}
             className={`prod-add${popping ? " pop" : ""}`}
@@ -200,11 +179,7 @@ export function ProductCard({
           >
             <Icon name="plus" size={16} color="#3a1020" stroke={2.4} />
             {pops.map((id) => (
-              <span
-                key={id}
-                className="prod-plusone"
-                style={{ right: 4, top: -6 }}
-              >
+              <span key={id} className="prod-plusone" style={{ right: 4, top: -6 }}>
                 +1
               </span>
             ))}

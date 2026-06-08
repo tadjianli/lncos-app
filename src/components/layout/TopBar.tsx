@@ -1,8 +1,13 @@
 "use client";
+/**
+ * LN COS — App header (exact from handoff screens-home.jsx AppHeader)
+ * Hamburger menu · Logo · Cart badge
+ */
 
 import Link from "next/link";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
+import { useStore } from "@/lib/store";
 
 interface TopBarProps {
   cartCount?: number;
@@ -12,16 +17,17 @@ interface TopBarProps {
 }
 
 export function TopBar({
-  cartCount = 0,
+  cartCount,
   onMenuClick,
-  onSearchClick,
+  onSearchClick: _onSearchClick,
   onCartClick,
 }: TopBarProps) {
+  const storeCartCount = useStore((s) => s.cartCount);
+  const count = cartCount ?? storeCartCount;
+  const [bump, setBump] = [false, () => {}]; // TODO: animate on count change
+
   return (
-    <div
-      className="home-z"
-      style={{ padding: "4px 18px 0", flex: "0 0 auto" }}
-    >
+    <div className="home-z" style={{ padding: "4px 18px 0", flex: "0 0 auto" }}>
       <div
         style={{
           display: "flex",
@@ -30,7 +36,7 @@ export function TopBar({
           height: 44,
         }}
       >
-        {/* Menu button */}
+        {/* Menu */}
         <button
           onClick={onMenuClick}
           style={{
@@ -50,7 +56,7 @@ export function TopBar({
           <Logo size={26} />
         </Link>
 
-        {/* Cart button */}
+        {/* Cart */}
         <button
           onClick={onCartClick}
           style={{
@@ -61,10 +67,10 @@ export function TopBar({
             display: "grid",
             placeItems: "center",
           }}
-          aria-label={`Panier (${cartCount})`}
+          aria-label={`Panier (${count})`}
         >
           <Icon name="bag" size={23} />
-          {cartCount > 0 && (
+          {count > 0 && (
             <span
               className="cart-badge"
               style={{
@@ -83,7 +89,7 @@ export function TopBar({
                 placeItems: "center",
               }}
             >
-              {cartCount}
+              {count}
             </span>
           )}
         </button>

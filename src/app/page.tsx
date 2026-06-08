@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { TopBar } from "@/components/layout/TopBar";
 import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
+import { SectionHead } from "@/components/shared/ActionButtons";
+import { useStore } from "@/lib/store";
 import { products, categories, feed, byId } from "@/lib/data";
 import type { Product } from "@/lib/data";
 
@@ -74,53 +77,6 @@ function Reveal({
       style={{ transitionDelay: delay + "ms" }}
     >
       {children}
-    </div>
-  );
-}
-
-/* ─── Section head ──────────────────────────────────────────── */
-
-function SectionHead({
-  title,
-  action,
-  onAction,
-}: {
-  title: string;
-  action?: string;
-  onAction?: () => void;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "baseline",
-        justifyContent: "space-between",
-        margin: "0 0 14px",
-      }}
-    >
-      <h3
-        style={{
-          margin: 0,
-          fontWeight: 600,
-          fontSize: "var(--fs-h3)",
-          color: "var(--ink)",
-        }}
-      >
-        {title}
-      </h3>
-      {action && (
-        <button
-          onClick={onAction}
-          style={{
-            color: "var(--gold)",
-            fontSize: 12.5,
-            fontWeight: 600,
-            letterSpacing: ".04em",
-          }}
-        >
-          {action}
-        </button>
-      )}
     </div>
   );
 }
@@ -678,85 +634,12 @@ function NewsletterBlock() {
   );
 }
 
-/* ─── Toast ─────────────────────────────────────────────────── */
-
-function Toast({ msg, onView }: { msg: string; onView?: () => void }) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        left: 16,
-        right: 16,
-        bottom: 88,
-        maxWidth: "calc(480px - 32px)",
-        marginLeft: "auto",
-        marginRight: "auto",
-        zIndex: 80,
-        animation: "fadeUp .35s ease both",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 11,
-          padding: "13px 18px",
-          borderRadius: "var(--r-pill)",
-          background: "rgba(20,20,20,.96)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(212,175,55,.3)",
-          boxShadow: "var(--shadow-soft)",
-        }}
-      >
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: "50%",
-            background: "var(--gold-grad)",
-            display: "grid",
-            placeItems: "center",
-            flex: "0 0 auto",
-          }}
-        >
-          <Icon name="check" size={16} color="#1a1306" stroke={2.5} />
-        </span>
-        <span
-          style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "var(--ink)" }}
-        >
-          {msg}
-        </span>
-        {onView && (
-          <button
-            onClick={onView}
-            style={{ fontSize: 12, fontWeight: 700, color: "var(--gold)" }}
-          >
-            Voir
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Home page ─────────────────────────────────────────────── */
 
 export default function HomePage() {
-  const [cart, setCart] = useState<Product[]>([]);
-  const [favs, setFavs] = useState<string[]>(["parfum-noir", "rouge-mat"]);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const cartCount = cart.length;
-
-  function addToCart(p: Product) {
-    setCart((c) => [...c, p]);
-    setToast(`${p.name} ajouté ✨`);
-    setTimeout(() => setToast(null), 1900);
-  }
-
-  function toggleFav(id: string) {
-    setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
-  }
+  const addToCart = useStore((s) => s.addToCart);
+  const toggleFav = useStore((s) => s.toggleFav);
+  const favs = useStore((s) => s.favs);
 
   const flashProducts = products.filter((p) => p.tag === "Flash");
 
@@ -768,12 +651,12 @@ export default function HomePage() {
   const newProducts = products.filter((p) => p.tag === "Nouveau");
 
   return (
-    <AppShell cartCount={cartCount}>
+    <AppShell>
       {/* Ambient depth layer */}
       <HomeAmbient />
 
       {/* Top bar */}
-      <TopBar cartCount={cartCount} />
+      <TopBar />
 
       {/* Scrollable content */}
       <div
@@ -919,8 +802,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Toast */}
-      {toast && <Toast msg={toast} />}
     </AppShell>
   );
 }
