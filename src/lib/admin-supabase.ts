@@ -524,3 +524,140 @@ export function useDashboardKPIs() {
 
   return { kpis, reload: load };
 }
+
+/* ─── ShippingMethod type ─────────────────────────────────────────────────── */
+
+export interface ShippingMethod {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  estimatedDays: string;
+  icon: string;
+  isActive: boolean;
+  isFree: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
+type DbShipping = Database["public"]["Tables"]["shipping_methods"]["Row"];
+
+function dbToShipping(r: DbShipping): ShippingMethod {
+  return {
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    price: Number(r.price),
+    estimatedDays: r.estimated_days,
+    icon: r.icon,
+    isActive: r.is_active,
+    isFree: r.is_free,
+    sortOrder: r.sort_order,
+    createdAt: r.created_at,
+  };
+}
+
+function shippingToDb(m: Partial<ShippingMethod>): Partial<Database["public"]["Tables"]["shipping_methods"]["Update"]> {
+  const db: Partial<Database["public"]["Tables"]["shipping_methods"]["Update"]> = {};
+  if (m.name !== undefined) db.name = m.name;
+  if (m.description !== undefined) db.description = m.description;
+  if (m.price !== undefined) db.price = m.price;
+  if (m.estimatedDays !== undefined) db.estimated_days = m.estimatedDays;
+  if (m.icon !== undefined) db.icon = m.icon;
+  if (m.isActive !== undefined) db.is_active = m.isActive;
+  if (m.isFree !== undefined) db.is_free = m.isFree;
+  if (m.sortOrder !== undefined) db.sort_order = m.sortOrder;
+  return db;
+}
+
+/* ─── useShippingMethods (admin — full CRUD) ─────────────────────────────── */
+
+export function useShippingMethods() {
+  const [methods, setMethods] = useState<ShippingMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data } = await getSupabase()
+      .from("shipping_methods")
+      .select("*")
+      .order("sort_order");
+    setMethods((data ?? []).map(dbToShipping));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("shipping-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shipping_methods" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, [load]);
+
+  const updateMethod = useCallback(async (id: string, patch: Partial<ShippingMethod>) => {
+    await getSupabase().from("shipping_methods").update(shippingToDb(patch)).eq("id", id);
+    setMethods((prev) => prev.map((m) => m.id === id ? { ...m, ...patch } : m));
+  }, []);
+
+  const insertMethod = useCallback(async (m: Omit<ShippingMethod, "id" | "createdAt">) => {
+    const { data } = await getSupabase()
+      .from("shipping_methods")
+      .insert({
+        name: m.name,
+        description: m.description,
+        price: m.price,
+        estimated_days: m.estimatedDays,
+        icon: m.icon,
+        is_active: m.isActive,
+        is_free: m.isFree,
+        sort_order: m.sortOrder,
+      })
+      .select()
+      .single();
+    if (data) setMethods((prev) => [...prev, dbToShipping(data as DbShipping)].sort((a, b) => a.sortOrder - b.sortOrder));
+  }, []);
+
+  const deleteMethod = useCallback(async (id: string) => {
+    await getSupabase().from("shipping_methods").delete().eq("id", id);
+    setMethods((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+
+  const reorderMethods = useCallback(async (reordered: ShippingMethod[]) => {
+    setMethods(reordered);
+    await Promise.all(
+      reordered.map((m, i) =>
+        getSupabase().from("shipping_methods").update({ sort_order: i }).eq("id", m.id)
+      )
+    );
+  }, []);
+
+  return { methods, loading, updateMethod, insertMethod, deleteMethod, reorderMethods, reload: load };
+}
+
+/* ─── useActiveShippingMethods (checkout — read-only) ────────────────────── */
+
+export function useActiveShippingMethods() {
+  const [methods, setMethods] = useState<ShippingMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data } = await getSupabase()
+      .from("shipping_methods")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order");
+    setMethods((data ?? []).map(dbToShipping));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("shipping-checkout")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shipping_methods" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, [load]);
+
+  return { methods, loading };
+}

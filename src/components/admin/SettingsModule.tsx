@@ -181,9 +181,11 @@ export function SettingsModule() {
           icon: "bag", label: "Livraison & frais de port", sub: "Zones, tarifs, délais",
           content: (
             <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,125,216,.06)", border: "1px solid rgba(59,125,216,.15)", borderRadius: 8 }}>
-              <div style={{ fontSize: 12.5, color: "var(--tone-blue)", fontWeight: 600 }}>Règles de livraison</div>
-              <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 4 }}>
-                Livraison offerte à partir de 50 €. Frais standard : 4,90 €. À personnaliser dans le code.
+              <div style={{ fontSize: 12.5, color: "var(--tone-blue)", fontWeight: 600 }}>Module dédié disponible</div>
+              <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 4, lineHeight: 1.6 }}>
+                Gérez les méthodes de livraison (prix, délais, icônes, activation) depuis le module{" "}
+                <a href="/admin/shipping" style={{ color: "var(--adm-gold)", fontWeight: 600 }}>Livraison</a>{" "}
+                dans le menu latéral.
               </div>
             </div>
           ),

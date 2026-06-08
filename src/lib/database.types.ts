@@ -668,6 +668,44 @@ export interface Database {
         };
         Relationships: [];
       };
+
+      shipping_methods: {
+        Row: {
+          id: string;
+          name: string;
+          description: string;
+          price: number;
+          estimated_days: string;
+          icon: string;
+          is_active: boolean;
+          is_free: boolean;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string;
+          price?: number;
+          estimated_days?: string;
+          icon?: string;
+          is_active?: boolean;
+          is_free?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string;
+          price?: number;
+          estimated_days?: string;
+          icon?: string;
+          is_active?: boolean;
+          is_free?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
     };
 
     Views: Record<string, never>;

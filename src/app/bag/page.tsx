@@ -13,6 +13,7 @@ import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getSupabase } from "@/lib/supabase";
+import { useActiveShippingMethods, type ShippingMethod } from "@/lib/admin-supabase";
 
 /* ─── Pending checkout shape stored in sessionStorage ────────────── */
 interface PendingCheckout {
@@ -92,42 +93,76 @@ function StepAddress() {
   );
 }
 
-function StepDelivery() {
-  const [sel, setSel] = useState("express");
-  const opts = [
-    { id: "standard", t: "Standard",    s: "3-5 jours ouvrés",      p: "Gratuit", i: "truck"  },
-    { id: "express",  t: "Express",      s: "24-48h · suivi inclus", p: "6,90 €",  i: "flame"  },
-    { id: "relais",   t: "Point relais", s: "à proximité · 3-4 jours", p: "2,90 €", i: "pin"   },
-  ];
+function StepDelivery({
+  methods,
+  loading: methodsLoading,
+  selected,
+  onSelect,
+}: {
+  methods: ShippingMethod[];
+  loading: boolean;
+  selected: ShippingMethod | null;
+  onSelect: (m: ShippingMethod) => void;
+}) {
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
       <h3 style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)", margin: "0 0 16px" }}>
         Mode de livraison
       </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {opts.map((o) => (
-          <button
-            key={o.id}
-            onClick={() => setSel(o.id)}
-            style={{
-              display: "flex", alignItems: "center", gap: 14, padding: "15px 16px",
-              borderRadius: "var(--r-md)", textAlign: "left",
-              background: sel === o.id ? "rgba(212,175,55,.08)" : "var(--charcoal)",
-              border: sel === o.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)",
-              width: "100%",
-            }}
-          >
-            <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
-              <Icon name={o.i} size={20} color="var(--gold)" />
-            </span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{o.t}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{o.s}</div>
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: o.p === "Gratuit" ? "var(--gold)" : "var(--ink)" }}>{o.p}</span>
-          </button>
-        ))}
-      </div>
+
+      {methodsLoading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                height: 72, borderRadius: "var(--r-md)",
+                background: "var(--charcoal)",
+                border: "1px solid rgba(255,255,255,.07)",
+                animation: `fadeUp .4s ease ${i * 0.06}s both`,
+                opacity: 0.5,
+              }}
+            />
+          ))}
+        </div>
+      ) : methods.length === 0 ? (
+        <div style={{ padding: "32px 0", textAlign: "center", color: "var(--ink-mute)", fontSize: 13 }}>
+          Aucune méthode de livraison disponible.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {methods.map((m, i) => {
+            const isSelected = selected?.id === m.id;
+            const priceLabel = m.isFree ? "Gratuit" : `${m.price.toFixed(2).replace(".", ",")} €`;
+            return (
+              <button
+                key={m.id}
+                onClick={() => onSelect(m)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 14, padding: "15px 16px",
+                  borderRadius: "var(--r-md)", textAlign: "left",
+                  background: isSelected ? "rgba(212,175,55,.08)" : "var(--charcoal)",
+                  border: isSelected ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)",
+                  width: "100%",
+                  animation: `fadeUp .4s ease ${i * 0.06}s both`,
+                  transition: "background .2s, border-color .2s",
+                }}
+              >
+                <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
+                  <Icon name={m.icon as "truck"} size={20} color="var(--gold)" />
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.name}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{m.description}</div>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: m.isFree ? "var(--gold)" : "var(--ink)" }}>
+                  {priceLabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -282,10 +317,13 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
   const [promo, setPromo]     = useState("");
   const [applied, setApplied] = useState(false);
 
-  const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
-  const discount = applied ? subtotal * 0.1 : 0;
-  const shipping  = subtotal > 50 ? 0 : 4.90;
-  const total     = subtotal - discount + shipping;
+  const { methods: shippingMethods } = useActiveShippingMethods();
+  const defaultShipping = shippingMethods[0] ?? null;
+
+  const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
+  const discount     = applied ? subtotal * 0.1 : 0;
+  const shippingCost = defaultShipping ? (defaultShipping.isFree ? 0 : defaultShipping.price) : 0;
+  const total        = subtotal - discount + shippingCost;
 
   if (cart.length === 0) {
     return (
@@ -388,14 +426,17 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
         <div style={{ marginTop: 22, padding: 18, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)" }}>
           <Row l="Sous-total" r={`${subtotal.toFixed(2)} €`} />
           {applied && <Row l="Réduction (10%)" r={`-${discount.toFixed(2)} €`} pink />}
-          <Row l="Livraison" r={shipping === 0 ? "Offerte" : `${shipping.toFixed(2)} €`} gold={shipping === 0} />
+          <Row l="Livraison" r={shippingCost === 0 ? (defaultShipping?.isFree ? "Gratuit" : "À choisir") : `${shippingCost.toFixed(2)} €`} gold={shippingCost === 0 && !!defaultShipping?.isFree} />
           <div style={{ height: 1, background: "rgba(255,255,255,.08)", margin: "12px 0" }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>Total</span>
             <span style={{ fontSize: 24, fontWeight: 700, color: "var(--ink)" }}>{total.toFixed(2)} €</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: 11, color: "var(--ink-mute)" }}>
-            <Icon name="truck" size={14} color="var(--ink-mute)" /> Livraison estimée : 2-3 jours ouvrés
+            <Icon name="truck" size={14} color="var(--ink-mute)" />
+            {defaultShipping
+              ? `Livraison ${defaultShipping.name} · ${defaultShipping.estimatedDays}`
+              : "Livraison calculée à l'étape suivante"}
           </div>
         </div>
       </div>
@@ -414,12 +455,22 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
   const [step, setStep]       = useState(0);
   const [placing, setPlacing] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
+
+  const { methods: shippingMethods, loading: shippingLoading } = useActiveShippingMethods();
+
+  // Auto-select first method once methods load
+  useEffect(() => {
+    if (!selectedShipping && shippingMethods.length > 0) {
+      setSelectedShipping(shippingMethods[0]);
+    }
+  }, [shippingMethods, selectedShipping]);
 
   const cart = useStore((s) => s.cart);
 
-  const subtotal = cart.reduce((s, it) => s + it.price * it.qty, 0);
-  const shipping  = subtotal > 50 ? 0 : 4.90;
-  const total     = subtotal + shipping;
+  const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
+  const shippingCost = selectedShipping ? (selectedShipping.isFree ? 0 : selectedShipping.price) : 0;
+  const total        = subtotal + shippingCost;
 
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
 
@@ -442,7 +493,7 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
         const snapshot: Omit<PendingCheckout, "checkout_id"> = {
           items,
           subtotal,
-          shipping_cost: shipping,
+          shipping_cost: shippingCost,
           total,
         };
 
@@ -452,7 +503,7 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
           body: JSON.stringify({
             items,
             subtotal,
-            shipping_cost: shipping,
+            shipping_cost: shippingCost,
             total,
             returnUrl: `${window.location.origin}/bag`,
           }),
@@ -529,7 +580,14 @@ function CheckoutScreen({ onBack }: { onBack: () => void }) {
 
       <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
         {step === 0 && <StepAddress />}
-        {step === 1 && <StepDelivery />}
+        {step === 1 && (
+          <StepDelivery
+            methods={shippingMethods}
+            loading={shippingLoading}
+            selected={selectedShipping}
+            onSelect={setSelectedShipping}
+          />
+        )}
         {step === 2 && <StepPayment total={total} />}
       </div>
 
