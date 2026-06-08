@@ -1,6 +1,6 @@
 /**
- * LN COS — Supabase Database types
- * Auto-regenerate with: npx supabase gen types typescript --project-id <id> > src/lib/database.types.ts
+ * LN COS — Supabase Database types (matches migration 001)
+ * Regenerate: npx supabase gen types typescript --project-id svxgeoklhylqivszedel
  */
 
 export type Json =
@@ -14,7 +14,6 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      /* ── Profiles ──────────────────────────────────────────────────────── */
       profiles: {
         Row: {
           id: string;
@@ -37,7 +36,6 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
-          id?: string;
           email?: string | null;
           full_name?: string | null;
           phone?: string | null;
@@ -45,9 +43,9 @@ export interface Database {
           is_admin?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Products ──────────────────────────────────────────────────────── */
       products: {
         Row: {
           id: string;
@@ -61,7 +59,7 @@ export interface Database {
           tag: string | null;
           stock: number;
           variants: string[];
-          desc: string;
+          description: string;
           ingredients: string[];
           active: boolean;
           image_url: string | null;
@@ -80,7 +78,7 @@ export interface Database {
           tag?: string | null;
           stock?: number;
           variants?: string[];
-          desc?: string;
+          description?: string;
           ingredients?: string[];
           active?: boolean;
           image_url?: string | null;
@@ -88,7 +86,6 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
-          id?: string;
           name?: string;
           cat?: string;
           price?: number;
@@ -99,15 +96,15 @@ export interface Database {
           tag?: string | null;
           stock?: number;
           variants?: string[];
-          desc?: string;
+          description?: string;
           ingredients?: string[];
           active?: boolean;
           image_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Categories ────────────────────────────────────────────────────── */
       categories: {
         Row: {
           id: string;
@@ -129,9 +126,9 @@ export interface Database {
           cover_url?: string | null;
           position?: number;
         };
+        Relationships: [];
       };
 
-      /* ── Cart items ────────────────────────────────────────────────────── */
       cart_items: {
         Row: {
           id: string;
@@ -149,27 +146,17 @@ export interface Database {
           qty?: number;
           created_at?: string;
         };
-        Update: {
-          qty?: number;
-        };
+        Update: { qty?: number };
+        Relationships: [];
       };
 
-      /* ── Favorites ─────────────────────────────────────────────────────── */
       favorites: {
-        Row: {
-          user_id: string;
-          product_id: string;
-          created_at: string;
-        };
-        Insert: {
-          user_id: string;
-          product_id: string;
-          created_at?: string;
-        };
+        Row: { user_id: string; product_id: string; created_at: string };
+        Insert: { user_id: string; product_id: string; created_at?: string };
         Update: Record<string, never>;
+        Relationships: [];
       };
 
-      /* ── Orders ────────────────────────────────────────────────────────── */
       orders: {
         Row: {
           id: string;
@@ -209,9 +196,9 @@ export interface Database {
           delivered_at?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Order items ───────────────────────────────────────────────────── */
       order_items: {
         Row: {
           id: string;
@@ -234,9 +221,9 @@ export interface Database {
           image_url?: string | null;
         };
         Update: Record<string, never>;
+        Relationships: [];
       };
 
-      /* ── Appointments ──────────────────────────────────────────────────── */
       appointments: {
         Row: {
           id: string;
@@ -296,12 +283,11 @@ export interface Database {
           client_phone?: string | null;
           client_email?: string | null;
           notes?: string | null;
-          loyalty_pts_earned?: number;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Notifications ─────────────────────────────────────────────────── */
       notifications: {
         Row: {
           id: string;
@@ -325,12 +311,10 @@ export interface Database {
           expires_at?: string | null;
           created_at?: string;
         };
-        Update: {
-          unread?: boolean;
-        };
+        Update: { unread?: boolean };
+        Relationships: [];
       };
 
-      /* ── Loyalty points ────────────────────────────────────────────────── */
       loyalty_points: {
         Row: {
           user_id: string;
@@ -354,9 +338,9 @@ export interface Database {
           tier?: "bronze" | "argent" | "or" | "platine";
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Loyalty transactions ──────────────────────────────────────────── */
       loyalty_transactions: {
         Row: {
           id: string;
@@ -377,9 +361,9 @@ export interface Database {
           created_at?: string;
         };
         Update: Record<string, never>;
+        Relationships: [];
       };
 
-      /* ── Home sections ─────────────────────────────────────────────────── */
       home_sections: {
         Row: {
           id: string;
@@ -443,9 +427,9 @@ export interface Database {
           is_draft?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Popups ────────────────────────────────────────────────────────── */
       popups: {
         Row: {
           id: string;
@@ -464,7 +448,7 @@ export interface Database {
           image: boolean;
           image_id: string;
           delay_sec: number;
-          trigger: string;
+          trigger_type: string;
           frequency: Json;
           audience: string;
           device: string;
@@ -491,7 +475,7 @@ export interface Database {
           image?: boolean;
           image_id?: string;
           delay_sec?: number;
-          trigger?: string;
+          trigger_type?: string;
           frequency?: Json;
           audience?: string;
           device?: string;
@@ -517,7 +501,7 @@ export interface Database {
           image?: boolean;
           image_id?: string;
           delay_sec?: number;
-          trigger?: string;
+          trigger_type?: string;
           frequency?: Json;
           audience?: string;
           device?: string;
@@ -527,45 +511,45 @@ export interface Database {
           stats?: Json;
           updated_at?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Services ──────────────────────────────────────────────────────── */
       services: {
         Row: {
           id: string;
           cat: string;
           name: string;
           price: number;
-          min: number;
+          duration: number;
           color: string;
-          pop: boolean;
+          popular: boolean;
           active: boolean;
-          desc: string;
+          description: string;
         };
         Insert: {
           id: string;
           cat: string;
           name: string;
           price: number;
-          min: number;
+          duration: number;
           color?: string;
-          pop?: boolean;
+          popular?: boolean;
           active?: boolean;
-          desc?: string;
+          description?: string;
         };
         Update: {
           cat?: string;
           name?: string;
           price?: number;
-          min?: number;
+          duration?: number;
           color?: string;
-          pop?: boolean;
+          popular?: boolean;
           active?: boolean;
-          desc?: string;
+          description?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Staff ─────────────────────────────────────────────────────────── */
       staff: {
         Row: {
           id: string;
@@ -602,30 +586,30 @@ export interface Database {
           services?: string[];
           avatar_url?: string | null;
         };
+        Relationships: [];
       };
 
-      /* ── Extras ────────────────────────────────────────────────────────── */
       extras: {
         Row: {
           id: string;
           name: string;
           price: number;
-          min: number;
+          duration: number;
         };
         Insert: {
           id: string;
           name: string;
           price: number;
-          min: number;
+          duration: number;
         };
         Update: {
           name?: string;
           price?: number;
-          min?: number;
+          duration?: number;
         };
+        Relationships: [];
       };
 
-      /* ── Availability ──────────────────────────────────────────────────── */
       availability: {
         Row: {
           day: number;
@@ -647,15 +631,15 @@ export interface Database {
           open?: string;
           close?: string;
         };
+        Relationships: [];
       };
 
-      /* ── Blocked slots ─────────────────────────────────────────────────── */
       blocked_slots: {
         Row: {
           id: string;
           date: string;
-          start: string;
-          end: string;
+          slot_start: string;
+          slot_end: string;
           staff_id: string | null;
           reason: string | null;
           created_at: string;
@@ -663,19 +647,20 @@ export interface Database {
         Insert: {
           id?: string;
           date: string;
-          start: string;
-          end: string;
+          slot_start: string;
+          slot_end: string;
           staff_id?: string | null;
           reason?: string | null;
           created_at?: string;
         };
         Update: {
           date?: string;
-          start?: string;
-          end?: string;
+          slot_start?: string;
+          slot_end?: string;
           staff_id?: string | null;
           reason?: string | null;
         };
+        Relationships: [];
       };
     };
 

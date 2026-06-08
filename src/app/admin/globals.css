@@ -133,6 +133,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .adm-content {
@@ -143,6 +144,26 @@
   flex-direction: column;
   gap: 20px;
 }
+
+.adm-logout-btn {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--adm-border);
+  background: transparent;
+  color: var(--adm-ink-mute);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  z-index: 10;
+}
+.adm-logout-btn:hover { color: var(--adm-ink); border-color: var(--adm-ink-soft); }
+.adm-logout-btn:disabled { opacity: .5; cursor: default; }
 
 /* ─── Topbar ─────────────────────────────────────────────────────────── */
 

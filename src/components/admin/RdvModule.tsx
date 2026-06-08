@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getRdvStore } from "@/lib/rdv-store";
+import { useState } from "react";
+import { useAllAppointments, useRdvNotifications } from "@/lib/admin-supabase";
 import type { Appointment, Notification } from "@/lib/rdv-store";
 import { services, staff, availability, type Service } from "@/lib/rdv-data";
 import { Icon } from "@/components/shared/Icon";
@@ -160,7 +160,6 @@ function Dashboard({ appointments, notifications, onOpenCalendar }: {
   notifications: Notification[];
   onOpenCalendar: () => void;
 }) {
-  const store = getRdvStore();
   const today = new Date().toISOString().slice(0, 10);
   const todayAppts = appointments.filter((a) => a.status !== "cancelled" && a.start.startsWith(today));
   const upcoming   = appointments.filter((a) => a.status !== "cancelled" && a.start > new Date().toISOString());
@@ -559,7 +558,6 @@ function NotificationsView({ notifications, onMarkAllRead }: {
   notifications: Notification[];
   onMarkAllRead: () => void;
 }) {
-  const store = getRdvStore();
   const sorted = [...notifications].sort((a, b) => b.ts.localeCompare(a.ts));
 
   const typeLabel: Record<string, string> = {
@@ -607,31 +605,21 @@ function NotificationsView({ notifications, onMarkAllRead }: {
 /* ── Root RDV module ────────────────────────────────────────────────── */
 export function RdvModule() {
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  const reload = useCallback(() => {
-    const store = getRdvStore();
-    setAppointments(store.get<Appointment>("appointments"));
-    setNotifications(store.get<Notification>("notifications"));
-  }, []);
+  const { appointments, updateStatus } = useAllAppointments();
+  const { notifications: rawNotifications } = useRdvNotifications();
 
-  useEffect(() => {
-    reload();
-    const store = getRdvStore();
-    const unsub = store.on("*", reload);
-    return unsub;
-  }, [reload]);
+  const notifications = rawNotifications.map((n) => ({ ...n, read: readIds.has(n.id) }));
 
-  function handleStatusChange(id: string, status: Appointment["status"]) {
-    getRdvStore().update<Appointment>("appointments", id, { status });
+  async function handleStatusChange(id: string, status: Appointment["status"]) {
+    await updateStatus(id, status);
     setSelectedAppt(null);
   }
 
-  async function handleMarkAllRead() {
-    await getRdvStore().markAllRead();
-    reload();
+  function handleMarkAllRead() {
+    setReadIds(new Set(rawNotifications.map((n) => n.id)));
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;

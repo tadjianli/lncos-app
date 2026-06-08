@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useHomeSectionsStore } from "@/lib/stores/home-sections-store";
+import { useState, useEffect, useRef } from "react";
+import { useSupabaseHomeSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
 import type { HomeSection } from "@/lib/home-sections";
 import { Icon } from "@/components/shared/Icon";
@@ -161,16 +161,25 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 
 /* ── Main App Builder component ─────────────────────────────────────── */
 export function AppBuilder() {
-  const store = useHomeSectionsStore();
+  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabaseHomeSections();
+  const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
 
-  // Draft workflow
-  const sections = store.draft ?? store.published;
-  const hasDraft = store.draft !== null;
+  // Sync from DB draft on first load (e.g. page refresh mid-edit)
+  useEffect(() => {
+    if (dbDraft !== null && localDraft === null) {
+      setLocalDraft(dbDraft);
+    }
+  }, [dbDraft, localDraft]);
 
-  // Ensure we're in draft mode when interacting
-  function ensureDraft() {
-    if (!store.draft) store.beginDraft();
+  const sections = localDraft ?? published;
+  const hasDraft = localDraft !== null;
+
+  async function ensureDraft() {
+    if (localDraft === null) {
+      setLocalDraft([...published]);
+      await beginDraft(published);
+    }
   }
 
   // Drag state
@@ -186,18 +195,17 @@ export function AppBuilder() {
     setDragOverId(id);
   }
 
-  function onDrop(targetId: string) {
+  async function onDrop(targetId: string) {
     const fromId = dragId.current;
     if (!fromId || fromId === targetId) { setDragOverId(null); return; }
-    ensureDraft();
-    // Reorder by moving fromId before targetId
+    await ensureDraft();
     const arr = [...sections];
     const fromIdx = arr.findIndex((s) => s.id === fromId);
     const toIdx   = arr.findIndex((s) => s.id === targetId);
     const [item] = arr.splice(fromIdx, 1);
     arr.splice(toIdx, 0, item);
-    // Apply via multiple moves (store uses up/down, so we'll directly update draft)
-    useHomeSectionsStore.setState({ draft: arr });
+    setLocalDraft(arr);
+    saveDraft(arr);
     dragId.current = null;
     setDragOverId(null);
   }
@@ -207,28 +215,30 @@ export function AppBuilder() {
     setDragOverId(null);
   }
 
-  function handleToggle(id: string) {
-    ensureDraft();
-    store.toggleDraftSection(id);
+  async function handleToggle(id: string) {
+    await ensureDraft();
+    setLocalDraft((d) => d ? d.map((s) => s.id === id ? { ...s, enabled: !s.enabled } : s) : d);
   }
 
-  function handleEdit(sec: HomeSection) {
-    ensureDraft();
+  async function handleEdit(sec: HomeSection) {
+    await ensureDraft();
     setEditingSection(sec);
   }
 
   function handleSaveEdit(patch: Partial<HomeSection>) {
     if (!editingSection) return;
-    store.updateDraftSection(editingSection.id, patch);
+    setLocalDraft((d) => d ? d.map((s) => s.id === editingSection.id ? { ...s, ...patch } : s) : d);
     setEditingSection(null);
   }
 
-  function handlePublish() {
-    store.publishDraft();
+  async function handlePublish() {
+    await publishDraft(localDraft ?? published);
+    setLocalDraft(null);
   }
 
-  function handleDiscard() {
-    store.discardDraft();
+  async function handleDiscard() {
+    await discardDraft();
+    setLocalDraft(null);
   }
 
   const activeCount = sections.filter((s) => s.enabled).length;
