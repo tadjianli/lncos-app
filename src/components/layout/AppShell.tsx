@@ -54,6 +54,15 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const overlay      = useStore(selectOverlay);
   const closeOverlay = useStore(s => s.closeOverlay);
 
+  // Trigger Zustand persist rehydration after React has finished hydrating.
+  // We use skipHydration:true in store.ts so localStorage is NOT read during
+  // the initial render — this prevents a server/client mismatch on persisted
+  // favorites (heart icons). After this effect fires, the store reads localStorage,
+  // sets _storeHydrated=true, and React does a normal update (not hydration).
+  useEffect(() => {
+    useStore.persist.rehydrate();
+  }, []);
+
   const mode = typeof window !== "undefined"
     ? getRenderModeFromSearch(window.location.search)
     : "live";

@@ -204,6 +204,10 @@ export const useStore = create<AppStore>()(
       ),
       // Persist cart + favs; ephemeral state (overlay, toast, hydration sentinel) is not persisted
       partialize: (s) => ({ cart: s.cart, cartCount: s.cartCount, favs: s.favs }),
+      // Skip automatic rehydration on store creation — localStorage is read synchronously
+      // which causes a hydration mismatch because React sees the real favs before the SSR
+      // HTML is patched. We manually call rehydrate() in a useEffect (see AppShell).
+      skipHydration: true,
       onRehydrateStorage: () => (state) => {
         if (state) state._storeHydrated = true;
       },
