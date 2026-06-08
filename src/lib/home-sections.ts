@@ -162,6 +162,18 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     schedule: { enabled: false, start: "", end: "" },
   },
   {
+    id: "reviews-1",
+    type: "reviews",
+    name: "Avis vérifiés",
+    enabled: true,
+    variant: "carousel",
+    title: "Avis vérifiés",
+    eyebrow: "Elles adorent",
+    device: "all",
+    audience: "all",
+    schedule: { enabled: false, start: "", end: "" },
+  },
+  {
     id: "reels-1",
     type: "reels",
     name: "Reels beauté",

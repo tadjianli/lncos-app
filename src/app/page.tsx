@@ -13,6 +13,7 @@ import { feed, byId as staticById } from "@/lib/data";
 import type { Product } from "@/lib/data";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
+import { ReviewsSection } from "@/components/home/ReviewsSection";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
 
@@ -805,6 +806,15 @@ export default function HomePage() {
             <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
               <Reveal>
                 <QuoteSection />
+              </Reveal>
+            </div>
+          );
+
+        case "reviews":
+          return (
+            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+              <Reveal>
+                <ReviewsSection title={section.title} />
               </Reveal>
             </div>
           );
