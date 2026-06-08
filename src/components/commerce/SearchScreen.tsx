@@ -170,7 +170,9 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
       style={{
         position: "absolute",
         inset: 0,
-        background: "var(--noir)",
+        background: "rgba(8,8,8,.94)",
+        backdropFilter: "blur(32px) saturate(1.2)",
+        WebkitBackdropFilter: "blur(32px) saturate(1.2)",
         display: "flex",
         flexDirection: "column",
         zIndex: 80,

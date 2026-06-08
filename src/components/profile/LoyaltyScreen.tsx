@@ -3,7 +3,7 @@
  * LN COS — Loyalty / VIP screen — premium redesign
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader, PinkBtn } from "@/components/shared/ActionButtons";
 
@@ -42,12 +42,34 @@ interface LoyaltyScreenProps {
 }
 
 export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
-  const [mounted, setMounted] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const [mounted, setMounted]     = useState(false);
+  const [copied, setCopied]       = useState(false);
+  const [displayPts, setDisplayPts] = useState(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Mount flag for progress bar
     const t = setTimeout(() => setMounted(true), 60);
-    return () => clearTimeout(t);
+
+    // Animated count-up for points
+    const DURATION = 1600;
+    const startTime = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / DURATION);
+      // cubic ease-out
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayPts(Math.round(eased * USER_PTS));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      clearTimeout(t);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   const nextTier    = TIERS[CURRENT_TIER_IDX + 1];
@@ -88,6 +110,165 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
       >
         <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 24 }}>
 
+          {/* ── VIP Member Card ────────────────────────────────────────── */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #241d0a 0%, #1a1306 45%, #2c2318 100%)",
+              borderRadius: 20,
+              padding: "24px 22px 20px",
+              border: "1px solid rgba(212,175,55,.28)",
+              boxShadow: "0 24px 60px -20px rgba(212,175,55,.35)",
+              position: "relative",
+              overflow: "hidden",
+              minHeight: 160,
+            }}
+          >
+            {/* Background shimmer pattern */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage:
+                  "repeating-linear-gradient(60deg, rgba(212,175,55,.03) 0px, rgba(212,175,55,.03) 1px, transparent 1px, transparent 20px)",
+                pointerEvents: "none",
+              }}
+            />
+
+            {/* Top-right glow orb */}
+            <div
+              style={{
+                position: "absolute",
+                top: -30,
+                right: -30,
+                width: 120,
+                height: 120,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(212,175,55,.22), transparent 70%)",
+                pointerEvents: "none",
+              }}
+            />
+
+            {/* Card header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 22,
+                position: "relative",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 800,
+                    letterSpacing: ".22em",
+                    textTransform: "uppercase",
+                    color: "rgba(212,175,55,.6)",
+                    marginBottom: 3,
+                  }}
+                >
+                  Carte Membre
+                </div>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: "var(--gold)",
+                    letterSpacing: ".04em",
+                  }}
+                >
+                  LN COS Club
+                </div>
+              </div>
+
+              {/* Chip */}
+              <div
+                style={{
+                  width: 38,
+                  height: 28,
+                  borderRadius: 6,
+                  background: "linear-gradient(135deg, #F0D98C 0%, #B8902B 100%)",
+                  border: "1px solid rgba(212,175,55,.4)",
+                  display: "grid",
+                  placeItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: 20,
+                    height: 14,
+                    borderRadius: 3,
+                    border: "1px solid rgba(0,0,0,.2)",
+                    background: "linear-gradient(135deg, #e8c84a, #c49b28)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Member number */}
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: "rgba(212,175,55,.8)",
+                letterSpacing: ".18em",
+                marginBottom: 14,
+                position: "relative",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              •••• •••• •••• 4242
+            </div>
+
+            {/* Card footer */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-end",
+                position: "relative",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(212,175,55,.45)", marginBottom: 2 }}>
+                  Titulaire
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--gold)", letterSpacing: ".06em" }}>
+                  EMMA DUBOIS
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: 2,
+                }}
+              >
+                <div
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: "var(--r-pill)",
+                    background: "linear-gradient(135deg,#F0D98C 0%,#D4AF37 42%,#B8902B 100%)",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: "#1a1306",
+                    letterSpacing: ".08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Membre Or
+                </div>
+                <div style={{ fontSize: 10, color: "rgba(212,175,55,.4)", fontWeight: 600 }}>
+                  Valable jusqu'au 12/26
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* ── Points Card (cream luxury) ─────────────────────────────── */}
           <div
             style={{
@@ -119,7 +300,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
               <Icon name="crown" size={22} color="#1a1306" stroke={2} />
             </div>
 
-            {/* Points number */}
+            {/* Points number — animated count-up */}
             <div
               style={{
                 fontSize: 52,
@@ -127,9 +308,11 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
                 color: "#8B6914",
                 lineHeight: 1,
                 letterSpacing: "-.02em",
+                fontVariantNumeric: "tabular-nums",
+                transition: "none",
               }}
             >
-              {USER_PTS.toLocaleString("fr-FR")}
+              {displayPts.toLocaleString("fr-FR")}
             </div>
             <div
               style={{
