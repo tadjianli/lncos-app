@@ -522,6 +522,7 @@ function QuoteSection() {
 /* ─── Reels section ─────────────────────────────────────────── */
 
 function ReelsSection() {
+  const openReels = useStore((s) => s.openReels);
   const tags = ["Routine", "Teint frais", "Unboxing"];
   const stats = [
     ["12.4k", "2.1k"],
@@ -532,7 +533,7 @@ function ReelsSection() {
   return (
     <div>
       <div style={{ padding: "0 18px" }}>
-        <SectionHead title="LN COS Beauté" action="Tout voir" />
+        <SectionHead title="LN COS Beauté" action="Tout voir" onAction={openReels} />
       </div>
       <div
         className="noscroll"
@@ -544,7 +545,7 @@ function ReelsSection() {
         }}
       >
         {feed.map((v, i) => (
-          <button key={v.id} className="reel-card">
+          <button key={v.id} className="reel-card" onClick={openReels}>
             <div className="reel-bg">
               <div
                 className="ph"

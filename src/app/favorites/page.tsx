@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProductCard } from "@/components/shared/ProductCard";
+import { Icon } from "@/components/shared/Icon";
+import { PinkBtn } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { products } from "@/lib/data";
 
@@ -74,13 +77,80 @@ export default function FavoritesPage() {
       {favProducts.length === 0 && (
         <div
           style={{
-            padding: "60px 32px",
+            flex: "1 1 auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "40px 40px 60px",
             textAlign: "center",
-            color: "var(--ink-mute)",
-            fontSize: "var(--fs-sm)",
+            animation: "fadeUp .5s ease both",
           }}
         >
-          Aucun favori pour l'instant.
+          {/* Icon ring */}
+          <div
+            style={{
+              width: 90,
+              height: 90,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, rgba(247,198,215,.15), rgba(247,198,215,.06))",
+              border: "1.5px solid rgba(247,198,215,.22)",
+              display: "grid",
+              placeItems: "center",
+              marginBottom: 24,
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: -8,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(247,198,215,.08), transparent 70%)",
+              }}
+            />
+            <Icon name="heart" size={36} color="var(--pink)" stroke={1.4} />
+          </div>
+
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: ".18em",
+              textTransform: "uppercase",
+              color: "var(--gold)",
+              marginBottom: 10,
+            }}
+          >
+            Sélection vide
+          </p>
+          <h3
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "var(--ink)",
+              margin: "0 0 10px",
+              letterSpacing: "-.01em",
+            }}
+          >
+            Aucun favori pour l&apos;instant
+          </h3>
+          <p
+            style={{
+              fontSize: 13,
+              color: "var(--ink-mute)",
+              lineHeight: 1.6,
+              maxWidth: 260,
+              margin: "0 0 28px",
+            }}
+          >
+            Parcourez la boutique et cœurez les produits qui vous inspirent.
+          </p>
+          <Link href="/">
+            <PinkBtn style={{ width: "auto", padding: "14px 32px" }}>
+              Découvrir la boutique
+            </PinkBtn>
+          </Link>
         </div>
       )}
       </div>{/* end scroll container */}

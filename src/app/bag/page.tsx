@@ -5,9 +5,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { SubHeader, PinkBtn, GoldBtn } from "@/components/shared/ActionButtons";
+import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 
@@ -202,7 +202,7 @@ function CartScreen({ onCheckout }: { onCheckout: () => void }) {
                 onClick={() => openProduct(it)}
                 style={{ width: 78, height: 78, borderRadius: 14, flex: "0 0 auto", overflow: "hidden", position: "relative", background: "#181818" }}
               >
-                <Image src={`/assets/products/${it.id}.png`} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
+                <FadeImage src={`/assets/products/${it.id}.png`} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
               </button>
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div>
