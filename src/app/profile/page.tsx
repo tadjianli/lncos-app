@@ -1,232 +1,323 @@
+"use client";
+
 import { AppShell } from "@/components/layout/AppShell";
+import { Icon } from "@/components/shared/Icon";
 
-/* ── Notification Bell ───────────────────────────────────────────────────── */
-function NotificationBell() {
-  return (
-    <button className="relative w-10 h-10 flex items-center justify-center active:scale-90 transition-transform duration-100">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 2a7 7 0 00-7 7v4l-2 3h18l-2-3V9a7 7 0 00-7-7z"
-          stroke="white"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path d="M9 19a3 3 0 006 0" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-      {/* Red notification dot */}
-      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-    </button>
-  );
-}
+/* ─── Stats card ─────────────────────────────────────────────── */
 
-/* ── Stats Card ─────────────────────────────────────────────────────────── */
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
     <div
-      className="flex-1 flex flex-col items-center justify-center py-4 rounded-[1rem]"
-      style={{ background: "#1E1812" }}
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px 8px",
+        borderRadius: "var(--r-md)",
+        background: "rgba(212,175,55,.08)",
+        border: "1px solid rgba(212,175,55,.14)",
+      }}
     >
-      <span className="text-[1.6rem] font-bold leading-none" style={{ color: "#D4A820" }}>
+      <span
+        style={{
+          fontSize: "var(--fs-h1)",
+          fontWeight: 700,
+          lineHeight: 1,
+          color: "var(--gold)",
+        }}
+      >
         {value}
       </span>
-      <span className="text-[0.72rem] text-[--cream-muted] mt-1.5 font-normal">{label}</span>
+      <span
+        style={{
+          fontSize: "var(--fs-nano)",
+          color: "var(--ink-mute)",
+          marginTop: 6,
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }
 
-/* ── Menu Row ────────────────────────────────────────────────────────────── */
-interface MenuRowProps {
-  icon: React.ReactNode;
+/* ─── Menu row ───────────────────────────────────────────────── */
+
+function MenuRow({
+  icon,
+  iconBg,
+  title,
+  subtitle,
+  subtitleColor,
+  isLast,
+}: {
+  icon: string;
   iconBg?: string;
   title: string;
   subtitle: string;
   subtitleColor?: string;
   isLast?: boolean;
-}
-function MenuRow({ icon, iconBg = "#2E2418", title, subtitle, subtitleColor = "#8A8888", isLast }: MenuRowProps) {
+}) {
   return (
     <>
-      <button className="flex items-center gap-4 px-5 py-4 w-full active:bg-[rgba(255,255,255,0.03)] transition-colors duration-100">
-        {/* Icon container */}
-        <div
-          className="w-11 h-11 rounded-[0.75rem] flex items-center justify-center flex-shrink-0"
-          style={{ background: iconBg }}
+      <button
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 15,
+          padding: "14px 18px",
+          width: "100%",
+          textAlign: "left",
+        }}
+      >
+        <span
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: iconBg || "var(--charcoal-3)",
+            display: "grid",
+            placeItems: "center",
+            flex: "0 0 auto",
+          }}
         >
-          {icon}
-        </div>
-
-        {/* Text */}
-        <div className="flex-1 text-left">
-          <p className="text-[0.95rem] font-bold text-white leading-tight">{title}</p>
-          <p className="text-[0.78rem] mt-0.5 leading-tight" style={{ color: subtitleColor }}>
+          <Icon name={icon} size={20} color="var(--gold)" />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
+            {title}
+          </div>
+          <div
+            style={{
+              fontSize: 12,
+              marginTop: 2,
+              color: subtitleColor || "var(--ink-mute)",
+            }}
+          >
             {subtitle}
-          </p>
+          </div>
         </div>
-
-        {/* Chevron */}
-        <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
-          <path d="M1 1l6 6-6 6" stroke="#4A4540" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <Icon name="chevR" size={18} color="var(--ink-mute)" />
       </button>
-
-      {/* Divider */}
       {!isLast && (
-        <div className="mx-5 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <div
+          style={{
+            margin: "0 18px",
+            height: 1,
+            background: "rgba(255,255,255,.06)",
+          }}
+        />
       )}
     </>
   );
 }
 
-/* ── Profile Page ────────────────────────────────────────────────────────── */
+/* ─── Profile page ───────────────────────────────────────────── */
+
 export default function ProfilePage() {
   return (
-    <AppShell topBar={false} cartCount={0}>
-      {/* Page title row */}
-      <div className="flex items-center justify-between px-5 pt-14 pb-5">
-        <h1 className="text-[2rem] font-bold text-white tracking-[-0.02em]">Profil</h1>
-        <NotificationBell />
+    <AppShell>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "58px 18px 20px",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "var(--fs-h2)",
+            fontWeight: 700,
+            color: "var(--ink)",
+          }}
+        >
+          Profil
+        </h1>
+        <button style={{ color: "var(--ink-soft)" }}>
+          <Icon name="bell" size={22} />
+        </button>
       </div>
 
-      <div className="px-4 flex flex-col gap-4">
-
-        {/* ── User card ─────────────────────────────────────────── */}
+      <div
+        style={{
+          padding: "0 16px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+        }}
+      >
+        {/* User card */}
         <div
-          className="rounded-[1.25rem] px-5 py-5 flex items-center gap-4"
-          style={{ background: "#1E1812" }}
+          style={{
+            borderRadius: "var(--r-lg)",
+            padding: "18px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            background: "linear-gradient(160deg, rgba(40,33,22,.9), rgba(20,16,10,.96))",
+            border: "1px solid rgba(212,175,55,.18)",
+          }}
         >
-          {/* Avatar */}
           <div
-            className="w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: "#EFBDD0" }}
+            style={{
+              width: 68,
+              height: 68,
+              borderRadius: "50%",
+              background: "var(--pink-light)",
+              display: "grid",
+              placeItems: "center",
+              flex: "0 0 auto",
+              fontSize: 28,
+              fontWeight: 700,
+              color: "#C77B98",
+            }}
           >
-            <span className="text-[1.75rem] font-bold text-white">E</span>
+            E
           </div>
-
-          {/* Name / email / badge */}
-          <div className="flex flex-col gap-1">
-            <p className="text-[1.1rem] font-bold text-white leading-tight">Emma Dubois</p>
-            <p className="text-[0.78rem] text-[--cream-muted]">emma.d@email.com</p>
-            {/* Membre Or badge */}
+          <div>
             <div
-              className="mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full self-start"
               style={{
-                border: "1px solid rgba(201,169,110,0.55)",
-                background: "rgba(201,169,110,0.08)",
+                fontSize: "var(--fs-title)",
+                fontWeight: 700,
+                color: "var(--ink)",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M6 1L7.2 4.5H11L8 6.5l1 3.5L6 8 3 10l1-3.5L1 4.5H4.8z" fill="#C9A96E" />
-              </svg>
-              <span className="text-[0.6rem] font-bold tracking-[0.12em] text-[#C9A96E]">MEMBRE OR</span>
+              Emma Dubois
+            </div>
+            <div
+              style={{
+                fontSize: "var(--fs-xs)",
+                color: "var(--ink-mute)",
+                marginTop: 3,
+              }}
+            >
+              emma.d@email.com
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 12px",
+                borderRadius: "var(--r-pill)",
+                border: "1px solid rgba(212,175,55,.35)",
+                background: "rgba(212,175,55,.08)",
+              }}
+            >
+              <Icon name="crown" size={12} color="var(--gold)" />
+              <span
+                style={{
+                  fontSize: "var(--fs-nano)",
+                  fontWeight: 700,
+                  letterSpacing: ".12em",
+                  color: "var(--gold)",
+                  textTransform: "uppercase",
+                }}
+              >
+                Membre Or
+              </span>
             </div>
           </div>
         </div>
 
-        {/* ── Gold CTA banner ───────────────────────────────────── */}
+        {/* RDV CTA */}
         <button
-          className="w-full rounded-[1.25rem] flex items-center gap-4 px-5 py-4 active:scale-[0.98] transition-transform duration-150"
           style={{
-            background: "linear-gradient(135deg, #B8900C 0%, #D4AE20 45%, #C49A15 100%)",
+            width: "100%",
+            borderRadius: "var(--r-lg)",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            padding: "16px 18px",
+            background: "var(--gold-grad)",
+            textAlign: "left",
           }}
         >
-          {/* Icon */}
-          <div
-            className="w-11 h-11 rounded-[0.75rem] flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(0,0,0,0.22)" }}
+          <span
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: "rgba(0,0,0,.22)",
+              display: "grid",
+              placeItems: "center",
+              flex: "0 0 auto",
+            }}
           >
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <rect x="2" y="4" width="18" height="16" rx="3" stroke="rgba(0,0,0,0.8)" strokeWidth="1.5" />
-              <path d="M7 2v4M15 2v4M2 9h18" stroke="rgba(0,0,0,0.8)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-
-          {/* Text */}
-          <div className="flex-1 text-left">
-            <p className="text-[1.05rem] font-bold leading-tight" style={{ color: "#1A1200" }}>
+            <Icon name="calendar" size={22} color="rgba(0,0,0,.8)" />
+          </span>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontSize: "var(--fs-body)",
+                fontWeight: 700,
+                color: "#1a1306",
+              }}
+            >
               Prendre rendez-vous
-            </p>
-            <p className="text-[0.72rem] mt-0.5 leading-snug" style={{ color: "rgba(26,18,0,0.72)" }}>
+            </div>
+            <div
+              style={{
+                fontSize: "var(--fs-nano)",
+                color: "rgba(26,18,0,.7)",
+                marginTop: 2,
+              }}
+            >
               Manucure · extensions · nail art — en 60s
-            </p>
+            </div>
           </div>
-
-          {/* Arrow */}
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M5 11h12M12 6l5 5-5 5" stroke="rgba(26,18,0,0.7)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="arrowR" size={22} color="rgba(26,18,0,.7)" />
         </button>
 
-        {/* ── Stats row ─────────────────────────────────────────── */}
-        <div className="flex gap-3">
+        {/* Stats */}
+        <div style={{ display: "flex", gap: 10 }}>
           <StatCard value="12"    label="Commandes" />
           <StatCard value="1 240" label="Points"    />
           <StatCard value="2"     label="Favoris"   />
         </div>
 
-        {/* ── Menu list ─────────────────────────────────────────── */}
+        {/* Menu */}
         <div
-          className="rounded-[1.25rem] overflow-hidden"
-          style={{ background: "#1E1812" }}
+          style={{
+            borderRadius: "var(--r-lg)",
+            background: "var(--charcoal)",
+            border: "1px solid rgba(255,255,255,.05)",
+            overflow: "hidden",
+          }}
         >
           <MenuRow
-            icon={
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="2" y="3" width="16" height="15" rx="3" stroke="#C9A820" strokeWidth="1.4" />
-                <path d="M6 1v4M14 1v4M2 8h16" stroke="#C9A820" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            }
-            iconBg="#2E2418"
+            icon="calendar"
+            iconBg="rgba(212,175,55,.12)"
             title="Mes rendez-vous"
             subtitle="1 à venir"
-            subtitleColor="#D4A820"
+            subtitleColor="var(--gold)"
           />
           <MenuRow
-            icon={
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M5 4h10l1.5 10H3.5L5 4z"
-                  stroke="#8A8888"
-                  strokeWidth="1.4"
-                  strokeLinejoin="round"
-                />
-                <path d="M8 4V3a2 2 0 014 0v1" stroke="#8A8888" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            }
-            iconBg="#252525"
+            icon="bag"
             title="Mes commandes"
             subtitle="3 en cours"
           />
           <MenuRow
-            icon={
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10 17.5C10 17.5 2 13 2 7.5a4 4 0 018-1.09A4 4 0 0118 7.5c0 5.5-8 10-8 10z"
-                  stroke="#8A8888"
-                  strokeWidth="1.4"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            iconBg="#252525"
+            icon="heart"
             title="Mes favoris"
             subtitle="2 produits"
           />
           <MenuRow
-            icon={
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2l2 5h5.5l-4.5 3.5 1.5 5-4.5-3-4.5 3 1.5-5L2.5 7H8z" fill="#C9A820" />
-              </svg>
-            }
-            iconBg="#2E2418"
+            icon="crown"
+            iconBg="rgba(212,175,55,.12)"
             title="Programme VIP"
             subtitle="Niveau Or · 1 240 pts"
-            subtitleColor="#D4A820"
+            subtitleColor="var(--gold)"
             isLast
           />
         </div>
-
-        {/* Bottom padding */}
-        <div className="h-4" />
       </div>
     </AppShell>
   );

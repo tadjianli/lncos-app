@@ -1,39 +1,44 @@
-import { TopBar } from "./TopBar";
 import { BottomNav } from "./BottomNav";
-import { cn } from "@/lib/utils";
 
 interface AppShellProps {
   children: React.ReactNode;
-  topBar?: boolean;
   bottomNav?: boolean;
-  transparentTopBar?: boolean;
+  topBar?: boolean; // kept for backward compat, not used
+  transparentTopBar?: boolean; // kept for backward compat, not used
   cartCount?: number;
-  className?: string;
+  className?: string; // kept for backward compat
 }
 
 export function AppShell({
   children,
-  topBar = true,
   bottomNav = true,
-  transparentTopBar = false,
   cartCount = 0,
-  className,
 }: AppShellProps) {
   return (
-    <div className="relative min-h-dvh w-full max-w-[480px] mx-auto">
-      {topBar && (
-        <TopBar transparent={transparentTopBar} cartCount={cartCount} />
-      )}
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100dvh",
+        width: "100%",
+        maxWidth: 480,
+        marginLeft: "auto",
+        marginRight: "auto",
+        background: "var(--noir)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <main
-        className={cn(
-          topBar && "pt-16",
-          bottomNav && "pb-nav",
-          className
-        )}
+        style={{
+          flex: "1 1 auto",
+          paddingBottom: bottomNav
+            ? "calc(5rem + env(safe-area-inset-bottom))"
+            : 0,
+        }}
       >
         {children}
       </main>
-      {bottomNav && <BottomNav />}
+      {bottomNav && <BottomNav cartCount={cartCount} />}
     </div>
   );
 }

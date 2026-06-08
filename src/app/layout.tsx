@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Cormorant_Garamond } from "next/font/google";
+import { Montserrat, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -13,28 +15,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
-});
-
 export const metadata: Metadata = {
-  title: "LN COS — Luxury Beauty",
-  description: "Premium luxury cosmetics. Curated for the discerning.",
+  title: "LN COS — Beauté & Cosmétique",
+  description: "Cosmétiques premium. Formulés en France.",
   applicationName: "LN COS",
-  keywords: ["luxury", "beauty", "cosmetics", "skincare", "premium"],
+  keywords: ["beauté", "cosmétique", "soins", "maquillage", "premium"],
   authors: [{ name: "LN COS" }],
   openGraph: {
     type: "website",
     siteName: "LN COS",
-    title: "LN COS — Luxury Beauty",
-    description: "Premium luxury cosmetics. Curated for the discerning.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "LN COS — Luxury Beauty",
+    title: "LN COS — Beauté & Cosmétique",
+    description: "Cosmétiques premium. Formulés en France.",
   },
 };
 
@@ -43,7 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#080808",
+  themeColor: "#0A0A0A",
 };
 
 export default function RootLayout({
@@ -53,13 +44,11 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="fr"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable}`}
+      className={`${montserrat.variable} ${geistMono.variable}`}
     >
-      <body className="antialiased" suppressHydrationWarning>
-        {children}
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
