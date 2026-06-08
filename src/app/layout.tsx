@@ -86,39 +86,22 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Service worker: purge stale v1 caches, then register v2 */}
+        {/* Disable legacy service workers that cached broken 404 responses */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    var SW_FIX_KEY = 'lncos-sw-fix-v2';
-    Promise.resolve()
-      .then(function() {
-        if (localStorage.getItem(SW_FIX_KEY) === '1') return;
-        return navigator.serviceWorker.getRegistrations().then(function(regs) {
-          return Promise.all(regs.map(function(reg) { return reg.unregister(); }));
-        }).then(function() {
-          if (!('caches' in window)) return;
-          return caches.keys().then(function(keys) {
-            return Promise.all(
-              keys.filter(function(key) { return key.indexOf('lncos-') === 0; })
-                .map(function(key) { return caches.delete(key); })
-            );
-          });
-        }).then(function() {
-          localStorage.setItem(SW_FIX_KEY, '1');
-        });
-      })
-      .then(function() {
-        return navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      })
-      .then(function(reg) {
-        reg.update();
-        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      })
-      .catch(function() {});
-  });
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    return Promise.all(regs.map(function(reg) { return reg.unregister(); }));
+  }).catch(function() {});
+}
+if ('caches' in window) {
+  caches.keys().then(function(keys) {
+    return Promise.all(
+      keys.filter(function(key) { return key.indexOf('lncos-') === 0; })
+        .map(function(key) { return caches.delete(key); })
+    );
+  }).catch(function() {});
 }
             `.trim(),
           }}

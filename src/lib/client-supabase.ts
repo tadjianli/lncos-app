@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { getSupabase } from "./supabase";
+import { getSupabase, isSupabaseConfigured } from "./supabase";
 import type { Product, Category } from "./data";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
 
@@ -49,6 +49,11 @@ export function usePublicProducts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
     getSupabase()
       .from("products")
       .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,active")
@@ -73,6 +78,8 @@ export function usePublicCategories() {
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
     getSupabase()
       .from("categories")
       .select("id,name,count")

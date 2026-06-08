@@ -20,7 +20,7 @@
  *       → cover entire AppShell including nav
  */
 
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { BottomNav } from "./BottomNav";
 import { SideMenu } from "./SideMenu";
 import { Toast } from "./Toast";
@@ -63,9 +63,11 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
     useStore.persist.rehydrate();
   }, []);
 
-  const mode = typeof window !== "undefined"
-    ? getRenderModeFromSearch(window.location.search)
-    : "live";
+  const [mode, setMode] = useState<ReturnType<typeof getRenderModeFromSearch>>("live");
+
+  useEffect(() => {
+    setMode(getRenderModeFromSearch(window.location.search));
+  }, []);
 
   const navVisible = bottomNav && showNav(mode);
 
