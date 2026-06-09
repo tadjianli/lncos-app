@@ -512,21 +512,11 @@ function ReelsSection() {
   ];
 
   return (
-    <div>
-      <div style={{ padding: "0 18px" }}>
-        <SectionHead title="LN COS Beauté" action="Tout voir" onAction={openReels} />
-      </div>
-      <div
-        className="noscroll"
-        style={{
-          display: "flex",
-          gap: 12,
-          overflowX: "auto",
-          padding: "0 18px 4px",
-        }}
-      >
+    <div className="home-reels">
+      <SectionHead title="LN COS Beauté" action="Tout voir" onAction={openReels} />
+      <div className="home-reels-row noscroll">
         {feed.map((v, i) => (
-          <button key={v.id} className="reel-card" onClick={openReels}>
+          <button key={v.id} type="button" className="reel-card reel-card--fill" onClick={openReels}>
             <div className="reel-bg">
               <div
                 className="ph"
