@@ -4,8 +4,8 @@
  *
  * Architecture: fixed viewport container — the only element with height.
  *   html/body  : height 100dvh, overflow hidden (no document scroll)
- *   AppShell   : position fixed, safe-area insets, max-width 480px,
- *                centered via margin auto (no translateX — évite overflow iOS PWA)
+ *   AppShell   : position fixed, inset 0, height 100dvh, max-width 480px,
+ *                safe-top sur main uniquement, safe-bottom sur nav uniquement
  *                → flex column, clips at exact viewport height
  *   main       : flex:1 1 auto, min-height:0, overflow hidden
  *                → individual screens own their internal scroll
@@ -86,9 +86,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
     return () => { document.body.style.touchAction = ""; };
   }, [isShellModal]);
 
-  // Nav height constant used for Toast positioning
-  // 10px top + 26px bottom padding + ~34px icon+label ≈ 70px; safe-area adds more
-  const NAV_H = "calc(4.5rem + var(--safe-bottom))";
+  const NAV_H = "var(--bottom-nav-h)";
 
   return (
     <div data-render-mode={mode} className="app-shell">

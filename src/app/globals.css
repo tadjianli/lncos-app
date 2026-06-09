@@ -125,6 +125,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --app-max-width: 480px;
+  /* Hauteur barre nav : padding + icônes/labels + safe area bas (une seule fois) */
+  --bottom-nav-h: calc(2.875rem + var(--safe-bottom));
   --sp-10: 40px;
   --sp-12: 48px;
   --sp-16: 64px;
@@ -207,8 +209,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overscroll-behavior: none;
-    /* iOS Safari / PWA — hauteur stable */
-    height: 100%;
+    height: 100dvh;
     height: -webkit-fill-available;
   }
 
@@ -220,10 +221,10 @@
     overflow-x: hidden;
     font-family: var(--font-montserrat, 'Montserrat', system-ui, sans-serif);
     font-size: var(--fs-body);
-    background: #040404;
+    background: var(--noir);
     color: var(--ink);
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
+    height: 100dvh;
+    height: -webkit-fill-available;
     overflow: hidden;
   }
 
@@ -303,19 +304,16 @@
     box-sizing: border-box;
   }
 
-  /* Shell fixe — centré sans translateX (évite débordement iOS PWA) */
+  /* Shell plein écran — safe areas appliquées une seule fois dans le contenu */
   .app-shell {
     position: fixed;
-    top: var(--safe-top);
-    bottom: var(--safe-bottom);
-    left: 0;
-    right: 0;
+    inset: 0;
     width: 100%;
+    height: 100dvh;
+    height: -webkit-fill-available;
     max-width: var(--app-max-width);
     margin-left: auto;
     margin-right: auto;
-    padding-left: var(--safe-left);
-    padding-right: var(--safe-right);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -332,11 +330,12 @@
     display: flex;
     flex-direction: column;
     max-width: 100%;
+    padding-top: var(--safe-top);
   }
 
-  /* ── Safe area nav padding ── */
+  /* Réserve espace scroll au-dessus de la bottom nav (sans re-safe-area) */
   .pb-nav {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    padding-bottom: var(--bottom-nav-h);
   }
 
   /* ── Skeleton shimmer — sweeping highlight ── */
@@ -758,8 +757,8 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding-top: 10px;
-  padding-bottom: max(26px, var(--safe-bottom));
+  padding-top: 8px;
+  padding-bottom: var(--safe-bottom);
   padding-left: max(10px, var(--safe-left));
   padding-right: max(10px, var(--safe-right));
   max-width: 100%;
@@ -792,7 +791,7 @@
 }
 
 .home-topbar-pad {
-  padding: calc(4px + var(--safe-top)) max(18px, var(--safe-right)) 0 max(18px, var(--safe-left));
+  padding: 4px max(18px, var(--safe-right)) 0 max(18px, var(--safe-left));
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -1887,15 +1886,19 @@
   .pd-gallery-hero-inner, .pd-lightbox-img { animation: none; }
 }
 
-/* ─── PWA iOS standalone — aligné Safari ─────────────────────── */
+/* ─── PWA iOS standalone — pleine hauteur, safe area unique ───── */
 @media (display-mode: standalone) {
   html, body {
     width: 100%;
     max-width: 100%;
+    height: 100dvh;
+    height: -webkit-fill-available;
     overflow-x: hidden;
   }
 
   .app-shell {
+    height: 100dvh;
+    height: -webkit-fill-available;
     max-width: min(var(--app-max-width), 100%);
   }
 
@@ -1905,9 +1908,5 @@
   .prod-card,
   .prodbento {
     max-width: 100%;
-  }
-
-  .bottom-nav {
-    padding-bottom: max(28px, var(--safe-bottom));
   }
 }
