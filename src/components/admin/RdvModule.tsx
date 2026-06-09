@@ -467,8 +467,8 @@ function AvailabilityView() {
   }
 
   return (
-    <div className="adm-card adm-card-scroll">
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div className="adm-card adm-list-card">
+      <div className="adm-list-card-head">
         <div>
           <div className="adm-card-title">Horaires d&apos;ouverture</div>
           <div className="adm-card-sub">Configurez les créneaux disponibles pour vos clientes</div>
@@ -613,8 +613,8 @@ function ServicesView() {
 
   return (
     <>
-      <div className="adm-card adm-card-scroll">
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="adm-card adm-list-card">
+        <div className="adm-list-card-head">
           <div>
             <div className="adm-card-title">Prestations</div>
             <div className="adm-card-sub">{svcList.length} services · {svcList.filter((s) => s.active).length} actifs</div>
@@ -665,8 +665,8 @@ function StaffView() {
 
   return (
     <>
-    <div className="adm-card adm-card-scroll">
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div className="adm-card adm-list-card">
+      <div className="adm-list-card-head">
         <div>
           <div className="adm-card-title">Prothésistes</div>
           <div className="adm-card-sub">{staff.filter((s) => s.active).length} actives</div>
@@ -718,8 +718,8 @@ function NotificationsView({ notifications, onMarkAllRead }: {
   };
 
   return (
-    <div className="adm-card adm-card-scroll">
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div className="adm-card adm-list-card">
+      <div className="adm-list-card-head">
         <div>
           <div className="adm-card-title">Notifications</div>
           <div className="adm-card-sub">{notifications.filter((n) => !n.read).length} non lue(s)</div>

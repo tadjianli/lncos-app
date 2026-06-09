@@ -54,8 +54,8 @@ export default function DashboardPage() {
 
       <div className="adm-dash-cols">
         {/* Recent orders */}
-        <div className="adm-card adm-card-scroll">
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--adm-border)" }}>
+        <div className="adm-card adm-list-card adm-card-scroll">
+          <div className="adm-list-card-head">
             <div className="adm-card-title">Dernières commandes</div>
           </div>
           {!kpis ? (
@@ -79,8 +79,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent appointments */}
-        <div className="adm-card adm-card-scroll">
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--adm-border)" }}>
+        <div className="adm-card adm-list-card adm-card-scroll">
+          <div className="adm-list-card-head">
             <div className="adm-card-title">Derniers rendez-vous</div>
           </div>
           {!kpis ? (

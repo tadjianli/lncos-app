@@ -322,8 +322,8 @@ export function ShippingModule() {
         </div>
 
         {/* Methods list */}
-        <div className="adm-card adm-card-scroll">
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="adm-card adm-list-card">
+          <div className="adm-list-card-head">
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--adm-ink)" }}>Méthodes configurées</div>
             <div style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>Ordre affiché dans le checkout ↕</div>
           </div>
@@ -350,13 +350,13 @@ export function ShippingModule() {
               {methods.map((m, i) => (
                 <div
                   key={m.id}
+                  className={m.isActive ? "" : "adm-row-inactive"}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 14,
                     padding: "16px 20px",
                     borderBottom: i < methods.length - 1 ? "1px solid var(--adm-border-2)" : "none",
-                    opacity: m.isActive ? 1 : 0.55,
                     transition: "opacity .2s",
                   }}
                 >

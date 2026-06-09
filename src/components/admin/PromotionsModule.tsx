@@ -364,16 +364,14 @@ export function PromotionsModule() {
             </button>
           </div>
         ) : (
-          <div className="adm-card adm-card-scroll">
+          <div className="adm-card adm-list-card">
             {promos.map((p, i) => (
               <div
                 key={p.id}
-                className="adm-promo"
+                className={`adm-promo${p.isActive ? "" : " adm-row-inactive"}`}
                 style={{
                   padding: "14px 20px",
                   borderBottom: i < promos.length - 1 ? "1px solid var(--adm-border-2)" : "none",
-                  opacity: p.isActive ? 1 : 0.6,
-                  transition: "opacity .2s",
                 }}
               >
                 <div className="adm-promo-icon">

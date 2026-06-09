@@ -374,22 +374,20 @@ export function SettingsModule() {
 
         {/* Settings groups */}
         {GROUPS.map((group) => (
-          <div key={group.title} className="adm-card adm-card-scroll">
-            <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)" }}>
+          <div key={group.title} className="adm-card adm-settings-card">
+            <div className="adm-settings-head">
               <div className="adm-settings-grouptitle">{group.title}</div>
             </div>
-            <div>
-              {group.items.map((item, i) => {
+            <div className="adm-list-card-body">
+              {group.items.map((item) => {
                 const key = item.label;
                 const isOpen = active === key;
                 return (
                   <div key={key}>
                     <button
-                      className="adm-setrow"
-                      style={{
-                        borderBottom: !isOpen && i < group.items.length - 1 ? "1px solid var(--adm-border-2)" : "none",
-                        width: "100%",
-                      }}
+                      type="button"
+                      className={`adm-setrow${isOpen ? " on" : ""}`}
+                      aria-expanded={isOpen}
                       onClick={() => toggle(key)}
                     >
                       <div
@@ -417,11 +415,7 @@ export function SettingsModule() {
                       />
                     </button>
                     {isOpen && (
-                      <div style={{
-                        padding: "0 20px 16px",
-                        borderBottom: i < group.items.length - 1 ? "1px solid var(--adm-border-2)" : "none",
-                        background: "rgba(255,255,255,.015)",
-                      }}>
+                      <div className="adm-set-panel">
                         {item.content}
                       </div>
                     )}
