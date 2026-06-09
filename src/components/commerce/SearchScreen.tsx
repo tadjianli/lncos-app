@@ -485,16 +485,10 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
             >
               Suggestions
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 12,
-              }}
-            >
+            <div className="prodbento">
               {products.slice(0, 4).map((p) => (
+                <div key={p.id} className="prodbento-cell">
                 <ProductCard
-                  key={p.id}
                   p={p}
                   wide
                   onOpen={openProduct}
@@ -502,6 +496,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
                   isFav={isFav(p.id)}
                   onAdd={addToCart}
                 />
+                </div>
               ))}
             </div>
           </>
@@ -551,23 +546,18 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
 
             {/* Results grid */}
             {!isSearching && results.length > 0 && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                }}
-              >
+              <div className="prodbento">
                 {results.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    p={p}
-                    wide
-                    onOpen={openProduct}
-                    onFav={toggleFav}
-                    isFav={isFav(p.id)}
-                    onAdd={addToCart}
-                  />
+                  <div key={p.id} className="prodbento-cell">
+                    <ProductCard
+                      p={p}
+                      wide
+                      onOpen={openProduct}
+                      onFav={toggleFav}
+                      isFav={isFav(p.id)}
+                      onAdd={addToCart}
+                    />
+                  </div>
                 ))}
               </div>
             )}

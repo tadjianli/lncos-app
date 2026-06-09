@@ -226,26 +226,8 @@ function FlashHead({ title }: { title: string }) {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14,
-      }}
-    >
-      <h3
-        style={{
-          margin: 0,
-          fontWeight: 600,
-          fontSize: "var(--fs-h3)",
-          color: "var(--ink)",
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
-          whiteSpace: "nowrap",
-        }}
-      >
+    <div className="flash-head">
+      <h3 className="flash-head-title">
         <Icon
           name="flame"
           size={20}
@@ -254,28 +236,12 @@ function FlashHead({ title }: { title: string }) {
         />
         {title}
       </h3>
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <div className="flash-countdown">
         {[f.h, f.m, f.s].map((v, i) => (
           <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span
-              style={{
-                background: "var(--charcoal-2)",
-                color: "var(--gold)",
-                fontWeight: 700,
-                fontSize: 12,
-                padding: "4px 6px",
-                borderRadius: 7,
-                minWidth: 26,
-                textAlign: "center",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {pad(v)}
-            </span>
+            <span className="flash-countdown-digit">{pad(v)}</span>
             {i < 2 && (
-              <span style={{ color: "var(--ink-mute)", fontWeight: 700 }}>
-                :
-              </span>
+              <span style={{ color: "var(--ink-mute)", fontWeight: 700 }}>:</span>
             )}
           </span>
         ))}
@@ -708,13 +674,13 @@ export default function HomePage() {
           return (
             <div
               key={section.id}
-              className="home-z home-section"
-              style={{ marginTop: mt, padding: "0 18px" }}
+              className="home-z home-section home-section-pad"
+              style={{ marginTop: mt }}
             >
               {isFirst ? (
                 <>
                   <FlashHead title={section.title} />
-                  <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
+                  <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 8px" }}>
                     {prods.map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -731,24 +697,25 @@ export default function HomePage() {
               ) : isGrid ? (
                 <Reveal>
                   <SectionHead title={section.title} />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div className="prodbento">
                     {prods.map((p, pi) => (
-                      <ProductCard
-                        key={p.id + "-" + source + "-" + pi}
-                        p={p}
-                        wide
-                        onOpen={handleOpen}
-                        onFav={handleFav}
-                        isFav={isFav(p.id)}
-                        onAdd={handleAdd}
-                      />
+                      <div key={p.id + "-" + source + "-" + pi} className="prodbento-cell">
+                        <ProductCard
+                          p={p}
+                          wide
+                          onOpen={handleOpen}
+                          onFav={handleFav}
+                          isFav={isFav(p.id)}
+                          onAdd={handleAdd}
+                        />
+                      </div>
                     ))}
                   </div>
                 </Reveal>
               ) : (
                 <Reveal>
                   <SectionHead title={section.title} action="Voir tout" />
-                  <div className="scroll-row" style={{ padding: "4px 0 8px" }}>
+                  <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 8px" }}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}

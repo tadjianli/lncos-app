@@ -2,8 +2,6 @@
 /**
  * LN COS — Bottom nav
  * In-flow flex child of AppShell — NOT position:fixed.
- * AppShell is the fixed container; this element naturally sits at the bottom
- * of the flex column with zero layout jumps.
  */
 
 import Link from "next/link";
@@ -26,50 +24,20 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav
-      style={{
-        /* ─── In-flow — NOT fixed ───────────────────────────── */
-        flexShrink: 0,
-
-        /* ─── Layout ────────────────────────────────────────── */
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
-
-        /* ─── Spacing: top pad + bottom safe-area ───────────── */
-        paddingTop: 10,
-        /* max(26px, safe-area) so home-bar devices get enough room */
-        paddingBottom: "max(26px, env(safe-area-inset-bottom, 0px))",
-        paddingLeft: 8,
-        paddingRight: 8,
-
-        /* ─── Appearance ────────────────────────────────────── */
-        background: "rgba(10,10,10,.92)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(212,175,55,.14)",
-      }}
-    >
-      {NAV_ITEMS.map(item => {
-        const active   = pathname === item.href ||
-                         (item.href !== "/" && pathname.startsWith(item.href));
+    <nav className="bottom-nav" aria-label="Navigation principale">
+      {NAV_ITEMS.map((item) => {
+        const active =
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(item.href));
         const showFill = active && (item.id === "favorites" || item.id === "cart");
 
         return (
           <Link
             key={item.href}
             href={item.href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 5,
-              color: active ? "var(--gold)" : "var(--ink-mute)",
-              position: "relative",
-              width: 58,
-              transition: "color .25s",
-              textDecoration: "none",
-            }}
+            className="bottom-nav-item"
+            style={{ color: active ? "var(--gold)" : "var(--ink-mute)" }}
+            aria-current={active ? "page" : undefined}
           >
             <span style={{ position: "relative" }}>
               <Icon
@@ -103,11 +71,8 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
               )}
             </span>
             <span
-              style={{
-                fontSize: 10,
-                fontWeight: active ? 600 : 500,
-                letterSpacing: ".02em",
-              }}
+              className="bottom-nav-label"
+              style={{ fontWeight: active ? 600 : 500 }}
             >
               {item.label}
             </span>

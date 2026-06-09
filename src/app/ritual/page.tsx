@@ -56,24 +56,18 @@ export default function FavoritesPage() {
       </div>
 
       {/* Grid */}
-      <div
-        style={{
-          padding: "0 16px 24px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 12,
-        }}
-      >
+      <div className="prodbento" style={{ padding: "0 16px 24px" }}>
         {favProducts.map((p) => (
-          <ProductCard
-            key={p.id}
-            p={p}
-            wide
-            isFav={favs.includes(p.id)}
-            onFav={toggleFav}
-            onAdd={() => {}}
-            onOpen={() => {}}
-          />
+          <div key={p.id} className="prodbento-cell">
+            <ProductCard
+              p={p}
+              wide
+              isFav={favs.includes(p.id)}
+              onFav={toggleFav}
+              onAdd={() => {}}
+              onOpen={() => {}}
+            />
+          </div>
         ))}
       </div>
 

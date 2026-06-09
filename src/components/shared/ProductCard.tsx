@@ -42,75 +42,30 @@ export const ProductCard = memo(function ProductCard({
   return (
     <div
       onClick={() => onOpen?.(p)}
-      className="prod-card"
-      style={{
-        flex: wide ? "1 1 0" : "0 0 150px",
-        width: wide ? "auto" : 150,
-        cursor: "pointer",
-        background: "var(--charcoal)",
-        borderRadius: "var(--r-md)",
-        overflow: "hidden",
-        border: "1px solid rgba(255,255,255,.05)",
-      }}
+      className={`prod-card snap${wide ? " prod-card--wide" : ""}`}
     >
-      {/* Image area */}
-      <div
-        className="prod-imgwrap"
-        style={{
-          height: wide ? 150 : 140,
-          position: "relative",
-          background: "#181818",
-          overflow: "hidden",
-        }}
-      >
+      <div className={`prod-imgwrap${wide ? " prod-imgwrap--wide" : ""}`}>
         <FadeImage
           src={imgSrc}
           alt={p.name}
           fill
-          sizes="(max-width: 480px) 50vw, 150px"
+          sizes={wide ? "(max-width: 480px) 50vw, 240px" : "(max-width: 480px) 42vw, 164px"}
           style={{ objectFit: "cover" }}
           fallbackLabel={p.name}
           priority={priority}
         />
 
-        {/* Tag */}
         {p.tag && (
-          <span
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              padding: "4px 9px",
-              borderRadius: "var(--r-pill)",
-              background: p.tag === "Flash" ? "var(--gold-grad)" : "rgba(0,0,0,.55)",
-              backdropFilter: "blur(6px)",
-              color: p.tag === "Flash" ? "#1a1306" : "var(--pink)",
-              fontSize: 9.5,
-              fontWeight: 700,
-              letterSpacing: ".05em",
-              textTransform: "uppercase",
-              border: p.tag === "Flash" ? "none" : "1px solid rgba(247,198,215,.25)",
-            }}
-          >
+          <span className={`prod-tag${p.tag === "Flash" ? " prod-tag--flash" : ""}`}>
             {p.tag}
           </span>
         )}
 
-        {/* Fav */}
         <button
+          type="button"
+          className="prod-fav-btn"
           onClick={(e) => { e.stopPropagation(); onFav?.(p.id); }}
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            background: "rgba(0,0,0,.45)",
-            backdropFilter: "blur(6px)",
-            display: "grid",
-            placeItems: "center",
-          }}
+          aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
           <Icon
             name="heart"
@@ -121,59 +76,32 @@ export const ProductCard = memo(function ProductCard({
         </button>
       </div>
 
-      {/* Info */}
-      <div style={{ padding: "11px 12px 13px" }}>
-        <div
-          style={{
-            fontSize: 12.5,
-            fontWeight: 600,
-            color: "var(--ink)",
-            lineHeight: 1.3,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            minHeight: 33,
-          }}
-        >
-          {p.name}
-        </div>
+      <div className="prod-card-info">
+        <div className="prod-card-title">{p.name}</div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 4, margin: "6px 0 9px" }}>
+        <div className="prod-card-rating">
           <Icon name="star" size={12} color="var(--gold)" fill="var(--gold)" />
-          <span style={{ fontSize: 11, color: "var(--ink-soft)" }}>{p.rating}</span>
-          <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>({p.reviews})</span>
+          <span>{p.rating}</span>
+          <span className="prod-card-reviews">({p.reviews})</span>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>
-              {p.price.toFixed(2)} €
-            </span>
-            {p.old && (
-              <span style={{ fontSize: 11, color: "var(--ink-mute)", textDecoration: "line-through" }}>
-                {p.old.toFixed(2)}
-              </span>
+        <div className="prod-card-price-row">
+          <div className="prod-card-prices">
+            <span className="prod-card-price">{p.price.toFixed(2)}&nbsp;€</span>
+            {p.old != null && (
+              <span className="prod-card-price-old">{p.old.toFixed(2)}&nbsp;€</span>
             )}
           </div>
 
           <button
+            type="button"
             onClick={handleAdd}
-            className={`prod-add${popping ? " pop" : ""}`}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "var(--pink-grad)",
-              display: "grid",
-              placeItems: "center",
-              flex: "0 0 auto",
-              position: "relative",
-            }}
+            className={`prod-add prod-card-add${popping ? " pop" : ""}`}
+            aria-label="Ajouter au panier"
           >
             <Icon name="plus" size={16} color="#3a1020" stroke={2.4} />
             {pops.map((id) => (
-              <span key={id} className="prod-plusone" style={{ right: 4, top: -6 }}>
+              <span key={id} className="prod-plusone">
                 +1
               </span>
             ))}

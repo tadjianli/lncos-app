@@ -1022,22 +1022,10 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
               >
                 Complétez votre rituel
               </h3>
-              <div
-                className="noscroll"
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  overflowX: "auto",
-                  paddingBottom: 4,
-                  marginLeft: -18,
-                  marginRight: -18,
-                  paddingLeft: 18,
-                  paddingRight: 18,
-                }}
-              >
+              <div className="scroll-row scroll-row--bleed noscroll" style={{ paddingBottom: 4 }}>
                 {routine.map((r) => (
-                  <div key={r.id} style={{ flex: "0 0 150px" }}>
-                    <ProductCard
+                  <ProductCard
+                      key={r.id}
                       p={r}
                       onOpen={openProduct}
                       onFav={(id) => toggleFav(id)}
@@ -1047,7 +1035,6 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                         showToast(`${pr.name} ajouté ✨`);
                       }}
                     />
-                  </div>
                 ))}
               </div>
             </div>
