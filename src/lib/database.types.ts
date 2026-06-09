@@ -823,6 +823,56 @@ export interface Database {
         Relationships: [];
       };
 
+      product_reviews: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          order_id: string | null;
+          product_id: string | null;
+          product_name: string;
+          author_name: string;
+          rating: number;
+          body: string;
+          status: string;
+          verified: boolean;
+          featured: boolean;
+          pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          order_id?: string | null;
+          product_id?: string | null;
+          product_name?: string;
+          author_name: string;
+          rating: number;
+          body: string;
+          status?: string;
+          verified?: boolean;
+          featured?: boolean;
+          pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string | null;
+          order_id?: string | null;
+          product_id?: string | null;
+          product_name?: string;
+          author_name?: string;
+          rating?: number;
+          body?: string;
+          status?: string;
+          verified?: boolean;
+          featured?: boolean;
+          pinned?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       shipping_methods: {
         Row: {
           id: string;

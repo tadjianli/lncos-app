@@ -12,6 +12,7 @@ import type { Popup, Appointment, Notification } from "./rdv-store";
 import type { HomeSection } from "./home-sections";
 import { dbToSection, sectionToDb } from "./home-sections-db";
 import type { Product } from "./data";
+import type { ProductReview, ReviewStatus } from "./reviews";
 
 /* ─── Type aliases ─────────────────────────────────────────────────────────── */
 
@@ -906,4 +907,93 @@ export function computePromoDiscount(promo: Promo, subtotal: number): number {
 /** True when the promo grants free shipping (either type=shipping or freeShipping flag). */
 export function promoGrantsFreeShipping(promo: Promo): boolean {
   return promo.type === "shipping" || promo.freeShipping;
+}
+
+/* ─── Product reviews (admin) ───────────────────────────────────────────── */
+
+type DbProductReview = Database["public"]["Tables"]["product_reviews"]["Row"];
+
+function dbToProductReview(r: DbProductReview): ProductReview {
+  return {
+    id: r.id,
+    userId: r.user_id,
+    orderId: r.order_id,
+    productId: r.product_id,
+    productName: r.product_name,
+    authorName: r.author_name,
+    rating: r.rating,
+    body: r.body,
+    status: r.status as ReviewStatus,
+    verified: r.verified,
+    featured: r.featured,
+    pinned: r.pinned,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+function reviewToDb(r: Partial<ProductReview>): Partial<Database["public"]["Tables"]["product_reviews"]["Update"]> {
+  const db: Partial<Database["public"]["Tables"]["product_reviews"]["Update"]> = {};
+  if (r.authorName !== undefined) db.author_name = r.authorName;
+  if (r.productName !== undefined) db.product_name = r.productName;
+  if (r.rating !== undefined) db.rating = r.rating;
+  if (r.body !== undefined) db.body = r.body;
+  if (r.status !== undefined) db.status = r.status;
+  if (r.verified !== undefined) db.verified = r.verified;
+  if (r.featured !== undefined) db.featured = r.featured;
+  if (r.pinned !== undefined) db.pinned = r.pinned;
+  return db;
+}
+
+export function useProductReviewsAdmin() {
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data } = await getSupabase()
+      .from("product_reviews")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setReviews((data ?? []).map((r) => dbToProductReview(r as DbProductReview)));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("reviews-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "product_reviews" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, [load]);
+
+  const updateReview = useCallback(async (id: string, patch: Partial<ProductReview>) => {
+    const { error } = await getSupabase()
+      .from("product_reviews")
+      .update(reviewToDb(patch))
+      .eq("id", id);
+    if (!error) setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    return { error: error?.message ?? null };
+  }, []);
+
+  const deleteReview = useCallback(async (id: string) => {
+    const { error } = await getSupabase().from("product_reviews").delete().eq("id", id);
+    if (!error) setReviews((prev) => prev.filter((r) => r.id !== id));
+    return { error: error?.message ?? null };
+  }, []);
+
+  const stats = {
+    total: reviews.length,
+    pending: reviews.filter((r) => r.status === "pending").length,
+    published: reviews.filter((r) => r.status === "published").length,
+    avg:
+      reviews.filter((r) => r.status === "published").length > 0
+        ? reviews
+            .filter((r) => r.status === "published")
+            .reduce((s, r) => s + r.rating, 0) /
+          reviews.filter((r) => r.status === "published").length
+        : 0,
+  };
+
+  return { reviews, loading, stats, updateReview, deleteReview, reload: load };
 }

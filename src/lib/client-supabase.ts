@@ -17,6 +17,8 @@ import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
 import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
+import type { ProductReview } from "./reviews";
+import { FALLBACK_REVIEWS, reviewToPublic, type PublicReview } from "./reviews";
 
 /* ── DB row → UI Product mapper ──────────────────────────────── */
 function mapProduct(row: {
@@ -174,5 +176,122 @@ export function usePublicPageSections(pageSlug: PageSlug = "home") {
 /** @deprecated use usePublicPageSections("home") */
 export function usePublicHomeSections() {
   return usePublicPageSections("home");
+}
+
+/* ── Product reviews ─────────────────────────────────────────── */
+
+type DbReview = {
+  id: string;
+  user_id: string | null;
+  order_id: string | null;
+  product_id: string | null;
+  product_name: string;
+  author_name: string;
+  rating: number;
+  body: string;
+  status: string;
+  verified: boolean;
+  featured: boolean;
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+function dbToReview(r: DbReview): ProductReview {
+  return {
+    id: r.id,
+    userId: r.user_id,
+    orderId: r.order_id,
+    productId: r.product_id,
+    productName: r.product_name,
+    authorName: r.author_name,
+    rating: r.rating,
+    body: r.body,
+    status: r.status as ProductReview["status"],
+    verified: r.verified,
+    featured: r.featured,
+    pinned: r.pinned,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+export function usePublicReviews() {
+  const [reviews, setReviews] = useState<PublicReview[]>(FALLBACK_REVIEWS);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(FALLBACK_REVIEWS.length);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      const { data, error } = await getSupabase()
+        .from("product_reviews")
+        .select("*")
+        .eq("status", "published")
+        .order("pinned", { ascending: false })
+        .order("featured", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const mapped = data.map((r) => reviewToPublic(dbToReview(r as DbReview)));
+        setReviews(mapped);
+        setTotal(data.length);
+      }
+      setLoading(false);
+    };
+
+    load();
+    const channel = getSupabase()
+      .channel("reviews-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "product_reviews" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, []);
+
+  const avg =
+    reviews.length > 0
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 5;
+
+  return { reviews, loading, total, avg };
+}
+
+export async function submitProductReview(input: {
+  userId: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  authorName: string;
+  rating: number;
+  body: string;
+}) {
+  const { error } = await getSupabase().from("product_reviews").insert({
+    user_id: input.userId,
+    order_id: input.orderId,
+    product_id: input.productId,
+    product_name: input.productName,
+    author_name: input.authorName,
+    rating: input.rating,
+    body: input.body.trim(),
+    status: "pending",
+    verified: true,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function fetchUserReviewKeys(userId: string) {
+  const { data } = await getSupabase()
+    .from("product_reviews")
+    .select("order_id, product_id, status")
+    .eq("user_id", userId);
+  const keys = new Set<string>();
+  for (const r of data ?? []) {
+    if (r.order_id && r.product_id) keys.add(`${r.order_id}:${r.product_id}`);
+  }
+  return keys;
 }
 

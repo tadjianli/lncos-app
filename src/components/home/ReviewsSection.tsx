@@ -5,80 +5,15 @@
    Ported from Claude Design handoff · all motion values preserved exactly
    ============================================================ */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { usePublicReviews } from "@/lib/client-supabase";
+import type { PublicReview } from "@/lib/reviews";
 import s from "./ReviewsSection.module.css";
 
 /* ---------- Data ---------- */
 
-interface Review {
-  id: string;
-  name: string;
-  rating: number;
-  date: string;
-  text: string;
-  product?: string;
-  service?: string;
-  staff?: string;
-  verified?: boolean;
-  featured?: boolean;
-  pinned?: boolean;
-}
-
-const REVIEWS: Review[] = [
-  {
-    id: "r1",
-    name: "Margaux L.",
-    rating: 5,
-    date: "Il y a 2 jours",
-    text: "Ce sérum a complètement transformé mon teint en trois semaines. La texture est incomparable — soyeuse, absorbée instantanément. Je ne peux plus m'en passer.",
-    product: "Sérum Éclat",
-    verified: true,
-    pinned: true,
-  },
-  {
-    id: "r2",
-    name: "Diane K.",
-    rating: 5,
-    date: "Il y a 5 jours",
-    text: "LN COS comprend que le luxe est dans les détails. Du packaging à la fragrance, chaque élément est intentionnel. Un vrai soin haut de gamme.",
-    product: "Parfum Noir",
-    verified: true,
-    featured: true,
-  },
-  {
-    id: "r3",
-    name: "Isabelle R.",
-    rating: 5,
-    date: "Il y a 1 semaine",
-    text: "La collection nocturne est devenue mon rituel du soir. Je me réveille avec un éclat qu'il me fallait autrefois toute une routine de maquillage pour obtenir.",
-    product: "Crème Nuit",
-    verified: true,
-  },
-  {
-    id: "r4",
-    name: "Camille D.",
-    rating: 5,
-    date: "Il y a 2 semaines",
-    text: "L'huile démaquillante est une révélation. Ma peau n'a jamais été aussi douce et lumineuse. Le parfum d'amande vanillée est absolument divin.",
-    product: "Huile Démaq.",
-    verified: true,
-  },
-  {
-    id: "r5",
-    name: "Sophie M.",
-    rating: 5,
-    date: "Il y a 3 semaines",
-    text: "Le masque purifiant est mon coup de cœur absolu. En 20 minutes les pores sont resserrés, le teint unifié. Résultat professionnel à la maison.",
-    product: "Masque Purifiant",
-    verified: true,
-  },
-];
-
-/* Pinned/featured cards appear first — same ordering as handoff */
-const LIST = [...REVIEWS].sort(
-  (a, b) => (b.pinned ? 2 : b.featured ? 1 : 0) - (a.pinned ? 2 : a.featured ? 1 : 0)
-);
+type Review = PublicReview & { service?: string; staff?: string };
 
 /* ---------- Skeleton ---------- */
 
@@ -162,8 +97,17 @@ function RevCardContent({ r }: { r: Review }) {
 /* ---------- Carrousel coverflow ---------- */
 
 export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }) {
-  const len = LIST.length;
-  const avg = LIST.reduce((sum, r) => sum + r.rating, 0) / len;
+  const { reviews: publicReviews, loading: reviewsLoading, total, avg } = usePublicReviews();
+
+  const LIST = useMemo(
+    () =>
+      [...publicReviews].sort(
+        (a, b) => (b.pinned ? 2 : b.featured ? 1 : 0) - (a.pinned ? 2 : a.featured ? 1 : 0)
+      ),
+    [publicReviews]
+  );
+
+  const len = Math.max(LIST.length, 1);
 
   /* continuous active index — wraps infinitely */
   const [active, setActive] = useState(0);
@@ -191,11 +135,14 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
     return () => ro.disconnect();
   }, []);
 
-  /* Skeleton delay — 650ms exactly as handoff */
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 650);
+    if (reviewsLoading) {
+      setLoading(true);
+      return;
+    }
+    const t = setTimeout(() => setLoading(false), 400);
     return () => clearTimeout(t);
-  }, []);
+  }, [reviewsLoading]);
 
   /* Autoplay — 5200ms exactly as handoff, pauses on hover/drag */
   useEffect(() => {
@@ -291,6 +238,8 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
     );
   }
 
+  if (!reviewsLoading && publicReviews.length === 0) return null;
+
   return (
     <section className={s.section}>
       {/* ── Section header ── */}
@@ -311,7 +260,7 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
             ))}
           </div>
           <div className={s.secNum}>
-            <b>{avg.toFixed(1)}</b><span>· 1 248 avis</span>
+            <b>{avg.toFixed(1)}</b><span>· {total.toLocaleString("fr-FR")} avis</span>
           </div>
         </div>
       </div>

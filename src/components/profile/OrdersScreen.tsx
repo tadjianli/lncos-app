@@ -4,6 +4,9 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
+import { fetchUserReviewKeys } from "@/lib/client-supabase";
+import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
+import { useStore } from "@/lib/store";
 
 /* ─── Types ───────────────────────────────────────────────────────────── */
 
@@ -90,7 +93,19 @@ function DeliveryProgress({ status }: { status: OrderStatus }) {
 
 /* ─── Order card ──────────────────────────────────────────────────────── */
 
-function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: boolean; onToggle: () => void }) {
+function OrderCard({
+  order,
+  expanded,
+  onToggle,
+  reviewKeys,
+  onReview,
+}: {
+  order: Order;
+  expanded: boolean;
+  onToggle: () => void;
+  reviewKeys: Set<string>;
+  onReview: (item: OrderItem) => void;
+}) {
   const MAX = 3;
   const visible  = order.items.slice(0, MAX);
   const overflow = order.items.length - MAX;
@@ -142,18 +157,43 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
       {/* Expanded item list */}
       {expanded && (
         <div style={{ borderTop: "1px solid rgba(255,255,255,.07)", paddingTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
-          {order.items.map((item, i) => (
-            <div key={item.id + i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", background: "var(--charcoal-3)", flexShrink: 0 }}>
-                <FadeImage src={`/assets/products/${item.id}.png`} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+          {order.items.map((item, i) => {
+            const reviewed = reviewKeys.has(`${order.id}:${item.id}`);
+            return (
+              <div key={item.id + i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", background: "var(--charcoal-3)", flexShrink: 0 }}>
+                  <FadeImage src={`/assets/products/${item.id}.png`} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</p>
+                  <span style={{ display: "inline-block", marginTop: 3, padding: "1px 7px", borderRadius: "var(--r-pill)", background: "rgba(255,255,255,.07)", color: "var(--ink-soft)", fontSize: 10, fontWeight: 600 }}>Qté: {item.qty}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{(item.price * item.qty).toFixed(2)} €</span>
+                  {order.status === "delivered" && !reviewed && (
+                    <button
+                      type="button"
+                      onClick={() => onReview(item)}
+                      style={{
+                        padding: "5px 10px",
+                        borderRadius: "var(--r-pill)",
+                        border: "1px solid rgba(212,175,55,.4)",
+                        color: "var(--gold)",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        background: "rgba(212,175,55,.08)",
+                      }}
+                    >
+                      Laisser un avis
+                    </button>
+                  )}
+                  {order.status === "delivered" && reviewed && (
+                    <span style={{ fontSize: 10, color: "var(--ink-mute)", fontWeight: 600 }}>Avis envoyé</span>
+                  )}
+                </div>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</p>
-                <span style={{ display: "inline-block", marginTop: 3, padding: "1px 7px", borderRadius: "var(--r-pill)", background: "rgba(255,255,255,.07)", color: "var(--ink-soft)", fontSize: 10, fontWeight: 600 }}>Qté: {item.qty}</span>
-              </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", flexShrink: 0 }}>{(item.price * item.qty).toFixed(2)} €</span>
-            </div>
-          ))}
+            );
+          })}
           <div style={{ borderTop: "1px solid rgba(255,255,255,.07)", paddingTop: 10, display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
             <span>Total</span>
             <span style={{ color: "var(--gold)" }}>{order.total.toFixed(2)} €</span>
@@ -177,17 +217,34 @@ function OrderCard({ order, expanded, onToggle }: { order: Order; expanded: bool
 /* ─── Main component ──────────────────────────────────────────────────── */
 
 export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack?: () => void }) {
+  const showToast = useStore((s) => s.showToast);
   const [activeTab, setActiveTab] = useState<Tab>("en-cours");
   const [expanded,  setExpanded]  = useState<Record<string, boolean>>({});
   const [orders,    setOrders]    = useState<Order[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [isGuest,   setIsGuest]   = useState(false);
+  const [userId,    setUserId]    = useState<string | null>(null);
+  const [authorName, setAuthorName] = useState("Cliente LN COS");
+  const [reviewKeys, setReviewKeys] = useState<Set<string>>(new Set());
+  const [reviewTarget, setReviewTarget] = useState<{ orderId: string; item: OrderItem } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await getSupabase().auth.getUser();
     if (!user) { setIsGuest(true); setLoading(false); return; }
     setIsGuest(false);
+    setUserId(user.id);
+
+    const { data: profile } = await getSupabase()
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", user.id)
+      .single();
+    const name = profile?.full_name?.trim() || profile?.email?.split("@")[0] || "Cliente LN COS";
+    setAuthorName(name);
+
+    const keys = await fetchUserReviewKeys(user.id);
+    setReviewKeys(keys);
 
     const { data: orderRows } = await getSupabase()
       .from("orders")
@@ -268,11 +325,34 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
             </div>
           ) : (
             filtered.map((order) => (
-              <OrderCard key={order.id} order={order} expanded={!!expanded[order.id]} onToggle={() => setExpanded((p) => ({ ...p, [order.id]: !p[order.id] }))} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                expanded={!!expanded[order.id]}
+                onToggle={() => setExpanded((p) => ({ ...p, [order.id]: !p[order.id] }))}
+                reviewKeys={reviewKeys}
+                onReview={(item) => setReviewTarget({ orderId: order.id, item })}
+              />
             ))
           )}
         </div>
       </div>
+
+      {reviewTarget && userId && (
+        <ReviewSubmitModal
+          userId={userId}
+          authorName={authorName}
+          orderId={reviewTarget.orderId}
+          productId={reviewTarget.item.id}
+          productName={reviewTarget.item.name}
+          onClose={() => setReviewTarget(null)}
+          onSubmitted={async () => {
+            const keys = await fetchUserReviewKeys(userId);
+            setReviewKeys(keys);
+            showToast("Avis envoyé — merci !", "check");
+          }}
+        />
+      )}
     </div>
   );
 }
