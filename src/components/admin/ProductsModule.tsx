@@ -15,15 +15,21 @@ import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisib
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
 import { ProductBeforeAfterPanel } from "@/components/admin/ProductBeforeAfterPanel";
 import { DEFAULT_HOME_VISIBILITY } from "@/lib/product-home-visibility";
-import { resolveProductImage, slugifyProductId } from "@/lib/product-catalog";
+import {
+  getProductViewActionLabel,
+  openProductInStorefront,
+  resolveProductImage,
+  slugifyProductId,
+} from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
+import { AdminProductSaveDialog } from "@/components/admin/AdminProductSaveDialog";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
 function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   product: Product;
   categories: Category[];
   onClose: () => void;
-  onSave: (p: Product, variants: ProductVariant[]) => Promise<void>;
+  onSave: (p: Product, variants: ProductVariant[]) => Promise<{ error: string | null }>;
   isNew?: boolean;
 }) {
   const [form, setForm] = useState({ ...product });
@@ -62,12 +68,34 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
     setSaving(false);
   }
 
+  const previewProduct: Product = { ...form, id: productId, productVariants: variants };
+  const viewLabel = getProductViewActionLabel(previewProduct);
+  const canPreview = Boolean(productId.trim() && form.name.trim());
+
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
       <div className="ab-modal ab-modal-wide" onClick={(e) => e.stopPropagation()}>
-        <div className="ab-modal-head">
-          <div className="ab-modal-title">{isNew ? "Nouveau produit" : `Modifier · ${product.name}`}</div>
-          <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
+        <div className="ab-modal-head ab-modal-head--product">
+          <div className="ab-modal-head-main">
+            <div className="ab-modal-title">
+              {isNew ? "Nouveau produit" : (
+                <>Produit : <span className="ab-modal-product-name">{form.name || product.name}</span></>
+              )}
+            </div>
+            {!isNew && (
+              <button
+                type="button"
+                className="adm-btn sm adm-btn-view"
+                disabled={!canPreview}
+                onClick={() => openProductInStorefront(previewProduct)}
+                title={canPreview ? `${viewLabel} la fiche côté boutique` : "Enregistrez le produit pour prévisualiser"}
+              >
+                <Icon name="eye" size={14} />
+                {viewLabel === "Prévisualiser" ? "Prévisualiser le produit" : "Voir le produit"}
+              </button>
+            )}
+          </div>
+          <button className="adm-iconbtn" onClick={onClose} aria-label="Fermer"><Icon name="x" size={17} /></button>
         </div>
 
         <div className="ab-modal-scroll">
@@ -194,11 +222,24 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           {!isNew && <ProductBeforeAfterPanel product={{ ...form, id: productId, productVariants: variants }} />}
         </div>
 
-        <div className="ab-modal-foot">
+        <div className="ab-modal-foot ab-modal-foot--product">
           <button className="adm-btn ghost" onClick={onClose} disabled={saving}>Annuler</button>
-          <button className="adm-btn gold" onClick={() => void handleSubmit()} disabled={saving || !form.name.trim()}>
-            <Icon name="check" size={15} /> {saving ? "Enregistrement…" : isNew ? "Créer" : "Enregistrer"}
-          </button>
+          <div className="ab-modal-foot-actions">
+            {!isNew && (
+              <button
+                type="button"
+                className="adm-btn sm adm-btn-view"
+                disabled={!canPreview || saving}
+                onClick={() => openProductInStorefront(previewProduct)}
+              >
+                <Icon name="eye" size={14} />
+                {viewLabel}
+              </button>
+            )}
+            <button className="adm-btn gold" onClick={() => void handleSubmit()} disabled={saving || !form.name.trim()}>
+              <Icon name="check" size={15} /> {saving ? "Enregistrement…" : isNew ? "Créer" : "Enregistrer"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -238,6 +279,10 @@ export function ProductsModule() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [toast, setToast] = useState<string | null>(null);
+  const [saveNotice, setSaveNotice] = useState<{
+    mode: "create" | "edit";
+    product: Product;
+  } | null>(null);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -260,20 +305,30 @@ export function ProductsModule() {
     const { error } = await saveProductFull(updated, variants);
     if (error) {
       showToast(`Erreur : ${error}`);
-      return;
+      return { error };
     }
-    setEditingProduct(null);
-    showToast("Produit enregistré");
+    const saved = { ...updated, productVariants: variants };
+    setEditingProduct(saved);
+    setSaveNotice({ mode: "edit", product: saved });
+    return { error: null };
   }
 
   async function handleCreate(p: Product, variants: ProductVariant[]) {
-    const { error } = await insertProductFull(p, variants);
+    const { error, id } = await insertProductFull(p, variants);
     if (error) {
       showToast(`Erreur : ${error}`);
-      return;
+      return { error };
     }
+    const saved: Product = {
+      ...p,
+      id: id ?? p.id,
+      productVariants: variants.map((v) => ({ ...v, productId: id ?? p.id })),
+      active: p.active ?? true,
+    };
     setCreatingProduct(false);
-    showToast("Produit créé");
+    setEditingProduct(saved);
+    setSaveNotice({ mode: "create", product: saved });
+    return { error: null };
   }
 
   async function handleDelete(id: string) {
@@ -377,6 +432,13 @@ export function ProductsModule() {
                       </td>
                       <td>
                         <div className="adm-rowactions">
+                          <button
+                            className="adm-act"
+                            title={getProductViewActionLabel(p)}
+                            onClick={() => openProductInStorefront(p)}
+                          >
+                            <Icon name="eye" size={14} />
+                          </button>
                           <button className="adm-act" title="Modifier" onClick={() => setEditingProduct(p)}>
                             <Icon name="edit" size={14} />
                           </button>
@@ -416,6 +478,18 @@ export function ProductsModule() {
           onClose={() => setCreatingProduct(false)}
           onSave={handleCreate}
           isNew
+        />
+      )}
+      {saveNotice && (
+        <AdminProductSaveDialog
+          mode={saveNotice.mode}
+          product={saveNotice.product}
+          onContinue={() => setSaveNotice(null)}
+          onBackToList={() => {
+            setSaveNotice(null);
+            setEditingProduct(null);
+            setCreatingProduct(false);
+          }}
         />
       )}
       {toast && <AdminToast msg={toast} />}

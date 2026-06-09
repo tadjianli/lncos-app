@@ -230,6 +230,7 @@ function dbToProduct(r: DbProductWithVariants): Product {
     imageUrl: r.image_url,
     productVariants: variants,
     homeVisibility: normalizeHomeVisibility(r.home_visibility, r.tag),
+    active: r.active ?? true,
   };
 }
 

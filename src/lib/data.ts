@@ -48,6 +48,8 @@ export interface Product {
   productVariants?: ProductVariant[];
   /** Sections accueil cochées en admin (home_visibility) */
   homeVisibility?: ProductHomeVisibility;
+  /** Publié côté boutique (products.active) */
+  active?: boolean;
 }
 
 export interface Category {

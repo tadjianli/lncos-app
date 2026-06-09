@@ -1096,7 +1096,84 @@
   cursor: pointer;
 }
 .ab-modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.ab-modal-head--product { align-items: flex-start; gap: 12px; }
+.ab-modal-head-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
 .ab-modal-title { font-size: 18px; font-weight: 700; color: var(--adm-ink); }
+.ab-modal-product-name { color: var(--adm-gold); }
+.ab-modal-foot--product {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ab-modal-foot-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adm-btn-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.adm-save-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(18, 14, 10, 0.45);
+  backdrop-filter: blur(4px);
+}
+.adm-save-dialog {
+  width: min(100%, 420px);
+  background: #fffdf9;
+  border: 1px solid rgba(184, 144, 43, 0.35);
+  border-radius: 18px;
+  padding: 24px 22px 20px;
+  box-shadow: 0 24px 60px rgba(26, 22, 18, 0.22);
+  text-align: center;
+}
+.adm-save-dialog-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(47, 158, 104, 0.12);
+}
+.adm-save-dialog-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+.adm-save-dialog-sub {
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  color: var(--adm-ink-soft);
+  line-height: 1.45;
+}
+.adm-save-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-save-dialog-actions .adm-btn {
+  width: 100%;
+  justify-content: center;
+}
 .ab-field { margin-bottom: 18px; }
 .ab-field label { display: block; font-size: 12px; font-weight: 700; color: var(--adm-ink-soft); margin-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
 .ab-input {

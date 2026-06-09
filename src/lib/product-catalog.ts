@@ -13,6 +13,51 @@ export interface ProductDraft {
 
 const LOCAL_IMG = (id: string) => `/assets/products/${id}.png`;
 
+export function isProductPublishedForStorefront(
+  product: Pick<Product, "active">
+): boolean {
+  return product.active !== false;
+}
+
+export function getProductViewActionLabel(
+  product: Pick<Product, "active">
+): "Voir" | "Prévisualiser" {
+  return isProductPublishedForStorefront(product) ? "Voir" : "Prévisualiser";
+}
+
+/** Chemin boutique : /product/{id} */
+export function getProductStorefrontPath(
+  productId: string,
+  options?: { preview?: boolean }
+): string {
+  const base = `/product/${encodeURIComponent(productId)}`;
+  return options?.preview ? `${base}?preview=1` : base;
+}
+
+/** URL absolue pour ouvrir la fiche dans un nouvel onglet depuis l'admin */
+export function getProductStorefrontUrl(
+  productId: string,
+  options?: { preview?: boolean; origin?: string }
+): string {
+  const origin =
+    options?.origin ??
+    (typeof window !== "undefined" ? window.location.origin : "");
+  return `${origin}${getProductStorefrontPath(productId, options)}`;
+}
+
+export function openProductInStorefront(
+  product: Pick<Product, "id" | "active">,
+  options?: { origin?: string }
+): void {
+  if (typeof window === "undefined") return;
+  const preview = !isProductPublishedForStorefront(product);
+  window.open(
+    getProductStorefrontUrl(product.id, { preview, origin: options?.origin }),
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
+
 export function slugifyProductId(name: string): string {
   const base = name
     .toLowerCase()

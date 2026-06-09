@@ -110,7 +110,41 @@ function mapProduct(row: {
     imageUrl: row.image_url ?? null,
     productVariants: richVariants,
     homeVisibility: normalizeHomeVisibility(row.home_visibility, row.tag),
+    active: row.active ?? true,
   };
+}
+
+const PRODUCT_SELECT =
+  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+
+/** Charge un produit par identifiant (preview = inclut les produits inactifs). */
+export async function fetchPublicProductById(
+  id: string,
+  options?: { preview?: boolean }
+): Promise<Product | null> {
+  const fallback = STATIC_PRODUCTS.find((p) => p.id === id) ?? null;
+  if (!isSupabaseConfigured()) {
+    return fallback ? { ...fallback, active: true } : null;
+  }
+
+  try {
+    let query = getSupabase()
+      .from("products")
+      .select(PRODUCT_SELECT)
+      .eq("id", id);
+
+    if (!options?.preview) {
+      query = query.eq("active", true);
+    }
+
+    const { data, error } = await query.maybeSingle();
+    if (error || !data) {
+      return options?.preview ? null : fallback ? { ...fallback, active: true } : null;
+    }
+    return mapProduct(data);
+  } catch {
+    return fallback ? { ...fallback, active: true } : null;
+  }
 }
 
 /* ── usePublicProducts ───────────────────────────────────────── */
@@ -133,7 +167,7 @@ export function usePublicProducts() {
       try {
         const { data, error } = await getSupabase()
           .from("products")
-          .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
+          .select(PRODUCT_SELECT)
           .eq("active", true)
           .order("created_at", { ascending: false });
         if (!error && data && data.length > 0) {
