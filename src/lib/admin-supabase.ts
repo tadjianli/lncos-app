@@ -20,6 +20,7 @@ import {
   normalizeExtraSections,
   normalizeSectionToggles,
 } from "./product-sections";
+import { normalizeHomeVisibility } from "./product-home-visibility";
 
 /* ─── Type aliases ─────────────────────────────────────────────────────────── */
 
@@ -178,6 +179,7 @@ function dbToProduct(r: DbProductWithVariants): Product {
     videoUrl: r.video_url,
     imageUrl: r.image_url,
     productVariants: variants,
+    homeVisibility: normalizeHomeVisibility(r.home_visibility, r.tag),
   };
 }
 
@@ -202,6 +204,9 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
     db.image_url = p.mainImageUrl ?? null;
   }
   if (p.galleryImages !== undefined) db.gallery_images = p.galleryImages;
+  if (p.homeVisibility !== undefined) {
+    db.home_visibility = p.homeVisibility as unknown as Json;
+  }
   if ("videoUrl" in p) db.video_url = p.videoUrl ?? null;
   return db;
 }
@@ -631,6 +636,7 @@ export function useProducts() {
       main_image_url: product.mainImageUrl ?? null,
       image_url: product.mainImageUrl ?? null,
       gallery_images: product.galleryImages ?? [],
+      home_visibility: (product.homeVisibility ?? {}) as unknown as Json,
       video_url: product.videoUrl ?? null,
       rating: 5,
       reviews: 0,

@@ -826,6 +826,49 @@
   color: var(--tone-pink);
 }
 
+/* Visibilité accueil produit */
+.adm-home-visibility {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.adm-home-visibility-group {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface-2);
+}
+.adm-home-visibility-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--adm-ink-soft);
+  margin-bottom: 10px;
+}
+.adm-home-visibility-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+@media (min-width: 520px) {
+  .adm-home-visibility-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.adm-home-visibility-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--adm-ink);
+  cursor: pointer;
+}
+.adm-home-visibility-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--adm-gold);
+  flex-shrink: 0;
+}
+
 /* Product image gallery (admin) — style Shopify / beige LNcos */
 .adm-product-gallery { display: flex; flex-direction: column; gap: 12px; }
 

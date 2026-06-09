@@ -1,6 +1,7 @@
 /* LN COS — Catalogue & données de démonstration (from handoff data.js) */
 
 import type { ProductCommitment, ProductExtraSection, ProductSectionToggles } from "./product-sections";
+import type { ProductHomeVisibility } from "./product-home-visibility";
 
 export interface ProductVariant {
   id: string;
@@ -45,6 +46,8 @@ export interface Product {
   imageUrl?: string | null;
   /** Variantes riches (prix, stock, SKU, image) */
   productVariants?: ProductVariant[];
+  /** Sections accueil cochées en admin (home_visibility) */
+  homeVisibility?: ProductHomeVisibility;
 }
 
 export interface Category {

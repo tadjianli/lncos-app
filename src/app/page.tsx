@@ -9,10 +9,18 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicHomeSections } from "@/lib/client-supabase";
-import { feed, byId as staticById } from "@/lib/data";
+import { feed } from "@/lib/data";
 import type { Product } from "@/lib/data";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
+import {
+  filterProductsByHomeKey,
+  groupProductsByUniverse,
+  homeKeyFromProductSource,
+  HOME_UNIVERSE_OPTIONS,
+  type HomeUniverseKey,
+} from "@/lib/product-home-visibility";
+import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { isImageUrl } from "@/lib/admin-media";
 
@@ -264,37 +272,23 @@ function FlashHead({ title }: { title: string }) {
   );
 }
 
-/* ─── Routine section ───────────────────────────────────────── */
+/* ─── Routine section (produits Self-Care Rituals admin) ───── */
 
-const ROUTINES = [
-  {
-    id: "matin",  tab: "Matin",       kicker: "Routine du matin",   title: "Réveil lumineux",
-    sub: "Un teint frais et protégé pour toute la journée.",
-    duration: "5 min", benefit: "Éclat",        steps: ["serum-eclat", "creme-hydra", "brume-corps"],
-  },
-  {
-    id: "nuit",   tab: "Nuit",        kicker: "Routine du soir",    title: "Régénération nocturne",
-    sub: "La peau se répare pendant que vous dormez.",
-    duration: "7 min", benefit: "Réparation",   steps: ["huile-demaq", "masque-purifiant", "creme-hydra"],
-  },
-  {
-    id: "glow",   tab: "Glow",        kicker: "Routine éclat",      title: "Effet bonne mine",
-    sub: "Le rituel signature pour une peau qui capte la lumière.",
-    duration: "6 min", benefit: "Glow",          steps: ["serum-eclat", "palette-glow", "parfum-noir"],
-  },
-  {
-    id: "hydra",  tab: "Hydratation", kicker: "Routine confort",    title: "Source d'hydratation",
-    sub: "Repulpez et nourrissez intensément votre peau.",
-    duration: "5 min", benefit: "Hydratation",   steps: ["creme-hydra", "masque-purifiant", "brume-corps"],
-  },
-];
+function RoutineSection({
+  products,
+  onAdd,
+  title,
+  eyebrow,
+}: {
+  products: Product[];
+  onAdd: (p: Product) => void;
+  title?: string;
+  eyebrow?: string;
+}) {
+  if (products.length === 0) return null;
 
-function RoutineSection({ onAdd }: { onAdd: (p: Product) => void }) {
-  const [active, setActive] = useState("matin");
-  const r = ROUTINES.find((x) => x.id === active)!;
-  const prods = r.steps.map((id) => staticById(id)).filter(Boolean) as Product[];
-  const total  = prods.reduce((s, p) => s + p.price, 0);
-  const old    = prods.reduce((s, p) => s + (p.old ?? p.price), 0);
+  const total  = products.reduce((s, p) => s + p.price, 0);
+  const old    = products.reduce((s, p) => s + (p.old ?? p.price), 0);
   const bundle = Math.round(total * 0.85 * 100) / 100;
   const save   = Math.round((total - bundle) * 100) / 100;
 
@@ -302,89 +296,35 @@ function RoutineSection({ onAdd }: { onAdd: (p: Product) => void }) {
     <div>
       <div style={{ padding: "0 18px", marginBottom: 13 }}>
         <div className="rev-sec-eyebrow">
-          <Icon name="sparkle" size={13} color="var(--gold)" /> Sur-mesure
+          <Icon name="sparkle" size={13} color="var(--gold)" /> {eyebrow ?? "Sur-mesure"}
         </div>
         <h3 className="rev-sec-title" style={{ marginTop: 4 }}>
-          Votre rituel parfait
+          {title ?? "Votre rituel parfait"}
         </h3>
       </div>
 
-      {/* Tabs */}
-      <div className="routine-tabs noscroll">
-        {ROUTINES.map((x) => (
-          <button
-            key={x.id}
-            className={"routine-tab" + (active === x.id ? " on" : "")}
-            onClick={() => setActive(x.id)}
-          >
-            {x.tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Card */}
-      <div className="routine-card" key={r.id}>
-        {/* Hero image */}
-        <div className="routine-hero">
-          <div
-            className="ph"
-            data-label={r.title}
-            style={{ position: "absolute", inset: 0 }}
-          />
-          <div className="routine-hero-grad" />
-          <div className="routine-hero-meta">
-            <div className="routine-kicker">
-              <Icon name="sparkle" size={11} color="var(--gold)" />
-              {r.kicker}
-            </div>
-            <div className="routine-title">{r.title}</div>
-            <div className="routine-sub">{r.sub}</div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="routine-stats">
-          {[
-            { i: "clock",   v: r.duration, s: "chaque jour" },
-            { i: "sparkle", v: r.benefit,  s: "bénéfice clé" },
-            { i: "bag",     v: `${prods.length} produits`, s: "dans le rituel" },
-          ].map((s) => (
-            <div key={s.i} className="routine-stat">
-              <span className="routine-stat-ic">
-                <Icon name={s.i} size={15} color="var(--gold)" />
-              </span>
-              <div>
-                <b>{s.v}</b>
-                <span>{s.s}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Steps */}
+      <div className="routine-card">
         <div className="routine-steps">
-          {prods.map((p, i) => (
+          {products.map((p, i) => (
             <div key={p.id} className="routine-step">
               <span className="routine-step-num">{i + 1}</span>
               <span className="routine-step-img">
-                <div
-                  className="ph"
-                  data-label=""
-                  style={{ position: "absolute", inset: 0 }}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolveProductImage(p)}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </span>
               <div className="routine-step-main">
                 <div className="routine-step-name">{p.name}</div>
-                <div className="routine-step-tag">
-                  Étape {i + 1} · {r.benefit}
-                </div>
+                <div className="routine-step-tag">Étape {i + 1}</div>
               </div>
               <span className="routine-step-price">{p.price.toFixed(2)} €</span>
             </div>
           ))}
         </div>
 
-        {/* Footer */}
         <div className="routine-foot">
           <div className="routine-total">
             <div className="routine-total-lab">Le rituel complet</div>
@@ -396,7 +336,7 @@ function RoutineSection({ onAdd }: { onAdd: (p: Product) => void }) {
           </div>
           <button
             className="routine-cta"
-            onClick={() => prods.forEach((p) => onAdd(p))}
+            onClick={() => products.forEach((p) => onAdd(p))}
           >
             <Icon name="plus" size={16} stroke={2.4} /> Ajouter le rituel
           </button>
@@ -449,49 +389,93 @@ function EditoPromo({ section }: { section?: HomeSection }) {
   );
 }
 
-/* ─── Bento self-care ───────────────────────────────────────── */
+/* ─── Univers LN COS (produits admin) ───────────────────────── */
 
-function BentoSelfCare() {
-  const tiles = [
-    {
-      cls: "tall", t: "Self-care rituals", s: "Prenez soin de vous",
-      ic: "heart", grad: "linear-gradient(180deg, rgba(239,169,192,.15), rgba(10,8,7,.85))",
-    },
-    {
-      cls: "", t: "Skincare", s: "Soins visage",
-      ic: "sparkle", grad: "linear-gradient(180deg, rgba(212,175,55,.12), rgba(10,8,7,.86))",
-    },
-    {
-      cls: "", t: "Parfums", s: "Signatures",
-      ic: "flame", grad: "linear-gradient(180deg, rgba(120,90,160,.16), rgba(10,8,7,.86))",
-    },
-    {
-      cls: "wide", t: "Maquillage", s: "La couleur dans la lumière",
-      ic: "star", grad: "linear-gradient(120deg, rgba(212,175,55,.14), rgba(10,8,7,.5) 60%, rgba(10,8,7,.85))",
-    },
-  ];
+const UNIVERSE_TILE_META: Record<
+  HomeUniverseKey,
+  { ic: string; grad: string; sub: string }
+> = {
+  self_care_rituals: {
+    ic: "heart",
+    sub: "Prenez soin de vous",
+    grad: "linear-gradient(180deg, rgba(239,169,192,.15), rgba(10,8,7,.85))",
+  },
+  skincare: {
+    ic: "sparkle",
+    sub: "Soins visage",
+    grad: "linear-gradient(180deg, rgba(212,175,55,.12), rgba(10,8,7,.86))",
+  },
+  parfums: {
+    ic: "flame",
+    sub: "Signatures",
+    grad: "linear-gradient(180deg, rgba(120,90,160,.16), rgba(10,8,7,.86))",
+  },
+  makeup: {
+    ic: "star",
+    sub: "La couleur dans la lumière",
+    grad: "linear-gradient(120deg, rgba(212,175,55,.14), rgba(10,8,7,.5) 60%, rgba(10,8,7,.85))",
+  },
+};
+
+function BentoUniversSection({
+  grouped,
+  onOpen,
+  onFav,
+  onAdd,
+  favs,
+}: {
+  grouped: ReturnType<typeof groupProductsByUniverse>;
+  onOpen: (p: Product) => void;
+  onFav: (id: string) => void;
+  onAdd: (p: Product) => void;
+  favs: string[];
+}) {
+  const blocks = HOME_UNIVERSE_OPTIONS
+    .map(({ key, label }) => ({ key, label, products: grouped[key] }))
+    .filter((b) => b.products.length > 0);
+
+  if (blocks.length === 0) return null;
 
   return (
-    <div className="bento">
-      {tiles.map((t, i) => (
-        <div key={i} className={"bento-tile " + t.cls}>
-          <div className="bento-bg">
-            <div
-              className="ph"
-              data-label=""
-              style={{ position: "absolute", inset: 0 }}
-            />
+    <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+      {blocks.map(({ key, label, products }) => {
+        const meta = UNIVERSE_TILE_META[key];
+        const hero = products[0];
+        return (
+          <div key={key}>
+            <div className="bento-tile" style={{ height: 120, marginBottom: 12, borderRadius: 18 }}>
+              <div className="bento-bg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolveProductImage(hero)}
+                  alt=""
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              <div className="bento-grad" style={{ background: meta.grad }} />
+              <span className="bento-ic">
+                <Icon name={meta.ic} size={17} color="#fff" />
+              </span>
+              <div className="bento-label">
+                <div className="bento-t">{label}</div>
+                <div className="bento-s">{meta.sub}</div>
+              </div>
+            </div>
+            <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 0" }}>
+              {products.map((p, pi) => (
+                <ProductCard
+                  key={p.id + "-univ-" + key + "-" + pi}
+                  p={p}
+                  onOpen={onOpen}
+                  onFav={onFav}
+                  isFav={favs.includes(p.id)}
+                  onAdd={onAdd}
+                />
+              ))}
+            </div>
           </div>
-          <div className="bento-grad" style={{ background: t.grad }} />
-          <span className="bento-ic">
-            <Icon name={t.ic} size={17} color="#fff" />
-          </span>
-          <div className="bento-label">
-            <div className="bento-t">{t.t}</div>
-            <div className="bento-s">{t.s}</div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -643,18 +627,23 @@ export default function HomePage() {
   /* ── Products from Supabase (falls back to static data) ──── */
   const { products, byId } = usePublicProducts();
 
-  /* ── Pre-resolved product lists by source ─────────────────── */
-  const flashProducts = products.filter((p) => p.tag === "Flash");
-  const _bestRaw      = products.filter((p) => p.tag === "Best-seller").concat(products.slice(0, 3));
-  const _seenBest     = new Set<string>();
-  const bestProducts  = _bestRaw.filter((p) => !_seenBest.has(p.id) && !!_seenBest.add(p.id));
-  const newProducts   = products.filter((p) => p.tag === "Nouveau");
+  /* ── Listes produits par visibilité admin (home_visibility) ─ */
+  const flashProducts = filterProductsByHomeKey(products, "flash");
+  const bestProducts  = filterProductsByHomeKey(products, "best_seller");
+  const newProducts   = filterProductsByHomeKey(products, "new_arrivals");
+  const universeGrouped = groupProductsByUniverse(products);
+  const selfCareProducts = universeGrouped.self_care_rituals;
 
   const productsBySource: Record<ProductSource, Product[]> = {
     flash: flashProducts,
     best:  bestProducts,
     new:   newProducts,
-    reco:  products.slice(0, 4),
+    reco:  products.filter(
+      (p) =>
+        p.homeVisibility?.flash ||
+        p.homeVisibility?.best_seller ||
+        p.homeVisibility?.new_arrivals
+    ).slice(0, 4),
     all:   products,
   };
 
@@ -682,9 +671,13 @@ export default function HomePage() {
 
         case "products": {
           const source     = (section.source ?? "flash") as ProductSource;
-          const prods      = productsBySource[source] ?? [];
+          const visKey     = homeKeyFromProductSource(source);
+          const prods      = visKey
+            ? filterProductsByHomeKey(products, visKey)
+            : (productsBySource[source] ?? []);
           const isGrid     = section.variant === "grid";
           const isFirst    = source === "flash";
+          if (prods.length === 0) return null;
           return (
             <div
               key={section.id}
@@ -748,10 +741,16 @@ export default function HomePage() {
         }
 
         case "routine":
+          if (selfCareProducts.length === 0) return null;
           return (
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
-                <RoutineSection onAdd={handleAdd} />
+                <RoutineSection
+                  products={selfCareProducts}
+                  onAdd={handleAdd}
+                  title={section.title}
+                  eyebrow={section.eyebrow}
+                />
               </Reveal>
             </div>
           );
@@ -765,7 +764,11 @@ export default function HomePage() {
             </div>
           );
 
-        case "bento":
+        case "bento": {
+          const hasUniverse = HOME_UNIVERSE_OPTIONS.some(
+            ({ key }) => universeGrouped[key].length > 0
+          );
+          if (!hasUniverse) return null;
           return (
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <div style={{ marginBottom: 14 }}>
@@ -777,10 +780,17 @@ export default function HomePage() {
                 </h3>
               </div>
               <Reveal>
-                <BentoSelfCare />
+                <BentoUniversSection
+                  grouped={universeGrouped}
+                  onOpen={handleOpen}
+                  onFav={handleFav}
+                  onAdd={handleAdd}
+                  favs={favs}
+                />
               </Reveal>
             </div>
           );
+        }
 
         case "quote":
           return (
@@ -823,7 +833,7 @@ export default function HomePage() {
       }
     },
      
-    [handleAdd, handleFav, handleOpen, favs, openListing, productsBySource]
+    [handleAdd, handleFav, handleOpen, favs, openListing, products, productsBySource, selfCareProducts, universeGrouped]
   );
 
   return (

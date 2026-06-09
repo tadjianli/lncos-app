@@ -70,6 +70,7 @@ export interface Database {
           main_image_url: string | null;
           gallery_images: string[];
           thumbnail_images: string[];
+          home_visibility: Json;
           video_url: string | null;
           created_at: string;
           updated_at: string;
@@ -97,6 +98,7 @@ export interface Database {
           main_image_url?: string | null;
           gallery_images?: string[];
           thumbnail_images?: string[];
+          home_visibility?: Json;
           video_url?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -123,6 +125,7 @@ export interface Database {
           main_image_url?: string | null;
           gallery_images?: string[];
           thumbnail_images?: string[];
+          home_visibility?: Json;
           video_url?: string | null;
           updated_at?: string;
         };

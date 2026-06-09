@@ -11,6 +11,8 @@ import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor"
 import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
 import { ProductCommitmentsEditor } from "@/components/admin/ProductCommitmentsEditor";
 import { DEFAULT_COMMITMENTS, DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
+import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
+import { DEFAULT_HOME_VISIBILITY } from "@/lib/product-home-visibility";
 import { resolveProductImage, slugifyProductId } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 
@@ -51,6 +53,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
       id: productId,
       mainImageUrl: form.mainImageUrl ?? null,
       galleryImages: form.galleryImages ?? [],
+      homeVisibility: form.homeVisibility ?? {},
       productVariants: variants,
     };
     await onSave(payload, variants.map((v) => ({ ...v, productId })));
@@ -169,6 +172,15 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             onChange={(urls) => set("galleryImages", urls)}
           />
 
+          <div className="adm-form-section-title">Visibilité du produit</div>
+          <p className="adm-form-section-desc">
+            Cochez les sections de l&apos;accueil où ce produit doit apparaître.
+          </p>
+          <ProductHomeVisibilityEditor
+            value={form.homeVisibility ?? DEFAULT_HOME_VISIBILITY}
+            onChange={(vis) => set("homeVisibility", vis)}
+          />
+
           <div className="adm-form-section-title">Variantes</div>
           <ProductVariantsEditor
             productId={productId}
@@ -208,6 +220,7 @@ const BLANK_PRODUCT: Product = {
   commitments: DEFAULT_COMMITMENTS.map((c) => ({ ...c })),
   mainImageUrl: null,
   galleryImages: [],
+  homeVisibility: {},
   productVariants: [],
 };
 

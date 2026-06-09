@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { GoldBtn } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
+import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
 import type { HomeSection } from "@/lib/home-sections";
 import { isImageUrl } from "@/lib/admin-media";
 
@@ -83,13 +84,19 @@ function PageProducts({ section }: { section: HomeSection }) {
 
   let list = products;
   if (section.source && section.source !== "all") {
-    const map: Record<string, (typeof products)[0][]> = {
-      flash: products.filter((p) => p.tag === "Flash"),
-      best: products.filter((p) => p.tag === "Best-seller"),
-      new: products.filter((p) => p.tag === "Nouveau"),
-      reco: products.slice(0, 8),
-    };
-    list = map[section.source] ?? products;
+    const visKey = homeKeyFromProductSource(section.source);
+    if (visKey) {
+      list = filterProductsByHomeKey(products, visKey);
+    } else if (section.source === "reco") {
+      list = products
+        .filter(
+          (p) =>
+            p.homeVisibility?.flash ||
+            p.homeVisibility?.best_seller ||
+            p.homeVisibility?.new_arrivals
+        )
+        .slice(0, 8);
+    }
   }
   if (cat !== "all") list = list.filter((p) => p.cat === cat);
   const { categories } = usePublicCategories();

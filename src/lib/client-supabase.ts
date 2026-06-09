@@ -19,6 +19,7 @@ import type { Product, Category } from "./data";
 import type { ProductVariant } from "./product-catalog";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
 import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
+import { normalizeHomeVisibility } from "./product-home-visibility";
 import type { ProductReview } from "./reviews";
 import { FALLBACK_REVIEWS, reviewToPublic, type PublicReview } from "./reviews";
 
@@ -57,6 +58,7 @@ function mapProduct(row: {
   main_image_url?: string | null;
   gallery_images?: string[] | null;
   thumbnail_images?: string[] | null;
+  home_visibility?: unknown;
   video_url?: string | null;
   product_variants?: DbVariantRow[] | null;
 }): Product {
@@ -99,12 +101,18 @@ function mapProduct(row: {
     videoUrl: row.video_url ?? null,
     imageUrl: row.image_url ?? null,
     productVariants: richVariants,
+    homeVisibility: normalizeHomeVisibility(row.home_visibility, row.tag),
   };
 }
 
 /* ── usePublicProducts ───────────────────────────────────────── */
 export function usePublicProducts() {
-  const [products, setProducts] = useState<Product[]>([...STATIC_PRODUCTS].reverse());
+  const [products, setProducts] = useState<Product[]>(
+    [...STATIC_PRODUCTS].reverse().map((p) => ({
+      ...p,
+      homeVisibility: normalizeHomeVisibility(p.homeVisibility, p.tag),
+    }))
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -117,7 +125,7 @@ export function usePublicProducts() {
       try {
         const { data, error } = await getSupabase()
           .from("products")
-          .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
+          .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
           .eq("active", true)
           .order("created_at", { ascending: false });
         if (!error && data && data.length > 0) {
