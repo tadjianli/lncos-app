@@ -162,43 +162,42 @@ function DragHandle() {
   );
 }
 
-/* ── Phone preview placeholder ──────────────────────────────────────── */
-function PhonePreview({ sections }: { sections: HomeSection[] }) {
-  const enabled = sections.filter((s) => s.enabled);
+/* ── Live page preview (iframe → vraie page cliente) ───────────────── */
+function LivePagePreview({ pageSlug, refreshKey }: { pageSlug: PageSlug; refreshKey: number }) {
+  const page = APP_PAGES.find((p) => p.slug === pageSlug);
+  const src = previewPath(pageSlug);
+
   return (
     <div className="ab-preview-panel">
       <div className="ab-preview-head">
         <div className="ab-preview-title">
           <span className="ab-preview-live" />
-          Aperçu en direct
+          Aperçu · {page?.label ?? pageSlug}
         </div>
-        <button className="adm-iconbtn" title="Rafraîchir" style={{ width: 30, height: 30, borderRadius: 8 }}>
-          <Icon name="clock" size={15} />
-        </button>
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="adm-iconbtn"
+          title="Ouvrir dans un nouvel onglet"
+          style={{ width: 30, height: 30, borderRadius: 8, textDecoration: "none" }}
+        >
+          <Icon name="search" size={15} />
+        </a>
       </div>
       <div className="ab-phone-frame">
         <div className="ab-phone-notch" />
         <div className="ab-phone-screen">
-          <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 6, overflowY: "auto", height: "100%" }}>
-            {enabled.map((sec) => {
-              const m = TYPE_META[sec.type] ?? { icon: "sparkle", color: "#B8902B", bg: "rgba(212,175,55,.14)" };
-              return (
-                <div key={sec.id} style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 8, padding: "8px 10px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: m.bg, display: "grid", placeItems: "center", flexShrink: 0 }}>
-                    <Icon name={m.icon} size={12} color={m.color} />
-                  </div>
-                  <span style={{ fontSize: 11, color: "#F6F1EA", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sec.name}</span>
-                </div>
-              );
-            })}
-            {enabled.length === 0 && (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,.3)", fontSize: 12 }}>Aucune section active</div>
-            )}
-          </div>
+          <iframe
+            key={`${pageSlug}-${refreshKey}`}
+            title={`Aperçu ${page?.label ?? pageSlug}`}
+            src={src}
+            className="ab-phone-iframe"
+          />
         </div>
       </div>
       <div className="ab-phone-caption">
-        Les changements apparaissent instantanément. <b>Publiez</b> pour les rendre visibles aux clientes.
+        Page cliente <b>{page?.path ?? "/"}</b> — mode brouillon (<code>?preview=1</code>). <b>Publiez</b> pour mettre en ligne.
       </div>
     </div>
   );
@@ -207,29 +206,38 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 /* ── Main App Builder component ─────────────────────────────────────── */
 export function AppBuilder() {
   const [activePage, setActivePage] = useState<PageSlug>("home");
-  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(activePage);
+  const { published, draft: dbDraft, loading, isReady, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(activePage);
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
   const [addingSection, setAddingSection] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [previewRefresh, setPreviewRefresh] = useState(0);
   const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
+  const activePageMeta = APP_PAGES.find((p) => p.slug === activePage);
 
   function showToast(msg: string, variant: AdminToastVariant = "success") {
     setToast({ msg, variant });
     setTimeout(() => setToast(null), 2800);
   }
 
+  function bumpPreview() {
+    setPreviewRefresh((n) => n + 1);
+  }
+
   useEffect(() => {
     setLocalDraft(null);
+    setEditingSection(null);
+    setConfirmDeleteId(null);
+    setAddingSection(false);
   }, [activePage]);
 
   useEffect(() => {
-    if (dbDraft !== null && localDraft === null) {
-      setLocalDraft(dbDraft);
-    }
-  }, [dbDraft, localDraft]);
+    if (!isReady || dbDraft === null || localDraft !== null) return;
+    const matchesPage = dbDraft.every((s) => (s.pageSlug ?? activePage) === activePage);
+    if (matchesPage) setLocalDraft(dbDraft);
+  }, [dbDraft, localDraft, activePage, isReady]);
 
-  const sections = localDraft ?? published;
+  const sections = isReady ? (localDraft ?? published) : [];
   const hasDraft = localDraft !== null;
 
   async function ensureDraft(): Promise<HomeSection[]> {
@@ -266,6 +274,7 @@ export function AppBuilder() {
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
+    else bumpPreview();
     dragId.current = null;
     setDragOverId(null);
   }
@@ -283,6 +292,7 @@ export function AppBuilder() {
     setLocalDraft(updated);
     const { error } = await saveDraft(updated);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
+    else bumpPreview();
   }
 
   async function handleEdit(sec: HomeSection) {
@@ -299,6 +309,7 @@ export function AppBuilder() {
     setLocalDraft(updated);
     const { error } = await saveDraft(updated);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
+    else bumpPreview();
     setEditingSection(null);
   }
 
@@ -313,7 +324,8 @@ export function AppBuilder() {
       return;
     }
     setLocalDraft(null);
-    showToast("Publié — visible côté cliente");
+    bumpPreview();
+    showToast(`Publié — visible sur ${activePageMeta?.path ?? activePage}`);
   }
 
   async function handleDiscard() {
@@ -338,7 +350,7 @@ export function AppBuilder() {
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
-    else showToast("Section dupliquée");
+    else { bumpPreview(); showToast("Section dupliquée"); }
   }
 
   async function handleDelete(id: string) {
@@ -347,7 +359,7 @@ export function AppBuilder() {
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
-    else showToast("Section supprimée");
+    else { bumpPreview(); showToast("Section supprimée"); }
     setConfirmDeleteId(null);
   }
 
@@ -370,7 +382,7 @@ export function AppBuilder() {
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
-    else showToast(`Section « ${schema.label} » ajoutée`);
+    else { bumpPreview(); showToast(`Section « ${schema.label} » ajoutée`); }
     setAddingSection(false);
   }
 
@@ -409,7 +421,7 @@ export function AppBuilder() {
           </div>
         )}
 
-        <div className="adm-card" style={{ padding: "10px 12px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div className="adm-card" style={{ padding: "10px 12px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           {APP_PAGES.map((p) => (
             <button
               key={p.slug}
@@ -420,12 +432,16 @@ export function AppBuilder() {
               {p.label}
             </button>
           ))}
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--adm-ink-mute)" }}>
+            {activePageMeta?.path}
+            {loading && " · chargement…"}
+          </span>
           <a
             href={previewPath(activePage)}
             target="_blank"
             rel="noopener noreferrer"
             className="adm-btn ghost sm"
-            style={{ marginLeft: "auto", textDecoration: "none" }}
+            style={{ textDecoration: "none" }}
           >
             <Icon name="search" size={14} /> Aperçu live
           </a>
@@ -446,6 +462,18 @@ export function AppBuilder() {
                   Ajouter
                 </button>
               </div>
+
+              {loading && (
+                <div style={{ padding: "24px 0", textAlign: "center", fontSize: 13, color: "var(--adm-ink-mute)" }}>
+                  Chargement des sections {activePageMeta?.label}…
+                </div>
+              )}
+
+              {!loading && sections.length === 0 && (
+                <div style={{ padding: "24px 0", textAlign: "center", fontSize: 13, color: "var(--adm-ink-mute)" }}>
+                  Aucune section — ajoutez-en une pour personnaliser {activePageMeta?.path}.
+                </div>
+              )}
 
               {sections.map((sec) => {
                 const m = TYPE_META[sec.type] ?? { icon: "sparkle", color: "#B8902B", bg: "rgba(212,175,55,.14)" };
@@ -498,8 +526,8 @@ export function AppBuilder() {
             </div>
           </div>
 
-          {/* Phone preview */}
-          <PhonePreview sections={sections} />
+          {/* Live preview — vraie page cliente */}
+          <LivePagePreview pageSlug={activePage} refreshKey={previewRefresh} />
         </div>
       </div>
 
