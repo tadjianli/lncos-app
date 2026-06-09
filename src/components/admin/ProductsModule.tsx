@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { categories } from "@/lib/data";
-import type { Product } from "@/lib/data";
+import type { Category, Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
-import { useProducts } from "@/lib/admin-supabase";
+import { useAdminCategories, useProducts } from "@/lib/admin-supabase";
 import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { slugifyProductId, resolveProductImage } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
-function ProductEditModal({ product, onClose, onSave, isNew }: {
+function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   product: Product;
+  categories: Category[];
   onClose: () => void;
   onSave: (p: Product, variants: ProductVariant[]) => Promise<void>;
   isNew?: boolean;
@@ -28,6 +28,13 @@ function ProductEditModal({ product, onClose, onSave, isNew }: {
       setProductId(slugifyProductId(form.name));
     }
   }, [form.name, isNew]);
+
+  useEffect(() => {
+    if (categories.length === 0) return;
+    if (!categories.some((c) => c.id === form.cat)) {
+      setForm((p) => ({ ...p, cat: categories[0].id }));
+    }
+  }, [categories, form.cat]);
 
   function set<K extends keyof Product>(key: K, val: Product[K]) {
     setForm((p) => ({ ...p, [key]: val }));
@@ -83,8 +90,21 @@ function ProductEditModal({ product, onClose, onSave, isNew }: {
 
           <div className="ab-field">
             <label>Catégorie</label>
-            <select className="ab-input" value={form.cat} onChange={(e) => set("cat", e.target.value)}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <select
+              className="ab-input"
+              value={form.cat}
+              onChange={(e) => set("cat", e.target.value)}
+              disabled={categories.length === 0}
+            >
+              {categories.length === 0 && (
+                <option value="">Aucune catégorie — créez-en une dans Catégories</option>
+              )}
+              {!categories.some((c) => c.id === form.cat) && form.cat && (
+                <option value={form.cat}>{form.cat}</option>
+              )}
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
             </select>
           </div>
 
@@ -159,6 +179,7 @@ const BLANK_PRODUCT: Product = {
 /* ── Products module ────────────────────────────────────────────────── */
 export function ProductsModule() {
   const { products, loading, saveProductFull, insertProductFull, deleteProduct } = useProducts();
+  const { categories, reload: reloadCategories } = useAdminCategories();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [creatingProduct, setCreatingProduct] = useState(false);
   const [search, setSearch] = useState("");
@@ -169,6 +190,12 @@ export function ProductsModule() {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   }
+
+  useEffect(() => {
+    if (editingProduct || creatingProduct) {
+      void reloadCategories();
+    }
+  }, [editingProduct, creatingProduct, reloadCategories]);
 
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
@@ -322,10 +349,21 @@ export function ProductsModule() {
       </div>
 
       {editingProduct && (
-        <ProductEditModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={handleSave} />
+        <ProductEditModal
+          product={editingProduct}
+          categories={categories}
+          onClose={() => setEditingProduct(null)}
+          onSave={handleSave}
+        />
       )}
       {creatingProduct && (
-        <ProductEditModal product={BLANK_PRODUCT} onClose={() => setCreatingProduct(false)} onSave={handleCreate} isNew />
+        <ProductEditModal
+          product={{ ...BLANK_PRODUCT, cat: categories[0]?.id ?? BLANK_PRODUCT.cat }}
+          categories={categories}
+          onClose={() => setCreatingProduct(false)}
+          onSave={handleCreate}
+          isNew
+        />
       )}
       {toast && <AdminToast msg={toast} />}
     </>

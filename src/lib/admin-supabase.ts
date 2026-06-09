@@ -11,7 +11,7 @@ import type { Database, Json } from "./database.types";
 import type { Popup, Appointment, Notification } from "./rdv-store";
 import type { HomeSection } from "./home-sections";
 import { dbToSection, sectionToDb } from "./home-sections-db";
-import type { Product } from "./data";
+import type { Category, Product } from "./data";
 import type { ProductReview, ReviewStatus } from "./reviews";
 import type { ProductVariant } from "./product-catalog";
 
@@ -520,6 +520,29 @@ export function useSupabasePageSections(pageSlug: PageSlug) {
 /** @deprecated use useSupabasePageSections("home") */
 export function useSupabaseHomeSections() {
   return useSupabasePageSections("home");
+}
+
+/* ─── useAdminCategories ──────────────────────────────────────────────────── */
+
+export function useAdminCategories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data, error } = await getSupabase()
+      .from("categories")
+      .select("id,name,count")
+      .order("position");
+
+    if (!error && data) {
+      setCategories(data as Category[]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  return { categories, loading, reload: load };
 }
 
 /* ─── useProducts ─────────────────────────────────────────────────────────── */
