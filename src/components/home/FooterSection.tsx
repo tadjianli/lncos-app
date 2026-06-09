@@ -1,4 +1,5 @@
 import { Container } from "@/components/shared/Container";
+import { Logo } from "@/components/shared/Logo";
 
 export function FooterSection() {
   return (
@@ -9,14 +10,9 @@ export function FooterSection() {
       <Container>
         <div className="flex flex-col items-center text-center gap-5">
           {/* Logo */}
-          <div>
-            <p
-              className="text-gold-gradient font-light tracking-[0.28em] uppercase"
-              style={{ fontFamily: "var(--font-heading)", fontSize: "1.25rem" }}
-            >
-              LN COS
-            </p>
-            <p className="text-[0.5rem] font-light tracking-[0.3em] uppercase text-[--cream-muted] mt-1">
+          <div className="flex flex-col items-center gap-2">
+            <Logo size={56} />
+            <p className="text-[0.5rem] font-light tracking-[0.3em] uppercase text-[--cream-muted]">
               Luxury Beauty
             </p>
           </div>

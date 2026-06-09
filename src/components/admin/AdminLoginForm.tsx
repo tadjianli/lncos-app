@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { Logo } from "@/components/shared/Logo";
 
 export function AdminLoginForm() {
   const router = useRouter();
@@ -77,7 +78,7 @@ export function AdminLoginForm() {
     <div className="adm-login-page">
       <div className="adm-login-card">
         <div className="adm-login-logo">
-          <span className="adm-login-logo-text">LN COS</span>
+          <Logo size={80} />
           <span className="adm-login-logo-sub">Administration</span>
         </div>
 

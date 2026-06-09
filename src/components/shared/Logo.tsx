@@ -1,58 +1,31 @@
-/* LN COS — Logo (exact from handoff ui.jsx) */
+import Image from "next/image";
+
+/** Chemin public du logo officiel LN COS */
+export const LOGO_PATH = "/assets/logo-lncos.jpg";
+
+const LOGO_ASPECT = 1600 / 1460;
 
 interface LogoProps {
   size?: number;
+  /** Conservé pour compatibilité — le logo officiel est toujours affiché en entier */
   mono?: boolean;
+  /** @deprecated Le logo officiel utilise ses couleurs d'origine */
   color?: string;
 }
 
-export function Logo({ size = 30, mono = false, color }: LogoProps) {
-  const c = color || "var(--gold)";
+export function Logo({ size = 30 }: LogoProps) {
+  const height = size;
+  const width = Math.round(size * LOGO_ASPECT);
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: size * 0.34 }}>
-      <span
-        style={{
-          position: "relative",
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          border: `1.4px solid ${c}`,
-          display: "grid",
-          placeItems: "center",
-          flex: "0 0 auto",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "var(--font-montserrat, Montserrat, sans-serif)",
-            fontStyle: "italic",
-            fontWeight: 600,
-            fontSize: size * 0.5,
-            lineHeight: 1,
-            color: c,
-            letterSpacing: "-.02em",
-            marginTop: -1,
-          }}
-        >
-          L
-        </span>
-      </span>
-      {!mono && (
-        <span
-          style={{
-            fontFamily: "var(--font-montserrat, Montserrat, sans-serif)",
-            fontWeight: 500,
-            letterSpacing: ".22em",
-            fontSize: size * 0.46,
-            color: c,
-            paddingTop: 2,
-            whiteSpace: "nowrap",
-          }}
-        >
-          LN COS
-        </span>
-      )}
-    </span>
+    <Image
+      src={LOGO_PATH}
+      alt="LN COS"
+      width={width}
+      height={height}
+      className="lncos-logo"
+      style={{ height, width: "auto", display: "block" }}
+      priority
+    />
   );
 }
