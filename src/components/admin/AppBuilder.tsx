@@ -8,6 +8,7 @@ import { ALLOWED_TYPES_BY_PAGE, APP_PAGES, previewPath } from "@/lib/page-sectio
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
+import { HeroLivePreview } from "@/components/admin/HeroLivePreview";
 
 /* ── icon + color per section type ─────────────────────────────────── */
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
@@ -51,9 +52,24 @@ function SectionEditor({ section, onClose, onSave }: {
     onSave(patch);
   }
 
+  const isHero = section.type === "hero";
+  const liveHeroSection: HomeSection = isHero
+    ? {
+        ...section,
+        title: form.title ?? section.title,
+        titleAccent: form.titleAccent ?? section.titleAccent,
+        eyebrow: form.eyebrow ?? section.eyebrow,
+        cta: form.cta ?? section.cta,
+        img: form.img ?? section.img,
+      }
+    : section;
+
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
-      <div className="ab-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`ab-modal${isHero ? " ab-modal-wide ab-modal-scroll" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="ab-modal-head">
           <div className="ab-modal-title">Modifier · {schema.label}</div>
           <button className="adm-iconbtn" onClick={onClose}>
@@ -101,6 +117,8 @@ function SectionEditor({ section, onClose, onSave }: {
             )}
           </div>
         ))}
+
+        {isHero && <HeroLivePreview section={liveHeroSection} />}
 
         <div className="ab-modal-foot">
           <button className="adm-btn ghost" onClick={onClose}>Annuler</button>

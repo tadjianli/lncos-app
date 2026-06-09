@@ -2091,3 +2091,141 @@
   background: rgba(212,175,55,.12);
   box-shadow: 0 0 0 1px rgba(212,175,55,.25);
 }
+
+/* ─── Hero live preview (App Builder) ───────────────────────────────── */
+
+.hero-live-preview {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--adm-border);
+}
+
+.hero-live-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.hero-live-preview-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--adm-ink-mute);
+}
+
+.hero-live-preview-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--adm-surface-2);
+  border: 1px solid var(--adm-border);
+}
+
+.hero-live-preview-tab {
+  border: none;
+  background: transparent;
+  color: var(--adm-ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, color .15s;
+}
+
+.hero-live-preview-tab.active {
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.lncos-preview-shell {
+  --gold: #D4AF37;
+  --gold-soft: #E7C96B;
+  --gold-deep: #B8902B;
+  --ink: #F6F1EA;
+  --ink-soft: #B9B2A9;
+  --gold-grad: linear-gradient(135deg, #F0D98C 0%, #D4AF37 42%, #B8902B 100%);
+  --pink-grad: linear-gradient(135deg, #FFE6EE 0%, #F7C6D7 100%);
+  --r-lg: 24px;
+  --r-pill: 999px;
+  background: #0A0A0A;
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: var(--font-montserrat, Montserrat, sans-serif);
+}
+
+.lncos-preview-shell--inline {
+  border: 1px solid rgba(212,175,55,.18);
+}
+
+.lncos-preview-shell--device {
+  border-radius: 0;
+  min-height: 100%;
+}
+
+.lncos-preview-shell .gold-text {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-iphone-stage {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+.hero-iphone-mockup {
+  position: relative;
+  width: 280px;
+  height: 572px;
+  border-radius: 44px;
+  background: linear-gradient(145deg, #3a3a3c 0%, #1c1c1e 40%, #2c2c2e 100%);
+  padding: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08) inset,
+    0 24px 48px -12px rgba(0,0,0,.45),
+    0 8px 20px rgba(0,0,0,.2);
+}
+
+.hero-iphone-notch {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 108px;
+  height: 28px;
+  background: #0a0a0a;
+  border-radius: 0 0 18px 18px;
+  z-index: 2;
+}
+
+.hero-iphone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  overflow: hidden;
+  background: #0A0A0A;
+  position: relative;
+}
+
+.hero-iphone-home {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.35);
+  z-index: 2;
+}

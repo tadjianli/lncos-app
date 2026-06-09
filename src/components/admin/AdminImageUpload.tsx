@@ -20,10 +20,23 @@ export function AdminImageUpload({
   helpText,
 }: AdminImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const blobRef = useRef<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function revokeBlob() {
+    if (blobRef.current) {
+      URL.revokeObjectURL(blobRef.current);
+      blobRef.current = null;
+    }
+  }
+
   async function handleFile(file: File) {
+    revokeBlob();
+    const previewUrl = URL.createObjectURL(file);
+    blobRef.current = previewUrl;
+    onChange(previewUrl);
+
     setUploading(true);
     setError(null);
     const { url, error: err } = await uploadAdminImage(file, folder);
@@ -32,6 +45,7 @@ export function AdminImageUpload({
       setError(err ?? "Échec de l'upload");
       return;
     }
+    revokeBlob();
     onChange(url);
   }
 
@@ -71,7 +85,10 @@ export function AdminImageUpload({
               type="button"
               className="adm-btn ghost sm"
               disabled={uploading}
-              onClick={() => onChange("")}
+              onClick={() => {
+                revokeBlob();
+                onChange("");
+              }}
               style={{ color: "var(--tone-pink)" }}
             >
               <Icon name="trash" size={14} />

@@ -18,6 +18,7 @@ export function isImageUrl(value?: string | null): boolean {
     value.startsWith("http://") ||
     value.startsWith("https://") ||
     value.startsWith("/") ||
+    value.startsWith("blob:") ||
     value.includes("/storage/v1/object/public/")
   );
 }
