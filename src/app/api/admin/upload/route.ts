@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 const SECTION_MAX = 5 * 1024 * 1024;
@@ -73,21 +73,23 @@ export async function POST(req: Request) {
     path = `${folder}/${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   }
 
-  try {
-    const service = createServiceClient();
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const { error } = await service.storage.from(bucket).upload(path, buffer, {
-      contentType: mime,
-      cacheControl: "31536000",
-      upsert: true,
-    });
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+  // Upload via la session admin authentifiée (RLS : is_admin() sur storage.objects).
+  // Ne nécessite pas SUPABASE_SERVICE_ROLE_KEY en local.
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error } = await supabase.storage.from(bucket).upload(path, buffer, {
+    contentType: mime,
+    cacheControl: "31536000",
+    upsert: true,
+  });
 
-    const { data } = service.storage.from(bucket).getPublicUrl(path);
-    return NextResponse.json({ url: data.publicUrl, path });
-  } catch {
-    return NextResponse.json({ error: "Upload impossible — vérifiez SUPABASE_SERVICE_ROLE_KEY" }, { status: 500 });
+  if (error) {
+    const hint =
+      error.message.includes("Bucket not found") || error.message.includes("not found")
+        ? ` — le bucket « ${bucket} » n'existe pas encore (appliquez les migrations Supabase)`
+        : "";
+    return NextResponse.json({ error: `${error.message}${hint}` }, { status: 500 });
   }
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return NextResponse.json({ url: data.publicUrl, path });
 }
