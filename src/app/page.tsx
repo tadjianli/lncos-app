@@ -689,7 +689,7 @@ export default function HomePage() {
               {isFirst ? (
                 <>
                   <FlashHead title={section.title} />
-                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel visibleCards={3} style={{ paddingBottom: 4 }}>
                     {prods.map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -723,7 +723,7 @@ export default function HomePage() {
               ) : (
                 <Reveal>
                   <SectionHead title={section.title} action="Voir tout" />
-                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel visibleCards={3} style={{ paddingBottom: 4 }}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}

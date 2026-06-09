@@ -312,11 +312,21 @@
   /* ── Horizontal product carousel (système unique LN COS) ── */
   .hpc {
     position: relative;
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
     --hpc-gap: var(--sp-3);
     --hpc-pad-y: 4px;
     --hpc-edge: max(18px, var(--safe-left));
     --hpc-edge-r: max(18px, var(--safe-right));
+  }
+
+  /* Compense le padding section sur le conteneur (pas sur la piste scrollable) */
+  .hpc--bleed {
+    width: calc(100% + var(--hpc-edge) + var(--hpc-edge-r));
+    max-width: calc(100% + var(--hpc-edge) + var(--hpc-edge-r));
+    margin-left: calc(-1 * var(--hpc-edge));
+    margin-right: calc(-1 * var(--hpc-edge-r));
   }
 
   .hpc__track {
@@ -324,6 +334,7 @@
     flex-wrap: nowrap;
     align-items: stretch;
     gap: var(--hpc-gap);
+    width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -332,24 +343,13 @@
     scroll-padding-left: var(--hpc-edge);
     scroll-padding-right: var(--hpc-edge-r);
     scrollbar-width: none;
-    max-width: 100%;
     box-sizing: border-box;
     padding-block: var(--hpc-pad-y);
+    padding-left: var(--hpc-edge);
+    padding-right: var(--hpc-edge-r);
   }
 
   .hpc__track::-webkit-scrollbar { display: none; }
-
-  .hpc:not(.hpc--bleed) .hpc__track {
-    padding-left: var(--hpc-edge);
-    padding-right: var(--hpc-edge-r);
-  }
-
-  .hpc--bleed .hpc__track {
-    margin-left: calc(-1 * var(--hpc-edge));
-    margin-right: calc(-1 * var(--hpc-edge-r));
-    padding-left: var(--hpc-edge);
-    padding-right: var(--hpc-edge-r);
-  }
 
   .hpc__track > .prod-card,
   .hpc__track > .snap {
@@ -358,9 +358,11 @@
     scroll-snap-stop: normal;
   }
 
+  /* Espace final pour que la dernière carte ne soit jamais coupée */
   .hpc__end {
-    flex: 0 0 0;
-    width: 0;
+    flex: 0 0 var(--hpc-edge-r);
+    width: var(--hpc-edge-r);
+    min-width: var(--hpc-edge-r);
     height: 1px;
     scroll-snap-align: none;
     pointer-events: none;
@@ -370,18 +372,18 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 32px;
+    width: 28px;
     z-index: 2;
     pointer-events: none;
-    opacity: 0.92;
+    opacity: 0.65;
   }
 
   .hpc__fade--left {
     left: 0;
     background: linear-gradient(
       to right,
-      var(--noir) 0%,
-      rgba(10, 10, 10, 0.55) 45%,
+      rgba(10, 10, 10, 0.92) 0%,
+      rgba(10, 10, 10, 0.35) 55%,
       transparent 100%
     );
   }
@@ -390,14 +392,56 @@
     right: 0;
     background: linear-gradient(
       to left,
-      var(--noir) 0%,
-      rgba(10, 10, 10, 0.55) 45%,
+      rgba(10, 10, 10, 0.92) 0%,
+      rgba(10, 10, 10, 0.35) 55%,
       transparent 100%
     );
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .hpc__fade { opacity: 0.72; }
+    .hpc__fade { opacity: 0.5; }
+  }
+
+  /* 3 cartes (ou n) remplissent 100% de la largeur utile : (100% − gaps) ÷ n */
+  .hpc[class*="hpc--fill-"] {
+    --hpc-visible: 3;
+  }
+
+  .hpc[class*="hpc--fill-"] .hpc__track {
+    --hpc-slot: calc(
+      (100% - (var(--hpc-visible) - 1) * var(--hpc-gap)) / var(--hpc-visible)
+    );
+  }
+
+  .hpc[class*="hpc--fill-"] .hpc__track > .prod-card,
+  .hpc[class*="hpc--fill-"] .hpc__track > .snap.prod-card {
+    flex: 0 0 var(--hpc-slot);
+    width: var(--hpc-slot);
+    max-width: var(--hpc-slot);
+    --prod-card-w: var(--hpc-slot);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-imgwrap {
+    height: calc(var(--hpc-slot) * 140 / 158);
+    flex: 0 0 calc(var(--hpc-slot) * 140 / 158);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-info {
+    height: calc(var(--hpc-slot) * 108 / 158);
+    flex: 0 0 calc(var(--hpc-slot) * 108 / 158);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-title {
+    font-size: clamp(10px, calc(var(--hpc-slot) * 0.079), 12.5px);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-price {
+    font-size: clamp(11px, calc(var(--hpc-slot) * 0.089), 14px);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-add {
+    width: clamp(26px, calc(var(--hpc-slot) * 0.19), 30px);
+    height: clamp(26px, calc(var(--hpc-slot) * 0.19), 30px);
   }
 
   /* Shell = viewport visible (inset:0, pas de height explicite → évite zone morte iOS PWA) */
@@ -571,15 +615,16 @@
   opacity: 0;
   transform: translateY(24px);
   transition: opacity .7s var(--ease-lux), transform .7s var(--ease-lux);
+  max-width: 100%;
 }
 .home-reveal.in {
   opacity: 1;
   transform: none;
 }
 
-/* Sections accueil — clip horizontal, scroll interne dans les carrousels */
+/* Sections accueil — le scroll horizontal vit dans .hpc__track */
 .home-section {
-  overflow-x: clip;
+  overflow-x: visible;
   overflow-y: visible;
   max-width: 100%;
 }

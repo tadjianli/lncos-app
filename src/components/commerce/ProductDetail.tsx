@@ -922,7 +922,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Complétez votre rituel
               </h3>
-              <HorizontalProductCarousel>
+              <HorizontalProductCarousel visibleCards={3}>
                 {routine.map((r) => (
                   <ProductCard
                     key={r.id}
@@ -953,7 +953,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Vous aimerez aussi
               </h3>
-              <HorizontalProductCarousel>
+              <HorizontalProductCarousel visibleCards={3}>
                 {related.map((r) => (
                   <ProductCard
                     key={r.id}
