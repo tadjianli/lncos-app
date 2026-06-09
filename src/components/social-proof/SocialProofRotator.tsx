@@ -39,13 +39,14 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
     void (async () => {
       await sleep(2000);
       let i = 0;
+      const displayMs = Math.min(settings.notificationDurationMs || 3000, 3000);
       while (!cancelled) {
         setIndex(i % queue.length);
         setVisible(true);
-        await sleep(settings.notificationDurationMs);
+        await sleep(displayMs);
         if (cancelled) break;
         setVisible(false);
-        const pause = Math.max(500, settings.rotationIntervalSec * 1000 - settings.notificationDurationMs);
+        const pause = Math.max(500, settings.rotationIntervalSec * 1000 - displayMs);
         await sleep(pause);
         i += 1;
       }
@@ -67,8 +68,8 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
   if (!anyEnabled || queue.length === 0) return null;
 
   const bottomOffset = navVisible
-    ? "calc(var(--bottom-nav-h) + max(12px, env(safe-area-inset-bottom, 0px)))"
-    : "max(12px, env(safe-area-inset-bottom, 0px))";
+    ? "calc(var(--bottom-nav-h) + 8px)"
+    : "max(10px, env(safe-area-inset-bottom, 0px))";
 
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 74 }}>

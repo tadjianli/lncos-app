@@ -109,7 +109,7 @@ export function SocialProofModule() {
         </div>
         <ToggleRow
           label="Activer les notifications d'achat"
-          desc="Bas gauche · apparition 4 s · achats récents"
+          desc="Bas gauche · apparition 3 s · format discret"
           checked={draft.purchaseNotifications}
           onChange={(v) => set("purchaseNotifications", v)}
         />
