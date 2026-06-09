@@ -22,6 +22,7 @@ import { SideMenu } from "./SideMenu";
 import { Toast } from "./Toast";
 import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/store";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
+import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
 
 // Lazy-load overlay screens — keep initial bundle small
 const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
@@ -135,6 +136,9 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
           <AuthScreen onClose={closeOverlay} />
         )}
       </Suspense>
+
+      {/* ── Social proof notifications (bas gauche) ───────── */}
+      <SocialProofRotator navVisible={navVisible} />
 
       {/* ── Toast — floats above nav ────────────────────────── */}
       {toast && (

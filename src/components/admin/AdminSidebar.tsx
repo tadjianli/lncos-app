@@ -30,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "customers",   href: "/admin/customers",     icon: "user",     label: "Clients" },
   { id: "promotions",  href: "/admin/promotions",    icon: "sparkle",  label: "Promotions" },
   { id: "reviews",     href: "/admin/reviews",       icon: "star",     label: "Avis" },
+  { id: "social-proof", href: "/admin/social-proof", icon: "bolt",    label: "Social Proof", live: true },
   { id: "analytics",   href: "/admin/analytics",     icon: "sliders",  label: "Statistiques" },
   { id: "settings",    href: "/admin/settings",      icon: "sliders",  label: "Paramètres" },
 ];

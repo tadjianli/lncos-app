@@ -1024,6 +1024,96 @@ export interface Database {
         Relationships: [];
       };
 
+      social_proof_settings: {
+        Row: {
+          id: string;
+          purchase_notifications: boolean;
+          review_notifications: boolean;
+          favorite_notifications: boolean;
+          cart_notifications: boolean;
+          live_viewers_enabled: boolean;
+          stock_alerts_enabled: boolean;
+          sales_counter_enabled: boolean;
+          rotation_interval_sec: number;
+          notification_duration_ms: number;
+          viewers_min: number;
+          viewers_max: number;
+          stock_low_threshold: number;
+          trust_fast_delivery: boolean;
+          trust_secure_payment: boolean;
+          trust_verified_purchase: boolean;
+          trust_easy_returns: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          purchase_notifications?: boolean;
+          review_notifications?: boolean;
+          favorite_notifications?: boolean;
+          cart_notifications?: boolean;
+          live_viewers_enabled?: boolean;
+          stock_alerts_enabled?: boolean;
+          sales_counter_enabled?: boolean;
+          rotation_interval_sec?: number;
+          notification_duration_ms?: number;
+          viewers_min?: number;
+          viewers_max?: number;
+          stock_low_threshold?: number;
+          trust_fast_delivery?: boolean;
+          trust_secure_payment?: boolean;
+          trust_verified_purchase?: boolean;
+          trust_easy_returns?: boolean;
+        };
+        Update: {
+          purchase_notifications?: boolean;
+          review_notifications?: boolean;
+          favorite_notifications?: boolean;
+          cart_notifications?: boolean;
+          live_viewers_enabled?: boolean;
+          stock_alerts_enabled?: boolean;
+          sales_counter_enabled?: boolean;
+          rotation_interval_sec?: number;
+          notification_duration_ms?: number;
+          viewers_min?: number;
+          viewers_max?: number;
+          stock_low_threshold?: number;
+          trust_fast_delivery?: boolean;
+          trust_secure_payment?: boolean;
+          trust_verified_purchase?: boolean;
+          trust_easy_returns?: boolean;
+        };
+        Relationships: [];
+      };
+
+      social_proof_events: {
+        Row: {
+          id: string;
+          event_type: string;
+          product_id: string | null;
+          product_name: string;
+          customer_name: string;
+          rating: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_type: string;
+          product_id?: string | null;
+          product_name?: string;
+          customer_name: string;
+          rating?: number | null;
+        };
+        Update: {
+          event_type?: string;
+          product_id?: string | null;
+          product_name?: string;
+          customer_name?: string;
+          rating?: number | null;
+        };
+        Relationships: [];
+      };
+
       shipping_methods: {
         Row: {
           id: string;
@@ -1068,6 +1158,10 @@ export interface Database {
       increment_promo_uses: {
         Args: { promo_code_arg: string };
         Returns: undefined;
+      };
+      get_product_sales_stats: {
+        Args: { p_product_id: string };
+        Returns: Json;
       };
     };
     Enums: Record<string, never>;

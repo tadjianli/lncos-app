@@ -12,6 +12,12 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
 import { ProductReviewsSection } from "@/components/commerce/ProductReviewsSection";
 import { ProductBeforeAfterSection } from "@/components/commerce/ProductBeforeAfterSection";
+import {
+  ProductLiveViewers,
+  ProductSalesCounter,
+  ProductStockAlert,
+  ProductTrustBadges,
+} from "@/components/social-proof/ProductSocialProof";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -488,6 +494,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               ({p.reviews} avis)
             </span>
           </div>
+
+          <ProductLiveViewers productId={p.id} />
+          <ProductStockAlert stock={displayStock} />
 
           {/* Price row */}
           <div
@@ -1029,11 +1038,10 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderTop: "1px solid rgba(212,175,55,.14)",
-          display: "flex",
-          gap: 12,
-          alignItems: "center",
         }}
       >
+        <ProductSalesCounter productId={p.id} />
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         {/* Price total */}
         <div style={{ flex: "0 0 auto" }}>
           <div
@@ -1107,6 +1115,8 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </>
           )}
         </button>
+        </div>
+        <ProductTrustBadges />
       </div>
     </div>
   );
