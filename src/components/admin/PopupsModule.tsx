@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Popup } from "@/lib/rdv-store";
 import { usePopups } from "@/lib/admin-supabase";
 import { Icon } from "@/components/shared/Icon";
@@ -163,14 +163,15 @@ function PopupEditor({ popup, onClose, onSave }: {
 
 /* ── Sparkline mini chart ───────────────────────────────────────────── */
 function Sparkline({ data, color = "var(--gold)" }: { data: number[]; color?: string }) {
-  const max = Math.max(...data, 1);
+  const series = data.length > 0 ? data : new Array(14).fill(0);
+  const max = Math.max(...series, 1);
   return (
     <div className="pop-sparkline">
-      {data.map((v, i) => (
+      {series.map((v, i) => (
         <div
           key={i}
           className="pop-sparkbar"
-          style={{ height: `${Math.max(4, (v / max) * 100)}%`, background: color }}
+          style={{ height: `${Math.max(4, (v / max) * 40)}px`, background: color }}
           title={String(v)}
         />
       ))}
@@ -215,7 +216,9 @@ function AnalyticsView({ popups }: { popups: Popup[] }) {
         <div className="adm-card-head">
           <div className="adm-card-title">Activité des 14 derniers jours</div>
         </div>
-        <Sparkline data={aggDaily} />
+        <div className="pop-sparkline-wrap">
+          <Sparkline data={aggDaily} />
+        </div>
       </div>
 
       {popups.map((p) => (
@@ -227,7 +230,9 @@ function AnalyticsView({ popups }: { popups: Popup[] }) {
             </div>
             <span className={`adm-badge`} style={{ color: p.enabled ? "#2F9E68" : "#7C756B", background: p.enabled ? "rgba(47,158,104,.12)" : "rgba(124,117,107,.12)" }}>{p.enabled ? "Actif" : "Inactif"}</span>
           </div>
-          <Sparkline data={p.stats.daily} />
+          <div className="pop-sparkline-wrap">
+            <Sparkline data={p.stats.daily} />
+          </div>
         </div>
       ))}
     </div>
@@ -263,7 +268,20 @@ function TipsView() {
 export function PopupsModule() {
   const [tab, setTab] = useState<Tab>("list");
   const [editingPopup, setEditingPopup] = useState<Popup | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const { popups, updatePopup, insertPopup, deletePopup } = usePopups();
+
+  function selectTab(next: Tab) {
+    setTab(next);
+    requestAnimationFrame(() => {
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  useEffect(() => {
+    const el = contentRef.current?.closest(".adm-content");
+    if (el) el.scrollTop = 0;
+  }, [tab]);
 
   function handleToggle(id: string) {
     const p = popups.find((x) => x.id === id);
@@ -312,9 +330,16 @@ export function PopupsModule() {
         </div>
 
         {/* Sub-tabs */}
-        <div className="adm-subtabs">
+        <div className="adm-subtabs" role="tablist" aria-label="Sections popups">
           {tabs.map((t) => (
-            <button key={t.id} className={`adm-subtab${tab === t.id ? " on" : ""}`} onClick={() => setTab(t.id)}>
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              className={`adm-subtab${tab === t.id ? " on" : ""}`}
+              onClick={() => selectTab(t.id)}
+            >
               <Icon name={t.icon} size={16} />
               {t.label}
               {t.badge !== undefined && t.badge > 0 && <span className="badge">{t.badge}</span>}
@@ -322,6 +347,7 @@ export function PopupsModule() {
           ))}
         </div>
 
+        <div ref={contentRef} className="adm-tab-panel" role="tabpanel">
         {/* Summary bar */}
         {tab === "list" && (
           <div className="pop-summary-bar">
@@ -399,6 +425,7 @@ export function PopupsModule() {
 
         {tab === "analytics" && <AnalyticsView popups={popups} />}
         {tab === "tips" && <TipsView />}
+        </div>
       </div>
 
       {editingPopup && (

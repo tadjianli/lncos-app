@@ -21,10 +21,17 @@ type DbProduct = Database["public"]["Tables"]["products"]["Row"];
 
 /* ─── Mappers: DB → UI ─────────────────────────────────────────────────────── */
 
+function normalizePopupDaily(daily: unknown): number[] {
+  if (Array.isArray(daily)) {
+    return Array.from({ length: 14 }, (_, i) => Number(daily[i]) || 0);
+  }
+  return new Array(14).fill(0);
+}
+
 function dbToPopup(r: DbPopup): Popup {
-  const stats = r.stats as {
-    views: number; closes: number; clicks: number;
-    copies: number; conversions: number; daily: number[];
+  const stats = (r.stats ?? {}) as {
+    views?: number; closes?: number; clicks?: number;
+    copies?: number; conversions?: number; daily?: unknown;
   };
   const freq = r.frequency as { mode: string; days: number };
   const cd = r.countdown as { enabled: boolean; minutes: number };
@@ -59,7 +66,7 @@ function dbToPopup(r: DbPopup): Popup {
       clicks: stats.clicks ?? 0,
       copies: stats.copies ?? 0,
       conversions: stats.conversions ?? 0,
-      daily: stats.daily ?? new Array(14).fill(0),
+      daily: normalizePopupDaily(stats.daily),
     },
   };
 }
