@@ -7,6 +7,8 @@ import { AdminToast } from "@/components/admin/AdminToast";
 import { useAdminCategories, useProducts } from "@/lib/admin-supabase";
 import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
+import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
+import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { slugifyProductId, resolveProductImage } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 
@@ -124,10 +126,19 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             <input className="ab-input" type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} />
           </div>
 
-          <div className="ab-field">
-            <label>Description</label>
-            <textarea className="ab-input textarea" value={form.desc} onChange={(e) => set("desc", e.target.value)} />
-          </div>
+          <div className="adm-form-section-title">Contenu fiche produit</div>
+          <ProductContentSectionsEditor
+            desc={form.desc}
+            onDescChange={(v) => set("desc", v)}
+            usageTips={form.usageTips ?? []}
+            onUsageTipsChange={(tips) => set("usageTips", tips)}
+            ingredients={form.ingredients}
+            onIngredientsChange={(items) => set("ingredients", items)}
+            toggles={form.sectionToggles ?? DEFAULT_SECTION_TOGGLES}
+            onTogglesChange={(t) => set("sectionToggles", t)}
+            extraSections={form.extraSections ?? []}
+            onExtraSectionsChange={(sections) => set("extraSections", sections)}
+          />
 
           <div className="adm-form-section-title">Images du produit</div>
           <ProductImageGalleryEditor
@@ -171,6 +182,9 @@ const BLANK_PRODUCT: Product = {
   variants: [],
   desc: "",
   ingredients: [],
+  usageTips: [],
+  sectionToggles: { ...DEFAULT_SECTION_TOGGLES },
+  extraSections: [],
   mainImageUrl: null,
   galleryImages: [],
   productVariants: [],

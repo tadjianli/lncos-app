@@ -61,6 +61,9 @@ export interface Database {
           variants: string[];
           description: string;
           ingredients: string[];
+          usage_tips: string[];
+          section_toggles: Json;
+          extra_sections: Json;
           active: boolean;
           image_url: string | null;
           main_image_url: string | null;
@@ -83,6 +86,9 @@ export interface Database {
           variants?: string[];
           description?: string;
           ingredients?: string[];
+          usage_tips?: string[];
+          section_toggles?: Json;
+          extra_sections?: Json;
           active?: boolean;
           image_url?: string | null;
           main_image_url?: string | null;
@@ -104,6 +110,9 @@ export interface Database {
           variants?: string[];
           description?: string;
           ingredients?: string[];
+          usage_tips?: string[];
+          section_toggles?: Json;
+          extra_sections?: Json;
           active?: boolean;
           image_url?: string | null;
           main_image_url?: string | null;

@@ -23,25 +23,127 @@ import {
   variantLabels,
 } from "@/lib/product-catalog";
 import type { Product } from "@/lib/data";
+import {
+  DEFAULT_SECTION_TOGGLES,
+  normalizeExtraSections,
+  normalizeSectionToggles,
+  type ProductExtraSection,
+} from "@/lib/product-sections";
 
 interface ProductDetailProps {
   product: Product;
   onClose: () => void;
 }
 
-/* ─── Editorial content (per-product in prod; static for demo) ─── */
-
-const RITUAL_STEPS = [
-  "Appliquez sur peau propre et sèche, le matin et/ou le soir.",
-  "Tapotez délicatement du bout des doigts jusqu'à absorption complète.",
-  "Suivez d'une crème hydratante pour sceller les actifs.",
-];
-
 const COMMITMENTS = [
   { icon: "sparkle", label: "Vegan" },
   { icon: "check",   label: "Made in France" },
   { icon: "star",    label: "Dermatologiquement testé" },
 ];
+
+function nonEmptyLines(lines: string[] | undefined): string[] {
+  return (lines ?? []).map((l) => l.trim()).filter(Boolean);
+}
+
+function StepsList({ steps }: { steps: string[] }) {
+  return (
+    <ol
+      style={{
+        margin: 0,
+        padding: 0,
+        listStyle: "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 14,
+      }}
+    >
+      {steps.map((step, i) => (
+        <li key={`${step}-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+          <span
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background: "var(--gold-grad)",
+              display: "grid",
+              placeItems: "center",
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#1a1306",
+              flexShrink: 0,
+              marginTop: 1,
+              boxShadow: "0 4px 12px -6px rgba(212,175,55,.6)",
+            }}
+          >
+            {i + 1}
+          </span>
+          <span style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.6, flex: 1 }}>
+            {step}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  return (
+    <ul
+      style={{
+        margin: 0,
+        padding: 0,
+        listStyle: "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 9,
+      }}
+    >
+      {items.map((item) => (
+        <li
+          key={item}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+            fontSize: 13,
+            color: "var(--ink-soft)",
+          }}
+        >
+          <span
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              background: "var(--gold)",
+              flexShrink: 0,
+              opacity: 0.7,
+            }}
+          />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ExtraSectionBody({ section }: { section: ProductExtraSection }) {
+  if (section.type === "text") {
+    if (!section.body.trim()) return null;
+    return (
+      <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>
+        {section.body}
+      </p>
+    );
+  }
+  const items = nonEmptyLines(section.items);
+  if (items.length === 0) return null;
+  return section.type === "steps" ? <StepsList steps={items} /> : <BulletList items={items} />;
+}
+
+function extraSectionHasContent(section: ProductExtraSection): boolean {
+  if (section.type === "text") return section.body.trim().length > 0;
+  return nonEmptyLines(section.items).length > 0;
+}
 
 /* ─── AccordionSection ───────────────────────────────────────── */
 
@@ -119,6 +221,20 @@ function AccordionSection({
 export function ProductDetail({ product: initialProduct, onClose }: ProductDetailProps) {
   const { products, byId } = usePublicProducts();
   const p = byId(initialProduct.id) ?? initialProduct;
+
+  const sectionToggles = useMemo(
+    () => normalizeSectionToggles(p.sectionToggles ?? DEFAULT_SECTION_TOGGLES),
+    [p.sectionToggles]
+  );
+  const usageTips = useMemo(() => nonEmptyLines(p.usageTips), [p.usageTips]);
+  const ingredientLines = useMemo(() => nonEmptyLines(p.ingredients), [p.ingredients]);
+  const extraSections = useMemo(
+    () => normalizeExtraSections(p.extraSections).filter((s) => s.enabled && extraSectionHasContent(s)),
+    [p.extraSections]
+  );
+  const showDescription = sectionToggles.description && Boolean(p.desc?.trim());
+  const showUsageTips = sectionToggles.usageTips && usageTips.length > 0;
+  const showIngredients = sectionToggles.ingredients && ingredientLines.length > 0;
 
   const labels = variantLabels(p);
   const [selectedVariantName, setSelectedVariantName] = useState(labels[0] ?? "");
@@ -575,154 +691,89 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               borderTop: "1px solid rgba(255,255,255,.07)",
             }}
           >
-            {/* Description */}
-            <AccordionSection
-              title="Description"
-              open={openSections.has("description")}
-              onToggle={() => toggleSection("description")}
-            >
-              <p
-                style={{
-                  fontSize: 13.5,
-                  color: "var(--ink-soft)",
-                  lineHeight: 1.7,
-                  margin: 0,
-                }}
+            {showDescription && (
+              <AccordionSection
+                title="Description"
+                open={openSections.has("description")}
+                onToggle={() => toggleSection("description")}
               >
-                {p.desc}
-              </p>
-              {p.ml && (
-                <div
+                <p
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    marginTop: 12,
-                    padding: "5px 12px",
-                    borderRadius: "var(--r-pill)",
-                    background: "rgba(212,175,55,.07)",
-                    border: "1px solid rgba(212,175,55,.18)",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--gold)",
+                    fontSize: 13.5,
+                    color: "var(--ink-soft)",
+                    lineHeight: 1.7,
+                    margin: 0,
                   }}
                 >
-                  <Icon name="info" size={13} color="var(--gold)" />
-                  {p.ml}
-                </div>
-              )}
-            </AccordionSection>
-
-            {/* Conseils d'utilisation */}
-            <AccordionSection
-              title="Conseils d'utilisation"
-              open={openSections.has("conseils")}
-              onToggle={() => toggleSection("conseils")}
-            >
-              <ol
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  listStyle: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
-                {RITUAL_STEPS.map((step, i) => (
-                  <li
-                    key={i}
-                    style={{ display: "flex", alignItems: "flex-start", gap: 13 }}
-                  >
-                    <span
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        background: "var(--gold-grad)",
-                        display: "grid",
-                        placeItems: "center",
-                        fontSize: 11,
-                        fontWeight: 800,
-                        color: "#1a1306",
-                        flexShrink: 0,
-                        marginTop: 1,
-                        boxShadow: "0 4px 12px -6px rgba(212,175,55,.6)",
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 13.5,
-                        color: "var(--ink-soft)",
-                        lineHeight: 1.6,
-                        flex: 1,
-                      }}
-                    >
-                      {step}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </AccordionSection>
-
-            {/* Ingrédients */}
-            <AccordionSection
-              title="Ingrédients"
-              open={openSections.has("ingredients")}
-              onToggle={() => toggleSection("ingredients")}
-            >
-              <ul
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  listStyle: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 9,
-                }}
-              >
-                {p.ingredients.map((ing) => (
-                  <li
-                    key={ing}
+                  {p.desc}
+                </p>
+                {p.ml && (
+                  <div
                     style={{
-                      display: "flex",
+                      display: "inline-flex",
                       alignItems: "center",
-                      gap: 11,
-                      fontSize: 13,
-                      color: "var(--ink-soft)",
+                      gap: 6,
+                      marginTop: 12,
+                      padding: "5px 12px",
+                      borderRadius: "var(--r-pill)",
+                      background: "rgba(212,175,55,.07)",
+                      border: "1px solid rgba(212,175,55,.18)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--gold)",
                     }}
                   >
-                    <span
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: "50%",
-                        background: "var(--gold)",
-                        flexShrink: 0,
-                        opacity: 0.7,
-                      }}
-                    />
-                    {ing}
-                  </li>
-                ))}
-              </ul>
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: "10px 14px",
-                  borderRadius: "var(--r-sm)",
-                  background: "rgba(212,175,55,.04)",
-                  border: "1px solid rgba(212,175,55,.1)",
-                  fontSize: 11,
-                  color: "var(--ink-mute)",
-                  lineHeight: 1.5,
-                }}
+                    <Icon name="info" size={13} color="var(--gold)" />
+                    {p.ml}
+                  </div>
+                )}
+              </AccordionSection>
+            )}
+
+            {showUsageTips && (
+              <AccordionSection
+                title="Conseils d'utilisation"
+                open={openSections.has("conseils")}
+                onToggle={() => toggleSection("conseils")}
               >
-                * Ingrédient d&apos;origine naturelle certifié. Liste non exhaustive.
-              </div>
-            </AccordionSection>
+                <StepsList steps={usageTips} />
+              </AccordionSection>
+            )}
+
+            {showIngredients && (
+              <AccordionSection
+                title="Ingrédients"
+                open={openSections.has("ingredients")}
+                onToggle={() => toggleSection("ingredients")}
+              >
+                <BulletList items={ingredientLines} />
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: "10px 14px",
+                    borderRadius: "var(--r-sm)",
+                    background: "rgba(212,175,55,.04)",
+                    border: "1px solid rgba(212,175,55,.1)",
+                    fontSize: 11,
+                    color: "var(--ink-mute)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  * Ingrédient d&apos;origine naturelle certifié. Liste non exhaustive.
+                </div>
+              </AccordionSection>
+            )}
+
+            {extraSections.map((section) => (
+              <AccordionSection
+                key={section.id}
+                title={section.title.trim() || "Informations"}
+                open={openSections.has(section.id)}
+                onToggle={() => toggleSection(section.id)}
+              >
+                <ExtraSectionBody section={section} />
+              </AccordionSection>
+            ))}
           </div>
 
           {/* ── Engagements (brand promise — always visible) ── */}

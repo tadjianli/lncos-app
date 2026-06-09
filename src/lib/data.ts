@@ -1,5 +1,7 @@
 /* LN COS — Catalogue & données de démonstration (from handoff data.js) */
 
+import type { ProductExtraSection, ProductSectionToggles } from "./product-sections";
+
 export interface ProductVariant {
   id: string;
   productId: string;
@@ -25,6 +27,12 @@ export interface Product {
   variants: string[];
   desc: string;
   ingredients: string[];
+  /** Conseils d'utilisation — étapes numérotées */
+  usageTips?: string[];
+  /** Activation des sections accordion fiche produit */
+  sectionToggles?: ProductSectionToggles;
+  /** Sections éditoriales personnalisées */
+  extraSections?: ProductExtraSection[];
   /** URL image principale (Supabase Storage) */
   mainImageUrl?: string | null;
   /** Galerie complémentaire */
