@@ -61,17 +61,24 @@ function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const check = () => {
-      const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight * 0.92) setSeen(true);
-    };
-    check();
-    window.addEventListener("scroll", check, { passive: true });
-    window.addEventListener("resize", check);
-    return () => {
-      window.removeEventListener("scroll", check);
-      window.removeEventListener("resize", check);
-    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setSeen(true);
+      return;
+    }
+
+    /* IntersectionObserver — le scroll Accueil est dans AppShell, pas sur window */
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSeen(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -4% 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -735,7 +742,7 @@ export default function HomePage() {
 
         case "routine":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <RoutineSection onAdd={handleAdd} />
               </Reveal>
@@ -744,7 +751,7 @@ export default function HomePage() {
 
         case "promo":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <EditoPromo />
               </Reveal>
@@ -753,8 +760,8 @@ export default function HomePage() {
 
         case "bento":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
-              <div style={{ padding: "0 18px", marginBottom: 14 }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
+              <div style={{ marginBottom: 14 }}>
                 <div className="rev-sec-eyebrow">
                   <Icon name="heart" size={13} color="var(--gold)" /> {section.subtitle ?? "Self-care"}
                 </div>
@@ -770,7 +777,7 @@ export default function HomePage() {
 
         case "quote":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <QuoteSection />
               </Reveal>
@@ -779,7 +786,7 @@ export default function HomePage() {
 
         case "reviews":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <ReviewsSection title={section.title} />
               </Reveal>
@@ -788,7 +795,7 @@ export default function HomePage() {
 
         case "reels":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <ReelsSection />
               </Reveal>
@@ -797,7 +804,7 @@ export default function HomePage() {
 
         case "newsletter":
           return (
-            <div key={section.id} className="home-z home-section" style={{ marginTop: mt }}>
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <NewsletterBlock />
               </Reveal>
@@ -822,7 +829,7 @@ export default function HomePage() {
 
       {/* Scrollable content — dynamic section order driven by home-sections store */}
       <div
-        className="noscroll"
+        className="noscroll home-scroll"
         style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 28 }}
       >
         {activeSections.map((section, i) => renderSection(section, i))}

@@ -38,6 +38,12 @@ export const ProductCard = memo(function ProductCard({
   }, [onAdd, p]);
 
   const imgSrc = `/assets/products/${p.id}.png`;
+  const initials = p.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <div
@@ -45,6 +51,9 @@ export const ProductCard = memo(function ProductCard({
       className={`prod-card snap${wide ? " prod-card--wide" : ""}`}
     >
       <div className={`prod-imgwrap${wide ? " prod-imgwrap--wide" : ""}`}>
+        <div className="prod-img-fallback" aria-hidden>
+          {initials}
+        </div>
         <FadeImage
           src={imgSrc}
           alt={p.name}

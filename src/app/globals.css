@@ -432,13 +432,12 @@
   transform: none;
 }
 
-/* ── Content-visibility for below-fold sections ── */
-/* Defers rendering of sections outside the viewport — big paint perf win */
+/* Sections accueil — overflow visible pour carrousels bleed ; pas de content-visibility (Safari mobile) */
 .home-section {
-  contain: layout style;
-  content-visibility: auto;
-  /* Estimated height prevents layout shift when section is skipped */
-  contain-intrinsic-size: 0 340px;
+  overflow: visible;
+}
+.home-scroll {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ─── Product cards ──────────────────────────────────────────── */
@@ -473,6 +472,22 @@
   transition: transform .5s var(--ease-lux);
 }
 .prod-imgwrap--wide { height: 150px; }
+.prod-img-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(120% 120% at 20% 0%, rgba(212,175,55,.14) 0%, transparent 55%),
+    radial-gradient(80% 80% at 100% 100%, rgba(247,198,215,.1) 0%, transparent 50%),
+    #1c1c1c;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: rgba(212,175,55,.38);
+  pointer-events: none;
+}
 .prod-tag {
   position: absolute;
   top: 10px;
@@ -567,10 +582,13 @@
   flex: 0 0 auto;
   position: relative;
 }
-.prod-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(212,175,55,.34) !important;
-  box-shadow: 0 26px 50px -26px rgba(0,0,0,.95), 0 0 36px -20px rgba(212,175,55,.5);
+@media (hover: hover) and (pointer: fine) {
+  .prod-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212,175,55,.34) !important;
+    box-shadow: 0 26px 50px -26px rgba(0,0,0,.95), 0 0 36px -20px rgba(212,175,55,.5);
+  }
+  .prod-card:hover .prod-imgwrap { transform: scale(1.05); }
 }
 /* Crisp tactile press — instant down, spring up */
 .prod-card:active {
@@ -579,7 +597,6 @@
   border-color: rgba(212,175,55,.20) !important;
 }
 .prod-card .prod-imgwrap { transition: transform .5s var(--ease-lux); }
-.prod-card:hover .prod-imgwrap { transform: scale(1.05); }
 
 .prod-add {
   transition: transform .25s var(--ease-spring), box-shadow .25s, filter .2s;
