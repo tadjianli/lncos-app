@@ -57,6 +57,9 @@ interface HomeSectionsState {
 
   /* ── Reset ──────────────────────────────────────────── */
   resetToDefaults: () => void;
+
+  /** Sync published sections from Supabase (source of truth côté cliente) */
+  hydratePublished: (sections: HomeSection[]) => void;
 }
 
 /* ─── Helpers ───────────────────────────────────────────────────────── */
@@ -154,6 +157,10 @@ export const useHomeSectionsStore = create<HomeSectionsState>()(
       /* ── Reset ────────────────────────────────────────── */
       resetToDefaults() {
         set({ published: DEFAULT_HOME_SECTIONS, draft: null, previewMode: false });
+      },
+
+      hydratePublished(sections) {
+        set({ published: sections, draft: null, previewMode: false });
       },
     }),
     {

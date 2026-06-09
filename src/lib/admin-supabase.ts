@@ -10,13 +10,13 @@ import { getSupabase } from "./supabase";
 import type { Database, Json } from "./database.types";
 import type { Popup, Appointment, Notification } from "./rdv-store";
 import type { HomeSection } from "./home-sections";
+import { dbToSection, sectionToDb } from "./home-sections-db";
 import type { Product } from "./data";
 
 /* ─── Type aliases ─────────────────────────────────────────────────────────── */
 
 type DbPopup = Database["public"]["Tables"]["popups"]["Row"];
 type DbAppointment = Database["public"]["Tables"]["appointments"]["Row"];
-type DbSection = Database["public"]["Tables"]["home_sections"]["Row"];
 type DbProduct = Database["public"]["Tables"]["products"]["Row"];
 
 /* ─── Mappers: DB → UI ─────────────────────────────────────────────────────── */
@@ -111,51 +111,6 @@ function dbToAppointment(r: DbAppointment): Appointment {
     source: r.source,
     notes: r.notes ?? "",
     createdAt: r.created_at,
-  };
-}
-
-function dbToSection(r: DbSection): HomeSection {
-  const sch = r.schedule as { enabled: boolean; start: string; end: string };
-  return {
-    id: r.id,
-    type: r.type as HomeSection["type"],
-    name: r.name,
-    enabled: r.enabled,
-    variant: r.variant,
-    title: r.title,
-    subtitle: r.subtitle ?? undefined,
-    eyebrow: r.eyebrow ?? undefined,
-    titleAccent: r.title_accent ?? undefined,
-    cta: r.cta ?? undefined,
-    source: r.source as HomeSection["source"] ?? undefined,
-    img: r.img ?? undefined,
-    device: r.device as HomeSection["device"],
-    audience: r.audience as HomeSection["audience"],
-    schedule: sch,
-    views: r.views,
-  };
-}
-
-function sectionToDb(s: HomeSection, isDraft: boolean, position: number): Database["public"]["Tables"]["home_sections"]["Insert"] {
-  return {
-    id: s.id,
-    type: s.type,
-    name: s.name,
-    enabled: s.enabled,
-    variant: s.variant,
-    title: s.title,
-    subtitle: s.subtitle ?? null,
-    eyebrow: s.eyebrow ?? null,
-    title_accent: s.titleAccent ?? null,
-    cta: s.cta ?? null,
-    source: s.source ?? null,
-    img: s.img ?? null,
-    device: s.device,
-    audience: s.audience,
-    schedule: s.schedule as unknown as Json,
-    views: s.views ?? 0,
-    position,
-    is_draft: isDraft,
   };
 }
 
@@ -385,41 +340,69 @@ export function useSupabaseHomeSections() {
   }, [load]);
 
   const beginDraft = useCallback(async (sections: HomeSection[]) => {
-    // Delete existing draft rows then insert fresh
-    await getSupabase().from("home_sections").delete().eq("is_draft", true);
+    const supabase = getSupabase();
+    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    if (delErr) return { error: delErr.message };
     const rows = sections.map((s, i) => sectionToDb(s, true, i));
-    await getSupabase().from("home_sections").insert(rows);
+    const { error: insErr } = await supabase.from("home_sections").insert(rows);
+    if (insErr) return { error: insErr.message };
+    setDraft(sections);
+    return { error: null };
   }, []);
 
   const saveDraft = useCallback(async (sections: HomeSection[]) => {
-    // Upsert all draft rows
-    await getSupabase().from("home_sections").delete().eq("is_draft", true);
+    const supabase = getSupabase();
+    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    if (delErr) return { error: delErr.message };
     const rows = sections.map((s, i) => sectionToDb(s, true, i));
-    await getSupabase().from("home_sections").insert(rows);
+    const { error: insErr } = await supabase.from("home_sections").insert(rows);
+    if (insErr) return { error: insErr.message };
+    setDraft(sections);
+    return { error: null };
   }, []);
 
   const publishDraft = useCallback(async (sections: HomeSection[]) => {
-    await getSupabase().from("home_sections").delete().eq("is_draft", false);
-    const rows = sections.map((s, i) => sectionToDb(s, false, i));
-    await getSupabase().from("home_sections").insert(rows);
-    // Replace draft too
-    await getSupabase().from("home_sections").delete().eq("is_draft", true);
+    const supabase = getSupabase();
+    const { error: delPubErr } = await supabase.from("home_sections").delete().eq("is_draft", false);
+    if (delPubErr) return { error: delPubErr.message };
+
+    const publishedRows = sections.map((s, i) => sectionToDb(s, false, i));
+    const { error: pubErr } = await supabase.from("home_sections").insert(publishedRows);
+    if (pubErr) return { error: pubErr.message };
+
+    const { error: delDraftErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    if (delDraftErr) return { error: delDraftErr.message };
+
     const draftRows = sections.map((s, i) => sectionToDb(s, true, i));
-    await getSupabase().from("home_sections").insert(draftRows);
+    const { error: draftErr } = await supabase.from("home_sections").insert(draftRows);
+    if (draftErr) return { error: draftErr.message };
+
+    setPublished(sections);
+    setDraft(sections);
+    return { error: null };
   }, []);
 
   const discardDraft = useCallback(async () => {
-    await getSupabase().from("home_sections").delete().eq("is_draft", true);
-    // Rebuild draft from published
-    const { data } = await getSupabase()
+    const supabase = getSupabase();
+    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    if (delErr) return { error: delErr.message };
+
+    const { data } = await supabase
       .from("home_sections")
       .select("*")
       .eq("is_draft", false)
       .order("position");
+
     if (data && data.length > 0) {
-      const draftRows = data.map((r) => ({ ...r, is_draft: true }));
-      await getSupabase().from("home_sections").insert(draftRows);
+      const draftSections = data.map(dbToSection);
+      const draftRows = draftSections.map((s, i) => sectionToDb(s, true, i));
+      const { error: insErr } = await supabase.from("home_sections").insert(draftRows);
+      if (insErr) return { error: insErr.message };
+      setDraft(draftSections);
+    } else {
+      setDraft(null);
     }
+    return { error: null };
   }, []);
 
   return { published, draft, loading, beginDraft, saveDraft, publishDraft, discardDraft };

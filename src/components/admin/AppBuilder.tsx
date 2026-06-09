@@ -220,11 +220,13 @@ export function AppBuilder() {
   const sections = localDraft ?? published;
   const hasDraft = localDraft !== null;
 
-  async function ensureDraft() {
-    if (localDraft === null) {
-      setLocalDraft([...published]);
-      await beginDraft(published);
-    }
+  async function ensureDraft(): Promise<HomeSection[]> {
+    if (localDraft !== null) return localDraft;
+    const next = [...published];
+    setLocalDraft(next);
+    const { error } = await beginDraft(next);
+    if (error) showToast(`Erreur brouillon : ${error}`);
+    return next;
   }
 
   // Drag state
@@ -243,14 +245,15 @@ export function AppBuilder() {
   async function onDrop(targetId: string) {
     const fromId = dragId.current;
     if (!fromId || fromId === targetId) { setDragOverId(null); return; }
-    await ensureDraft();
-    const arr = [...sections];
+    const draft = await ensureDraft();
+    const arr = [...draft];
     const fromIdx = arr.findIndex((s) => s.id === fromId);
     const toIdx   = arr.findIndex((s) => s.id === targetId);
     const [item] = arr.splice(fromIdx, 1);
     arr.splice(toIdx, 0, item);
     setLocalDraft(arr);
-    saveDraft(arr);
+    const { error } = await saveDraft(arr);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
     dragId.current = null;
     setDragOverId(null);
   }
@@ -261,8 +264,13 @@ export function AppBuilder() {
   }
 
   async function handleToggle(id: string) {
-    await ensureDraft();
-    setLocalDraft((d) => d ? d.map((s) => s.id === id ? { ...s, enabled: !s.enabled } : s) : d);
+    const draft = await ensureDraft();
+    const updated = draft.map((s) =>
+      s.id === id ? { ...s, enabled: !s.enabled } : s
+    );
+    setLocalDraft(updated);
+    const { error } = await saveDraft(updated);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
   }
 
   async function handleEdit(sec: HomeSection) {
@@ -270,51 +278,69 @@ export function AppBuilder() {
     setEditingSection(sec);
   }
 
-  function handleSaveEdit(patch: Partial<HomeSection>) {
+  async function handleSaveEdit(patch: Partial<HomeSection>) {
     if (!editingSection) return;
-    setLocalDraft((d) => d ? d.map((s) => s.id === editingSection.id ? { ...s, ...patch } : s) : d);
+    const draft = await ensureDraft();
+    const updated = draft.map((s) =>
+      s.id === editingSection.id ? { ...s, ...patch } : s
+    );
+    setLocalDraft(updated);
+    const { error } = await saveDraft(updated);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
     setEditingSection(null);
   }
 
   async function handlePublish() {
-    await publishDraft(localDraft ?? published);
+    if (!localDraft) {
+      showToast("Aucune modification à publier");
+      return;
+    }
+    const { error } = await publishDraft(localDraft);
+    if (error) {
+      showToast(`Échec publication : ${error}`);
+      return;
+    }
     setLocalDraft(null);
+    showToast("Publié — visible côté cliente");
   }
 
   async function handleDiscard() {
-    await discardDraft();
+    const { error } = await discardDraft();
+    if (error) showToast(`Erreur : ${error}`);
     setLocalDraft(null);
+    showToast("Modifications ignorées");
   }
 
   async function handleDuplicate(id: string) {
-    await ensureDraft();
-    setLocalDraft((d) => {
-      if (!d) return d;
-      const idx = d.findIndex((s) => s.id === id);
-      if (idx === -1) return d;
-      const copy: HomeSection = { ...d[idx], id: `${d[idx].type}-${Date.now()}`, name: `${d[idx].name} (copie)`, enabled: false };
-      const arr = [...d];
-      arr.splice(idx + 1, 0, copy);
-      saveDraft(arr);
-      return arr;
-    });
-    showToast("Section dupliquée");
+    const draft = await ensureDraft();
+    const idx = draft.findIndex((s) => s.id === id);
+    if (idx === -1) return;
+    const copy: HomeSection = {
+      ...draft[idx],
+      id: `${draft[idx].type}-${Date.now()}`,
+      name: `${draft[idx].name} (copie)`,
+      enabled: false,
+    };
+    const arr = [...draft];
+    arr.splice(idx + 1, 0, copy);
+    setLocalDraft(arr);
+    const { error } = await saveDraft(arr);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    else showToast("Section dupliquée");
   }
 
   async function handleDelete(id: string) {
-    await ensureDraft();
-    setLocalDraft((d) => {
-      if (!d) return d;
-      const arr = d.filter((s) => s.id !== id);
-      saveDraft(arr);
-      return arr;
-    });
+    const draft = await ensureDraft();
+    const arr = draft.filter((s) => s.id !== id);
+    setLocalDraft(arr);
+    const { error } = await saveDraft(arr);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    else showToast("Section supprimée");
     setConfirmDeleteId(null);
-    showToast("Section supprimée");
   }
 
   async function handleAddSection(type: SectionType) {
-    await ensureDraft();
+    const draft = await ensureDraft();
     const schema = SECTION_SCHEMA_REGISTRY[type];
     const newSec: HomeSection = {
       id: `${type}-${Date.now()}`,
@@ -327,13 +353,12 @@ export function AppBuilder() {
       audience: "all",
       schedule: { enabled: false, start: "", end: "" },
     };
-    setLocalDraft((d) => {
-      const arr = [...(d ?? sections), newSec];
-      saveDraft(arr);
-      return arr;
-    });
+    const arr = [...draft, newSec];
+    setLocalDraft(arr);
+    const { error } = await saveDraft(arr);
+    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    else showToast(`Section « ${schema.label} » ajoutée`);
     setAddingSection(false);
-    showToast(`Section « ${schema.label} » ajoutée`);
   }
 
   const activeCount = sections.filter((s) => s.enabled).length;
@@ -352,8 +377,10 @@ export function AppBuilder() {
               <button className="adm-btn ghost sm" onClick={handleDiscard}>Ignorer</button>
             )}
             <button
+              type="button"
               className={`adm-btn gold${!hasDraft ? " is-disabled" : ""}`}
               onClick={handlePublish}
+              disabled={!hasDraft}
             >
               <Icon name="check" size={16} />
               Publier

@@ -8,7 +8,7 @@ import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
-import { useHomeSectionsStore } from "@/lib/stores";
+import { usePublicHomeSections } from "@/lib/client-supabase";
 import { feed, byId as staticById } from "@/lib/data";
 import type { Product } from "@/lib/data";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -652,9 +652,9 @@ export default function HomePage() {
   const openListing  = useStore((s) => s.openListing);
   const isFav        = useStore((s) => s.isFav);
 
-  /* ── Section config — driven by home-sections store ──────── */
-  const getVisible    = useHomeSectionsStore((s) => s.getVisible);
-  const activeSections = getVisible({ isMobile: true }); // client is always mobile-first
+  /* ── Section config — Supabase published (realtime) ─────── */
+  const { getVisible } = usePublicHomeSections();
+  const activeSections = getVisible({ isMobile: true });
 
   /* ── Stable callbacks ─────────────────────────────────────── */
   const handleAdd  = useCallback((p: Product) => addToCart(p), [addToCart]);
