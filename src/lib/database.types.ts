@@ -903,12 +903,17 @@ export interface Database {
           product_id: string | null;
           product_name: string;
           author_name: string;
+          author_email: string | null;
+          author_photo_url: string | null;
+          title: string;
           rating: number;
           body: string;
           status: string;
           verified: boolean;
           featured: boolean;
           pinned: boolean;
+          homepage_featured: boolean;
+          review_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -919,12 +924,17 @@ export interface Database {
           product_id?: string | null;
           product_name?: string;
           author_name: string;
+          author_email?: string | null;
+          author_photo_url?: string | null;
+          title?: string;
           rating: number;
           body: string;
           status?: string;
           verified?: boolean;
           featured?: boolean;
           pinned?: boolean;
+          homepage_featured?: boolean;
+          review_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -934,13 +944,38 @@ export interface Database {
           product_id?: string | null;
           product_name?: string;
           author_name?: string;
+          author_email?: string | null;
+          author_photo_url?: string | null;
+          title?: string;
           rating?: number;
           body?: string;
           status?: string;
           verified?: boolean;
           featured?: boolean;
           pinned?: boolean;
+          homepage_featured?: boolean;
+          review_date?: string | null;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      review_images: {
+        Row: {
+          id: string;
+          review_id: string;
+          image_url: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          review_id: string;
+          image_url: string;
+          created_at?: string;
+        };
+        Update: {
+          review_id?: string;
+          image_url?: string;
         };
         Relationships: [];
       };

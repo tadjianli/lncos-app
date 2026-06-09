@@ -21,7 +21,13 @@ import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./
 import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
 import type { ProductReview } from "./reviews";
-import { FALLBACK_REVIEWS, reviewToPublic, type PublicReview } from "./reviews";
+import {
+  FALLBACK_REVIEWS,
+  reviewToPublic,
+  sortReviews,
+  reviewDisplayDate,
+  type PublicReview,
+} from "./reviews";
 
 type DbVariantRow = {
   id: string;
@@ -267,17 +273,29 @@ type DbReview = {
   product_id: string | null;
   product_name: string;
   author_name: string;
+  author_email: string | null;
+  author_photo_url: string | null;
+  title: string;
   rating: number;
   body: string;
   status: string;
   verified: boolean;
   featured: boolean;
   pinned: boolean;
+  homepage_featured: boolean;
+  review_date: string | null;
   created_at: string;
   updated_at: string;
 };
 
-function dbToReview(r: DbReview): ProductReview {
+type DbReviewImage = {
+  id: string;
+  review_id: string;
+  image_url: string;
+  created_at: string;
+};
+
+function dbToReview(r: DbReview, images: ProductReview["images"] = []): ProductReview {
   return {
     id: r.id,
     userId: r.user_id,
@@ -285,21 +303,50 @@ function dbToReview(r: DbReview): ProductReview {
     productId: r.product_id,
     productName: r.product_name,
     authorName: r.author_name,
+    authorEmail: r.author_email ?? null,
+    authorPhotoUrl: r.author_photo_url ?? null,
+    title: r.title ?? "",
     rating: r.rating,
     body: r.body,
     status: r.status as ProductReview["status"],
     verified: r.verified,
     featured: r.featured,
     pinned: r.pinned,
+    homepageFeatured: r.homepage_featured ?? false,
+    reviewDate: r.review_date ?? null,
+    images,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
 }
 
-export function usePublicReviews() {
+async function loadPublicReviewImages(reviewIds: string[]) {
+  const map = new Map<string, ProductReview["images"]>();
+  if (reviewIds.length === 0 || !isSupabaseConfigured()) return map;
+  const { data } = await getSupabase()
+    .from("review_images")
+    .select("*")
+    .in("review_id", reviewIds)
+    .order("created_at", { ascending: true });
+  for (const row of data ?? []) {
+    const r = row as DbReviewImage;
+    const list = map.get(r.review_id) ?? [];
+    list.push({
+      id: r.id,
+      reviewId: r.review_id,
+      imageUrl: r.image_url,
+      createdAt: r.created_at,
+    });
+    map.set(r.review_id, list);
+  }
+  return map;
+}
+
+export function usePublicReviews(options?: { homepageOnly?: boolean }) {
   const [reviews, setReviews] = useState<PublicReview[]>(FALLBACK_REVIEWS);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(FALLBACK_REVIEWS.length);
+  const homepageOnly = options?.homepageOnly ?? false;
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -309,16 +356,26 @@ export function usePublicReviews() {
 
     const load = async () => {
       try {
-        const { data, error } = await getSupabase()
+        let query = getSupabase()
           .from("product_reviews")
           .select("*")
-          .eq("status", "published")
+          .eq("status", "published");
+
+        if (homepageOnly) {
+          query = query.or("homepage_featured.eq.true,featured.eq.true");
+        }
+
+        const { data, error } = await query
           .order("pinned", { ascending: false })
           .order("featured", { ascending: false })
           .order("created_at", { ascending: false });
 
         if (!error && data && data.length > 0) {
-          const mapped = data.map((r) => reviewToPublic(dbToReview(r as DbReview)));
+          const rows = data as DbReview[];
+          const imgMap = await loadPublicReviewImages(rows.map((r) => r.id));
+          const mapped = rows.map((r) =>
+            reviewToPublic(dbToReview(r, imgMap.get(r.id) ?? []))
+          );
           setReviews(mapped);
           setTotal(data.length);
         }
@@ -352,7 +409,7 @@ export function usePublicReviews() {
         }
       }
     };
-  }, []);
+  }, [homepageOnly]);
 
   const avg =
     reviews.length > 0
@@ -360,6 +417,58 @@ export function usePublicReviews() {
       : 5;
 
   return { reviews, loading, total, avg };
+}
+
+export function useProductReviews(productId: string) {
+  const [reviews, setReviews] = useState<PublicReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(0);
+  const [avg, setAvg] = useState(0);
+
+  useEffect(() => {
+    if (!productId || !isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const { data, error } = await getSupabase()
+          .from("product_reviews")
+          .select("*")
+          .eq("product_id", productId)
+          .eq("status", "published")
+          .order("pinned", { ascending: false })
+          .order("featured", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          const rows = data as DbReview[];
+          const imgMap = await loadPublicReviewImages(rows.map((r) => r.id));
+          const sorted = sortReviews(
+            rows.map((r) => dbToReview(r, imgMap.get(r.id) ?? [])),
+            reviewDisplayDate
+          );
+          const mapped = sorted.map((r) => reviewToPublic(r));
+          setReviews(mapped);
+          setCount(rows.length);
+          setAvg(
+            rows.length > 0
+              ? rows.reduce((s, r) => s + r.rating, 0) / rows.length
+              : 0
+          );
+        }
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [productId]);
+
+  return { reviews, loading, count, avg };
 }
 
 export async function submitProductReview(input: {

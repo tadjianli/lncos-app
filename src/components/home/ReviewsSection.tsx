@@ -39,16 +39,20 @@ function RevSkeleton({ className }: { className?: string }) {
 
 function RevCardContent({ r }: { r: Review }) {
   const initials = r.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-  const hasPhoto = false; // no photo URLs in static data
+  const hasPhoto = Boolean(r.images?.length || r.authorPhotoUrl);
   return (
     <div className={s.inner}>
       <span className={s.edge} />
 
       <div className={s.head}>
-        <span className={s.av}>
-          {initials}
-          <span className={s.avRing} />
-        </span>
+        {r.authorPhotoUrl ? (
+          <img src={r.authorPhotoUrl} alt="" className={s.avImg} />
+        ) : (
+          <span className={s.av}>
+            {initials}
+            <span className={s.avRing} />
+          </span>
+        )}
         <div className={s.headMain}>
           <div className={s.name}>
             {r.name}
@@ -71,7 +75,15 @@ function RevCardContent({ r }: { r: Review }) {
         </div>
       </div>
 
+      {r.title && <div className={s.revTitle}>{r.title}</div>}
       <p className={`${s.text}${hasPhoto ? " " + s.textShort : ""}`}>{r.text}</p>
+      {r.images && r.images.length > 0 && (
+        <div className={s.revPhotos}>
+          {r.images.slice(0, 3).map((url) => (
+            <img key={url} src={url} alt="" className={s.revPhoto} />
+          ))}
+        </div>
+      )}
 
       <div className={s.foot}>
         {r.product && (
@@ -97,7 +109,7 @@ function RevCardContent({ r }: { r: Review }) {
 /* ---------- Carrousel coverflow ---------- */
 
 export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }) {
-  const { reviews: publicReviews, loading: reviewsLoading, total, avg } = usePublicReviews();
+  const { reviews: publicReviews, loading: reviewsLoading, total, avg } = usePublicReviews({ homepageOnly: true });
 
   const LIST = useMemo(
     () =>

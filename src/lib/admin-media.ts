@@ -7,7 +7,10 @@ import { optimizeProductImage } from "./image-optimize";
 const SECTION_MAX_BYTES = 5 * 1024 * 1024;
 const SECTION_ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-export type UploadBucket = "media" | "product-images";
+export type UploadBucket = "media" | "product-images" | "review-images";
+
+const REVIEW_MAX_BYTES = 5 * 1024 * 1024;
+const REVIEW_ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export function isImageUrl(value?: string | null): boolean {
   if (!value) return false;
@@ -29,12 +32,28 @@ export function validateSectionImageFile(file: File): string | null {
   return null;
 }
 
+export function validateReviewImageFile(file: File): string | null {
+  const mime = file.type === "image/jpg" ? "image/jpeg" : file.type;
+  if (!REVIEW_ALLOWED.has(mime)) {
+    return "Format accepté : JPG, PNG ou WebP";
+  }
+  if (file.size > REVIEW_MAX_BYTES) {
+    return "Image trop volumineuse (max 5 Mo)";
+  }
+  return null;
+}
+
 export async function uploadAdminImage(
   file: File,
   folder = "sections",
   bucket: UploadBucket = "media"
 ): Promise<{ url: string | null; error: string | null }> {
-  const validation = bucket === "product-images" ? null : validateSectionImageFile(file);
+  const validation =
+    bucket === "product-images" || bucket === "review-images"
+      ? bucket === "review-images"
+        ? validateReviewImageFile(file)
+        : null
+      : validateSectionImageFile(file);
   if (validation) return { url: null, error: validation };
 
   let uploadFile = file;
@@ -88,4 +107,11 @@ export async function uploadProductImage(
   } catch {
     return { url: null, error: "Erreur réseau lors de l'upload" };
   }
+}
+
+export async function uploadReviewImage(
+  file: File,
+  reviewId: string
+): Promise<{ url: string | null; error: string | null }> {
+  return uploadAdminImage(file, reviewId, "review-images");
 }

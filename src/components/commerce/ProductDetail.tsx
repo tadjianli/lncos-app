@@ -10,6 +10,7 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
+import { ProductReviewsSection } from "@/components/commerce/ProductReviewsSection";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -876,6 +877,12 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               </div>
             ))}
           </div>
+
+          <ProductReviewsSection
+            productId={p.id}
+            fallbackRating={p.rating}
+            fallbackCount={p.reviews}
+          />
 
           {/* ── Routine associée ── */}
           {routine.length > 0 && (

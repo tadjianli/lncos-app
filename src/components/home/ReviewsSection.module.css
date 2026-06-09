@@ -214,6 +214,38 @@
   color: var(--ink);
 }
 
+.avImg {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: 1px solid rgba(212,175,55,.35);
+}
+
+.revTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 8px 0 4px;
+  line-height: 1.35;
+}
+
+.revPhotos {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.revPhoto {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,.1);
+}
+
 .verif {
   display: inline-grid;
   place-items: center;

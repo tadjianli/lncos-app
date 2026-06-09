@@ -6,7 +6,7 @@ const SECTION_MAX = 5 * 1024 * 1024;
 const PRODUCT_MAX = 10 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-type BucketName = "media" | "product-images";
+type BucketName = "media" | "product-images" | "review-images";
 
 function sanitizeSegment(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, "");
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   }
 
   const bucket = (String(formData.get("bucket") ?? "media") as BucketName);
-  if (bucket !== "media" && bucket !== "product-images") {
+  if (bucket !== "media" && bucket !== "product-images" && bucket !== "review-images") {
     return NextResponse.json({ error: "Bucket invalide" }, { status: 400 });
   }
 
@@ -52,7 +52,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Format non supporté (JPG, PNG, WebP)" }, { status: 400 });
   }
 
-  const maxBytes = bucket === "product-images" ? PRODUCT_MAX : SECTION_MAX;
+  const maxBytes =
+    bucket === "product-images" ? PRODUCT_MAX : bucket === "review-images" ? SECTION_MAX : SECTION_MAX;
   if (file.size > maxBytes) {
     return NextResponse.json({
       error: `Fichier trop volumineux (max ${bucket === "product-images" ? "10" : "5"} Mo)`,
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
   const ext = mime === "image/webp" ? "webp" : mime.split("/")[1] || "jpg";
 
   let path: string;
-  if (bucket === "product-images") {
+  if (bucket === "product-images" || bucket === "review-images") {
     const name = customName
       ? `${sanitizeSegment(customName.replace(/\.[^.]+$/, ""))}.${ext}`
       : `image-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;

@@ -1073,8 +1073,18 @@ export function promoGrantsFreeShipping(promo: Promo): boolean {
 /* ─── Product reviews (admin) ───────────────────────────────────────────── */
 
 type DbProductReview = Database["public"]["Tables"]["product_reviews"]["Row"];
+type DbReviewImage = Database["public"]["Tables"]["review_images"]["Row"];
 
-function dbToProductReview(r: DbProductReview): ProductReview {
+function dbToReviewImage(r: DbReviewImage): import("./reviews").ReviewImage {
+  return {
+    id: r.id,
+    reviewId: r.review_id,
+    imageUrl: r.image_url,
+    createdAt: r.created_at,
+  };
+}
+
+function dbToProductReview(r: DbProductReview, images: import("./reviews").ReviewImage[] = []): ProductReview {
   return {
     id: r.id,
     userId: r.user_id,
@@ -1082,12 +1092,18 @@ function dbToProductReview(r: DbProductReview): ProductReview {
     productId: r.product_id,
     productName: r.product_name,
     authorName: r.author_name,
+    authorEmail: r.author_email ?? null,
+    authorPhotoUrl: r.author_photo_url ?? null,
+    title: r.title ?? "",
     rating: r.rating,
     body: r.body,
     status: r.status as ReviewStatus,
     verified: r.verified,
     featured: r.featured,
     pinned: r.pinned,
+    homepageFeatured: r.homepage_featured ?? false,
+    reviewDate: r.review_date ?? null,
+    images,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
@@ -1096,6 +1112,10 @@ function dbToProductReview(r: DbProductReview): ProductReview {
 function reviewToDb(r: Partial<ProductReview>): Partial<Database["public"]["Tables"]["product_reviews"]["Update"]> {
   const db: Partial<Database["public"]["Tables"]["product_reviews"]["Update"]> = {};
   if (r.authorName !== undefined) db.author_name = r.authorName;
+  if (r.authorEmail !== undefined) db.author_email = r.authorEmail;
+  if (r.authorPhotoUrl !== undefined) db.author_photo_url = r.authorPhotoUrl;
+  if (r.title !== undefined) db.title = r.title;
+  if (r.productId !== undefined) db.product_id = r.productId;
   if (r.productName !== undefined) db.product_name = r.productName;
   if (r.rating !== undefined) db.rating = r.rating;
   if (r.body !== undefined) db.body = r.body;
@@ -1103,7 +1123,26 @@ function reviewToDb(r: Partial<ProductReview>): Partial<Database["public"]["Tabl
   if (r.verified !== undefined) db.verified = r.verified;
   if (r.featured !== undefined) db.featured = r.featured;
   if (r.pinned !== undefined) db.pinned = r.pinned;
+  if (r.homepageFeatured !== undefined) db.homepage_featured = r.homepageFeatured;
+  if (r.reviewDate !== undefined) db.review_date = r.reviewDate;
   return db;
+}
+
+async function loadReviewImagesMap(reviewIds: string[]) {
+  const map = new Map<string, import("./reviews").ReviewImage[]>();
+  if (reviewIds.length === 0) return map;
+  const { data } = await getSupabase()
+    .from("review_images")
+    .select("*")
+    .in("review_id", reviewIds)
+    .order("created_at", { ascending: true });
+  for (const row of data ?? []) {
+    const img = dbToReviewImage(row as DbReviewImage);
+    const list = map.get(img.reviewId) ?? [];
+    list.push(img);
+    map.set(img.reviewId, list);
+  }
+  return map;
 }
 
 export function useProductReviewsAdmin() {
@@ -1115,7 +1154,9 @@ export function useProductReviewsAdmin() {
       .from("product_reviews")
       .select("*")
       .order("created_at", { ascending: false });
-    setReviews((data ?? []).map((r) => dbToProductReview(r as DbProductReview)));
+    const rows = (data ?? []) as DbProductReview[];
+    const imgMap = await loadReviewImagesMap(rows.map((r) => r.id));
+    setReviews(rows.map((r) => dbToProductReview(r, imgMap.get(r.id) ?? [])));
     setLoading(false);
   }, []);
 
@@ -1143,10 +1184,89 @@ export function useProductReviewsAdmin() {
     return { error: error?.message ?? null };
   }, []);
 
+  const createReview = useCallback(async (input: Partial<ProductReview>) => {
+    const { data, error } = await getSupabase()
+      .from("product_reviews")
+      .insert({
+        product_id: input.productId ?? null,
+        product_name: input.productName ?? "",
+        author_name: input.authorName ?? "Cliente",
+        author_email: input.authorEmail ?? null,
+        author_photo_url: input.authorPhotoUrl ?? null,
+        title: input.title ?? "",
+        rating: input.rating ?? 5,
+        body: input.body ?? "",
+        status: input.status ?? "pending",
+        verified: input.verified ?? false,
+        featured: input.featured ?? false,
+        pinned: input.pinned ?? false,
+        homepage_featured: input.homepageFeatured ?? false,
+        review_date: input.reviewDate ?? null,
+      })
+      .select("*")
+      .single();
+    if (error || !data) return { review: null, error: error?.message ?? "Création impossible" };
+    const review = dbToProductReview(data as DbProductReview, []);
+    setReviews((prev) => [review, ...prev]);
+    return { review, error: null };
+  }, []);
+
+  const setReviewImages = useCallback(async (reviewId: string, urls: string[]) => {
+    await getSupabase().from("review_images").delete().eq("review_id", reviewId);
+    if (urls.length > 0) {
+      await getSupabase().from("review_images").insert(
+        urls.map((url) => ({ review_id: reviewId, image_url: url }))
+      );
+    }
+    const { data } = await getSupabase()
+      .from("review_images")
+      .select("*")
+      .eq("review_id", reviewId)
+      .order("created_at", { ascending: true });
+    const images = (data ?? []).map((r) => dbToReviewImage(r as DbReviewImage));
+    setReviews((prev) =>
+      prev.map((r) => (r.id === reviewId ? { ...r, images } : r))
+    );
+    return images;
+  }, []);
+
+  const createDraftReviews = useCallback(
+    async (
+      productId: string,
+      productName: string,
+      drafts: { authorName: string; title: string; body: string; rating: number }[]
+    ) => {
+      const rows = drafts.map((d) => ({
+        product_id: productId,
+        product_name: productName,
+        author_name: d.authorName,
+        title: d.title,
+        rating: d.rating,
+        body: d.body,
+        status: "draft" as const,
+        verified: false,
+        featured: false,
+        pinned: false,
+        homepage_featured: false,
+      }));
+      const { data, error } = await getSupabase()
+        .from("product_reviews")
+        .insert(rows)
+        .select("*");
+      if (error) return { count: 0, error: error.message };
+      const created = (data ?? []).map((r) => dbToProductReview(r as DbProductReview, []));
+      setReviews((prev) => [...created, ...prev]);
+      return { count: created.length, error: null };
+    },
+    []
+  );
+
   const stats = {
     total: reviews.length,
     pending: reviews.filter((r) => r.status === "pending").length,
     published: reviews.filter((r) => r.status === "published").length,
+    drafts: reviews.filter((r) => r.status === "draft").length,
+    featured: reviews.filter((r) => r.featured && r.status === "published").length,
     avg:
       reviews.filter((r) => r.status === "published").length > 0
         ? reviews
@@ -1156,5 +1276,15 @@ export function useProductReviewsAdmin() {
         : 0,
   };
 
-  return { reviews, loading, stats, updateReview, deleteReview, reload: load };
+  return {
+    reviews,
+    loading,
+    stats,
+    updateReview,
+    deleteReview,
+    createReview,
+    setReviewImages,
+    createDraftReviews,
+    reload: load,
+  };
 }
