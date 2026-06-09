@@ -14,19 +14,17 @@ export interface GalleryItem {
 
 interface ProductImageGalleryEditorProps {
   productId: string;
-  mainImageUrl: string | null;
-  galleryImages: string[];
-  onMainChange: (url: string | null) => void;
-  onGalleryChange: (urls: string[]) => void;
+  images: string[];
+  onChange: (urls: string[]) => void;
+  /** Sous-dossier de stockage (ex. thumbnails → {productId}/thumbnails) */
+  uploadSubfolder?: string;
+  mainHint?: string;
+  badgeLabel?: string;
 }
 
-function toItems(main: string | null, gallery: string[]): GalleryItem[] {
-  const urls: string[] = [];
-  if (main) urls.push(main);
-  for (const g of gallery) {
-    if (g && !urls.includes(g)) urls.push(g);
-  }
-  return urls.slice(0, MAX_PRODUCT_IMAGES).map((url, i) => ({
+function toItems(urls: string[]): GalleryItem[] {
+  const unique = urls.filter((url, i, arr) => url && arr.indexOf(url) === i);
+  return unique.slice(0, MAX_PRODUCT_IMAGES).map((url, i) => ({
     id: `img-${i}-${url.slice(-16)}`,
     url,
   }));
@@ -40,13 +38,14 @@ function orderedUrls(items: GalleryItem[]): string[] {
 
 export function ProductImageGalleryEditor({
   productId,
-  mainImageUrl,
-  galleryImages,
-  onMainChange,
-  onGalleryChange,
+  images,
+  onChange,
+  uploadSubfolder,
+  mainHint = "La 1<sup>re</sup> image = image principale",
+  badgeLabel = "Principale",
 }: ProductImageGalleryEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [items, setItems] = useState<GalleryItem[]>(() => toItems(mainImageUrl, galleryImages));
+  const [items, setItems] = useState<GalleryItem[]>(() => toItems(images));
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -54,16 +53,14 @@ export function ProductImageGalleryEditor({
 
   useEffect(() => {
     if (syncingRef.current) return;
-    setItems(toItems(mainImageUrl, galleryImages));
-  }, [mainImageUrl, galleryImages, productId]);
+    setItems(toItems(images));
+  }, [images, productId]);
 
   const syncToParent = useCallback(
     (next: GalleryItem[]) => {
-      const urls = orderedUrls(next);
-      onMainChange(urls[0] ?? null);
-      onGalleryChange(urls.slice(1));
+      onChange(orderedUrls(next));
     },
-    [onMainChange, onGalleryChange]
+    [onChange]
   );
 
   const applyItems = useCallback(
@@ -76,7 +73,8 @@ export function ProductImageGalleryEditor({
 
   const canUpload = Boolean(productId?.trim());
   const atMax = items.length >= MAX_PRODUCT_IMAGES;
-  const mainUrl = mainImageUrl ?? items[0]?.url ?? null;
+  const mainUrl = items[0]?.url ?? null;
+  const storageFolder = uploadSubfolder ? `${productId}/${uploadSubfolder}` : productId;
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList?.length) return;
@@ -105,7 +103,7 @@ export function ProductImageGalleryEditor({
       working = [...working, { id: pendingId, url: previewUrl, pending: true }];
       setItems(working);
 
-      const { url, error: err } = await uploadProductImage(file, productId);
+      const { url, error: err } = await uploadProductImage(file, storageFolder);
       URL.revokeObjectURL(previewUrl);
 
       if (err || !url) {
@@ -174,7 +172,10 @@ export function ProductImageGalleryEditor({
           {items.length} / {MAX_PRODUCT_IMAGES} images
         </span>
         {mainUrl && items.length > 0 && (
-          <span className="adm-gallery-main-hint">La 1<sup>re</sup> miniature = image principale</span>
+          <span
+            className="adm-gallery-main-hint"
+            dangerouslySetInnerHTML={{ __html: mainHint }}
+          />
         )}
       </div>
 
@@ -231,10 +232,7 @@ export function ProductImageGalleryEditor({
             );
           }
 
-          const isMain =
-            item.url === mainUrl ||
-            (!mainImageUrl && slot === 0) ||
-            items[0]?.id === item.id;
+          const isMain = items[0]?.id === item.id;
 
           return (
             <div
@@ -256,7 +254,7 @@ export function ProductImageGalleryEditor({
                 <img src={item.url} alt="" />
               </button>
 
-              {isMain && <span className="adm-gallery-badge">Principale</span>}
+              {isMain && <span className="adm-gallery-badge">{badgeLabel}</span>}
               {item.pending && <span className="adm-gallery-badge adm-gallery-badge--pending">Envoi…</span>}
 
               <div className="adm-gallery-thumb-actions">

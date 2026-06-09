@@ -56,6 +56,7 @@ function mapProduct(row: {
   image_url?: string | null;
   main_image_url?: string | null;
   gallery_images?: string[] | null;
+  thumbnail_images?: string[] | null;
   video_url?: string | null;
   product_variants?: DbVariantRow[] | null;
 }): Product {
@@ -93,6 +94,7 @@ function mapProduct(row: {
     commitments: normalizeCommitments(row.commitments),
     mainImageUrl: row.main_image_url ?? row.image_url ?? null,
     galleryImages: row.gallery_images ?? [],
+    thumbnailImages: row.thumbnail_images ?? [],
     videoUrl: row.video_url ?? null,
     imageUrl: row.image_url ?? null,
     productVariants: richVariants,
@@ -112,7 +114,7 @@ export function usePublicProducts() {
 
     getSupabase()
       .from("products")
-      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
+      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {

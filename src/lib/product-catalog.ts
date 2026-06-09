@@ -27,11 +27,28 @@ export function productFallbackImage(productId: string): string {
   return LOCAL_IMG(productId);
 }
 
+export function flatProductGallery(product: Product): string[] {
+  const urls: string[] = [];
+  const push = (url?: string | null) => {
+    if (url && !urls.includes(url)) urls.push(url);
+  };
+  push(product.mainImageUrl);
+  push(product.imageUrl);
+  for (const img of product.galleryImages ?? []) push(img);
+  return urls;
+}
+
+export function splitProductGallery(urls: string[]): { main: string | null; gallery: string[] } {
+  return { main: urls[0] ?? null, gallery: urls.slice(1) };
+}
+
 export function resolveProductImage(
   product: Product,
   variant?: ProductVariant | null
 ): string {
   if (variant?.imageUrl) return variant.imageUrl;
+  const thumb = product.thumbnailImages?.find(Boolean);
+  if (thumb) return thumb;
   if (product.mainImageUrl) return product.mainImageUrl;
   if (product.imageUrl) return product.imageUrl;
   return productFallbackImage(product.id);

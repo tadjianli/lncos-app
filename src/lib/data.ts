@@ -37,8 +37,10 @@ export interface Product {
   commitments?: ProductCommitment[];
   /** URL image principale (Supabase Storage) */
   mainImageUrl?: string | null;
-  /** Galerie complémentaire */
+  /** Galerie complémentaire (fiche produit) */
   galleryImages?: string[];
+  /** Miniatures boutique / listing (jusqu'à 5) */
+  thumbnailImages?: string[];
   /** Réservé vidéo produit (futur) */
   videoUrl?: string | null;
   /** @deprecated alias legacy — préférer mainImageUrl */

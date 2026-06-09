@@ -69,6 +69,7 @@ export interface Database {
           image_url: string | null;
           main_image_url: string | null;
           gallery_images: string[];
+          thumbnail_images: string[];
           video_url: string | null;
           created_at: string;
           updated_at: string;
@@ -95,6 +96,7 @@ export interface Database {
           image_url?: string | null;
           main_image_url?: string | null;
           gallery_images?: string[];
+          thumbnail_images?: string[];
           video_url?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -120,6 +122,7 @@ export interface Database {
           image_url?: string | null;
           main_image_url?: string | null;
           gallery_images?: string[];
+          thumbnail_images?: string[];
           video_url?: string | null;
           updated_at?: string;
         };
