@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -49,7 +49,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true });
     }
 
-    const supabase = await createSupabaseServerClient();
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("[stripe/webhook] SUPABASE_SERVICE_ROLE_KEY not set — cannot create order");
+      return NextResponse.json(
+        { error: "SUPABASE_SERVICE_ROLE_KEY non configurée — impossible de créer la commande. Ajoutez cette clé dans les variables d'environnement." },
+        { status: 503 }
+      );
+    }
+
+    const supabase = createServiceClient();
 
     // Idempotency — skip if order already exists
     const { data: existing } = await supabase

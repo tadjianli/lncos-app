@@ -331,6 +331,7 @@ function CartScreen({
   const cart        = useStore((s) => s.cart);
   const setQty      = useStore((s) => s.setQty);
   const removeItem  = useStore((s) => s.removeFromCart);
+  const clearCart   = useStore((s) => s.clearCart);
   const openProduct = useStore((s) => s.openProduct);
 
   const [promoInput,   setPromoInput]   = useState(appliedPromo?.code ?? "");
@@ -392,7 +393,21 @@ function CartScreen({
   return (
     <>
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader title="Mon panier" right={<Icon name="trash" size={19} color="var(--ink-mute)" />} />
+        <SubHeader
+          title="Mon panier"
+          right={
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("Vider tout le panier ?")) clearCart();
+              }}
+              aria-label="Vider le panier"
+              style={{ display: "flex", alignItems: "center", padding: 4, background: "none", border: "none", cursor: "pointer" }}
+            >
+              <Icon name="trash" size={19} color="var(--ink-mute)" />
+            </button>
+          }
+        />
       </div>
 
       <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 16px 20px" }}>

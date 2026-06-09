@@ -7,7 +7,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { useStore } from "@/lib/store";
-import { products } from "@/lib/data";
+import { usePublicProducts } from "@/lib/client-supabase";
+import type { Product } from "@/lib/data";
 import { SkeletonProductCard } from "@/components/shared/Skeleton";
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
@@ -65,8 +66,9 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
   const [recents, setRecents] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
-  const [results, setResults] = useState(products.slice(0, 0));
+  const [results, setResults] = useState<Product[]>([]);
 
+  const { products } = usePublicProducts();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -126,7 +128,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
     setResults(found);
     setDisplayQ(term.trim());
     setIsSearching(false);
-  }, []);
+  }, [products]);
 
   function handleInput(value: string) {
     setQ(value);

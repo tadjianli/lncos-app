@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 
 interface CompleteBody {
@@ -65,8 +65,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: "SUPABASE_SERVICE_ROLE_KEY non configurée — impossible de créer la commande. Ajoutez cette clé dans les variables d'environnement." },
+        { status: 503 }
+      );
+    }
+
+    const authClient = await createClient();
+    const { data: { user } } = await authClient.auth.getUser();
+    const supabase = createServiceClient();
 
     // ── 2. Idempotency — order already created for this session ──────
     const { data: existing } = await supabase

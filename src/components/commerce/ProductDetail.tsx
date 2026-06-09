@@ -166,10 +166,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const handleAdd = useCallback(() => {
     if (added || outOfStock) return;
     addToCart(p, qty, selectedVariantName || p.variants[0]);
-    showToast(`${p.name} ajouté ✨`);
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
-  }, [added, outOfStock, addToCart, p, qty, selectedVariantName, showToast]);
+  }, [added, outOfStock, addToCart, p, qty, selectedVariantName]);
 
   function toggleSection(key: string) {
     setOpenSections((prev) => {

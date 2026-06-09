@@ -4,7 +4,8 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
-import { fetchUserReviewKeys } from "@/lib/client-supabase";
+import { fetchUserReviewKeys, usePublicProducts } from "@/lib/client-supabase";
+import { productFallbackImage, resolveProductImage } from "@/lib/product-catalog";
 import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
 import { useStore } from "@/lib/store";
 
@@ -17,6 +18,7 @@ interface OrderItem {
   name: string;
   price: number;
   qty: number;
+  image_url?: string | null;
 }
 
 interface Order {
@@ -99,12 +101,14 @@ function OrderCard({
   onToggle,
   reviewKeys,
   onReview,
+  itemImage,
 }: {
   order: Order;
   expanded: boolean;
   onToggle: () => void;
   reviewKeys: Set<string>;
   onReview: (item: OrderItem) => void;
+  itemImage: (item: OrderItem) => string;
 }) {
   const MAX = 3;
   const visible  = order.items.slice(0, MAX);
@@ -128,7 +132,7 @@ function OrderCard({
           {visible.map((item, i) => (
             <div key={item.id + i} style={{ position: "relative", flexShrink: 0 }}>
               <div style={{ width: 52, height: 52, borderRadius: 10, overflow: "hidden", background: "var(--charcoal-3)" }}>
-                <FadeImage src={`/assets/products/${item.id}.png`} alt={item.name} width={52} height={52} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                <FadeImage src={itemImage(item)} alt={item.name} width={52} height={52} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
               </div>
               {i === visible.length - 1 && overflow > 0 && (
                 <div style={{ position: "absolute", inset: 0, borderRadius: 10, background: "rgba(10,10,10,.72)", display: "grid", placeItems: "center", color: "var(--ink)", fontSize: 13, fontWeight: 700 }}>+{overflow}</div>
@@ -162,7 +166,7 @@ function OrderCard({
             return (
               <div key={item.id + i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", background: "var(--charcoal-3)", flexShrink: 0 }}>
-                  <FadeImage src={`/assets/products/${item.id}.png`} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                  <FadeImage src={itemImage(item)} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</p>
@@ -218,6 +222,7 @@ function OrderCard({
 
 export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack?: () => void }) {
   const showToast = useStore((s) => s.showToast);
+  const { byId } = usePublicProducts();
   const [activeTab, setActiveTab] = useState<Tab>("en-cours");
   const [expanded,  setExpanded]  = useState<Record<string, boolean>>({});
   const [orders,    setOrders]    = useState<Order[]>([]);
@@ -258,13 +263,19 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
     const orderIds = orderRows.map((o) => o.id);
     const { data: itemRows } = await getSupabase()
       .from("order_items")
-      .select("order_id, product_id, name, price, qty")
+      .select("order_id, product_id, name, price, qty, image_url")
       .in("order_id", orderIds);
 
     const itemsByOrder: Record<string, OrderItem[]> = {};
     for (const item of itemRows ?? []) {
       if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
-      itemsByOrder[item.order_id].push({ id: item.product_id, name: item.name, price: Number(item.price), qty: item.qty });
+      itemsByOrder[item.order_id].push({
+        id: item.product_id,
+        name: item.name,
+        price: Number(item.price),
+        qty: item.qty,
+        image_url: item.image_url,
+      });
     }
 
     setOrders(orderRows.map((o) => ({
@@ -283,6 +294,13 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
 
   const handleBack = onBack ?? onClose;
   const filtered = orders.filter((o) => TAB_STATUSES[activeTab].includes(o.status));
+
+  const itemImage = useCallback((item: OrderItem) => {
+    if (item.image_url) return item.image_url;
+    const product = byId(item.id);
+    if (product) return resolveProductImage(product);
+    return productFallbackImage(item.id);
+  }, [byId]);
 
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 80, background: "var(--noir)", display: "flex", flexDirection: "column", animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both" }}>
@@ -332,6 +350,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
                 onToggle={() => setExpanded((p) => ({ ...p, [order.id]: !p[order.id] }))}
                 reviewKeys={reviewKeys}
                 onReview={(item) => setReviewTarget({ orderId: order.id, item })}
+                itemImage={itemImage}
               />
             ))
           )}
