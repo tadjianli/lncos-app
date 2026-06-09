@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 
 interface SettingValues {
   storeName: string;
@@ -373,7 +374,7 @@ export function SettingsModule() {
 
         {/* Settings groups */}
         {GROUPS.map((group) => (
-          <div key={group.title} className="adm-card" style={{ padding: 0, overflow: "hidden" }}>
+          <div key={group.title} className="adm-card adm-card-scroll">
             <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)" }}>
               <div className="adm-settings-grouptitle">{group.title}</div>
             </div>
@@ -438,12 +439,7 @@ export function SettingsModule() {
         </div>
       </div>
 
-      {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast} />}
     </>
   );
 }

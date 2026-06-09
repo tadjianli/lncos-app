@@ -5,6 +5,7 @@ import { useSupabaseHomeSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
 import type { HomeSection, SectionType } from "@/lib/home-sections";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 
 /* ── icon + color per section type ─────────────────────────────────── */
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
@@ -203,11 +204,11 @@ export function AppBuilder() {
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
   const [addingSection, setAddingSection] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
 
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
+  function showToast(msg: string, variant: AdminToastVariant = "success") {
+    setToast({ msg, variant });
+    setTimeout(() => setToast(null), 2800);
   }
 
   // Sync from DB draft on first load (e.g. page refresh mid-edit)
@@ -225,7 +226,7 @@ export function AppBuilder() {
     const next = [...published];
     setLocalDraft(next);
     const { error } = await beginDraft(next);
-    if (error) showToast(`Erreur brouillon : ${error}`);
+    if (error) showToast(`Erreur brouillon : ${error}`, "error");
     return next;
   }
 
@@ -253,7 +254,7 @@ export function AppBuilder() {
     arr.splice(toIdx, 0, item);
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
     dragId.current = null;
     setDragOverId(null);
   }
@@ -270,7 +271,7 @@ export function AppBuilder() {
     );
     setLocalDraft(updated);
     const { error } = await saveDraft(updated);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
   }
 
   async function handleEdit(sec: HomeSection) {
@@ -286,7 +287,7 @@ export function AppBuilder() {
     );
     setLocalDraft(updated);
     const { error } = await saveDraft(updated);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
     setEditingSection(null);
   }
 
@@ -297,7 +298,7 @@ export function AppBuilder() {
     }
     const { error } = await publishDraft(localDraft);
     if (error) {
-      showToast(`Échec publication : ${error}`);
+      showToast(`Échec publication : ${error}`, "error");
       return;
     }
     setLocalDraft(null);
@@ -306,7 +307,7 @@ export function AppBuilder() {
 
   async function handleDiscard() {
     const { error } = await discardDraft();
-    if (error) showToast(`Erreur : ${error}`);
+    if (error) showToast(`Erreur : ${error}`, "error");
     setLocalDraft(null);
     showToast("Modifications ignorées");
   }
@@ -325,7 +326,7 @@ export function AppBuilder() {
     arr.splice(idx + 1, 0, copy);
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
     else showToast("Section dupliquée");
   }
 
@@ -334,7 +335,7 @@ export function AppBuilder() {
     const arr = draft.filter((s) => s.id !== id);
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
     else showToast("Section supprimée");
     setConfirmDeleteId(null);
   }
@@ -356,7 +357,7 @@ export function AppBuilder() {
     const arr = [...draft, newSec];
     setLocalDraft(arr);
     const { error } = await saveDraft(arr);
-    if (error) showToast(`Erreur sauvegarde : ${error}`);
+    if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
     else showToast(`Section « ${schema.label} » ajoutée`);
     setAddingSection(false);
   }
@@ -479,12 +480,7 @@ export function AppBuilder() {
       {addingSection && (
         <AddSectionModal onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
       )}
-      {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </>
   );
 }

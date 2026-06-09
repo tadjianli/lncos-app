@@ -82,7 +82,7 @@ export function CustomersModule() {
       </div>
 
       {/* Table */}
-      <div className="adm-card" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="adm-card adm-card-scroll">
         <div className="adm-table-toolbar">
           <div className="adm-searchbox wide">
             <Icon name="search" size={15} color="var(--adm-ink-mute)" />

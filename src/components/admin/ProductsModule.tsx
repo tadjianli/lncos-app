@@ -4,6 +4,7 @@ import { useState } from "react";
 import { categories } from "@/lib/data";
 import type { Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 import { useProducts } from "@/lib/admin-supabase";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
@@ -160,7 +161,7 @@ export function ProductsModule() {
           </button>
         </div>
 
-        <div className="adm-card" style={{ padding: 0 }}>
+        <div className="adm-card adm-card-scroll">
           <div className="adm-table-toolbar">
             <div className="adm-searchbox wide">
               <Icon name="search" size={16} color="var(--adm-ink-mute)" />
@@ -265,12 +266,7 @@ export function ProductsModule() {
       {creatingProduct && (
         <ProductEditModal product={BLANK_PRODUCT} onClose={() => setCreatingProduct(false)} onSave={handleCreate} isNew />
       )}
-      {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast} />}
     </>
   );
 }

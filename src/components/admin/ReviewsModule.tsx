@@ -102,7 +102,7 @@ export function ReviewsModule() {
       </div>
 
       {/* Preview reviews */}
-      <div className="adm-card" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="adm-card adm-card-scroll">
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)" }}>
           <div className="adm-card-title">Aperçu — format des avis à venir</div>
           <div className="adm-card-sub">Ces avis sont des exemples illustratifs</div>

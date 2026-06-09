@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 import { useShippingMethods, type ShippingMethod } from "@/lib/admin-supabase";
 
 /* ─── ICON options shown in the method editor ────────────────────────── */
@@ -89,7 +90,7 @@ function MethodModal({
         </div>
 
         {/* Price + isFree */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="adm-form-cols">
           <div className="ab-field" style={{ marginBottom: 0 }}>
             <label>Prix (€)</label>
             <input
@@ -321,7 +322,7 @@ export function ShippingModule() {
         </div>
 
         {/* Methods list */}
-        <div className="adm-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="adm-card adm-card-scroll">
           <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "var(--adm-ink)" }}>Méthodes configurées</div>
             <div style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>Ordre affiché dans le checkout ↕</div>
@@ -503,15 +504,7 @@ export function ShippingModule() {
       )}
 
       {/* Toast */}
-      {toast && (
-        <div
-          className="adm-toast"
-          style={toast.error ? { background: "rgba(194,85,122,.15)", border: "1px solid rgba(194,85,122,.3)", color: "var(--tone-pink)" } : undefined}
-        >
-          <Icon name={toast.error ? "x" : "check"} size={14} color={toast.error ? "var(--tone-pink)" : "#2F9E68"} />
-          {toast.msg}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast.msg} variant={toast.error ? "error" : "success"} />}
     </>
   );
 }

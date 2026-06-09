@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
 
 interface Category {
@@ -291,12 +292,7 @@ export function CategoriesModule() {
         </div>
       )}
 
-      {toast && (
-        <div className="adm-toast">
-          <Icon name="check" size={14} color="#2F9E68" />
-          {toast}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast} />}
     </>
   );
 }

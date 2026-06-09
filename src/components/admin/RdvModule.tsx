@@ -5,6 +5,7 @@ import { useAllAppointments, useRdvNotifications } from "@/lib/admin-supabase";
 import type { Appointment, Notification } from "@/lib/rdv-store";
 import { services, staff, availability, type Service } from "@/lib/rdv-data";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 
 type Tab = "dashboard" | "calendar" | "availability" | "services" | "staff" | "notifications";
 
@@ -466,7 +467,7 @@ function AvailabilityView() {
   }
 
   return (
-    <div className="adm-card" style={{ padding: 0 }}>
+    <div className="adm-card adm-card-scroll">
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div className="adm-card-title">Horaires d&apos;ouverture</div>
@@ -612,7 +613,7 @@ function ServicesView() {
 
   return (
     <>
-      <div className="adm-card" style={{ padding: 0 }}>
+      <div className="adm-card adm-card-scroll">
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div className="adm-card-title">Prestations</div>
@@ -648,7 +649,7 @@ function ServicesView() {
       </div>
       {addingSvc && <ServiceModal onClose={() => setAddingSvc(false)} onSave={handleSave} />}
       {editingSvc && <ServiceModal svc={editingSvc} onClose={() => setEditingSvc(null)} onSave={handleSave} />}
-      {toast && <div className="adm-toast"><Icon name="check" size={14} color="#2F9E68" />{toast}</div>}
+      {toast && <AdminToast msg={toast} />}
     </>
   );
 }
@@ -664,7 +665,7 @@ function StaffView() {
 
   return (
     <>
-    <div className="adm-card" style={{ padding: 0 }}>
+    <div className="adm-card adm-card-scroll">
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div className="adm-card-title">Prothésistes</div>
@@ -697,7 +698,7 @@ function StaffView() {
         </div>
       ))}
     </div>
-    {toast && <div className="adm-toast"><Icon name="check" size={14} color="#2F9E68" />{toast}</div>}
+    {toast && <AdminToast msg={toast} />}
     </>
   );
 }
@@ -717,7 +718,7 @@ function NotificationsView({ notifications, onMarkAllRead }: {
   };
 
   return (
-    <div className="adm-card" style={{ padding: 0 }}>
+    <div className="adm-card adm-card-scroll">
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div className="adm-card-title">Notifications</div>

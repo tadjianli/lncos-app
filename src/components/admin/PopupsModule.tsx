@@ -350,7 +350,7 @@ export function PopupsModule() {
 
         {/* Content */}
         {tab === "list" && (
-          <div className="adm-card" style={{ padding: 0 }}>
+          <div className="adm-card adm-card-scroll">
             {popups.length === 0 ? (
               <div style={{ padding: "60px 0", textAlign: "center", color: "var(--adm-ink-mute)" }}>
                 <Icon name="gift" size={40} color="var(--adm-border)" />

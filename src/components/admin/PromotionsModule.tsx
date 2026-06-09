@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast } from "@/components/admin/AdminToast";
 import { usePromos, type Promo } from "@/lib/admin-supabase";
 
 const TYPE_LABELS: Record<Promo["type"], string> = {
@@ -363,7 +364,7 @@ export function PromotionsModule() {
             </button>
           </div>
         ) : (
-          <div className="adm-card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="adm-card adm-card-scroll">
             {promos.map((p, i) => (
               <div
                 key={p.id}
@@ -508,15 +509,7 @@ export function PromotionsModule() {
         />
       )}
 
-      {toast && (
-        <div
-          className="adm-toast"
-          style={toast.error ? { background: "rgba(194,85,122,.15)", border: "1px solid rgba(194,85,122,.3)", color: "var(--tone-pink)" } : undefined}
-        >
-          <Icon name={toast.error ? "x" : "check"} size={14} color={toast.error ? "var(--tone-pink)" : "#2F9E68"} />
-          {toast.msg}
-        </div>
-      )}
+      {toast && <AdminToast msg={toast.msg} variant={toast.error ? "error" : "success"} />}
     </>
   );
 }

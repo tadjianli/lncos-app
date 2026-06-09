@@ -39,7 +39,7 @@ export function Toast({ msg, icon, onView }: ToastProps) {
       >
         <Icon name={icon ?? "check"} size={16} color="#1a1306" stroke={2.5} />
       </span>
-      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
+      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#F6F1EA" }}>
         {msg}
       </span>
       {onView && (

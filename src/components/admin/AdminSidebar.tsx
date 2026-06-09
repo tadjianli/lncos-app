@@ -35,15 +35,27 @@ const NAV_ITEMS: NavItem[] = [
 
 interface AdminSidebarProps {
   onNav?: () => void;
+  onClose?: () => void;
   onLogout?: () => void;
   loggingOut?: boolean;
 }
 
-export function AdminSidebar({ onNav, onLogout, loggingOut }: AdminSidebarProps) {
+export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside className="adm-sidebar">
+      {onClose && (
+        <button
+          type="button"
+          className="adm-sidebar-close"
+          onClick={onClose}
+          aria-label="Fermer le menu"
+        >
+          <Icon name="x" size={18} color="#fff" />
+        </button>
+      )}
+
       {/* Logo */}
       <div className="adm-logo">
         <Logo size={26} />

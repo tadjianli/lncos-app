@@ -133,7 +133,7 @@ export function AnalyticsModule() {
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div className="adm-dash-cols" style={{ gap: 16 }}>
             {/* Revenue chart */}
             <div className="adm-card">
               <div className="adm-card-head">

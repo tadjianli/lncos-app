@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSidebar } from "./AdminSidebar";
 import { Icon } from "@/components/shared/Icon";
@@ -22,6 +22,15 @@ export function AdminShell({ children }: AdminShellProps) {
     router.refresh();
   }, [router]);
 
+  const closeNav = useCallback(() => setMobileNav(false), []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileNav ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileNav]);
+
   return (
     <div className="adm-shell">
       {/* Mobile hamburger */}
@@ -38,7 +47,12 @@ export function AdminShell({ children }: AdminShellProps) {
         {mobileNav && (
           <div className="adm-sidebar-scrim" onClick={() => setMobileNav(false)} />
         )}
-        <AdminSidebar onNav={() => setMobileNav(false)} onLogout={handleLogout} loggingOut={loggingOut} />
+        <AdminSidebar
+          onNav={closeNav}
+          onClose={closeNav}
+          onLogout={handleLogout}
+          loggingOut={loggingOut}
+        />
       </div>
 
       {/* Main */}
