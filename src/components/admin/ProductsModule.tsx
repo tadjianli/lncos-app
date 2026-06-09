@@ -13,6 +13,7 @@ import { ProductCommitmentsEditor } from "@/components/admin/ProductCommitmentsE
 import { DEFAULT_COMMITMENTS, DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
+import { ProductBeforeAfterPanel } from "@/components/admin/ProductBeforeAfterPanel";
 import { DEFAULT_HOME_VISIBILITY } from "@/lib/product-home-visibility";
 import { resolveProductImage, slugifyProductId } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
@@ -190,6 +191,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           />
 
           {!isNew && <ProductReviewsPanel product={{ ...form, id: productId, productVariants: variants }} />}
+          {!isNew && <ProductBeforeAfterPanel product={{ ...form, id: productId, productVariants: variants }} />}
         </div>
 
         <div className="ab-modal-foot">

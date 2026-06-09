@@ -6,7 +6,7 @@ const SECTION_MAX = 5 * 1024 * 1024;
 const PRODUCT_MAX = 10 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-type BucketName = "media" | "product-images" | "review-images";
+type BucketName = "media" | "product-images" | "review-images" | "before-after-images";
 
 function sanitizeSegment(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, "");
@@ -43,7 +43,12 @@ export async function POST(req: Request) {
   }
 
   const bucket = (String(formData.get("bucket") ?? "media") as BucketName);
-  if (bucket !== "media" && bucket !== "product-images" && bucket !== "review-images") {
+  if (
+    bucket !== "media" &&
+    bucket !== "product-images" &&
+    bucket !== "review-images" &&
+    bucket !== "before-after-images"
+  ) {
     return NextResponse.json({ error: "Bucket invalide" }, { status: 400 });
   }
 
@@ -65,7 +70,7 @@ export async function POST(req: Request) {
   const ext = mime === "image/webp" ? "webp" : mime.split("/")[1] || "jpg";
 
   let path: string;
-  if (bucket === "product-images" || bucket === "review-images") {
+  if (bucket === "product-images" || bucket === "review-images" || bucket === "before-after-images") {
     const name = customName
       ? `${sanitizeSegment(customName.replace(/\.[^.]+$/, ""))}.${ext}`
       : `image-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;

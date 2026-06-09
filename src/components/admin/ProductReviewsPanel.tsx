@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Product } from "@/lib/data";
 import {
+  useBeforeAfterResultsAdmin,
   useProductReviewsAdmin,
   useProducts,
 } from "@/lib/admin-supabase";
@@ -37,6 +38,7 @@ export function ProductReviewsPanel({ product }: { product: Product }) {
     createReview,
     setReviewImages,
   } = useProductReviewsAdmin();
+  const { getByReviewId, upsertForReview } = useBeforeAfterResultsAdmin();
 
   const productReviews = useMemo(
     () => reviews.filter((r) => r.productId === product.id),
@@ -70,16 +72,35 @@ export function ProductReviewsPanel({ product }: { product: Product }) {
       reviewDate: values.reviewDate,
     };
 
+    const syncBeforeAfter = async (id: string) => {
+      const ba = values.beforeAfter;
+      if (!ba.showBeforeAfter) {
+        await upsertForReview(id, product.id, null);
+        return;
+      }
+      await upsertForReview(id, product.id, {
+        beforeImageUrl: ba.beforeImageUrl,
+        afterImageUrl: ba.afterImageUrl,
+        description: ba.description,
+        resultDuration: ba.resultDuration,
+        resultDurationCustom: ba.resultDurationCustom || null,
+        featured: ba.featured,
+        pinned: ba.pinned,
+      });
+    };
+
     if (reviewId) {
       const { error } = await updateReview(reviewId, patch);
       if (error) return error;
       await setReviewImages(reviewId, values.imageUrls);
+      await syncBeforeAfter(reviewId);
       return null;
     }
 
     const { review, error } = await createReview({ ...patch, productId: product.id, productName: product.name });
     if (error || !review) return error ?? "Erreur";
     if (values.imageUrls.length > 0) await setReviewImages(review.id, values.imageUrls);
+    await syncBeforeAfter(review.id);
     return null;
   }
 
@@ -165,6 +186,7 @@ export function ProductReviewsPanel({ product }: { product: Product }) {
           review={editing}
           products={products.length > 0 ? products : [product]}
           defaultProductId={product.id}
+          initialBeforeAfter={editing ? getByReviewId(editing.id) : null}
           onClose={() => { setShowForm(false); setEditing(null); }}
           onSave={saveReview}
         />

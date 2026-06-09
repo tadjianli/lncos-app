@@ -3,8 +3,10 @@
 import { useRef, useState } from "react";
 import type { Product } from "@/lib/data";
 import type { ProductReview, ReviewStatus } from "@/lib/reviews";
+import type { BeforeAfterFormValues, BeforeAfterResult } from "@/lib/before-after";
 import { Icon } from "@/components/shared/Icon";
 import { isImageUrl, uploadAdminImage, uploadReviewImage } from "@/lib/admin-media";
+import { BeforeAfterFields } from "@/components/admin/BeforeAfterFields";
 
 const MAX_REVIEW_PHOTOS = 5;
 
@@ -24,6 +26,37 @@ export interface ReviewFormValues {
   pinned: boolean;
   homepageFeatured: boolean;
   imageUrls: string[];
+  beforeAfter: BeforeAfterFormValues;
+}
+
+function defaultBeforeAfter(productId: string): BeforeAfterFormValues {
+  return {
+    productId,
+    reviewId: null,
+    beforeImageUrl: "",
+    afterImageUrl: "",
+    description: "",
+    resultDuration: "2_weeks",
+    resultDurationCustom: "",
+    featured: false,
+    pinned: false,
+    showBeforeAfter: false,
+  };
+}
+
+function beforeAfterFromResult(r: BeforeAfterResult): BeforeAfterFormValues {
+  return {
+    productId: r.productId,
+    reviewId: r.reviewId,
+    beforeImageUrl: r.beforeImageUrl,
+    afterImageUrl: r.afterImageUrl,
+    description: r.description,
+    resultDuration: r.resultDuration,
+    resultDurationCustom: r.resultDurationCustom ?? "",
+    featured: r.featured,
+    pinned: r.pinned,
+    showBeforeAfter: true,
+  };
 }
 
 function emptyForm(products: Product[], defaultProductId?: string): ReviewFormValues {
@@ -44,10 +77,11 @@ function emptyForm(products: Product[], defaultProductId?: string): ReviewFormVa
     pinned: false,
     homepageFeatured: false,
     imageUrls: [],
+    beforeAfter: defaultBeforeAfter(product?.id ?? ""),
   };
 }
 
-function reviewToForm(review: ProductReview): ReviewFormValues {
+function reviewToForm(review: ProductReview, beforeAfter?: BeforeAfterResult | null): ReviewFormValues {
   return {
     authorName: review.authorName,
     authorEmail: review.authorEmail ?? "",
@@ -64,6 +98,9 @@ function reviewToForm(review: ProductReview): ReviewFormValues {
     pinned: review.pinned,
     homepageFeatured: review.homepageFeatured,
     imageUrls: review.images.map((i) => i.imageUrl),
+    beforeAfter: beforeAfter
+      ? beforeAfterFromResult(beforeAfter)
+      : defaultBeforeAfter(review.productId ?? ""),
   };
 }
 
@@ -71,18 +108,27 @@ export function ReviewFormModal({
   review,
   products,
   defaultProductId,
+  initialBeforeAfter,
   onClose,
   onSave,
 }: {
   review?: ProductReview | null;
   products: Product[];
   defaultProductId?: string;
+  initialBeforeAfter?: BeforeAfterResult | null;
   onClose: () => void;
   onSave: (values: ReviewFormValues, reviewId?: string) => Promise<string | null>;
 }) {
   const isEdit = Boolean(review);
-  const [form, setForm] = useState<ReviewFormValues>(
-    review ? reviewToForm(review) : emptyForm(products, defaultProductId)
+  const [form, setForm] = useState<ReviewFormValues>(() =>
+    review
+      ? reviewToForm(review, initialBeforeAfter)
+      : {
+          ...emptyForm(products, defaultProductId),
+          beforeAfter: initialBeforeAfter
+            ? beforeAfterFromResult(initialBeforeAfter)
+            : defaultBeforeAfter(defaultProductId ?? products[0]?.id ?? ""),
+        }
   );
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -371,6 +417,18 @@ export function ReviewFormModal({
               if (e.target.files?.length) void handleGalleryPhotos(e.target.files);
               e.target.value = "";
             }}
+          />
+
+          <div className="adm-form-section-title">Résultat client</div>
+          <BeforeAfterFields
+            form={form.beforeAfter}
+            onChange={(patch) =>
+              setForm((p) => ({
+                ...p,
+                beforeAfter: { ...p.beforeAfter, ...patch, productId: p.productId },
+              }))
+            }
+            uploadFolder={review?.id ?? form.productId ?? "pending"}
           />
         </div>
 

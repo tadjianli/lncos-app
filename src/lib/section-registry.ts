@@ -153,6 +153,16 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
       { key: "title", label: "Titre de section", type: "text" },
     ],
   },
+  transformations: {
+    type: "transformations",
+    label: "Transformations clients",
+    icon: "camera",
+    description: "Carrousel Avant / Après mis en avant (résultats clients).",
+    allowMultiple: false,
+    fields: [
+      { key: "title", label: "Titre de section", type: "text" },
+    ],
+  },
   reels: {
     type: "reels",
     label: "Reels beauté",

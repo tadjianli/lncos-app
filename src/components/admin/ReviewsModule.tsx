@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useProductReviewsAdmin, useProducts } from "@/lib/admin-supabase";
+import { useBeforeAfterResultsAdmin, useProductReviewsAdmin, useProducts } from "@/lib/admin-supabase";
 import type { ProductReview, ReviewStatus } from "@/lib/reviews";
 import {
   REVIEW_STATUS_LABELS,
@@ -228,6 +228,7 @@ export function ReviewsModule() {
     setReviewImages,
     createDraftReviews,
   } = useProductReviewsAdmin();
+  const { getByReviewId, upsertForReview } = useBeforeAfterResultsAdmin();
 
   const [filter, setFilter] = useState<ReviewStatus | "all" | "featured">("all");
   const [editing, setEditing] = useState<ProductReview | null>(null);
@@ -275,6 +276,23 @@ export function ReviewsModule() {
       reviewDate: values.reviewDate,
     };
 
+    const syncBeforeAfter = async (id: string, productId: string) => {
+      const ba = values.beforeAfter;
+      if (!ba.showBeforeAfter) {
+        await upsertForReview(id, productId, null);
+        return;
+      }
+      await upsertForReview(id, productId, {
+        beforeImageUrl: ba.beforeImageUrl,
+        afterImageUrl: ba.afterImageUrl,
+        description: ba.description,
+        resultDuration: ba.resultDuration,
+        resultDurationCustom: ba.resultDurationCustom || null,
+        featured: ba.featured,
+        pinned: ba.pinned,
+      });
+    };
+
     if (reviewId) {
       const { error } = await updateReview(reviewId, patch);
       if (error) {
@@ -282,6 +300,7 @@ export function ReviewsModule() {
         return error;
       }
       await setReviewImages(reviewId, values.imageUrls);
+      await syncBeforeAfter(reviewId, values.productId || patch.productId || "");
       showToast("Avis mis à jour");
       return null;
     }
@@ -292,6 +311,7 @@ export function ReviewsModule() {
       return error;
     }
     if (values.imageUrls.length > 0) await setReviewImages(review.id, values.imageUrls);
+    await syncBeforeAfter(review.id, values.productId || review.productId || "");
     showToast("Avis créé");
     return null;
   }
@@ -413,6 +433,7 @@ export function ReviewsModule() {
         <ReviewFormModal
           review={editing}
           products={products}
+          initialBeforeAfter={editing ? getByReviewId(editing.id) : null}
           onClose={() => { setShowCreate(false); setEditing(null); }}
           onSave={saveReview}
         />

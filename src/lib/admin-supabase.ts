@@ -13,6 +13,7 @@ import type { HomeSection } from "./home-sections";
 import { dbToSection, sectionToDb } from "./home-sections-db";
 import type { Category, Product } from "./data";
 import type { ProductReview, ReviewStatus } from "./reviews";
+import type { BeforeAfterResult, ResultDuration } from "./before-after";
 import type { ProductVariant } from "./product-catalog";
 import {
   DEFAULT_SECTION_TOGGLES,
@@ -1285,6 +1286,176 @@ export function useProductReviewsAdmin() {
     createReview,
     setReviewImages,
     createDraftReviews,
+    reload: load,
+  };
+}
+
+/* ─── Before / After results (admin) ─────────────────────────────────────── */
+
+type DbBeforeAfter = Database["public"]["Tables"]["before_after_results"]["Row"];
+
+function dbToBeforeAfter(
+  r: DbBeforeAfter,
+  review?: { author_name: string; rating: number; verified: boolean } | null
+): BeforeAfterResult {
+  return {
+    id: r.id,
+    productId: r.product_id,
+    reviewId: r.review_id,
+    beforeImageUrl: r.before_image_url,
+    afterImageUrl: r.after_image_url,
+    description: r.description,
+    resultDuration: r.result_duration as ResultDuration,
+    resultDurationCustom: r.result_duration_custom,
+    featured: r.featured,
+    pinned: r.pinned,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    authorName: review?.author_name,
+    rating: review?.rating,
+    verified: review?.verified,
+  };
+}
+
+function beforeAfterToDb(
+  r: Partial<BeforeAfterResult>
+): Partial<Database["public"]["Tables"]["before_after_results"]["Update"]> {
+  const db: Partial<Database["public"]["Tables"]["before_after_results"]["Update"]> = {};
+  if (r.productId !== undefined) db.product_id = r.productId;
+  if (r.reviewId !== undefined) db.review_id = r.reviewId;
+  if (r.beforeImageUrl !== undefined) db.before_image_url = r.beforeImageUrl;
+  if (r.afterImageUrl !== undefined) db.after_image_url = r.afterImageUrl;
+  if (r.description !== undefined) db.description = r.description;
+  if (r.resultDuration !== undefined) db.result_duration = r.resultDuration;
+  if (r.resultDurationCustom !== undefined) db.result_duration_custom = r.resultDurationCustom;
+  if (r.featured !== undefined) db.featured = r.featured;
+  if (r.pinned !== undefined) db.pinned = r.pinned;
+  return db;
+}
+
+async function enrichBeforeAfterRows(rows: DbBeforeAfter[]): Promise<BeforeAfterResult[]> {
+  const reviewIds = rows.map((r) => r.review_id).filter(Boolean) as string[];
+  const reviewMap = new Map<string, { author_name: string; rating: number; verified: boolean }>();
+  if (reviewIds.length > 0) {
+    const { data } = await getSupabase()
+      .from("product_reviews")
+      .select("id, author_name, rating, verified")
+      .in("id", reviewIds);
+    for (const rev of data ?? []) {
+      reviewMap.set(rev.id as string, rev as { author_name: string; rating: number; verified: boolean });
+    }
+  }
+  return rows.map((r) => dbToBeforeAfter(r, r.review_id ? reviewMap.get(r.review_id) ?? null : null));
+}
+
+export function useBeforeAfterResultsAdmin() {
+  const [results, setResults] = useState<BeforeAfterResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const { data } = await getSupabase()
+      .from("before_after_results")
+      .select("*")
+      .order("created_at", { ascending: false });
+    const rows = (data ?? []) as DbBeforeAfter[];
+    setResults(await enrichBeforeAfterRows(rows));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("before-after-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "before_after_results" }, load)
+      .subscribe();
+    return () => { getSupabase().removeChannel(channel); };
+  }, [load]);
+
+  const createResult = useCallback(async (input: Partial<BeforeAfterResult>) => {
+    const { data, error } = await getSupabase()
+      .from("before_after_results")
+      .insert({
+        product_id: input.productId!,
+        review_id: input.reviewId ?? null,
+        before_image_url: input.beforeImageUrl!,
+        after_image_url: input.afterImageUrl!,
+        description: input.description ?? "",
+        result_duration: input.resultDuration ?? "2_weeks",
+        result_duration_custom: input.resultDurationCustom ?? null,
+        featured: input.featured ?? false,
+        pinned: input.pinned ?? false,
+      })
+      .select("*")
+      .single();
+    if (error || !data) return { result: null, error: error?.message ?? "Création impossible" };
+    const enriched = await enrichBeforeAfterRows([data as DbBeforeAfter]);
+    const result = enriched[0];
+    setResults((prev) => [result, ...prev]);
+    return { result, error: null };
+  }, []);
+
+  const updateResult = useCallback(async (id: string, patch: Partial<BeforeAfterResult>) => {
+    const { error } = await getSupabase()
+      .from("before_after_results")
+      .update(beforeAfterToDb(patch))
+      .eq("id", id);
+    if (!error) {
+      setResults((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      await load();
+    }
+    return { error: error?.message ?? null };
+  }, [load]);
+
+  const deleteResult = useCallback(async (id: string) => {
+    const { error } = await getSupabase().from("before_after_results").delete().eq("id", id);
+    if (!error) setResults((prev) => prev.filter((r) => r.id !== id));
+    return { error: error?.message ?? null };
+  }, []);
+
+  const getByReviewId = useCallback(
+    (reviewId: string) => results.find((r) => r.reviewId === reviewId) ?? null,
+    [results]
+  );
+
+  const upsertForReview = useCallback(
+    async (
+      reviewId: string,
+      productId: string,
+      input: Partial<BeforeAfterResult> | null
+    ) => {
+      const existing = results.find((r) => r.reviewId === reviewId);
+      if (!input || !input.beforeImageUrl || !input.afterImageUrl) {
+        if (existing) await deleteResult(existing.id);
+        return { error: null };
+      }
+      const payload: Partial<BeforeAfterResult> = {
+        productId,
+        reviewId,
+        beforeImageUrl: input.beforeImageUrl,
+        afterImageUrl: input.afterImageUrl,
+        description: input.description ?? "",
+        resultDuration: input.resultDuration ?? "2_weeks",
+        resultDurationCustom: input.resultDurationCustom ?? null,
+        featured: input.featured ?? false,
+        pinned: input.pinned ?? false,
+      };
+      if (existing) {
+        return updateResult(existing.id, payload);
+      }
+      const { error } = await createResult(payload);
+      return { error: error ?? null };
+    },
+    [results, deleteResult, updateResult, createResult]
+  );
+
+  return {
+    results,
+    loading,
+    createResult,
+    updateResult,
+    deleteResult,
+    getByReviewId,
+    upsertForReview,
     reload: load,
   };
 }

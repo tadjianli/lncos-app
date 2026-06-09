@@ -14,6 +14,7 @@ export type SectionType =
   | "bento"
   | "quote"
   | "reviews"
+  | "transformations"
   | "newsletter"
   | "categories"
   | "cta";
@@ -174,6 +175,18 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     variant: "carousel",
     title: "Avis vérifiés",
     eyebrow: "Elles adorent",
+    device: "all",
+    audience: "all",
+    schedule: { enabled: false, start: "", end: "" },
+  },
+  {
+    id: "transformations-1",
+    type: "transformations",
+    name: "Transformations clients",
+    enabled: false,
+    variant: "carousel",
+    title: "Transformations clients",
+    eyebrow: "Résultats vérifiés",
     device: "all",
     audience: "all",
     schedule: { enabled: false, start: "", end: "" },

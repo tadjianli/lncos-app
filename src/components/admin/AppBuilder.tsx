@@ -19,6 +19,7 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   bento:      { icon: "grid",    color: "#3B7DD8", bg: "rgba(59,125,216,.14)" },
   quote:      { icon: "info",    color: "#7C756B", bg: "rgba(124,117,107,.14)" },
   reviews:    { icon: "star",    color: "#B8902B", bg: "rgba(212,175,55,.14)" },
+  transformations: { icon: "camera", color: "#2F9E68", bg: "rgba(47,158,104,.14)" },
   reels:      { icon: "play",    color: "#C2557A", bg: "rgba(194,85,122,.14)" },
   newsletter: { icon: "bell",    color: "#3B7DD8", bg: "rgba(59,125,216,.14)" },
   categories: { icon: "grid",    color: "#3B7DD8", bg: "rgba(59,125,216,.14)" },

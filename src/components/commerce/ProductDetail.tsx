@@ -11,6 +11,7 @@ import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
 import { ProductReviewsSection } from "@/components/commerce/ProductReviewsSection";
+import { ProductBeforeAfterSection } from "@/components/commerce/ProductBeforeAfterSection";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -883,6 +884,8 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             fallbackRating={p.rating}
             fallbackCount={p.reviews}
           />
+
+          <ProductBeforeAfterSection productId={p.id} />
 
           {/* ── Routine associée ── */}
           {routine.length > 0 && (

@@ -7,7 +7,7 @@ import { optimizeProductImage } from "./image-optimize";
 const SECTION_MAX_BYTES = 5 * 1024 * 1024;
 const SECTION_ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-export type UploadBucket = "media" | "product-images" | "review-images";
+export type UploadBucket = "media" | "product-images" | "review-images" | "before-after-images";
 
 const REVIEW_MAX_BYTES = 5 * 1024 * 1024;
 const REVIEW_ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -49,11 +49,11 @@ export async function uploadAdminImage(
   bucket: UploadBucket = "media"
 ): Promise<{ url: string | null; error: string | null }> {
   const validation =
-    bucket === "product-images" || bucket === "review-images"
-      ? bucket === "review-images"
+    bucket === "product-images"
+      ? null
+      : bucket === "review-images" || bucket === "before-after-images"
         ? validateReviewImageFile(file)
-        : null
-      : validateSectionImageFile(file);
+        : validateSectionImageFile(file);
   if (validation) return { url: null, error: validation };
 
   let uploadFile = file;
@@ -114,4 +114,11 @@ export async function uploadReviewImage(
   reviewId: string
 ): Promise<{ url: string | null; error: string | null }> {
   return uploadAdminImage(file, reviewId, "review-images");
+}
+
+export async function uploadBeforeAfterImage(
+  file: File,
+  folder: string
+): Promise<{ url: string | null; error: string | null }> {
+  return uploadAdminImage(file, folder, "before-after-images");
 }

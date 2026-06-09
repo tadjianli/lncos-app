@@ -22,6 +22,7 @@ import {
 } from "@/lib/product-home-visibility";
 import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
+import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { isImageUrl } from "@/lib/admin-media";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
@@ -806,6 +807,15 @@ export default function HomePage() {
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <ReviewsSection title={section.title} />
+              </Reveal>
+            </div>
+          );
+
+        case "transformations":
+          return (
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
+              <Reveal>
+                <TransformationsSection title={section.title} />
               </Reveal>
             </div>
           );

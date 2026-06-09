@@ -28,6 +28,8 @@ import {
   reviewDisplayDate,
   type PublicReview,
 } from "./reviews";
+import type { BeforeAfterResult, PublicBeforeAfterResult, ResultDuration } from "./before-after";
+import { sortBeforeAfterResults, toPublicBeforeAfter } from "./before-after";
 
 type DbVariantRow = {
   id: string;
@@ -469,6 +471,133 @@ export function useProductReviews(productId: string) {
   }, [productId]);
 
   return { reviews, loading, count, avg };
+}
+
+/* ── Before / After results ───────────────────────────────────────────── */
+
+type DbBeforeAfter = {
+  id: string;
+  product_id: string;
+  review_id: string | null;
+  before_image_url: string;
+  after_image_url: string;
+  description: string;
+  result_duration: string;
+  result_duration_custom: string | null;
+  featured: boolean;
+  pinned: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+async function enrichPublicBeforeAfter(rows: DbBeforeAfter[]): Promise<BeforeAfterResult[]> {
+  const reviewIds = rows.map((r) => r.review_id).filter(Boolean) as string[];
+  const reviewMap = new Map<string, { author_name: string; rating: number; verified: boolean }>();
+  if (reviewIds.length > 0 && isSupabaseConfigured()) {
+    const { data } = await getSupabase()
+      .from("product_reviews")
+      .select("id, author_name, rating, verified, status")
+      .in("id", reviewIds)
+      .eq("status", "published");
+    for (const rev of data ?? []) {
+      reviewMap.set(rev.id as string, rev as { author_name: string; rating: number; verified: boolean });
+    }
+  }
+  return rows
+    .filter((r) => !r.review_id || reviewMap.has(r.review_id))
+    .map((r) => ({
+      id: r.id,
+      productId: r.product_id,
+      reviewId: r.review_id,
+      beforeImageUrl: r.before_image_url,
+      afterImageUrl: r.after_image_url,
+      description: r.description,
+      resultDuration: r.result_duration as ResultDuration,
+      resultDurationCustom: r.result_duration_custom,
+      featured: r.featured,
+      pinned: r.pinned,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+      authorName: r.review_id ? reviewMap.get(r.review_id)?.author_name : undefined,
+      rating: r.review_id ? reviewMap.get(r.review_id)?.rating : undefined,
+      verified: r.review_id ? reviewMap.get(r.review_id)?.verified : undefined,
+    }));
+}
+
+export function useProductBeforeAfter(productId: string) {
+  const [results, setResults] = useState<PublicBeforeAfterResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!productId || !isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const { data, error } = await getSupabase()
+          .from("before_after_results")
+          .select("*")
+          .eq("product_id", productId)
+          .order("pinned", { ascending: false })
+          .order("featured", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          const enriched = await enrichPublicBeforeAfter(data as DbBeforeAfter[]);
+          const sorted = sortBeforeAfterResults(enriched, (r) => r.createdAt);
+          setResults(sorted.map((r) => toPublicBeforeAfter(r)));
+        }
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [productId]);
+
+  return { results, loading };
+}
+
+export function useFeaturedBeforeAfter() {
+  const [results, setResults] = useState<PublicBeforeAfterResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const { data, error } = await getSupabase()
+          .from("before_after_results")
+          .select("*")
+          .eq("featured", true)
+          .order("pinned", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(12);
+
+        if (!error && data && data.length > 0) {
+          const enriched = await enrichPublicBeforeAfter(data as DbBeforeAfter[]);
+          const sorted = sortBeforeAfterResults(enriched, (r) => r.createdAt);
+          setResults(sorted.map((r) => toPublicBeforeAfter(r)));
+        }
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, []);
+
+  return { results, loading };
 }
 
 export async function submitProductReview(input: {

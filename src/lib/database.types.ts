@@ -980,6 +980,50 @@ export interface Database {
         Relationships: [];
       };
 
+      before_after_results: {
+        Row: {
+          id: string;
+          product_id: string;
+          review_id: string | null;
+          before_image_url: string;
+          after_image_url: string;
+          description: string;
+          result_duration: string;
+          result_duration_custom: string | null;
+          featured: boolean;
+          pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          review_id?: string | null;
+          before_image_url: string;
+          after_image_url: string;
+          description?: string;
+          result_duration?: string;
+          result_duration_custom?: string | null;
+          featured?: boolean;
+          pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          product_id?: string;
+          review_id?: string | null;
+          before_image_url?: string;
+          after_image_url?: string;
+          description?: string;
+          result_duration?: string;
+          result_duration_custom?: string | null;
+          featured?: boolean;
+          pinned?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       shipping_methods: {
         Row: {
           id: string;
