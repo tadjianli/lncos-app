@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSupabasePageSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
 import type { HomeSection, PageSlug, SectionType } from "@/lib/home-sections";
-import { ALLOWED_TYPES_BY_PAGE, APP_PAGES, previewPath } from "@/lib/page-sections";
+import { ALLOWED_TYPES_BY_PAGE, previewPath } from "@/lib/page-sections";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
@@ -233,9 +233,10 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 }
 
 /* ── Main App Builder component ─────────────────────────────────────── */
+const HOME_PAGE: PageSlug = "home";
+
 export function AppBuilder() {
-  const [activePage, setActivePage] = useState<PageSlug>("home");
-  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(activePage);
+  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(HOME_PAGE);
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
   const [addingSection, setAddingSection] = useState(false);
@@ -246,10 +247,6 @@ export function AppBuilder() {
     setToast({ msg, variant });
     setTimeout(() => setToast(null), 2800);
   }
-
-  useEffect(() => {
-    setLocalDraft(null);
-  }, [activePage]);
 
   useEffect(() => {
     if (dbDraft !== null && localDraft === null) {
@@ -384,7 +381,7 @@ export function AppBuilder() {
     const schema = SECTION_SCHEMA_REGISTRY[type];
     const newSec: HomeSection = {
       id: `${type}-${Date.now()}`,
-      pageSlug: activePage,
+      pageSlug: HOME_PAGE,
       type,
       name: schema.label,
       enabled: false,
@@ -414,6 +411,15 @@ export function AppBuilder() {
             <h1 className="adm-h1">Personnaliser l&apos;app</h1>
           </div>
           <div className="ab-publish-bar">
+            <a
+              href={previewPath(HOME_PAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="adm-btn ghost sm"
+              style={{ textDecoration: "none" }}
+            >
+              <Icon name="search" size={14} /> Aperçu live
+            </a>
             {hasDraft && (
               <button className="adm-btn ghost sm" onClick={handleDiscard}>Ignorer</button>
             )}
@@ -437,28 +443,6 @@ export function AppBuilder() {
           </div>
         )}
 
-        <div className="adm-card" style={{ padding: "10px 12px", display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {APP_PAGES.map((p) => (
-            <button
-              key={p.slug}
-              type="button"
-              className={`adm-btn sm${activePage === p.slug ? " gold" : " ghost"}`}
-              onClick={() => setActivePage(p.slug)}
-            >
-              {p.label}
-            </button>
-          ))}
-          <a
-            href={previewPath(activePage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="adm-btn ghost sm"
-            style={{ marginLeft: "auto", textDecoration: "none" }}
-          >
-            <Icon name="search" size={14} /> Aperçu live
-          </a>
-        </div>
-
         {/* Body */}
         <div className="ab-layout">
           {/* Section list */}
@@ -466,7 +450,7 @@ export function AppBuilder() {
             <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
               <div className="ab-list-head">
                 <div>
-                  <div className="ab-list-title">Sections · {APP_PAGES.find((p) => p.slug === activePage)?.label}</div>
+                  <div className="ab-list-title">Sections · Accueil</div>
                   <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
                 </div>
                 <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
@@ -540,7 +524,7 @@ export function AppBuilder() {
         />
       )}
       {addingSection && (
-        <AddSectionModal pageSlug={activePage} onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
+        <AddSectionModal pageSlug={HOME_PAGE} onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
       )}
       {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </>
