@@ -120,11 +120,11 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
 
   const addToCart   = useStore((s) => s.addToCart);
   const toggleFav   = useStore((s) => s.toggleFav);
-  const isFavFn     = useStore((s) => s.isFav);
+  const favs        = useStore((s) => s.favs);
   const openProduct = useStore((s) => s.openProduct);
   const showToast   = useStore((s) => s.showToast);
 
-  const fav      = isFavFn(p.id);
+  const fav      = favs.includes(p.id);
   const lowStock = p.stock <= 20;
 
   const routine = products
@@ -1029,7 +1029,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                       p={r}
                       onOpen={openProduct}
                       onFav={(id) => toggleFav(id)}
-                      isFav={isFavFn(r.id)}
+                      isFav={favs.includes(r.id)}
                       onAdd={(pr) => {
                         addToCart(pr, 1, pr.variants[0]);
                         showToast(`${pr.name} ajouté ✨`);

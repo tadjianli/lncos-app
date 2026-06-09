@@ -73,7 +73,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
   const openProduct = useStore((s) => s.openProduct);
   const addToCart   = useStore((s) => s.addToCart);
   const toggleFav   = useStore((s) => s.toggleFav);
-  const isFav       = useStore((s) => s.isFav);
+  const favs        = useStore((s) => s.favs);
 
   /* Load recents + auto-focus */
   useEffect(() => {
@@ -493,7 +493,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
                   wide
                   onOpen={openProduct}
                   onFav={toggleFav}
-                  isFav={isFav(p.id)}
+                  isFav={favs.includes(p.id)}
                   onAdd={addToCart}
                 />
                 </div>
@@ -554,7 +554,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
                       wide
                       onOpen={openProduct}
                       onFav={toggleFav}
-                      isFav={isFav(p.id)}
+                      isFav={favs.includes(p.id)}
                       onAdd={addToCart}
                     />
                   </div>

@@ -1,30 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { products } from "@/lib/data";
-import type { Product } from "@/lib/data";
+import { useStore } from "@/lib/store";
+import { usePublicProducts } from "@/lib/client-supabase";
 
-export default function FavoritesPage() {
-  const [favs, setFavs] = useState<string[]>([
-    "parfum-noir",
-    "rouge-mat",
-    "palette-glow",
-    "huile-demaq",
-  ]);
+export default function RitualPage() {
+  const favs = useStore((s) => s.favs);
+  const toggleFav = useStore((s) => s.toggleFav);
+  const addToCart = useStore((s) => s.addToCart);
+  const openProduct = useStore((s) => s.openProduct);
+  const { products } = usePublicProducts();
 
   const favProducts = products.filter((p) => favs.includes(p.id));
 
-  function toggleFav(id: string) {
-    setFavs((f) =>
-      f.includes(id) ? f.filter((x) => x !== id) : [...f, id]
-    );
-  }
-
   return (
     <AppShell>
-      {/* Header */}
       <div style={{ padding: "58px 18px 16px" }}>
         <p
           style={{
@@ -36,7 +27,7 @@ export default function FavoritesPage() {
             marginBottom: 6,
           }}
         >
-          Sélection personnelle
+          Rituel beauté
         </p>
         <h1
           style={{
@@ -47,7 +38,7 @@ export default function FavoritesPage() {
             letterSpacing: "-.01em",
           }}
         >
-          Mes Favoris
+          Vos favoris
         </h1>
         <p style={{ fontSize: "var(--fs-xs)", color: "var(--ink-mute)", margin: 0 }}>
           {favProducts.length} produit{favProducts.length !== 1 ? "s" : ""} sauvegardé
@@ -55,7 +46,6 @@ export default function FavoritesPage() {
         </p>
       </div>
 
-      {/* Grid */}
       <div className="prodbento" style={{ padding: "0 16px 24px" }}>
         {favProducts.map((p) => (
           <div key={p.id} className="prodbento-cell">
@@ -64,8 +54,8 @@ export default function FavoritesPage() {
               wide
               isFav={favs.includes(p.id)}
               onFav={toggleFav}
-              onAdd={() => {}}
-              onOpen={() => {}}
+              onAdd={addToCart}
+              onOpen={openProduct}
             />
           </div>
         ))}

@@ -135,15 +135,18 @@ export const useStore = create<AppStore>()(
       favs: [],
 
       toggleFav(id) {
+        const adding = !get().favs.includes(id);
         set((s) => ({
-          favs: s.favs.includes(id)
-            ? s.favs.filter((x) => x !== id)
-            : [...s.favs, id],
+          favs: adding ? [...s.favs, id] : s.favs.filter((x) => x !== id),
         }));
+        get().showToast(
+          adding ? "Ajouté aux favoris" : "Retiré des favoris",
+          "heart"
+        );
       },
 
       isFav(id) {
-        return get()._storeHydrated && get().favs.includes(id);
+        return get().favs.includes(id);
       },
 
       /* ── Toast ───────────────────────────────── */

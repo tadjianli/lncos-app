@@ -67,7 +67,7 @@ function PageProducts({ section }: { section: HomeSection }) {
   const openProduct = useStore((s) => s.openProduct);
   const addToCart   = useStore((s) => s.addToCart);
   const toggleFav   = useStore((s) => s.toggleFav);
-  const isFav       = useStore((s) => s.isFav);
+  const favs        = useStore((s) => s.favs);
   const [cat, setCat] = useState("all");
 
   let list = products;
@@ -99,7 +99,7 @@ function PageProducts({ section }: { section: HomeSection }) {
       <div className="prodbento">
         {list.map((p, i) => (
           <div key={p.id} className="prodbento-cell">
-            <ProductCard p={p} wide priority={i < 4} isFav={isFav(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
+            <ProductCard p={p} wide priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
           </div>
         ))}
       </div>

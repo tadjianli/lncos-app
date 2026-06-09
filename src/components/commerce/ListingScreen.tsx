@@ -27,7 +27,7 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
   const openProduct = useStore((s) => s.openProduct);
   const addToCart   = useStore((s) => s.addToCart);
   const toggleFav   = useStore((s) => s.toggleFav);
-  const isFav       = useStore((s) => s.isFav);
+  const favs        = useStore((s) => s.favs);
 
   const list = category
     ? products.filter((p) => p.cat === category.id)
@@ -131,7 +131,7 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
                 wide
                 onOpen={openProduct}
                 onFav={toggleFav}
-                isFav={isFav(p.id)}
+                isFav={favs.includes(p.id)}
                 onAdd={addToCart}
               />
             </div>

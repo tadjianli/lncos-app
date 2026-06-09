@@ -492,6 +492,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
+  z-index: 3;
   padding: 4px 9px;
   border-radius: var(--r-pill);
   background: rgba(0,0,0,.55);
@@ -512,6 +513,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 4;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -519,6 +521,14 @@
   backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.prod-fav-btn--on {
+  background: rgba(247,198,215,.22);
+  border: 1px solid rgba(247,198,215,.45);
 }
 .prod-card-info { padding: 11px 12px 13px; min-width: 0; }
 .prod-card-title {

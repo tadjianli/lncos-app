@@ -627,7 +627,7 @@ export default function HomePage() {
   const openSideMenu = useStore((s) => s.openSideMenu);
   const openSearch   = useStore((s) => s.openSearch);
   const openListing  = useStore((s) => s.openListing);
-  const isFav        = useStore((s) => s.isFav);
+  const favs         = useStore((s) => s.favs);
 
   /* ── Section config — Supabase published (realtime) ─────── */
   const { getVisible } = usePublicHomeSections();
@@ -699,7 +699,7 @@ export default function HomePage() {
                         p={p}
                         onOpen={handleOpen}
                         onFav={handleFav}
-                        isFav={isFav(p.id)}
+                        isFav={favs.includes(p.id)}
                         onAdd={handleAdd}
                         priority={pi === 0}
                       />
@@ -717,7 +717,7 @@ export default function HomePage() {
                           wide
                           onOpen={handleOpen}
                           onFav={handleFav}
-                          isFav={isFav(p.id)}
+                          isFav={favs.includes(p.id)}
                           onAdd={handleAdd}
                         />
                       </div>
@@ -734,7 +734,7 @@ export default function HomePage() {
                         p={p}
                         onOpen={handleOpen}
                         onFav={handleFav}
-                        isFav={isFav(p.id)}
+                        isFav={favs.includes(p.id)}
                         onAdd={handleAdd}
                       />
                     ))}
@@ -821,7 +821,7 @@ export default function HomePage() {
       }
     },
      
-    [handleAdd, handleFav, handleOpen, isFav, openListing, productsBySource]
+    [handleAdd, handleFav, handleOpen, favs, openListing, productsBySource]
   );
 
   return (

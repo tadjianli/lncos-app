@@ -6,14 +6,14 @@ import { ProductCard } from "@/components/shared/ProductCard";
 import { Icon } from "@/components/shared/Icon";
 import { PinkBtn } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
-import { products } from "@/lib/data";
+import { usePublicProducts } from "@/lib/client-supabase";
 
 export default function FavoritesPage() {
   const favs       = useStore((s) => s.favs);
   const toggleFav  = useStore((s) => s.toggleFav);
-  const isFav      = useStore((s) => s.isFav);
   const addToCart  = useStore((s) => s.addToCart);
   const openProduct = useStore((s) => s.openProduct);
+  const { products } = usePublicProducts();
 
   const favProducts = products.filter((p) => favs.includes(p.id));
 
@@ -59,7 +59,7 @@ export default function FavoritesPage() {
             <ProductCard
               p={p}
               wide
-              isFav={isFav(p.id)}
+              isFav={favs.includes(p.id)}
               onFav={toggleFav}
               onAdd={addToCart}
               onOpen={openProduct}

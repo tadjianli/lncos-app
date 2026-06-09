@@ -72,9 +72,10 @@ export const ProductCard = memo(function ProductCard({
 
         <button
           type="button"
-          className="prod-fav-btn"
+          className={`prod-fav-btn${isFav ? " prod-fav-btn--on" : ""}`}
           onClick={(e) => { e.stopPropagation(); onFav?.(p.id); }}
           aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+          aria-pressed={isFav}
         >
           <Icon
             name="heart"
