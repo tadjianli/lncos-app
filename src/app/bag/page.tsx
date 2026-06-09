@@ -4,7 +4,7 @@
  * Payment: Stripe hosted checkout (redirect flow)
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { SubHeader, PinkBtn, GoldBtn } from "@/components/shared/ActionButtons";
@@ -22,6 +22,12 @@ import {
   computePromoDiscount,
   promoGrantsFreeShipping,
 } from "@/lib/admin-supabase";
+import {
+  computeShippingCost,
+  filterEligibleShippingMethods,
+  formatShippingPriceLabel,
+  getShippingClientHints,
+} from "@/lib/shipping-rules";
 
 /* ─── Pending checkout shape stored in sessionStorage ────────────── */
 interface PendingCheckout {
@@ -109,11 +115,15 @@ function StepDelivery({
   loading: methodsLoading,
   selected,
   onSelect,
+  subtotal,
+  promoFreeShipping,
 }: {
   methods: ShippingMethod[];
   loading: boolean;
   selected: ShippingMethod | null;
   onSelect: (m: ShippingMethod) => void;
+  subtotal: number;
+  promoFreeShipping: boolean;
 }) {
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
@@ -144,7 +154,9 @@ function StepDelivery({
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {(methods ?? []).map((m, i) => {
             const isSelected = selected?.id === m.id;
-            const priceLabel = m.isFree ? "Gratuit" : `${m.price.toFixed(2).replace(".", ",")} €`;
+            const priceLabel = formatShippingPriceLabel(m, subtotal, promoFreeShipping);
+            const hints = getShippingClientHints(m, subtotal);
+            const subtitle = [m.estimatedDays || m.description, ...hints].filter(Boolean).join(" · ");
             return (
               <button
                 key={m.id}
@@ -162,11 +174,11 @@ function StepDelivery({
                 <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
                   <Icon name={m.icon as "truck"} size={20} color="var(--gold)" />
                 </span>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.name}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{m.description}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2, lineHeight: 1.35 }}>{subtitle}</div>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: m.isFree ? "var(--gold)" : "var(--ink)" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: priceLabel === "Gratuit" ? "var(--gold)" : "var(--ink)", flexShrink: 0 }}>
                   {priceLabel}
                 </span>
               </button>
@@ -340,12 +352,18 @@ function CartScreen({
   const [promoError,   setPromoError]   = useState<string | null>(null);
 
   const { methods: shippingMethods } = useActiveShippingMethods();
-  const defaultShipping = shippingMethods[0] ?? null;
 
   const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
   const discount     = appliedPromo ? computePromoDiscount(appliedPromo, subtotal) : 0;
   const freeShipping = appliedPromo ? promoGrantsFreeShipping(appliedPromo) : false;
-  const shippingCost = freeShipping ? 0 : defaultShipping ? (defaultShipping.isFree ? 0 : defaultShipping.price) : 0;
+  const eligibleShipping = useMemo(
+    () => filterEligibleShippingMethods(shippingMethods, subtotal),
+    [shippingMethods, subtotal]
+  );
+  const defaultShipping = eligibleShipping[0] ?? null;
+  const shippingCost = defaultShipping
+    ? computeShippingCost(defaultShipping, subtotal, freeShipping)
+    : 0;
   const total        = subtotal - discount + shippingCost;
 
   async function handleApplyPromo() {
@@ -548,19 +566,29 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const { methods: shippingMethodsRaw, loading: shippingLoading } = useActiveShippingMethods();
   const shippingMethods = shippingMethodsRaw ?? [];
 
-  // Auto-select first method once methods load
-  useEffect(() => {
-    if (!selectedShipping && shippingMethods.length > 0) {
-      setSelectedShipping(shippingMethods[0]);
-    }
-  }, [shippingMethods, selectedShipping]);
-
   const cart = useStore((s) => s.cart);
 
   const subtotal     = cart.reduce((s, it) => s + it.price * it.qty, 0);
   const discount     = appliedPromo ? computePromoDiscount(appliedPromo, subtotal) : 0;
   const freeShipping = appliedPromo ? promoGrantsFreeShipping(appliedPromo) : false;
-  const shippingCost = freeShipping ? 0 : selectedShipping ? (selectedShipping.isFree ? 0 : selectedShipping.price) : 0;
+  const eligibleShipping = useMemo(
+    () => filterEligibleShippingMethods(shippingMethods, subtotal),
+    [shippingMethods, subtotal]
+  );
+
+  useEffect(() => {
+    if (eligibleShipping.length === 0) {
+      setSelectedShipping(null);
+      return;
+    }
+    if (!selectedShipping || !eligibleShipping.some((m) => m.id === selectedShipping.id)) {
+      setSelectedShipping(eligibleShipping[0]);
+    }
+  }, [eligibleShipping, selectedShipping]);
+
+  const shippingCost = selectedShipping
+    ? computeShippingCost(selectedShipping, subtotal, freeShipping)
+    : 0;
   const total        = subtotal - discount + shippingCost;
 
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
@@ -673,10 +701,12 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
         {step === 0 && <StepAddress />}
         {step === 1 && (
           <StepDelivery
-            methods={shippingMethods}
+            methods={eligibleShipping}
             loading={shippingLoading}
             selected={selectedShipping}
             onSelect={setSelectedShipping}
+            subtotal={subtotal}
+            promoFreeShipping={freeShipping}
           />
         )}
         {step === 2 && <StepPayment total={total} />}

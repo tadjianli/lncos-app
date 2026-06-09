@@ -1124,6 +1124,12 @@ export interface Database {
           icon: string;
           is_active: boolean;
           is_free: boolean;
+          free_shipping_enabled: boolean;
+          free_shipping_threshold: number | null;
+          minimum_order_enabled: boolean;
+          minimum_order_amount: number | null;
+          maximum_order_enabled: boolean;
+          maximum_order_amount: number | null;
           sort_order: number;
           created_at: string;
         };
@@ -1136,6 +1142,12 @@ export interface Database {
           icon?: string;
           is_active?: boolean;
           is_free?: boolean;
+          free_shipping_enabled?: boolean;
+          free_shipping_threshold?: number | null;
+          minimum_order_enabled?: boolean;
+          minimum_order_amount?: number | null;
+          maximum_order_enabled?: boolean;
+          maximum_order_amount?: number | null;
           sort_order?: number;
           created_at?: string;
         };
@@ -1147,6 +1159,12 @@ export interface Database {
           icon?: string;
           is_active?: boolean;
           is_free?: boolean;
+          free_shipping_enabled?: boolean;
+          free_shipping_threshold?: number | null;
+          minimum_order_enabled?: boolean;
+          minimum_order_amount?: number | null;
+          maximum_order_enabled?: boolean;
+          maximum_order_amount?: number | null;
           sort_order?: number;
         };
         Relationships: [];

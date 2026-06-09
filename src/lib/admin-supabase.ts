@@ -809,13 +809,19 @@ export interface ShippingMethod {
   icon: string;
   isActive: boolean;
   isFree: boolean;
+  freeShippingEnabled: boolean;
+  freeShippingThreshold: number | null;
+  minimumOrderEnabled: boolean;
+  minimumOrderAmount: number | null;
+  maximumOrderEnabled: boolean;
+  maximumOrderAmount: number | null;
   sortOrder: number;
   createdAt: string;
 }
 
 type DbShipping = Database["public"]["Tables"]["shipping_methods"]["Row"];
 
-function dbToShipping(r: DbShipping): ShippingMethod {
+export function dbToShipping(r: DbShipping): ShippingMethod {
   return {
     id: r.id,
     name: r.name,
@@ -825,6 +831,12 @@ function dbToShipping(r: DbShipping): ShippingMethod {
     icon: r.icon,
     isActive: r.is_active,
     isFree: r.is_free,
+    freeShippingEnabled: r.free_shipping_enabled ?? false,
+    freeShippingThreshold: r.free_shipping_threshold != null ? Number(r.free_shipping_threshold) : null,
+    minimumOrderEnabled: r.minimum_order_enabled ?? false,
+    minimumOrderAmount: r.minimum_order_amount != null ? Number(r.minimum_order_amount) : null,
+    maximumOrderEnabled: r.maximum_order_enabled ?? false,
+    maximumOrderAmount: r.maximum_order_amount != null ? Number(r.maximum_order_amount) : null,
     sortOrder: r.sort_order,
     createdAt: r.created_at,
   };
@@ -839,6 +851,12 @@ function shippingToDb(m: Partial<ShippingMethod>): Partial<Database["public"]["T
   if (m.icon !== undefined) db.icon = m.icon;
   if (m.isActive !== undefined) db.is_active = m.isActive;
   if (m.isFree !== undefined) db.is_free = m.isFree;
+  if (m.freeShippingEnabled !== undefined) db.free_shipping_enabled = m.freeShippingEnabled;
+  if (m.freeShippingThreshold !== undefined) db.free_shipping_threshold = m.freeShippingThreshold;
+  if (m.minimumOrderEnabled !== undefined) db.minimum_order_enabled = m.minimumOrderEnabled;
+  if (m.minimumOrderAmount !== undefined) db.minimum_order_amount = m.minimumOrderAmount;
+  if (m.maximumOrderEnabled !== undefined) db.maximum_order_enabled = m.maximumOrderEnabled;
+  if (m.maximumOrderAmount !== undefined) db.maximum_order_amount = m.maximumOrderAmount;
   if (m.sortOrder !== undefined) db.sort_order = m.sortOrder;
   return db;
 }
@@ -890,6 +908,12 @@ export function useShippingMethods() {
         icon: m.icon,
         is_active: m.isActive,
         is_free: m.isFree,
+        free_shipping_enabled: m.freeShippingEnabled,
+        free_shipping_threshold: m.freeShippingThreshold,
+        minimum_order_enabled: m.minimumOrderEnabled,
+        minimum_order_amount: m.minimumOrderAmount,
+        maximum_order_enabled: m.maximumOrderEnabled,
+        maximum_order_amount: m.maximumOrderAmount,
         sort_order: m.sortOrder,
       })
       .select()

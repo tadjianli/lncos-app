@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
+import { createClient } from "@/lib/supabase/server";
+import { dbToShipping } from "@/lib/admin-supabase";
+import { computeShippingCost, isShippingMethodEligible } from "@/lib/shipping-rules";
 
 interface CheckoutItem {
   id: string;
@@ -53,6 +56,61 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Données de commande invalides" }, { status: 400 });
     }
 
+    const computedSubtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
+    if (Math.abs(computedSubtotal - body.subtotal) > 0.02) {
+      return NextResponse.json({ error: "Sous-total invalide" }, { status: 400 });
+    }
+
+    let promoFreeShipping = false;
+    if (promo_code) {
+      const supabase = await createClient();
+      const { data: promoRow } = await supabase
+        .from("promotions")
+        .select("type, free_shipping, is_active, expires_at, max_uses, current_uses, minimum_order")
+        .eq("code", promo_code.toUpperCase().trim())
+        .maybeSingle();
+      if (promoRow?.is_active) {
+        const expired = promoRow.expires_at && new Date(promoRow.expires_at) < new Date();
+        const maxed = promoRow.max_uses != null && promoRow.current_uses >= promoRow.max_uses;
+        const minOk = !promoRow.minimum_order || computedSubtotal >= Number(promoRow.minimum_order);
+        if (!expired && !maxed && minOk) {
+          promoFreeShipping = promoRow.type === "shipping" || promoRow.free_shipping === true;
+        }
+      }
+    }
+
+    let verifiedShipping = shipping_cost;
+    if (shipping_method_name) {
+      const supabase = await createClient();
+      const { data: methodRow } = await supabase
+        .from("shipping_methods")
+        .select("*")
+        .eq("name", shipping_method_name)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!methodRow) {
+        return NextResponse.json({ error: "Méthode de livraison invalide" }, { status: 400 });
+      }
+
+      const method = dbToShipping(methodRow);
+      if (!isShippingMethodEligible(method, computedSubtotal)) {
+        return NextResponse.json({ error: "Méthode de livraison non disponible pour ce panier" }, { status: 400 });
+      }
+
+      verifiedShipping = computeShippingCost(method, computedSubtotal, promoFreeShipping);
+      if (Math.abs(verifiedShipping - shipping_cost) > 0.02) {
+        return NextResponse.json({ error: "Frais de livraison invalides" }, { status: 400 });
+      }
+    } else if (shipping_cost > 0) {
+      return NextResponse.json({ error: "Méthode de livraison requise" }, { status: 400 });
+    }
+
+    const expectedTotal = computedSubtotal - (discount ?? 0) + verifiedShipping;
+    if (Math.abs(expectedTotal - total) > 0.02) {
+      return NextResponse.json({ error: "Total invalide" }, { status: 400 });
+    }
+
     // Build return URL
     let origin = clientReturnUrl?.startsWith("http") ? new URL(clientReturnUrl).origin : null;
     if (!origin) {
@@ -80,12 +138,12 @@ export async function POST(req: Request) {
     }));
 
     // Add shipping as a line item when > 0
-    if (shipping_cost > 0) {
+    if (verifiedShipping > 0) {
       lineItems.push({
         price_data: {
           currency: "eur",
           product_data: { name: shipping_method_name ?? "Livraison" },
-          unit_amount: Math.round(shipping_cost * 100),
+          unit_amount: Math.round(verifiedShipping * 100),
         },
         quantity: 1,
       });

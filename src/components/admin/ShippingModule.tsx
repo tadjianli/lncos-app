@@ -4,6 +4,13 @@ import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { useShippingMethods, type ShippingMethod } from "@/lib/admin-supabase";
+import {
+  computeShippingCost,
+  getShippingAdminBadges,
+  getShippingPreviewConditions,
+  validateShippingMethodForm,
+  type ShippingMethodInput,
+} from "@/lib/shipping-rules";
 
 /* ─── ICON options shown in the method editor ────────────────────────── */
 const ICONS = [
@@ -15,7 +22,7 @@ const ICONS = [
   { id: "star",    label: "Étoile" },
 ];
 
-const EMPTY_FORM: Omit<ShippingMethod, "id" | "createdAt"> = {
+const EMPTY_FORM: ShippingMethodInput = {
   name: "",
   description: "",
   price: 0,
@@ -23,8 +30,84 @@ const EMPTY_FORM: Omit<ShippingMethod, "id" | "createdAt"> = {
   icon: "truck",
   isActive: true,
   isFree: false,
+  freeShippingEnabled: false,
+  freeShippingThreshold: null,
+  minimumOrderEnabled: false,
+  minimumOrderAmount: null,
+  maximumOrderEnabled: false,
+  maximumOrderAmount: null,
   sortOrder: 0,
 };
+
+const PREVIEW_SUBTOTAL = 40;
+
+function RuleToggleRow({
+  label,
+  hint,
+  checked,
+  onChange,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--adm-border-2)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--adm-ink)" }}>{label}</div>
+          {hint && <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 2 }}>{hint}</div>}
+        </div>
+        <label className="ab-toggle" style={{ cursor: "pointer", flexShrink: 0 }}>
+          <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+          <div className="ab-toggle-track" />
+          <div className="ab-toggle-thumb" />
+        </label>
+      </div>
+      {checked && children && <div style={{ marginTop: 12 }}>{children}</div>}
+    </div>
+  );
+}
+
+function MethodPreviewCard({ form }: { form: ShippingMethodInput }) {
+  const previewMethod = { ...form, id: "preview", createdAt: "" } as ShippingMethod;
+  const price = computeShippingCost(previewMethod, PREVIEW_SUBTOTAL);
+  const conditions = getShippingPreviewConditions(form);
+
+  return (
+    <div
+      className="adm-card"
+      style={{
+        marginTop: 20,
+        padding: 16,
+        background: "var(--adm-surface-2)",
+        border: "1px dashed var(--adm-border)",
+      }}
+    >
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--adm-ink-mute)", marginBottom: 12 }}>
+        Aperçu (panier {PREVIEW_SUBTOTAL} €)
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--adm-ink)" }}>{form.name || "Méthode"}</div>
+          <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 2 }}>
+            Prix actuel : {price === 0 ? "GRATUIT" : `${price.toFixed(2)} €`}
+          </div>
+        </div>
+        <Icon name={form.icon as "truck"} size={22} color="var(--adm-gold)" />
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--adm-ink-soft)", marginBottom: 6 }}>Conditions</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {conditions.map((line) => (
+          <div key={line} style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>{line}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Method edit / create modal ─────────────────────────────────────── */
 function MethodModal({
@@ -33,20 +116,31 @@ function MethodModal({
   onClose,
   onSave,
 }: {
-  method: Omit<ShippingMethod, "id" | "createdAt">;
+  method: ShippingMethodInput;
   isNew: boolean;
   onClose: () => void;
-  onSave: (m: Omit<ShippingMethod, "id" | "createdAt">) => void;
+  onSave: (m: ShippingMethodInput) => void;
 }) {
   const [form, setForm] = useState({ ...method });
+  const [errors, setErrors] = useState<string[]>([]);
 
   function set<K extends keyof typeof form>(key: K, val: (typeof form)[K]) {
     setForm((p) => ({ ...p, [key]: val }));
+    setErrors([]);
+  }
+
+  function handleSubmit() {
+    const result = validateShippingMethodForm(form);
+    if (!result.valid) {
+      setErrors(result.errors);
+      return;
+    }
+    onSave(form);
   }
 
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
-      <div className="ab-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="ab-modal ab-modal-wide ab-modal-scroll" onClick={(e) => e.stopPropagation()}>
         <div className="ab-modal-head">
           <div className="ab-modal-title">
             {isNew ? "Nouvelle méthode" : `Modifier · ${method.name}`}
@@ -113,8 +207,13 @@ function MethodModal({
                 type="checkbox"
                 checked={form.isFree}
                 onChange={(e) => {
-                  set("isFree", e.target.checked);
-                  if (e.target.checked) set("price", 0);
+                  const checked = e.target.checked;
+                  set("isFree", checked);
+                  if (checked) {
+                    set("price", 0);
+                    set("freeShippingEnabled", false);
+                    set("freeShippingThreshold", null);
+                  }
                 }}
               />
               <div className="ab-toggle-track" />
@@ -125,6 +224,91 @@ function MethodModal({
             </label>
           </div>
         </div>
+
+        <RuleToggleRow
+          label="Activer la livraison gratuite à partir d'un montant"
+          hint={form.isFree ? "Désactivé — la méthode est déjà toujours gratuite" : undefined}
+          checked={form.freeShippingEnabled && !form.isFree}
+          onChange={(v) => {
+            if (form.isFree) return;
+            set("freeShippingEnabled", v);
+            if (!v) set("freeShippingThreshold", null);
+          }}
+        >
+          <div className="ab-field" style={{ marginBottom: 0 }}>
+            <label>Livraison offerte dès (€)</label>
+            <input
+              className="ab-input"
+              type="number"
+              min={0.01}
+              step={0.01}
+              value={form.freeShippingThreshold ?? ""}
+              onChange={(e) =>
+                set("freeShippingThreshold", e.target.value ? parseFloat(e.target.value) : null)
+              }
+              placeholder="Ex : 50"
+              disabled={form.isFree}
+            />
+          </div>
+        </RuleToggleRow>
+
+        <RuleToggleRow
+          label="Activer un minimum de commande"
+          checked={form.minimumOrderEnabled}
+          onChange={(v) => {
+            set("minimumOrderEnabled", v);
+            if (!v) set("minimumOrderAmount", null);
+          }}
+        >
+          <div className="ab-field" style={{ marginBottom: 0 }}>
+            <label>Commande minimum (€)</label>
+            <input
+              className="ab-input"
+              type="number"
+              min={0.01}
+              step={0.01}
+              value={form.minimumOrderAmount ?? ""}
+              onChange={(e) =>
+                set("minimumOrderAmount", e.target.value ? parseFloat(e.target.value) : null)
+              }
+              placeholder="Ex : 20"
+            />
+          </div>
+        </RuleToggleRow>
+
+        <RuleToggleRow
+          label="Limiter à un montant maximum"
+          checked={form.maximumOrderEnabled}
+          onChange={(v) => {
+            set("maximumOrderEnabled", v);
+            if (!v) set("maximumOrderAmount", null);
+          }}
+        >
+          <div className="ab-field" style={{ marginBottom: 0 }}>
+            <label>Commande maximum (€)</label>
+            <input
+              className="ab-input"
+              type="number"
+              min={0.01}
+              step={0.01}
+              value={form.maximumOrderAmount ?? ""}
+              onChange={(e) =>
+                set("maximumOrderAmount", e.target.value ? parseFloat(e.target.value) : null)
+              }
+              placeholder="Ex : 100"
+            />
+          </div>
+        </RuleToggleRow>
+
+        <MethodPreviewCard form={form} />
+
+        {errors.length > 0 && (
+          <div style={{ marginTop: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(194,85,122,.08)", border: "1px solid rgba(194,85,122,.2)" }}>
+            {errors.map((err) => (
+              <div key={err} style={{ fontSize: 12, color: "#C2557A", lineHeight: 1.5 }}>{err}</div>
+            ))}
+          </div>
+        )}
 
         {/* Icon picker */}
         <div className="ab-field" style={{ marginTop: 18 }}>
@@ -174,7 +358,7 @@ function MethodModal({
           <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
           <button
             className="adm-btn gold"
-            onClick={() => onSave(form)}
+            onClick={handleSubmit}
             disabled={!form.name.trim()}
           >
             <Icon name="check" size={15} />
@@ -189,7 +373,7 @@ function MethodModal({
 /* ─── Main module ────────────────────────────────────────────────────── */
 export function ShippingModule() {
   const { methods, loading, updateMethod, insertMethod, deleteMethod, reorderMethods } = useShippingMethods();
-  const [modal, setModal] = useState<{ open: boolean; isNew: boolean; method: Omit<ShippingMethod, "id" | "createdAt">; id?: string } | null>(null);
+  const [modal, setModal] = useState<{ open: boolean; isNew: boolean; method: ShippingMethodInput; id?: string } | null>(null);
   const [toast, setToast] = useState<{ msg: string; error: boolean } | null>(null);
   const [delConfirm, setDelConfirm] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -217,12 +401,18 @@ export function ShippingModule() {
         icon: m.icon,
         isActive: m.isActive,
         isFree: m.isFree,
+        freeShippingEnabled: m.freeShippingEnabled,
+        freeShippingThreshold: m.freeShippingThreshold,
+        minimumOrderEnabled: m.minimumOrderEnabled,
+        minimumOrderAmount: m.minimumOrderAmount,
+        maximumOrderEnabled: m.maximumOrderEnabled,
+        maximumOrderAmount: m.maximumOrderAmount,
         sortOrder: m.sortOrder,
       },
     });
   }
 
-  async function handleSave(form: Omit<ShippingMethod, "id" | "createdAt">) {
+  async function handleSave(form: ShippingMethodInput) {
     setSaving(true);
     try {
       if (modal?.isNew) {
@@ -367,18 +557,35 @@ export function ShippingModule() {
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: "var(--adm-ink)" }}>{m.name}</span>
-                      {m.isFree && (
-                        <span style={{ padding: "2px 8px", borderRadius: 6, background: "rgba(47,158,104,.1)", color: "#2F9E68", fontSize: 10.5, fontWeight: 700 }}>
-                          GRATUIT
-                        </span>
-                      )}
-                      {!m.isActive && (
-                        <span style={{ padding: "2px 8px", borderRadius: 6, background: "var(--adm-surface-2)", color: "var(--adm-ink-mute)", fontSize: 10.5, fontWeight: 700 }}>
-                          INACTIF
-                        </span>
-                      )}
+                      {getShippingAdminBadges(m).map((badge) => {
+                        const isInactive = badge === "INACTIF";
+                        const isFree = badge === "GRATUIT" || badge.startsWith("OFFERT");
+                        const isLimit = badge.startsWith("MIN") || badge.startsWith("MAX");
+                        const bg = isInactive
+                          ? "var(--adm-surface-2)"
+                          : isFree
+                            ? "rgba(47,158,104,.1)"
+                            : isLimit
+                              ? "rgba(59,125,216,.1)"
+                              : "rgba(47,158,104,.1)";
+                        const color = isInactive
+                          ? "var(--adm-ink-mute)"
+                          : isFree
+                            ? "#2F9E68"
+                            : isLimit
+                              ? "#3B7DD8"
+                              : "#2F9E68";
+                        return (
+                          <span
+                            key={badge}
+                            style={{ padding: "2px 8px", borderRadius: 6, background: bg, color, fontSize: 10, fontWeight: 700 }}
+                          >
+                            {badge}
+                          </span>
+                        );
+                      })}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 2 }}>
                       {m.description}
