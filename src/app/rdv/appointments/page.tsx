@@ -41,7 +41,7 @@ export default function AppointmentsPage() {
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
         <SubHeader
           title="Mes rendez-vous"
-          onBack={undefined}
+          backHref="/profile"
           right={
             <Link href="/rdv" style={{ fontSize: 12.5, color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>
               + Réserver

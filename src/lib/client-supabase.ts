@@ -16,9 +16,21 @@ import {
 import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
 import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
+import type { ProductVariant } from "./product-catalog";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
 import type { ProductReview } from "./reviews";
 import { FALLBACK_REVIEWS, reviewToPublic, type PublicReview } from "./reviews";
+
+type DbVariantRow = {
+  id: string;
+  product_id: string;
+  name: string;
+  price: number;
+  stock: number;
+  sku: string;
+  image_url: string | null;
+  position: number;
+};
 
 /* ── DB row → UI Product mapper ──────────────────────────────── */
 function mapProduct(row: {
@@ -36,7 +48,26 @@ function mapProduct(row: {
   description: string;
   ingredients: string[];
   active: boolean;
+  image_url?: string | null;
+  main_image_url?: string | null;
+  gallery_images?: string[] | null;
+  video_url?: string | null;
+  product_variants?: DbVariantRow[] | null;
 }): Product {
+  const richVariants: ProductVariant[] = (row.product_variants ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((v) => ({
+      id: v.id,
+      productId: v.product_id,
+      name: v.name,
+      price: Number(v.price),
+      stock: v.stock,
+      sku: v.sku,
+      imageUrl: v.image_url,
+      position: v.position,
+    }));
+
   return {
     id: row.id,
     name: row.name,
@@ -48,9 +79,14 @@ function mapProduct(row: {
     reviews: row.reviews,
     tag: row.tag,
     stock: row.stock,
-    variants: row.variants ?? [],
+    variants: richVariants.length > 0 ? richVariants.map((v) => v.name) : (row.variants ?? []),
     desc: row.description,
     ingredients: row.ingredients ?? [],
+    mainImageUrl: row.main_image_url ?? row.image_url ?? null,
+    galleryImages: row.gallery_images ?? [],
+    videoUrl: row.video_url ?? null,
+    imageUrl: row.image_url ?? null,
+    productVariants: richVariants,
   };
 }
 
@@ -67,7 +103,7 @@ export function usePublicProducts() {
 
     getSupabase()
       .from("products")
-      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,active,created_at")
+      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,active,image_url,main_image_url,gallery_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {

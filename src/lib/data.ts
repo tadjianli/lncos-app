@@ -1,5 +1,16 @@
 /* LN COS — Catalogue & données de démonstration (from handoff data.js) */
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  stock: number;
+  sku: string;
+  imageUrl: string | null;
+  position: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +25,16 @@ export interface Product {
   variants: string[];
   desc: string;
   ingredients: string[];
+  /** URL image principale (Supabase Storage) */
+  mainImageUrl?: string | null;
+  /** Galerie complémentaire */
+  galleryImages?: string[];
+  /** Réservé vidéo produit (futur) */
+  videoUrl?: string | null;
+  /** @deprecated alias legacy — préférer mainImageUrl */
+  imageUrl?: string | null;
+  /** Variantes riches (prix, stock, SKU, image) */
+  productVariants?: ProductVariant[];
 }
 
 export interface Category {

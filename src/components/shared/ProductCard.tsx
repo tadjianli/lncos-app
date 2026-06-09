@@ -4,6 +4,7 @@ import { useState, memo, useCallback } from "react";
 import { Icon } from "./Icon";
 import { FadeImage } from "./FadeImage";
 import type { Product } from "@/lib/data";
+import { resolveProductImage } from "@/lib/product-catalog";
 
 interface ProductCardProps {
   p: Product;
@@ -37,7 +38,7 @@ export const ProductCard = memo(function ProductCard({
     setTimeout(() => setPops((list) => list.filter((x) => x !== id)), 900);
   }, [onAdd, p]);
 
-  const imgSrc = `/assets/products/${p.id}.png`;
+  const imgSrc = resolveProductImage(p);
   const initials = p.name
     .split(/\s+/)
     .slice(0, 2)

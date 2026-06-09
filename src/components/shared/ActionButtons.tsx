@@ -1,7 +1,9 @@
+"use client";
 /**
  * LN COS — Handoff action button primitives
  * PinkBtn, GoldBtn, SubHeader — exact from handoff ui.jsx
  */
+import { useRouter } from "next/navigation";
 import { Icon } from "./Icon";
 
 interface BtnProps {
@@ -80,10 +82,26 @@ export function GoldBtn({ children, onClick, style, icon, disabled, type = "butt
 interface SubHeaderProps {
   title: string;
   onBack?: () => void;
+  /** Navigation explicite si pas d'historique (ex. /) */
+  backHref?: string;
   right?: React.ReactNode;
 }
 
-export function SubHeader({ title, onBack, right }: SubHeaderProps) {
+export function SubHeader({ title, onBack, backHref = "/", right }: SubHeaderProps) {
+  const router = useRouter();
+
+  function handleBack() {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push(backHref);
+  }
+
   return (
     <div
       style={{
@@ -95,7 +113,8 @@ export function SubHeader({ title, onBack, right }: SubHeaderProps) {
       }}
     >
       <button
-        onClick={onBack}
+        type="button"
+        onClick={handleBack}
         style={{
           width: 38,
           height: 38,
@@ -105,6 +124,9 @@ export function SubHeader({ title, onBack, right }: SubHeaderProps) {
           placeItems: "center",
           color: "var(--ink)",
           border: "1px solid rgba(255,255,255,.06)",
+          cursor: "pointer",
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
         }}
         aria-label="Retour"
       >

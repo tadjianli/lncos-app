@@ -63,6 +63,9 @@ export interface Database {
           ingredients: string[];
           active: boolean;
           image_url: string | null;
+          main_image_url: string | null;
+          gallery_images: string[];
+          video_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -82,6 +85,9 @@ export interface Database {
           ingredients?: string[];
           active?: boolean;
           image_url?: string | null;
+          main_image_url?: string | null;
+          gallery_images?: string[];
+          video_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -100,9 +106,57 @@ export interface Database {
           ingredients?: string[];
           active?: boolean;
           image_url?: string | null;
+          main_image_url?: string | null;
+          gallery_images?: string[];
+          video_url?: string | null;
           updated_at?: string;
         };
         Relationships: [];
+      };
+
+      product_variants: {
+        Row: {
+          id: string;
+          product_id: string;
+          name: string;
+          price: number;
+          stock: number;
+          sku: string;
+          image_url: string | null;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          name: string;
+          price: number;
+          stock?: number;
+          sku?: string;
+          image_url?: string | null;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          product_id?: string;
+          name?: string;
+          price?: number;
+          stock?: number;
+          sku?: string;
+          image_url?: string | null;
+          position?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey";
+            columns: ["product_id"];
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
       };
 
       categories: {

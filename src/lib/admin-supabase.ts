@@ -13,12 +13,18 @@ import type { HomeSection } from "./home-sections";
 import { dbToSection, sectionToDb } from "./home-sections-db";
 import type { Product } from "./data";
 import type { ProductReview, ReviewStatus } from "./reviews";
+import type { ProductVariant } from "./product-catalog";
 
 /* ─── Type aliases ─────────────────────────────────────────────────────────── */
 
 type DbPopup = Database["public"]["Tables"]["popups"]["Row"];
 type DbAppointment = Database["public"]["Tables"]["appointments"]["Row"];
 type DbProduct = Database["public"]["Tables"]["products"]["Row"];
+type DbProductVariant = Database["public"]["Tables"]["product_variants"]["Row"];
+
+type DbProductWithVariants = DbProduct & {
+  product_variants?: DbProductVariant[] | null;
+};
 
 /* ─── Mappers: DB → UI ─────────────────────────────────────────────────────── */
 
@@ -122,7 +128,25 @@ function dbToAppointment(r: DbAppointment): Appointment {
   };
 }
 
-function dbToProduct(r: DbProduct): Product {
+function dbToVariant(r: DbProductVariant): ProductVariant {
+  return {
+    id: r.id,
+    productId: r.product_id,
+    name: r.name,
+    price: Number(r.price),
+    stock: r.stock,
+    sku: r.sku,
+    imageUrl: r.image_url,
+    position: r.position,
+  };
+}
+
+function dbToProduct(r: DbProductWithVariants): Product {
+  const variants = (r.product_variants ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map(dbToVariant);
+
   return {
     id: r.id,
     name: r.name,
@@ -134,9 +158,14 @@ function dbToProduct(r: DbProduct): Product {
     reviews: r.reviews,
     tag: r.tag,
     stock: r.stock,
-    variants: r.variants,
+    variants: variants.length > 0 ? variants.map((v) => v.name) : r.variants,
     desc: r.description,
     ingredients: r.ingredients,
+    mainImageUrl: r.main_image_url ?? r.image_url,
+    galleryImages: r.gallery_images ?? [],
+    videoUrl: r.video_url,
+    imageUrl: r.image_url,
+    productVariants: variants,
   };
 }
 
@@ -152,7 +181,43 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
   if (p.desc !== undefined) db.description = p.desc;
   if (p.variants !== undefined) db.variants = p.variants;
   if (p.ingredients !== undefined) db.ingredients = p.ingredients;
+  if ("mainImageUrl" in p) {
+    db.main_image_url = p.mainImageUrl ?? null;
+    db.image_url = p.mainImageUrl ?? null;
+  }
+  if (p.galleryImages !== undefined) db.gallery_images = p.galleryImages;
+  if ("videoUrl" in p) db.video_url = p.videoUrl ?? null;
   return db;
+}
+
+function variantToDb(v: ProductVariant, position: number): Database["public"]["Tables"]["product_variants"]["Insert"] {
+  return {
+    id: v.id.startsWith("new-") ? undefined : v.id,
+    product_id: v.productId,
+    name: v.name,
+    price: v.price,
+    stock: v.stock,
+    sku: v.sku,
+    image_url: v.imageUrl,
+    position,
+  };
+}
+
+export async function saveProductVariants(productId: string, variants: ProductVariant[]): Promise<{ error: string | null }> {
+  const supabase = getSupabase();
+  const { error: delErr } = await supabase
+    .from("product_variants")
+    .delete()
+    .eq("product_id", productId);
+  if (delErr) return { error: delErr.message };
+
+  const valid = variants.filter((v) => v.name.trim());
+  if (valid.length === 0) return { error: null };
+
+  const rows = valid.map((v, i) => variantToDb({ ...v, productId }, i));
+  const { error: insErr } = await supabase.from("product_variants").insert(rows);
+  if (insErr) return { error: insErr.message };
+  return { error: null };
 }
 
 /* ─── usePopups ────────────────────────────────────────────────────────────── */
@@ -466,9 +531,9 @@ export function useProducts() {
   const load = useCallback(async () => {
     const { data } = await getSupabase()
       .from("products")
-      .select("*")
+      .select("*, product_variants(*)")
       .order("name");
-    setProducts((data ?? []).map(dbToProduct));
+    setProducts((data ?? []).map((r) => dbToProduct(r as DbProductWithVariants)));
     setLoading(false);
   }, []);
 
@@ -476,36 +541,83 @@ export function useProducts() {
 
   const updateProduct = useCallback(async (id: string, patch: Partial<Product>) => {
     await getSupabase().from("products").update(productToDb(patch)).eq("id", id);
-    // Optimistic update
     setProducts((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
   }, []);
 
-  const insertProduct = useCallback(async (p: Omit<Product, "id" | "rating" | "reviews">) => {
-    const { data } = await getSupabase().from("products").insert({
-      name: p.name,
-      cat: p.cat,
-      price: p.price,
-      old_price: p.old ?? null,
-      ml: p.ml,
-      tag: p.tag,
-      stock: p.stock,
-      description: p.desc,
-      variants: p.variants,
-      ingredients: p.ingredients,
+  const saveProductFull = useCallback(async (
+    product: Product,
+    variants: ProductVariant[]
+  ): Promise<{ error: string | null }> => {
+    const variantNames = variants.filter((v) => v.name.trim()).map((v) => v.name);
+    const payload: Product = {
+      ...product,
+      variants: variantNames.length > 0 ? variantNames : product.variants,
+      productVariants: variants,
+    };
+
+    const { error: prodErr } = await getSupabase()
+      .from("products")
+      .update(productToDb(payload))
+      .eq("id", product.id);
+    if (prodErr) return { error: prodErr.message };
+
+    const { error: varErr } = await saveProductVariants(product.id, variants);
+    if (varErr) return { error: varErr };
+
+    await load();
+    return { error: null };
+  }, [load]);
+
+  const insertProductFull = useCallback(async (
+    product: Product,
+    variants: ProductVariant[]
+  ): Promise<{ error: string | null; id?: string }> => {
+    const variantNames = variants.filter((v) => v.name.trim()).map((v) => v.name);
+    const { data, error } = await getSupabase().from("products").insert({
+      id: product.id !== "__new__" ? product.id : undefined,
+      name: product.name,
+      cat: product.cat,
+      price: product.price,
+      old_price: product.old ?? null,
+      ml: product.ml,
+      tag: product.tag,
+      stock: product.stock,
+      description: product.desc,
+      variants: variantNames,
+      ingredients: product.ingredients,
+      main_image_url: product.mainImageUrl ?? null,
+      image_url: product.mainImageUrl ?? null,
+      gallery_images: product.galleryImages ?? [],
+      video_url: product.videoUrl ?? null,
       rating: 5,
       reviews: 0,
-    }).select().single();
-    if (data) {
-      setProducts((prev) => [...prev, dbToProduct(data as DbProduct)]);
-    }
-  }, []);
+    }).select("*, product_variants(*)").single();
+
+    if (error || !data) return { error: error?.message ?? "Création échouée" };
+
+    const created = dbToProduct(data as DbProductWithVariants);
+    const scopedVariants = variants.map((v) => ({ ...v, productId: created.id }));
+    const { error: varErr } = await saveProductVariants(created.id, scopedVariants);
+    if (varErr) return { error: varErr, id: created.id };
+
+    await load();
+    return { error: null, id: created.id };
+  }, [load]);
 
   const deleteProduct = useCallback(async (id: string) => {
     await getSupabase().from("products").delete().eq("id", id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
   }, []);
 
-  return { products, loading, updateProduct, insertProduct, deleteProduct, reload: load };
+  return {
+    products,
+    loading,
+    updateProduct,
+    saveProductFull,
+    insertProductFull,
+    deleteProduct,
+    reload: load,
+  };
 }
 
 /* ─── useAdminOrderBadge (sidebar — temps réel) ───────────────────────────── */

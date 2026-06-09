@@ -5,12 +5,23 @@
  * expandable editorial accordions, routine carousel, sticky CTA.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
+import { ProductGallery } from "@/components/commerce/ProductGallery";
+import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
-import { products } from "@/lib/data";
+import { usePublicProducts } from "@/lib/client-supabase";
+import {
+  buildProductGallery,
+  effectivePrice,
+  effectiveSku,
+  effectiveStock,
+  findVariantByName,
+  resolveProductImage,
+  variantLabels,
+} from "@/lib/product-catalog";
 import type { Product } from "@/lib/data";
 
 interface ProductDetailProps {
@@ -31,9 +42,6 @@ const COMMITMENTS = [
   { icon: "check",   label: "Made in France" },
   { icon: "star",    label: "Dermatologiquement testé" },
 ];
-
-/* Gallery: 4 mock angles (all use the same image for demo) */
-const GALLERY_COUNT = 4;
 
 /* ─── AccordionSection ───────────────────────────────────────── */
 
@@ -108,24 +116,44 @@ function AccordionSection({
 
 /* ─── Component ──────────────────────────────────────────────── */
 
-export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
-  const [activeImg, setActiveImg]     = useState(0);
-  const [variant, setVariant]         = useState(p.variants[0]);
-  const [qty, setQty]                 = useState(1);
-  const [imgZoomed, setImgZoomed]     = useState(false);
-  const [added, setAdded]             = useState(false);
+export function ProductDetail({ product: initialProduct, onClose }: ProductDetailProps) {
+  const { products, byId } = usePublicProducts();
+  const p = byId(initialProduct.id) ?? initialProduct;
+
+  const labels = variantLabels(p);
+  const [selectedVariantName, setSelectedVariantName] = useState(labels[0] ?? "");
+  const selectedVariant = findVariantByName(p, selectedVariantName);
+
+  const gallery = useMemo(
+    () => buildProductGallery(p, selectedVariant),
+    [p, selectedVariant]
+  );
+
+  const [activeImg, setActiveImg] = useState(0);
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(["description"])
   );
-
-  const addToCart   = useStore((s) => s.addToCart);
-  const toggleFav   = useStore((s) => s.toggleFav);
-  const favs        = useStore((s) => s.favs);
+  const addToCart = useStore((s) => s.addToCart);
+  const toggleFav = useStore((s) => s.toggleFav);
+  const favs = useStore((s) => s.favs);
   const openProduct = useStore((s) => s.openProduct);
-  const showToast   = useStore((s) => s.showToast);
+  const showToast = useStore((s) => s.showToast);
 
-  const fav      = favs.includes(p.id);
-  const lowStock = p.stock <= 20;
+  const displayPrice = effectivePrice(p, selectedVariant);
+  const displayStock = effectiveStock(p, selectedVariant);
+  const displaySku = effectiveSku(p, selectedVariant);
+  const fav = favs.includes(p.id);
+  const lowStock = displayStock > 0 && displayStock <= 20;
+  const outOfStock = displayStock <= 0;
+
+  useEffect(() => {
+    setActiveImg(0);
+    setQty(1);
+  }, [selectedVariant?.id, p.id]);
+
+  const setGalleryIndex = useCallback((i: number) => setActiveImg(i), []);
 
   const routine = products
     .filter((x) => x.cat === p.cat && x.id !== p.id)
@@ -136,12 +164,12 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
     .slice(0, 4);
 
   const handleAdd = useCallback(() => {
-    if (added) return;
-    addToCart(p, qty, variant);
+    if (added || outOfStock) return;
+    addToCart(p, qty, selectedVariantName || p.variants[0]);
     showToast(`${p.name} ajouté ✨`);
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
-  }, [added, addToCart, p, qty, variant, showToast]);
+  }, [added, outOfStock, addToCart, p, qty, selectedVariantName, showToast]);
 
   function toggleSection(key: string) {
     setOpenSections((prev) => {
@@ -152,7 +180,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
     });
   }
 
-  const totalPrice = (p.price * qty).toFixed(2);
+  const totalPrice = (displayPrice * qty).toFixed(2);
 
   return (
     <div
@@ -276,189 +304,13 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
         style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 90 }}
       >
 
-        {/* ── Hero image ── */}
-        <div
-          onClick={() => setImgZoomed((z) => !z)}
-          style={{
-            height: 340,
-            position: "relative",
-            overflow: "hidden",
-            background: "radial-gradient(120% 100% at 50% 30%, #2c2228 0%, #14100f 75%)",
-            cursor: "zoom-in",
-            willChange: "transform",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              transition: "transform 0.35s cubic-bezier(.22,.68,0,1)",
-              transform: imgZoomed ? "scale(1.06)" : "scale(1)",
-              willChange: "transform",
-            }}
-          >
-            <FadeImage
-              src={`/assets/products/${p.id}.png`}
-              alt={p.name}
-              fill
-              sizes="480px"
-              style={{ objectFit: "cover" }}
-              fallbackLabel={p.name}
-              priority
-            />
-          </div>
-
-          {/* Luxury gradient overlay */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,.08) 0%, transparent 35%, rgba(0,0,0,.55) 100%)",
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Product tag badge */}
-          {p.tag && (
-            <span
-              style={{
-                position: "absolute",
-                top: 108,
-                left: 16,
-                padding: "5px 12px",
-                borderRadius: "var(--r-pill)",
-                background: ["Flash", "Édition limitée"].includes(p.tag ?? "")
-                  ? "var(--gold-grad)"
-                  : "var(--pink-grad)",
-                color: "#3a1020",
-                fontSize: 10.5,
-                fontWeight: 700,
-                letterSpacing: ".04em",
-                textTransform: "uppercase",
-                pointerEvents: "none",
-              }}
-            >
-              {p.tag}
-            </span>
-          )}
-
-          {/* Zoom hint */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 12,
-              right: 14,
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "4px 10px",
-              borderRadius: "var(--r-pill)",
-              background: "rgba(0,0,0,.4)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              fontSize: 10,
-              fontWeight: 600,
-              color: "rgba(255,255,255,.7)",
-              pointerEvents: "none",
-            }}
-          >
-            <Icon name="search" size={11} color="rgba(255,255,255,.7)" />
-            Zoom
-          </div>
-        </div>
-
-        {/* ── Gallery thumbnails ── */}
-        <div
-          className="noscroll"
-          style={{
-            display: "flex",
-            gap: 9,
-            padding: "12px 18px",
-            overflowX: "auto",
-            background: "var(--charcoal)",
-            borderBottom: "1px solid rgba(255,255,255,.05)",
-          }}
-        >
-          {Array.from({ length: GALLERY_COUNT }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveImg(i)}
-              style={{
-                width: 62,
-                height: 62,
-                borderRadius: 12,
-                flex: "0 0 62px",
-                overflow: "hidden",
-                position: "relative",
-                background: "#181818",
-                border: activeImg === i
-                  ? "2px solid var(--gold)"
-                  : "2px solid rgba(255,255,255,.07)",
-                transition: "border-color 0.2s",
-                padding: 0,
-                WebkitTapHighlightColor: "transparent",
-                touchAction: "manipulation",
-                cursor: "pointer",
-                boxShadow: activeImg === i
-                  ? "0 0 0 2px rgba(212,175,55,.2)"
-                  : "none",
-              }}
-            >
-              <FadeImage
-                src={`/assets/products/${p.id}.png`}
-                alt={`${p.name} vue ${i + 1}`}
-                fill
-                sizes="62px"
-                style={{
-                  objectFit: "cover",
-                  opacity: activeImg === i ? 1 : 0.55,
-                  transition: "opacity 0.2s",
-                  filter: i === 0 ? "none"
-                    : i === 1 ? "hue-rotate(8deg) brightness(1.05)"
-                    : i === 2 ? "saturate(0.7) brightness(1.1)"
-                    : "contrast(1.08) brightness(0.95)",
-                }}
-              />
-              {activeImg === i && (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: 10,
-                    background: "rgba(212,175,55,.1)",
-                    pointerEvents: "none",
-                  }}
-                />
-              )}
-            </button>
-          ))}
-
-          {/* "Voir en AR" mock pill */}
-          <button
-            style={{
-              height: 62,
-              borderRadius: 12,
-              flex: "0 0 auto",
-              padding: "0 14px",
-              background: "rgba(212,175,55,.06)",
-              border: "1.5px dashed rgba(212,175,55,.3)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-              WebkitTapHighlightColor: "transparent",
-              touchAction: "manipulation",
-              cursor: "pointer",
-            }}
-          >
-            <Icon name="sparkle" size={16} color="var(--gold)" />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gold)", letterSpacing: ".06em", whiteSpace: "nowrap" }}>
-              AR
-            </span>
-          </button>
-        </div>
+        <ProductGallery
+          images={gallery}
+          activeIndex={activeImg}
+          onActiveIndexChange={setGalleryIndex}
+          alt={p.name}
+          tag={p.tag}
+        />
 
         {/* ── Product info ── */}
         <div style={{ padding: "20px 18px 0" }}>
@@ -530,7 +382,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
             }}
           >
             <span style={{ fontSize: 26, fontWeight: 800, color: "var(--ink)" }}>
-              {p.price.toFixed(2)} €
+              {displayPrice.toFixed(2)} €
             </span>
             {p.old && (
               <>
@@ -553,15 +405,39 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                     borderRadius: "var(--r-pill)",
                   }}
                 >
-                  −{Math.round((1 - p.price / p.old) * 100)}%
+                  −{Math.round((1 - displayPrice / p.old) * 100)}%
                 </span>
               </>
             )}
           </div>
 
+          {/* SKU */}
+          {displaySku && (
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginBottom: 12, letterSpacing: ".06em" }}>
+              Réf. {displaySku}
+            </div>
+          )}
+
           {/* Stock indicator */}
           <div style={{ marginBottom: 22 }}>
-            {lowStock ? (
+            {outOfStock ? (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  borderRadius: "var(--r-pill)",
+                  background: "rgba(194,85,122,.12)",
+                  border: "1px solid rgba(194,85,122,.25)",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--pink)",
+                }}
+              >
+                Rupture de stock
+              </span>
+            ) : lowStock ? (
               <span
                 style={{
                   display: "inline-flex",
@@ -585,7 +461,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                     flexShrink: 0,
                   }}
                 />
-                Plus que {p.stock} en stock
+                Plus que {displayStock} en stock
               </span>
             ) : (
               <span
@@ -616,55 +492,11 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
             )}
           </div>
 
-          {/* ── Variant selector — premium pills ── */}
-          <div style={{ marginBottom: 22 }}>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: ".08em",
-                textTransform: "uppercase",
-                color: "var(--ink-mute)",
-                marginBottom: 11,
-              }}
-            >
-              Contenance
-            </div>
-            <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-              {p.variants.map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setVariant(v)}
-                  style={{
-                    padding: "10px 18px",
-                    borderRadius: "var(--r-pill)",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.22s cubic-bezier(.22,.68,0,1)",
-                    willChange: "transform, box-shadow",
-                    background:
-                      variant === v
-                        ? "var(--gold-grad)"
-                        : "rgba(255,255,255,.04)",
-                    color: variant === v ? "#1a1306" : "var(--ink-soft)",
-                    border:
-                      variant === v
-                        ? "none"
-                        : "1px solid rgba(255,255,255,.1)",
-                    boxShadow:
-                      variant === v
-                        ? "0 8px 24px -10px rgba(212,175,55,.6)"
-                        : "none",
-                    WebkitTapHighlightColor: "transparent",
-                    touchAction: "manipulation",
-                  }}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-          </div>
+          <VariantSwatches
+            product={p}
+            selectedName={selectedVariantName}
+            onSelect={setSelectedVariantName}
+          />
 
           {/* ── Quantity stepper ── */}
           <div style={{ marginBottom: 28 }}>
@@ -1086,7 +918,7 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
                       style={{ height: 120, position: "relative", background: "#181818" }}
                     >
                       <FadeImage
-                        src={`/assets/products/${r.id}.png`}
+                        src={resolveProductImage(r)}
                         alt={r.name}
                         fill
                         sizes="120px"
@@ -1172,14 +1004,17 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
         {/* Add to cart button */}
         <button
           onClick={handleAdd}
+          disabled={outOfStock}
           style={{
             flex: 1,
             height: 52,
             borderRadius: "var(--r-pill)",
-            background: added
-              ? "linear-gradient(135deg,#4CAF50,#388E3C)"
-              : "var(--pink-grad)",
-            color: added ? "#fff" : "#3a1020",
+            background: outOfStock
+              ? "rgba(255,255,255,.08)"
+              : added
+                ? "linear-gradient(135deg,#4CAF50,#388E3C)"
+                : "var(--pink-grad)",
+            color: outOfStock ? "var(--ink-mute)" : added ? "#fff" : "#3a1020",
             fontSize: 14,
             fontWeight: 700,
             letterSpacing: ".02em",
@@ -1188,16 +1023,21 @@ export function ProductDetail({ product: p, onClose }: ProductDetailProps) {
             justifyContent: "center",
             gap: 9,
             transition: "background 0.3s cubic-bezier(.22,.68,0,1)",
-            boxShadow: added
-              ? "0 8px 20px -8px rgba(76,175,80,.5)"
-              : "0 12px 30px -12px rgba(239,169,192,.7)",
-            cursor: "pointer",
+            boxShadow: outOfStock
+              ? "none"
+              : added
+                ? "0 8px 20px -8px rgba(76,175,80,.5)"
+                : "0 12px 30px -12px rgba(239,169,192,.7)",
+            cursor: outOfStock ? "not-allowed" : "pointer",
             WebkitTapHighlightColor: "transparent",
             touchAction: "manipulation",
             willChange: "background",
+            opacity: outOfStock ? 0.7 : 1,
           }}
         >
-          {added ? (
+          {outOfStock ? (
+            "Rupture de stock"
+          ) : added ? (
             <>
               <Icon name="check" size={18} color="#fff" stroke={2.5} />
               Ajouté !

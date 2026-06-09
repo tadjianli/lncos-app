@@ -7,6 +7,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product } from "./data";
+import { effectivePrice, findVariantByName } from "./product-catalog";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -103,11 +104,13 @@ export const useStore = create<AppStore>()(
       addToCart(product, qty = 1, variant) {
         const v = variant ?? product.variants[0];
         const key = product.id + "|" + v;
+        const variantRow = findVariantByName(product, v);
+        const price = effectivePrice(product, variantRow);
         set((s) => {
           const existing = s.cart.find((it) => it.key === key);
           const newCart = existing
             ? s.cart.map((it) => it.key === key ? { ...it, qty: it.qty + qty } : it)
-            : [...s.cart, { ...product, key, qty, variant: v }];
+            : [...s.cart, { ...product, key, qty, variant: v, price }];
           return { cart: newCart, cartCount: newCart.reduce((t, i) => t + i.qty, 0) };
         });
         get().showToast(`${product.name} ajouté ✨`);

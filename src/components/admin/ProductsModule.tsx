@@ -1,82 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { categories } from "@/lib/data";
 import type { Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { useProducts } from "@/lib/admin-supabase";
+import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
+import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
+import { slugifyProductId, resolveProductImage } from "@/lib/product-catalog";
+import type { ProductVariant } from "@/lib/product-catalog";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
 function ProductEditModal({ product, onClose, onSave, isNew }: {
   product: Product;
   onClose: () => void;
-  onSave: (p: Product) => void;
+  onSave: (p: Product, variants: ProductVariant[]) => Promise<void>;
   isNew?: boolean;
 }) {
   const [form, setForm] = useState({ ...product });
+  const [variants, setVariants] = useState<ProductVariant[]>(product.productVariants ?? []);
+  const [productId, setProductId] = useState(isNew ? slugifyProductId(product.name || "nouveau-produit") : product.id);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (isNew && form.name) {
+      setProductId(slugifyProductId(form.name));
+    }
+  }, [form.name, isNew]);
 
   function set<K extends keyof Product>(key: K, val: Product[K]) {
     setForm((p) => ({ ...p, [key]: val }));
   }
 
+  async function handleSubmit() {
+    setSaving(true);
+    const payload: Product = {
+      ...form,
+      id: productId,
+      mainImageUrl: form.mainImageUrl ?? null,
+      galleryImages: form.galleryImages ?? [],
+      productVariants: variants,
+    };
+    await onSave(payload, variants.map((v) => ({ ...v, productId })));
+    setSaving(false);
+  }
+
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
-      <div className="ab-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="ab-modal ab-modal-wide" onClick={(e) => e.stopPropagation()}>
         <div className="ab-modal-head">
           <div className="ab-modal-title">{isNew ? "Nouveau produit" : `Modifier · ${product.name}`}</div>
           <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
         </div>
 
-        {([
-          { label: "Nom du produit", key: "name" as const, type: "text" },
-          { label: "Prix (€)", key: "price" as const, type: "number" },
-          { label: "Prix barré (€)", key: "old" as const, type: "number" },
-          { label: "Contenance (ml, g…)", key: "ml" as const, type: "text" },
-        ] as const).map(({ label, key, type }) => (
-          <div key={key} className="ab-field">
-            <label>{label}</label>
-            <input
-              className="ab-input"
-              type={type}
-              value={String(form[key] ?? "")}
-              onChange={(e) => set(key, (type === "number" ? Number(e.target.value) : e.target.value) as Product[typeof key])}
-            />
+        <div className="ab-modal-scroll">
+          <div className="adm-form-section-title">Informations</div>
+
+          {isNew && (
+            <div className="ab-field">
+              <label>Identifiant produit (URL / stockage)</label>
+              <input className="ab-input" value={productId} onChange={(e) => setProductId(slugifyProductId(e.target.value))} />
+            </div>
+          )}
+
+          {([
+            { label: "Nom du produit", key: "name" as const, type: "text" },
+            { label: "Prix de base (€)", key: "price" as const, type: "number" },
+            { label: "Prix barré (€)", key: "old" as const, type: "number" },
+            { label: "Contenance (ml, g…)", key: "ml" as const, type: "text" },
+          ] as const).map(({ label, key, type }) => (
+            <div key={key} className="ab-field">
+              <label>{label}</label>
+              <input
+                className="ab-input"
+                type={type}
+                value={String(form[key] ?? "")}
+                onChange={(e) => set(key, (type === "number" ? Number(e.target.value) : e.target.value) as Product[typeof key])}
+              />
+            </div>
+          ))}
+
+          <div className="ab-field">
+            <label>Catégorie</label>
+            <select className="ab-input" value={form.cat} onChange={(e) => set("cat", e.target.value)}>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
           </div>
-        ))}
 
-        <div className="ab-field">
-          <label>Catégorie</label>
-          <select className="ab-input" value={form.cat} onChange={(e) => set("cat", e.target.value)}>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
+          <div className="ab-field">
+            <label>Tag promo</label>
+            <select className="ab-input" value={form.tag ?? ""} onChange={(e) => set("tag", e.target.value || null)}>
+              <option value="">Aucun</option>
+              <option value="Flash">Flash</option>
+              <option value="Best-seller">Best-seller</option>
+              <option value="Nouveau">Nouveau</option>
+              <option value="Édition limitée">Édition limitée</option>
+            </select>
+          </div>
 
-        <div className="ab-field">
-          <label>Tag promo</label>
-          <select className="ab-input" value={form.tag ?? ""} onChange={(e) => set("tag", e.target.value || null)}>
-            <option value="">Aucun</option>
-            <option value="Flash">Flash</option>
-            <option value="Best-seller">Best-seller</option>
-            <option value="Nouveau">Nouveau</option>
-            <option value="Édition limitée">Édition limitée</option>
-          </select>
-        </div>
+          <div className="ab-field">
+            <label>Stock global</label>
+            <input className="ab-input" type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} />
+          </div>
 
-        <div className="ab-field">
-          <label>Stock</label>
-          <input className="ab-input" type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} />
-        </div>
+          <div className="ab-field">
+            <label>Description</label>
+            <textarea className="ab-input textarea" value={form.desc} onChange={(e) => set("desc", e.target.value)} />
+          </div>
 
-        <div className="ab-field">
-          <label>Description</label>
-          <textarea className="ab-input textarea" value={form.desc} onChange={(e) => set("desc", e.target.value)} />
+          <div className="adm-form-section-title">Images du produit</div>
+          <ProductImageGalleryEditor
+            productId={productId}
+            mainImageUrl={form.mainImageUrl ?? null}
+            galleryImages={form.galleryImages ?? []}
+            onMainChange={(url) => set("mainImageUrl", url)}
+            onGalleryChange={(urls) => set("galleryImages", urls)}
+          />
+
+          <div className="adm-form-section-title">Variantes</div>
+          <ProductVariantsEditor
+            productId={productId}
+            variants={variants}
+            onChange={setVariants}
+          />
         </div>
 
         <div className="ab-modal-foot">
-          <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
-          <button className="adm-btn gold" onClick={() => onSave(form)}>
-            <Icon name="check" size={15} /> {isNew ? "Créer" : "Enregistrer"}
+          <button className="adm-btn ghost" onClick={onClose} disabled={saving}>Annuler</button>
+          <button className="adm-btn gold" onClick={() => void handleSubmit()} disabled={saving || !form.name.trim()}>
+            <Icon name="check" size={15} /> {saving ? "Enregistrement…" : isNew ? "Créer" : "Enregistrer"}
           </button>
         </div>
       </div>
@@ -98,11 +151,14 @@ const BLANK_PRODUCT: Product = {
   variants: [],
   desc: "",
   ingredients: [],
+  mainImageUrl: null,
+  galleryImages: [],
+  productVariants: [],
 };
 
 /* ── Products module ────────────────────────────────────────────────── */
 export function ProductsModule() {
-  const { products, loading, updateProduct, insertProduct, deleteProduct } = useProducts();
+  const { products, loading, saveProductFull, insertProductFull, deleteProduct } = useProducts();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [creatingProduct, setCreatingProduct] = useState(false);
   const [search, setSearch] = useState("");
@@ -120,14 +176,22 @@ export function ProductsModule() {
     return matchSearch && matchCat;
   });
 
-  async function handleSave(updated: Product) {
-    await updateProduct(updated.id, updated);
+  async function handleSave(updated: Product, variants: ProductVariant[]) {
+    const { error } = await saveProductFull(updated, variants);
+    if (error) {
+      showToast(`Erreur : ${error}`);
+      return;
+    }
     setEditingProduct(null);
     showToast("Produit enregistré");
   }
 
-  async function handleCreate(p: Product) {
-    await insertProduct(p);
+  async function handleCreate(p: Product, variants: ProductVariant[]) {
+    const { error } = await insertProductFull(p, variants);
+    if (error) {
+      showToast(`Erreur : ${error}`);
+      return;
+    }
     setCreatingProduct(false);
     showToast("Produit créé");
   }
@@ -199,14 +263,15 @@ export function ProductsModule() {
               <tbody>
                 {filtered.map((p) => {
                   const sb = stockBadge(p.stock);
+                  const thumb = resolveProductImage(p);
                   return (
                     <tr key={p.id}>
                       <td>
                         <div className="adm-prodcell">
-                          <div className="prod-thumb" />
+                          <div className="prod-thumb" style={thumb ? { backgroundImage: `url(${thumb})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} />
                           <div>
                             <div className="adm-prod-name">{p.name}</div>
-                            <div className="adm-prod-id">{p.ml}</div>
+                            <div className="adm-prod-id">{p.ml}{(p.productVariants?.length ?? 0) > 0 ? ` · ${p.productVariants!.length} variantes` : ""}</div>
                           </div>
                         </div>
                       </td>
@@ -225,13 +290,9 @@ export function ProductsModule() {
                       <td><span className="adm-badge" style={{ color: sb.color, background: sb.bg }}>{sb.label}</span></td>
                       <td>
                         {p.tag ? (
-                          <span
-                            className="adm-badge"
-                            style={{ color: "#B8902B", background: "rgba(212,175,55,.12)", cursor: "pointer" }}
-                            onClick={() => updateProduct(p.id, { tag: null })}
-                          >{p.tag}</span>
+                          <span className="adm-badge" style={{ color: "#B8902B", background: "rgba(212,175,55,.12)" }}>{p.tag}</span>
                         ) : (
-                          <button className="adm-link" style={{ fontSize: 12 }} onClick={() => updateProduct(p.id, { tag: "Best-seller" })}>+ Best</button>
+                          <span style={{ color: "var(--adm-ink-mute)", fontSize: 12 }}>—</span>
                         )}
                       </td>
                       <td>

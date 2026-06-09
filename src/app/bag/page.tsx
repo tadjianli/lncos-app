@@ -11,6 +11,7 @@ import { SubHeader, PinkBtn, GoldBtn } from "@/components/shared/ActionButtons";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
+import { findVariantByName, resolveProductImage } from "@/lib/product-catalog";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getSupabase } from "@/lib/supabase";
 import {
@@ -252,7 +253,7 @@ function ConfirmingScreen({
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader title="Commande" />
+        <SubHeader title="Commande" onBack={onBack} />
       </div>
       <div style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 28px", textAlign: "center" }}>
         {error ? (
@@ -303,7 +304,7 @@ function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () =>
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader title="Commande" />
+        <SubHeader title="Commande" onBack={onHome} />
       </div>
       <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
         <StepConfirm orderRef={orderRef} />
@@ -410,7 +411,7 @@ function CartScreen({
                 onClick={() => openProduct(it)}
                 style={{ width: 78, height: 78, borderRadius: 14, flex: "0 0 auto", overflow: "hidden", position: "relative", background: "#181818" }}
               >
-                <FadeImage src={`/assets/products/${it.id}.png`} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
+                <FadeImage src={resolveProductImage(it, findVariantByName(it, it.variant))} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
               </button>
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div>
