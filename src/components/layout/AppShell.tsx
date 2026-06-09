@@ -34,6 +34,7 @@ const SearchScreen        = lazy(() => import("@/components/commerce/SearchScree
 const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then(m => ({ default: m.LoyaltyScreen })));
 const NotificationsScreen = lazy(() => import("@/components/profile/NotificationsScreen").then(m => ({ default: m.NotificationsScreen })));
 const OrdersScreen        = lazy(() => import("@/components/profile/OrdersScreen").then(m => ({ default: m.OrdersScreen })));
+const SettingsScreen      = lazy(() => import("@/components/profile/SettingsScreen").then(m => ({ default: m.SettingsScreen })));
 // z:90 — full-shell overlays (cover main + nav)
 const ReelsScreen         = lazy(() => import("@/components/commerce/ReelsScreen").then(m => ({ default: m.ReelsScreen })));
 const AuthScreen          = lazy(() => import("@/components/profile/AuthScreen").then(m => ({ default: m.AuthScreen })));
@@ -149,6 +150,9 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
           )}
           {overlay?.type === "orders" && (
             <OrdersScreen onClose={closeOverlay} />
+          )}
+          {overlay?.type === "settings" && (
+            <SettingsScreen onClose={closeOverlay} />
           )}
         </Suspense>
       </main>

@@ -13,7 +13,7 @@ import {
   type HomeSection,
   type PageSlug,
 } from "./home-sections";
-import { defaultSectionsForPage } from "./page-sections";
+import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
 import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
@@ -107,7 +107,7 @@ export function usePublicCategories() {
 
 /* ── usePublicPageSections ───────────────────────────────────── */
 function pageFallback(slug: PageSlug): HomeSection[] {
-  return defaultSectionsForPage(slug);
+  return slug === "home" ? DEFAULT_HOME_SECTIONS : (DEFAULT_SECTIONS_BY_PAGE[slug] ?? []);
 }
 
 export function usePublicPageSections(pageSlug: PageSlug = "home") {
@@ -120,10 +120,8 @@ export function usePublicPageSections(pageSlug: PageSlug = "home") {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    setSections(pageFallback(pageSlug));
-
     if (!isSupabaseConfigured()) {
+      setSections(pageFallback(pageSlug));
       setLoading(false);
       return;
     }

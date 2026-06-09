@@ -67,6 +67,7 @@ export function useOverlayRouter() {
   const openOrders    = useStore((s) => s.openOrders);
   const openAppointments = useStore((s) => s.openAppointments);
   const openReels     = useStore((s) => s.openReels);
+  const openSettings  = useStore((s) => s.openSettings);
   const closeOverlay  = useStore((s) => s.closeOverlay);
 
   /** Overlay state → URL hash (write direction) */
@@ -106,6 +107,7 @@ export function useOverlayRouter() {
         case "orders":        openOrders();        break;
         case "appointments":  openAppointments();  break;
         case "reels":         openReels();         break;
+        case "settings":      openSettings();      break;
         case "listing": {
           // Find category by id if cat param present
           const cat = parsed.cat
@@ -118,7 +120,7 @@ export function useOverlayRouter() {
           break;
       }
     },
-    [openProduct, openSearch, openListing, openLoyalty, openNotifications, openOrders, openAppointments, openReels, closeOverlay]
+    [openProduct, openSearch, openListing, openLoyalty, openNotifications, openOrders, openAppointments, openReels, openSettings, closeOverlay]
   );
 
   // Mount: read initial hash

@@ -118,8 +118,8 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
       { key: "titleAccent", label: "Accent",      type: "text" },
       { key: "subtitle",  label: "Sous-titre",    type: "textarea" },
       { key: "cta",       label: "Texte CTA",     type: "text" },
-      { key: "img",       label: "ID produit image", type: "text",
-        helpText: "Identifiant du produit utilisé comme visuel de fond" },
+      { key: "img",       label: "Image de fond", type: "image",
+        helpText: "Visuel éditorial affiché en arrière-plan du bloc promo" },
     ],
   },
   bento: {

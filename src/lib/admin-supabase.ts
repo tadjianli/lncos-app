@@ -322,13 +322,12 @@ export function useRdvNotifications() {
 /* ─── usePageSections (Supabase-backed, per page) ─────────────────────────── */
 
 import type { PageSlug } from "./home-sections";
-import { defaultSectionsForPage } from "./page-sections";
+import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
 
 export function useSupabasePageSections(pageSlug: PageSlug) {
-  const [published, setPublished] = useState<HomeSection[]>(() => defaultSectionsForPage(pageSlug));
+  const [published, setPublished] = useState<HomeSection[]>([]);
   const [draft, setDraft] = useState<HomeSection[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadedPageSlug, setLoadedPageSlug] = useState<PageSlug | null>(null);
 
   const load = useCallback(async () => {
     const { data } = await getSupabase()
@@ -336,24 +335,16 @@ export function useSupabasePageSections(pageSlug: PageSlug) {
       .select("*")
       .eq("page_slug", pageSlug)
       .order("position");
-    if (!data) {
-      setLoading(false);
-      setLoadedPageSlug(pageSlug);
-      return;
-    }
+    if (!data) return;
     const pub = data.filter((r) => !r.is_draft).map(dbToSection);
-    setPublished(pub.length > 0 ? pub : defaultSectionsForPage(pageSlug));
+    setPublished(pub.length > 0 ? pub : DEFAULT_SECTIONS_BY_PAGE[pageSlug] ?? []);
     const draftRows = data.filter((r) => r.is_draft);
     setDraft(draftRows.length > 0 ? draftRows.map(dbToSection) : null);
-    setLoadedPageSlug(pageSlug);
     setLoading(false);
   }, [pageSlug]);
 
   useEffect(() => {
     setLoading(true);
-    setLoadedPageSlug(null);
-    setPublished(defaultSectionsForPage(pageSlug));
-    setDraft(null);
     load();
     const channel = getSupabase()
       .channel(`home-sections-admin-${pageSlug}`)
@@ -458,9 +449,7 @@ export function useSupabasePageSections(pageSlug: PageSlug) {
     return { error: null };
   }, [pageSlug]);
 
-  const isReady = loadedPageSlug === pageSlug && !loading;
-
-  return { published, draft, loading, isReady, beginDraft, saveDraft, publishDraft, discardDraft };
+  return { published, draft, loading, beginDraft, saveDraft, publishDraft, discardDraft };
 }
 
 /** @deprecated use useSupabasePageSections("home") */

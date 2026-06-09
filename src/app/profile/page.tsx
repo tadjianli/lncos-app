@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const openNotifications = useStore((s) => s.openNotifications);
   const openOrders        = useStore((s) => s.openOrders);
   const openAuth          = useStore((s) => s.openAuth);
+  const openSettings      = useStore((s) => s.openSettings);
 
   const loyaltyPoints = useLoyaltyStore((s) => s.points);
   const loyaltyTier   = useLoyaltyStore((s) => s.tier());
@@ -77,13 +78,14 @@ export default function ProfilePage() {
     { i: "heart",    t: "Mes favoris",        s: "",                         href: "/favorites", gold: false },
     { i: "crown",    t: "Programme VIP",      s: `Niveau ${TIER_LABELS[loyaltyTier] ?? "OR"} · ${loyaltyPoints.toLocaleString("fr-FR")} pts`, overlay: "loyalty", gold: true  },
     { i: "bell",     t: "Notifications",      s: "",                         overlay: "notifications", gold: false },
-    { i: "sliders",  t: "Paramètres",         s: "",                         gold: false },
+    { i: "sliders",  t: "Paramètres",         s: "Compte, notifications, sécurité", overlay: "settings", gold: false },
   ] as const;
 
   function handleOverlay(overlay: string) {
     if (overlay === "loyalty")       openLoyalty();
     if (overlay === "orders")        openOrders();
     if (overlay === "notifications") openNotifications();
+    if (overlay === "settings")      openSettings();
   }
 
   const isLoggedIn = !authLoading && user !== null;

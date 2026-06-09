@@ -7,6 +7,7 @@ import { GoldBtn } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
 import type { HomeSection } from "@/lib/home-sections";
+import { isImageUrl } from "@/lib/admin-media";
 
 const CAT_META: Record<string, { icon: string; grad: string; accent: string }> = {
   visage:      { icon: "sparkle", grad: "linear-gradient(135deg,#2a1f24,#1a1014)", accent: "#F7C6D7" },
@@ -19,19 +20,29 @@ const CAT_META: Record<string, { icon: string; grad: string; accent: string }> =
 };
 
 function PageHero({ section }: { section: HomeSection }) {
+  const bgImage = isImageUrl(section.img) ? section.img! : null;
   return (
-    <div style={{ padding: "58px 18px 12px" }}>
-      {section.eyebrow && (
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 6px" }}>
-          {section.eyebrow}
-        </p>
+    <div style={{ padding: bgImage ? "0 0 12px" : "58px 18px 12px" }}>
+      {bgImage && (
+        <div style={{ margin: "0 0 14px", height: 180, borderRadius: "var(--r-lg)", overflow: "hidden", position: "relative", border: "1px solid rgba(212,175,55,.2)" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={bgImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(14,10,12,.15) 0%, rgba(14,10,12,.75) 100%)" }} />
+        </div>
       )}
-      <h1 style={{ margin: "0 0 4px", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", letterSpacing: "-.01em", whiteSpace: "pre-line" }}>
-        {section.title}
-      </h1>
-      {section.subtitle && (
-        <p style={{ fontSize: "var(--fs-xs)", color: "var(--ink-mute)", margin: 0 }}>{section.subtitle}</p>
-      )}
+      <div style={{ padding: bgImage ? "0 18px" : 0 }}>
+        {section.eyebrow && (
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--gold)", margin: "0 0 6px" }}>
+            {section.eyebrow}
+          </p>
+        )}
+        <h1 style={{ margin: "0 0 4px", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", letterSpacing: "-.01em", whiteSpace: "pre-line" }}>
+          {section.title}
+        </h1>
+        {section.subtitle && (
+          <p style={{ fontSize: "var(--fs-xs)", color: "var(--ink-mute)", margin: 0 }}>{section.subtitle}</p>
+        )}
+      </div>
     </div>
   );
 }

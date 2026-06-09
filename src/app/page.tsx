@@ -14,6 +14,7 @@ import type { Product } from "@/lib/data";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
+import { isImageUrl } from "@/lib/admin-media";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
 
@@ -99,6 +100,7 @@ function HeroSection({ onDiscover, section }: { onDiscover?: () => void; section
   const title = section?.title ?? "Révélez votre";
   const accent = section?.titleAccent ?? "éclat";
   const cta = section?.cta ?? "Découvrir";
+  const bgImage = isImageUrl(section?.img) ? section!.img! : null;
   return (
     <div className="home-z" style={{ padding: "16px 18px 0" }}>
       <div
@@ -108,8 +110,9 @@ function HeroSection({ onDiscover, section }: { onDiscover?: () => void; section
           position: "relative",
           overflow: "hidden",
           border: "1px solid rgba(212,175,55,.2)",
-          background:
-            "radial-gradient(120% 90% at 50% 30%, #2a1f24 0%, #100b0d 75%)",
+          background: bgImage
+            ? `url(${bgImage}) center/cover no-repeat`
+            : "radial-gradient(120% 90% at 50% 30%, #2a1f24 0%, #100b0d 75%)",
           boxShadow: "0 30px 60px -32px rgba(212,175,55,.32)",
         }}
       >
@@ -405,32 +408,41 @@ function RoutineSection({ onAdd }: { onAdd: (p: Product) => void }) {
 
 /* ─── Editorial promo block ─────────────────────────────────── */
 
-function EditoPromo() {
+function EditoPromo({ section }: { section?: HomeSection }) {
+  const bgImage = isImageUrl(section?.img) ? section!.img! : null;
+  const kicker = section?.eyebrow ?? "Édition Limitée";
+  const titleMain = section?.title ?? "L'art de la";
+  const titleAccent = section?.titleAccent ?? "séduction";
+  const body = section?.subtitle ?? "Découvrez notre collection capsule Élixir Noir — une fragrance boisée pour les âmes audacieuses.";
+  const cta = section?.cta ?? "Découvrir";
+
   return (
     <div className="edito-promo">
       <div className="edito-bg">
-        <div
-          className="ph"
-          data-label="Visual éditorial"
-          style={{ position: "absolute", inset: 0 }}
-        />
+        {bgImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={bgImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div
+            className="ph"
+            data-label="Visual éditorial"
+            style={{ position: "absolute", inset: 0 }}
+          />
+        )}
       </div>
       <div className="edito-grad" />
       <div className="edito-glow" />
       <div className="edito-content">
         <span className="edito-kicker">
-          <Icon name="sparkle" size={11} /> Édition Limitée
+          <Icon name="sparkle" size={11} /> {kicker}
         </span>
         <div className="edito-h">
-          L&apos;art de la{" "}
-          <span className="it gold-text">séduction</span>
+          {titleMain}{" "}
+          <span className="it gold-text">{titleAccent}</span>
         </div>
-        <div className="edito-p">
-          Découvrez notre collection capsule Élixir Noir — une fragrance
-          boisée pour les âmes audacieuses.
-        </div>
+        <div className="edito-p">{body}</div>
         <span className="edito-btn">
-          Découvrir <Icon name="arrowR" size={16} stroke={2.2} />
+          {cta} <Icon name="arrowR" size={16} stroke={2.2} />
         </span>
       </div>
     </div>
@@ -748,7 +760,7 @@ export default function HomePage() {
           return (
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
-                <EditoPromo />
+                <EditoPromo section={section} />
               </Reveal>
             </div>
           );
