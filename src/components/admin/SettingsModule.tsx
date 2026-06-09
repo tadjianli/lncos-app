@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
+import {
+  RdvCatalogLinkPanel,
+  RdvDepositSettingsPanel,
+  RdvPageSettingsPanel,
+} from "@/components/admin/RdvSettingsSection";
 
 interface SettingValues {
   storeName: string;
@@ -305,6 +310,29 @@ export function SettingsModule() {
               <SaveRow onSave={save} />
             </>
           ),
+        },
+      ],
+    },
+    {
+      title: "Rendez-vous",
+      items: [
+        {
+          icon: "calendar",
+          label: "Page RDV client",
+          sub: "Textes hero, bandeau confiance, confirmation",
+          content: <RdvPageSettingsPanel onSaved={showToast} />,
+        },
+        {
+          icon: "sliders",
+          label: "Acompte & réservation",
+          sub: "Paiement Stripe à la réservation",
+          content: <RdvDepositSettingsPanel onSaved={showToast} />,
+        },
+        {
+          icon: "star",
+          label: "Prestations & équipe",
+          sub: "Services, prothésistes, créneaux",
+          content: <RdvCatalogLinkPanel />,
         },
       ],
     },

@@ -13,6 +13,8 @@ import { GoldBtn, PinkBtn, SectionHead } from "@/components/shared/ActionButtons
 import { getSupabase } from "@/lib/supabase";
 import { services, extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
 import type { Service, Staff } from "@/lib/rdv-data";
+import { calcDeposit, type RdvSettings } from "@/lib/rdv-settings";
+import { useRdvSettings } from "@/lib/rdv-settings-db";
 
 const CATS = [
   { id: "all",        name: "Tout" },
@@ -47,7 +49,15 @@ interface Draft {
 }
 
 /* ─── Booking Confirmation Screen ────────────────────────────── */
-function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: () => void }) {
+function BookingConfirmationScreen({
+  draft,
+  onReset,
+  settings,
+}: {
+  draft: Draft;
+  onReset: () => void;
+  settings: RdvSettings;
+}) {
   const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
   const total = svcPrice(draft.serviceId, draft.extrasIds);
   const durMin = svcMin(draft.serviceId, draft.extrasIds);
@@ -126,10 +136,10 @@ function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: 
             </div>
 
             <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", marginTop: 24, marginBottom: 0, textAlign: "center" }}>
-              Rendez-vous confirmé !
+              {settings.confirmTitle}
             </h1>
             <p style={{ fontSize: 13, color: "var(--ink-soft)", marginTop: 10, textAlign: "center", lineHeight: 1.5 }}>
-              Un email de confirmation vous a été envoyé.
+              {settings.confirmReminder}
             </p>
           </div>
 
@@ -264,8 +274,8 @@ function BookingConfirmationScreen({ draft, onReset }: { draft: Draft; onReset: 
                   `DTSTART:${fmt(start)}`,
                   `DTEND:${fmt(end)}`,
                   `SUMMARY:${svc.name} — LN COS`,
-                  `DESCRIPTION:RDV avec ${staffMemberName} · Institut LN COS`,
-                  "LOCATION:Institut LN COS",
+                  `DESCRIPTION:RDV avec ${staffMemberName} · ${settings.locationName}`,
+                  `LOCATION:${settings.locationName}`,
                   "END:VEVENT",
                   "END:VCALENDAR",
                 ].join("\r\n");
@@ -332,10 +342,12 @@ function BookingWizard({
   initialService,
   onClose,
   onConfirm,
+  settings,
 }: {
   initialService?: string | null;
   onClose: () => void;
   onConfirm: (draft: Draft) => void | Promise<void>;
+  settings: RdvSettings;
 }) {
   const [step, setStep] = useState(initialService ? 1 : 0);
   const [draft, setDraft] = useState<Draft>({
@@ -349,9 +361,10 @@ function BookingWizard({
     notes: "",
   });
 
-  const svc    = services.find((s) => s.id === draft.serviceId) ?? services[0];
-  const total  = svcPrice(draft.serviceId, draft.extrasIds);
-  const durMin = svcMin(draft.serviceId, draft.extrasIds);
+  const svc     = services.find((s) => s.id === draft.serviceId) ?? services[0];
+  const total   = svcPrice(draft.serviceId, draft.extrasIds);
+  const durMin  = svcMin(draft.serviceId, draft.extrasIds);
+  const deposit = calcDeposit(total, settings);
 
   const STEPS = ["Prestation", "Options", "Artiste", "Date", "Heure", "Infos"];
 
@@ -779,6 +792,12 @@ function BookingWizard({
                   <span>{l}</span><span style={{ color: "var(--ink)", fontWeight: 600 }}>{r}</span>
                 </div>
               ))}
+              {deposit > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "var(--gold)", padding: "8px 0 0", marginTop: 6, borderTop: "1px solid rgba(212,175,55,.2)" }}>
+                  <span>{settings.depositLabel}</span>
+                  <span style={{ fontWeight: 700 }}>{deposit.toFixed(2)} €</span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -795,7 +814,11 @@ function BookingWizard({
           }
           icon={step === 5 ? "check" : "arrowR"}
         >
-          {step === 5 ? "Confirmer le rendez-vous" : "Continuer"}
+          {step === 5
+            ? deposit > 0
+              ? `Payer ${deposit.toFixed(2)} € et confirmer`
+              : "Confirmer le rendez-vous"
+            : "Continuer"}
         </PinkBtn>
       </div>
     </div>
@@ -826,13 +849,68 @@ function ConfirmOverlay({ draft, onClose }: { draft: Draft; onClose: () => void 
   );
 }
 
+function apptToDraft(appt: {
+  service_id: string;
+  extras_ids: string[] | null;
+  staff_id: string;
+  start_at: string;
+  client_name: string | null;
+  client_phone: string | null;
+  notes: string | null;
+}): Draft {
+  const start = new Date(appt.start_at);
+  return {
+    serviceId: appt.service_id,
+    extrasIds: appt.extras_ids ?? [],
+    staffId: appt.staff_id,
+    date: start,
+    time: `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`,
+    name: appt.client_name ?? "",
+    phone: appt.client_phone ?? "",
+    notes: appt.notes ?? "",
+  };
+}
+
 /* ─── RDV Home ────────────────────────────────────────────────── */
 export default function RdvPage() {
+  const { settings } = useRdvSettings();
   const [cat, setCat]         = useState("all");
   const [booking, setBooking] = useState<{ serviceId: string | null } | null>(null);
   const [confirmed, setConfirmed] = useState<Draft | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
   const list = services.filter((s) => cat === "all" || s.cat === cat);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("rdv_session_id");
+    if (!sessionId) return;
+
+    (async () => {
+      setPaying(true);
+      try {
+        const res = await fetch("/api/stripe/rdv-complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setStripeError(data.error ?? "Paiement non confirmé");
+          return;
+        }
+        if (data.appointment) {
+          setConfirmed(apptToDraft(data.appointment));
+          window.history.replaceState({}, "", "/rdv");
+        }
+      } catch {
+        setStripeError("Erreur lors de la confirmation du paiement");
+      } finally {
+        setPaying(false);
+      }
+    })();
+  }, []);
 
   async function handleConfirm(draft: Draft) {
     const staffId = draft.staffId === "any"
@@ -842,31 +920,64 @@ export default function RdvPage() {
       ? (() => { const d = new Date(draft.date); const [h, m] = (draft.time || "10:00").split(":").map(Number); d.setHours(h, m, 0, 0); return d.toISOString(); })()
       : new Date().toISOString();
     const ref = "LN-" + String(1000 + Math.abs(draft.serviceId.charCodeAt(0) * 37 + (draft.date?.getDate() ?? 0) * 13) % 9000);
+    const total = svcPrice(draft.serviceId, draft.extrasIds);
+    const deposit = calcDeposit(total, settings);
+    const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
 
     try {
       const supabase = getSupabase();
       const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("appointments").insert({
-        user_id: user?.id ?? null,
-        service_id: draft.serviceId,
-        staff_id: staffId,
-        extras_ids: draft.extrasIds,
-        start_at: isoDate,
-        duration_min: svcMin(draft.serviceId, draft.extrasIds),
-        price: svcPrice(draft.serviceId, draft.extrasIds),
-        deposit: 0,
-        payment_status: "unpaid",
-        status: "confirmed",
-        client_name: draft.name || "Cliente",
-        client_phone: draft.phone || null,
-        client_email: null,
-        notes: draft.notes || null,
-        loyalty_pts_earned: 0,
-        confirmation_ref: ref,
-        source: "client",
-      });
+      const { data: appt, error } = await supabase
+        .from("appointments")
+        .insert({
+          user_id: user?.id ?? null,
+          service_id: draft.serviceId,
+          staff_id: staffId,
+          extras_ids: draft.extrasIds,
+          start_at: isoDate,
+          duration_min: svcMin(draft.serviceId, draft.extrasIds),
+          price: total,
+          deposit,
+          payment_status: "unpaid",
+          status: deposit > 0 ? "pending" : "confirmed",
+          client_name: draft.name || "Cliente",
+          client_phone: draft.phone || null,
+          client_email: null,
+          notes: draft.notes || null,
+          loyalty_pts_earned: 0,
+          confirmation_ref: ref,
+          source: "client",
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      if (deposit > 0 && appt?.id) {
+        setPaying(true);
+        const res = await fetch("/api/stripe/rdv-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            appointment_id: appt.id,
+            deposit_amount: deposit,
+            service_name: svc.name,
+            returnUrl: window.location.href,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.url) {
+          setStripeError(data.error ?? "Impossible d'ouvrir le paiement");
+          setPaying(false);
+          return;
+        }
+        window.location.href = data.url;
+        return;
+      }
     } catch (err) {
       console.error("Appointment insert failed:", err);
+      setStripeError("Erreur lors de la réservation");
+      return;
     }
 
     setBooking(null);
@@ -877,7 +988,11 @@ export default function RdvPage() {
   if (confirmed) {
     return (
       <AppShell bottomNav={false}>
-        <BookingConfirmationScreen draft={confirmed} onReset={() => setConfirmed(null)} />
+        <BookingConfirmationScreen
+          draft={confirmed}
+          settings={settings}
+          onReset={() => setConfirmed(null)}
+        />
       </AppShell>
     );
   }
@@ -896,12 +1011,14 @@ export default function RdvPage() {
               </Link>
             </div>
             <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 10.5, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--gold)", fontWeight: 600 }}>Institut onglerie</div>
-              <h1 style={{ margin: "9px 0 0", fontWeight: 600, fontSize: 30, lineHeight: 1.12, color: "var(--ink)" }}>
-                Réservez votre<br />moment beauté
+              <div style={{ fontSize: 10.5, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--gold)", fontWeight: 600 }}>
+                {settings.heroEyebrow}
+              </div>
+              <h1 style={{ margin: "9px 0 0", fontWeight: 600, fontSize: 30, lineHeight: 1.12, color: "var(--ink)", whiteSpace: "pre-line" }}>
+                {settings.heroTitle}
               </h1>
               <div style={{ marginTop: 9, fontSize: 13, color: "var(--ink-soft)", display: "flex", alignItems: "center", gap: 7 }}>
-                <Icon name="bolt" size={15} color="var(--pink)" /> En moins de 60 secondes, sans appel.
+                <Icon name="bolt" size={15} color="var(--pink)" /> {settings.heroSubtitle}
               </div>
             </div>
           </div>
@@ -909,16 +1026,16 @@ export default function RdvPage() {
           {/* Main CTA */}
           <div style={{ padding: "18px 18px 4px" }}>
             <GoldBtn icon="calendar" onClick={() => setBooking({ serviceId: null })}>
-              Prendre rendez-vous
+              {settings.ctaLabel}
             </GoldBtn>
           </div>
 
           {/* Trust strip */}
           <div style={{ display: "flex", gap: 9, padding: "14px 18px 6px" }}>
             {[
-              { i: "clock",   t: "Dispo. temps réel" },
-              { i: "bell",    t: "Rappel auto."       },
-              { i: "sparkle", t: "+ points VIP"       },
+              { i: settings.trust1Icon, t: settings.trust1Text },
+              { i: settings.trust2Icon, t: settings.trust2Text },
+              { i: settings.trust3Icon, t: settings.trust3Text },
             ].map((x) => (
               <div key={x.t} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", textAlign: "center" }}>
                 <Icon name={x.i} size={19} color="var(--gold)" />
@@ -976,11 +1093,30 @@ export default function RdvPage() {
         </div>
 
         {/* Booking wizard overlay */}
+        {stripeError && (
+          <div style={{ margin: "0 18px 12px", padding: "12px 14px", borderRadius: "var(--r-md)", background: "rgba(194,85,122,.1)", border: "1px solid rgba(194,85,122,.3)", fontSize: 12.5, color: "var(--pink)" }}>
+            {stripeError}
+            <button type="button" onClick={() => setStripeError(null)} style={{ marginLeft: 10, color: "var(--ink-soft)", textDecoration: "underline" }}>
+              Fermer
+            </button>
+          </div>
+        )}
+
+        {paying && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 120, background: "rgba(0,0,0,.75)", display: "grid", placeItems: "center" }}>
+            <div style={{ textAlign: "center", color: "var(--ink)" }}>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>Redirection vers le paiement…</div>
+              <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 8 }}>Ne fermez pas cette page</div>
+            </div>
+          </div>
+        )}
+
         {booking && (
           <BookingWizard
             initialService={booking.serviceId}
             onClose={() => setBooking(null)}
             onConfirm={handleConfirm}
+            settings={settings}
           />
         )}
       </div>
