@@ -4,6 +4,7 @@
 
 import type { Database, Json } from "./database.types";
 import type { HomeSection } from "./home-sections";
+import type { PageSlug } from "./home-sections";
 
 type DbSection = Database["public"]["Tables"]["home_sections"]["Row"];
 
@@ -11,6 +12,7 @@ export function dbToSection(r: DbSection): HomeSection {
   const sch = r.schedule as { enabled: boolean; start: string; end: string };
   return {
     id: r.id,
+    pageSlug: (r.page_slug as PageSlug) ?? "home",
     type: r.type as HomeSection["type"],
     name: r.name,
     enabled: r.enabled,
@@ -36,6 +38,7 @@ export function sectionToDb(
 ): Database["public"]["Tables"]["home_sections"]["Insert"] {
   return {
     id: s.id,
+    page_slug: s.pageSlug ?? "home",
     type: s.type,
     name: s.name,
     enabled: s.enabled,

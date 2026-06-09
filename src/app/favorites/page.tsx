@@ -140,7 +140,7 @@ export default function FavoritesPage() {
           >
             Parcourez la boutique et cœurez les produits qui vous inspirent.
           </p>
-          <Link href="/">
+          <Link href="/boutique">
             <PinkBtn style={{ width: "auto", padding: "14px 32px" }}>
               Découvrir la boutique
             </PinkBtn>

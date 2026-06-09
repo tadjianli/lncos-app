@@ -90,8 +90,8 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
     fields: [
       { key: "title",   label: "Titre de section",   type: "text",           required: true },
       { key: "source",  label: "Source produits",    type: "product_source", required: true,
-        options: ["flash", "best", "reco", "new"],
-        helpText: "flash = ventes flash · best = best-sellers · reco = recommandés · new = nouveautés" },
+        options: ["flash", "best", "reco", "new", "all"],
+        helpText: "flash = ventes flash · best = best-sellers · reco = recommandés · new = nouveautés · all = catalogue complet" },
       { key: "variant", label: "Mise en page",       type: "select",  options: ["carousel", "grid"] },
     ],
   },
@@ -175,6 +175,29 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
       { key: "title",    label: "Titre",         type: "text",     required: true },
       { key: "subtitle", label: "Sous-titre",    type: "textarea" },
       { key: "cta",      label: "Texte bouton",  type: "text" },
+    ],
+  },
+  categories: {
+    type: "categories",
+    label: "Grille catégories",
+    icon: "grid",
+    description: "Grille ou liste des catégories produits.",
+    allowMultiple: false,
+    fields: [
+      { key: "title",   label: "Titre",        type: "text" },
+      { key: "variant", label: "Disposition",  type: "select", options: ["grid", "list"] },
+    ],
+  },
+  cta: {
+    type: "cta",
+    label: "Bouton d'action",
+    icon: "arrowR",
+    description: "Bouton principal (ex. Prendre rendez-vous).",
+    allowMultiple: true,
+    fields: [
+      { key: "title",    label: "Titre au-dessus", type: "text" },
+      { key: "subtitle", label: "Sous-titre",      type: "text" },
+      { key: "cta",      label: "Texte du bouton", type: "text", required: true },
     ],
   },
 };

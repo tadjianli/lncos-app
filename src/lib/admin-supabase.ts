@@ -318,9 +318,12 @@ export function useRdvNotifications() {
   return { notifications };
 }
 
-/* ─── useHomeSections (Supabase-backed) ───────────────────────────────────── */
+/* ─── usePageSections (Supabase-backed, per page) ─────────────────────────── */
 
-export function useSupabaseHomeSections() {
+import type { PageSlug } from "./home-sections";
+import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
+
+export function useSupabasePageSections(pageSlug: PageSlug) {
   const [published, setPublished] = useState<HomeSection[]>([]);
   const [draft, setDraft] = useState<HomeSection[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -329,74 +332,107 @@ export function useSupabaseHomeSections() {
     const { data } = await getSupabase()
       .from("home_sections")
       .select("*")
+      .eq("page_slug", pageSlug)
       .order("position");
     if (!data) return;
-    setPublished(data.filter((r) => !r.is_draft).map(dbToSection));
+    const pub = data.filter((r) => !r.is_draft).map(dbToSection);
+    setPublished(pub.length > 0 ? pub : DEFAULT_SECTIONS_BY_PAGE[pageSlug] ?? []);
     const draftRows = data.filter((r) => r.is_draft);
     setDraft(draftRows.length > 0 ? draftRows.map(dbToSection) : null);
     setLoading(false);
-  }, []);
+  }, [pageSlug]);
 
   useEffect(() => {
+    setLoading(true);
     load();
     const channel = getSupabase()
-      .channel("home-sections-admin")
+      .channel(`home-sections-admin-${pageSlug}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "home_sections" }, load)
       .subscribe();
     return () => { getSupabase().removeChannel(channel); };
-  }, [load]);
+  }, [load, pageSlug]);
+
+  const withSlug = useCallback(
+    (sections: HomeSection[]) =>
+      sections.map((s) => ({ ...s, pageSlug: s.pageSlug ?? pageSlug })),
+    [pageSlug]
+  );
 
   const beginDraft = useCallback(async (sections: HomeSection[]) => {
     const supabase = getSupabase();
-    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    const scoped = withSlug(sections);
+    const { error: delErr } = await supabase
+      .from("home_sections")
+      .delete()
+      .eq("page_slug", pageSlug)
+      .eq("is_draft", true);
     if (delErr) return { error: delErr.message };
-    const rows = sections.map((s, i) => sectionToDb(s, true, i));
+    const rows = scoped.map((s, i) => sectionToDb(s, true, i));
     const { error: insErr } = await supabase.from("home_sections").insert(rows);
     if (insErr) return { error: insErr.message };
-    setDraft(sections);
+    setDraft(scoped);
     return { error: null };
-  }, []);
+  }, [pageSlug, withSlug]);
 
   const saveDraft = useCallback(async (sections: HomeSection[]) => {
     const supabase = getSupabase();
-    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    const scoped = withSlug(sections);
+    const { error: delErr } = await supabase
+      .from("home_sections")
+      .delete()
+      .eq("page_slug", pageSlug)
+      .eq("is_draft", true);
     if (delErr) return { error: delErr.message };
-    const rows = sections.map((s, i) => sectionToDb(s, true, i));
+    const rows = scoped.map((s, i) => sectionToDb(s, true, i));
     const { error: insErr } = await supabase.from("home_sections").insert(rows);
     if (insErr) return { error: insErr.message };
-    setDraft(sections);
+    setDraft(scoped);
     return { error: null };
-  }, []);
+  }, [pageSlug, withSlug]);
 
   const publishDraft = useCallback(async (sections: HomeSection[]) => {
     const supabase = getSupabase();
-    const { error: delPubErr } = await supabase.from("home_sections").delete().eq("is_draft", false);
+    const scoped = withSlug(sections);
+    const { error: delPubErr } = await supabase
+      .from("home_sections")
+      .delete()
+      .eq("page_slug", pageSlug)
+      .eq("is_draft", false);
     if (delPubErr) return { error: delPubErr.message };
 
-    const publishedRows = sections.map((s, i) => sectionToDb(s, false, i));
+    const publishedRows = scoped.map((s, i) => sectionToDb(s, false, i));
     const { error: pubErr } = await supabase.from("home_sections").insert(publishedRows);
     if (pubErr) return { error: pubErr.message };
 
-    const { error: delDraftErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    const { error: delDraftErr } = await supabase
+      .from("home_sections")
+      .delete()
+      .eq("page_slug", pageSlug)
+      .eq("is_draft", true);
     if (delDraftErr) return { error: delDraftErr.message };
 
-    const draftRows = sections.map((s, i) => sectionToDb(s, true, i));
+    const draftRows = scoped.map((s, i) => sectionToDb(s, true, i));
     const { error: draftErr } = await supabase.from("home_sections").insert(draftRows);
     if (draftErr) return { error: draftErr.message };
 
-    setPublished(sections);
-    setDraft(sections);
+    setPublished(scoped);
+    setDraft(scoped);
     return { error: null };
-  }, []);
+  }, [pageSlug, withSlug]);
 
   const discardDraft = useCallback(async () => {
     const supabase = getSupabase();
-    const { error: delErr } = await supabase.from("home_sections").delete().eq("is_draft", true);
+    const { error: delErr } = await supabase
+      .from("home_sections")
+      .delete()
+      .eq("page_slug", pageSlug)
+      .eq("is_draft", true);
     if (delErr) return { error: delErr.message };
 
     const { data } = await supabase
       .from("home_sections")
       .select("*")
+      .eq("page_slug", pageSlug)
       .eq("is_draft", false)
       .order("position");
 
@@ -410,9 +446,14 @@ export function useSupabaseHomeSections() {
       setDraft(null);
     }
     return { error: null };
-  }, []);
+  }, [pageSlug]);
 
   return { published, draft, loading, beginDraft, saveDraft, publishDraft, discardDraft };
+}
+
+/** @deprecated use useSupabasePageSections("home") */
+export function useSupabaseHomeSections() {
+  return useSupabasePageSections("home");
 }
 
 /* ─── useProducts ─────────────────────────────────────────────────────────── */

@@ -94,7 +94,11 @@ function Reveal({
 
 /* ─── Hero section ──────────────────────────────────────────── */
 
-function HeroSection({ onDiscover }: { onDiscover?: () => void }) {
+function HeroSection({ onDiscover, section }: { onDiscover?: () => void; section?: HomeSection }) {
+  const eyebrow = section?.eyebrow ?? "Nouvelle collection";
+  const title = section?.title ?? "Révélez votre";
+  const accent = section?.titleAccent ?? "éclat";
+  const cta = section?.cta ?? "Découvrir";
   return (
     <div className="home-z" style={{ padding: "16px 18px 0" }}>
       <div
@@ -153,7 +157,7 @@ function HeroSection({ onDiscover }: { onDiscover?: () => void }) {
               marginBottom: 11,
             }}
           >
-            Nouvelle collection
+            {eyebrow}
           </div>
           <h2
             style={{
@@ -165,9 +169,9 @@ function HeroSection({ onDiscover }: { onDiscover?: () => void }) {
               maxWidth: 210,
             }}
           >
-            Révélez votre{" "}
+            {title}{" "}
             <span className="gold-text" style={{ fontStyle: "italic" }}>
-              éclat
+              {accent}
             </span>
           </h2>
           <button
@@ -182,7 +186,7 @@ function HeroSection({ onDiscover }: { onDiscover?: () => void }) {
               boxShadow: "0 10px 24px -10px rgba(239,169,192,.7)",
             }}
           >
-            Découvrir
+            {cta}
           </button>
         </div>
       </div>
@@ -649,6 +653,7 @@ export default function HomePage() {
     best:  bestProducts,
     new:   newProducts,
     reco:  products.slice(0, 4),
+    all:   products,
   };
 
   /* ── Section renderer (dispatch to inline components) ─────── */
@@ -662,7 +667,7 @@ export default function HomePage() {
         case "hero":
           return (
             <div key={section.id} className="home-z">
-              <HeroSection onDiscover={() => openListing(null)} />
+              <HeroSection section={section} onDiscover={() => openListing(null)} />
             </div>
           );
 

@@ -14,10 +14,12 @@ export type SectionType =
   | "bento"
   | "quote"
   | "reviews"
-  | "newsletter";
+  | "newsletter"
+  | "categories"
+  | "cta";
 
 export type SectionVariant = string;
-export type ProductSource = "flash" | "best" | "reco" | "new";
+export type ProductSource = "flash" | "best" | "reco" | "new" | "all";
 export type Audience = "all" | "vip" | "logged_in";
 export type Device = "all" | "mobile" | "desktop";
 
@@ -27,8 +29,11 @@ export interface SectionSchedule {
   end: string;
 }
 
+export type PageSlug = "home" | "boutique" | "discover" | "rdv" | "profile";
+
 export interface HomeSection {
   id: string;
+  pageSlug?: PageSlug;
   type: SectionType;
   name: string;
   enabled: boolean;

@@ -8,7 +8,7 @@ import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { useStore } from "@/lib/store";
-import { products } from "@/lib/data";
+import { usePublicProducts } from "@/lib/client-supabase";
 import type { Category } from "@/lib/store";
 
 interface ListingScreenProps {
@@ -23,19 +23,15 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
   const [sub, setSub] = useState("Tous");
   const [showFilter, setShowFilter] = useState(false);
 
+  const { products } = usePublicProducts();
   const openProduct = useStore((s) => s.openProduct);
   const addToCart   = useStore((s) => s.addToCart);
   const toggleFav   = useStore((s) => s.toggleFav);
   const isFav       = useStore((s) => s.isFav);
 
-  let list = category
+  const list = category
     ? products.filter((p) => p.cat === category.id)
     : products;
-
-  // Pad short lists
-  if (list.length < 4) {
-    list = list.concat(products.filter((p) => !list.includes(p))).slice(0, 8);
-  }
 
   const title = category ? category.name : "Tous les produits";
 

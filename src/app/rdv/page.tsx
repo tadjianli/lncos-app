@@ -15,6 +15,8 @@ import { services, extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
 import type { Service, Staff } from "@/lib/rdv-data";
 import { calcDeposit, type RdvSettings } from "@/lib/rdv-settings";
 import { useRdvSettings } from "@/lib/rdv-settings-db";
+import { usePublicPageSections } from "@/lib/client-supabase";
+import { PageSectionsView } from "@/components/page/PageSectionsView";
 
 const CATS = [
   { id: "all",        name: "Tout" },
@@ -874,6 +876,10 @@ function apptToDraft(appt: {
 /* ─── RDV Home ────────────────────────────────────────────────── */
 export default function RdvPage() {
   const { settings } = useRdvSettings();
+  const { getVisible: getPageSections } = usePublicPageSections("rdv");
+  const rdvLayoutSections = getPageSections({ isMobile: true }).filter((s) =>
+    ["hero", "trust", "cta"].includes(s.type)
+  );
   const [cat, setCat]         = useState("all");
   const [booking, setBooking] = useState<{ serviceId: string | null } | null>(null);
   const [confirmed, setConfirmed] = useState<Draft | null>(null);
@@ -1010,38 +1016,43 @@ export default function RdvPage() {
                 <Icon name="calCheck" size={16} color="var(--gold)" /> Mes RDV
               </Link>
             </div>
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 10.5, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--gold)", fontWeight: 600 }}>
-                {settings.heroEyebrow}
-              </div>
-              <h1 style={{ margin: "9px 0 0", fontWeight: 600, fontSize: 30, lineHeight: 1.12, color: "var(--ink)", whiteSpace: "pre-line" }}>
-                {settings.heroTitle}
-              </h1>
-              <div style={{ marginTop: 9, fontSize: 13, color: "var(--ink-soft)", display: "flex", alignItems: "center", gap: 7 }}>
-                <Icon name="bolt" size={15} color="var(--pink)" /> {settings.heroSubtitle}
-              </div>
-            </div>
-          </div>
-
-          {/* Main CTA */}
-          <div style={{ padding: "18px 18px 4px" }}>
-            <GoldBtn icon="calendar" onClick={() => setBooking({ serviceId: null })}>
-              {settings.ctaLabel}
-            </GoldBtn>
-          </div>
-
-          {/* Trust strip */}
-          <div style={{ display: "flex", gap: 9, padding: "14px 18px 6px" }}>
-            {[
-              { i: settings.trust1Icon, t: settings.trust1Text },
-              { i: settings.trust2Icon, t: settings.trust2Text },
-              { i: settings.trust3Icon, t: settings.trust3Text },
-            ].map((x) => (
-              <div key={x.t} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", textAlign: "center" }}>
-                <Icon name={x.i} size={19} color="var(--gold)" />
-                <span style={{ fontSize: 10.5, color: "var(--ink-soft)", fontWeight: 500, lineHeight: 1.25 }}>{x.t}</span>
-              </div>
-            ))}
+            {rdvLayoutSections.length > 0 ? (
+              <PageSectionsView
+                sections={rdvLayoutSections}
+                onCta={() => setBooking({ serviceId: null })}
+              />
+            ) : (
+              <>
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 10.5, letterSpacing: ".26em", textTransform: "uppercase", color: "var(--gold)", fontWeight: 600 }}>
+                    {settings.heroEyebrow}
+                  </div>
+                  <h1 style={{ margin: "9px 0 0", fontWeight: 600, fontSize: 30, lineHeight: 1.12, color: "var(--ink)", whiteSpace: "pre-line" }}>
+                    {settings.heroTitle}
+                  </h1>
+                  <div style={{ marginTop: 9, fontSize: 13, color: "var(--ink-soft)", display: "flex", alignItems: "center", gap: 7 }}>
+                    <Icon name="bolt" size={15} color="var(--pink)" /> {settings.heroSubtitle}
+                  </div>
+                </div>
+                <div style={{ padding: "18px 0 4px" }}>
+                  <GoldBtn icon="calendar" onClick={() => setBooking({ serviceId: null })}>
+                    {settings.ctaLabel}
+                  </GoldBtn>
+                </div>
+                <div style={{ display: "flex", gap: 9, padding: "14px 0 6px" }}>
+                  {[
+                    { i: settings.trust1Icon, t: settings.trust1Text },
+                    { i: settings.trust2Icon, t: settings.trust2Text },
+                    { i: settings.trust3Icon, t: settings.trust3Text },
+                  ].map((x) => (
+                    <div key={x.t} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", textAlign: "center" }}>
+                      <Icon name={x.i} size={19} color="var(--gold)" />
+                      <span style={{ fontSize: 10.5, color: "var(--ink-soft)", fontWeight: 500, lineHeight: 1.25 }}>{x.t}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Service list */}

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSupabaseHomeSections } from "@/lib/admin-supabase";
+import { useSupabasePageSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
-import type { HomeSection, SectionType } from "@/lib/home-sections";
+import type { HomeSection, PageSlug, SectionType } from "@/lib/home-sections";
+import { ALLOWED_TYPES_BY_PAGE, APP_PAGES, previewPath } from "@/lib/page-sections";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 
@@ -19,6 +20,8 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   reviews:    { icon: "star",    color: "#B8902B", bg: "rgba(212,175,55,.14)" },
   reels:      { icon: "play",    color: "#C2557A", bg: "rgba(194,85,122,.14)" },
   newsletter: { icon: "bell",    color: "#3B7DD8", bg: "rgba(59,125,216,.14)" },
+  categories: { icon: "grid",    color: "#3B7DD8", bg: "rgba(59,125,216,.14)" },
+  cta:        { icon: "arrowR",  color: "#C2557A", bg: "rgba(194,85,122,.14)" },
 };
 
 /* ── Section editor modal ───────────────────────────────────────────── */
@@ -110,10 +113,12 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 /* ── Add section modal ──────────────────────────────────────────────── */
-function AddSectionModal({ onClose, onAdd }: {
+function AddSectionModal({ onClose, onAdd, pageSlug }: {
   onClose: () => void;
   onAdd: (type: SectionType) => void;
+  pageSlug: PageSlug;
 }) {
+  const allowed = new Set(ALLOWED_TYPES_BY_PAGE[pageSlug]);
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
       <div className="ab-modal" style={{ maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
@@ -122,7 +127,9 @@ function AddSectionModal({ onClose, onAdd }: {
           <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
         </div>
         <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 6, padding: "4px 0 12px" }}>
-          {(Object.entries(SECTION_SCHEMA_REGISTRY) as [SectionType, typeof SECTION_SCHEMA_REGISTRY[SectionType]][]).map(([type, schema]) => {
+          {(Object.entries(SECTION_SCHEMA_REGISTRY) as [SectionType, typeof SECTION_SCHEMA_REGISTRY[SectionType]][])
+            .filter(([type]) => allowed.has(type))
+            .map(([type, schema]) => {
             const m = TYPE_META[type] ?? { icon: "sparkle", color: "#B8902B", bg: "rgba(212,175,55,.14)" };
             return (
               <button key={type} className="ab-add-type-row" onClick={() => onAdd(type)}>
@@ -199,7 +206,8 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 
 /* ── Main App Builder component ─────────────────────────────────────── */
 export function AppBuilder() {
-  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabaseHomeSections();
+  const [activePage, setActivePage] = useState<PageSlug>("home");
+  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(activePage);
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
   const [addingSection, setAddingSection] = useState(false);
@@ -211,7 +219,10 @@ export function AppBuilder() {
     setTimeout(() => setToast(null), 2800);
   }
 
-  // Sync from DB draft on first load (e.g. page refresh mid-edit)
+  useEffect(() => {
+    setLocalDraft(null);
+  }, [activePage]);
+
   useEffect(() => {
     if (dbDraft !== null && localDraft === null) {
       setLocalDraft(dbDraft);
@@ -345,6 +356,7 @@ export function AppBuilder() {
     const schema = SECTION_SCHEMA_REGISTRY[type];
     const newSec: HomeSection = {
       id: `${type}-${Date.now()}`,
+      pageSlug: activePage,
       type,
       name: schema.label,
       enabled: false,
@@ -397,6 +409,28 @@ export function AppBuilder() {
           </div>
         )}
 
+        <div className="adm-card" style={{ padding: "10px 12px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {APP_PAGES.map((p) => (
+            <button
+              key={p.slug}
+              type="button"
+              className={`adm-btn sm${activePage === p.slug ? " gold" : " ghost"}`}
+              onClick={() => setActivePage(p.slug)}
+            >
+              {p.label}
+            </button>
+          ))}
+          <a
+            href={previewPath(activePage)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="adm-btn ghost sm"
+            style={{ marginLeft: "auto", textDecoration: "none" }}
+          >
+            <Icon name="search" size={14} /> Aperçu live
+          </a>
+        </div>
+
         {/* Body */}
         <div className="ab-layout">
           {/* Section list */}
@@ -404,7 +438,7 @@ export function AppBuilder() {
             <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
               <div className="ab-list-head">
                 <div>
-                  <div className="ab-list-title">Sections de l&apos;accueil</div>
+                  <div className="ab-list-title">Sections · {APP_PAGES.find((p) => p.slug === activePage)?.label}</div>
                   <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
                 </div>
                 <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
@@ -478,7 +512,7 @@ export function AppBuilder() {
         />
       )}
       {addingSection && (
-        <AddSectionModal onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
+        <AddSectionModal pageSlug={activePage} onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
       )}
       {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </>

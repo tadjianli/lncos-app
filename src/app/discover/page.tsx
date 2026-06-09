@@ -3,18 +3,8 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
-import { usePublicCategories } from "@/lib/client-supabase";
-
-/* ─── Category accent colours / gradients ──────────────────────────── */
-const CAT_META: Record<string, { icon: string; grad: string; accent: string }> = {
-  visage:      { icon: "sparkle", grad: "linear-gradient(135deg,#2a1f24,#1a1014)", accent: "#F7C6D7" },
-  maquillage:  { icon: "star",    grad: "linear-gradient(135deg,#1e1420,#14090f)", accent: "#E2A8C0" },
-  parfums:     { icon: "flame",   grad: "linear-gradient(135deg,#1e190e,#100c04)", accent: "#D4AF37" },
-  corps:       { icon: "heart",   grad: "linear-gradient(135deg,#1a2218,#0d120c)", accent: "#A8C9A0" },
-  cheveux:     { icon: "sparkle", grad: "linear-gradient(135deg,#1a1a28,#0c0c18)", accent: "#A8B4F7" },
-  accessoires: { icon: "bag",     grad: "linear-gradient(135deg,#1e1c16,#110f0a)", accent: "#D4AF37" },
-  coffrets:    { icon: "gift",    grad: "linear-gradient(135deg,#241824,#14101a)", accent: "#E2A8C0" },
-};
+import { usePublicPageSections } from "@/lib/client-supabase";
+import { PageSectionsView } from "@/components/page/PageSectionsView";
 
 /* ─── Featured editorial tiles ─────────────────────────────────────── */
 const EDITORIALS = [
@@ -37,46 +27,18 @@ const EDITORIALS = [
 ];
 
 export default function DiscoverPage() {
-  const openListing = useStore((s) => s.openListing);
   const openSearch  = useStore((s) => s.openSearch);
-  const { categories } = usePublicCategories();
+  const { getVisible } = usePublicPageSections("discover");
+  const sections = getVisible({ isMobile: true });
 
   return (
     <AppShell>
       <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
 
-        {/* ── Search hero ─────────────────────────────────────── */}
-        <div
-          style={{
-            padding: "52px 18px 20px",
-            background: "linear-gradient(180deg, rgba(212,175,55,.06) 0%, transparent 100%)",
-          }}
-        >
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: ".18em",
-              textTransform: "uppercase",
-              color: "var(--gold)",
-              margin: "0 0 6px",
-            }}
-          >
-            Boutique LN COS
-          </p>
-          <h2
-            style={{
-              margin: "0 0 18px",
-              fontWeight: 700,
-              fontSize: 26,
-              color: "var(--ink)",
-              letterSpacing: "-.02em",
-            }}
-          >
-            Découvrez
-          </h2>
+        <PageSectionsView sections={sections.filter((s) => s.type !== "categories")} />
 
-          {/* Search bar */}
+        {/* ── Search bar ─────────────────────────────────────── */}
+        <div style={{ padding: "0 18px 20px" }}>
           <button
             onClick={openSearch}
             style={{
@@ -166,90 +128,7 @@ export default function DiscoverPage() {
           ))}
         </div>
 
-        {/* ── Categories ───────────────────────────────────────── */}
-        <div style={{ padding: "24px 18px 0" }}>
-          <p
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: ".18em",
-              textTransform: "uppercase",
-              color: "var(--gold)",
-              margin: "0 0 14px",
-              display: "flex",
-              alignItems: "center",
-              gap: 7,
-            }}
-          >
-            <Icon name="star" size={12} color="var(--gold)" fill="rgba(212,175,55,.4)" />
-            Toutes les catégories
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {categories.map((c, i) => {
-              const meta = CAT_META[c.id] ?? { icon: "sparkle", grad: "linear-gradient(135deg,#1a1a1a,#111)", accent: "var(--gold)" };
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => openListing(c)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "15px 16px",
-                    borderRadius: "var(--r-md)",
-                    background: meta.grad,
-                    border: "1px solid rgba(255,255,255,.06)",
-                    textAlign: "left",
-                    animation: `fadeUp .5s ease ${i * 0.04 + 0.1}s both`,
-                    width: "100%",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Subtle right glow */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: -16,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      width: 60,
-                      height: 60,
-                      borderRadius: "50%",
-                      background: `radial-gradient(circle, ${meta.accent}18, transparent 70%)`,
-                      pointerEvents: "none",
-                    }}
-                  />
-
-                  <span
-                    style={{
-                      width: 46,
-                      height: 46,
-                      borderRadius: 14,
-                      background: `${meta.accent}18`,
-                      border: `1px solid ${meta.accent}28`,
-                      display: "grid",
-                      placeItems: "center",
-                      flex: "0 0 auto",
-                    }}
-                  >
-                    <Icon name={meta.icon} size={22} color={meta.accent} stroke={1.5} />
-                  </span>
-
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink)" }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 2 }}>
-                      {c.count} produit{c.count !== 1 ? "s" : ""}
-                    </div>
-                  </div>
-
-                  <Icon name="chevR" size={18} color="var(--ink-mute)" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <PageSectionsView sections={sections.filter((s) => s.type === "categories")} />
 
         {/* ── Brand promise strip ──────────────────────────────── */}
         <div style={{ padding: "28px 18px 32px" }}>

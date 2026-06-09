@@ -11,7 +11,9 @@ import {
   DEFAULT_HOME_SECTIONS,
   visibleSections,
   type HomeSection,
+  type PageSlug,
 } from "./home-sections";
+import { DEFAULT_SECTIONS_BY_PAGE } from "./page-sections";
 import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
@@ -52,7 +54,7 @@ function mapProduct(row: {
 
 /* ── usePublicProducts ───────────────────────────────────────── */
 export function usePublicProducts() {
-  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([...STATIC_PRODUCTS].reverse());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,9 +65,9 @@ export function usePublicProducts() {
 
     getSupabase()
       .from("products")
-      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,active")
+      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,active,created_at")
       .eq("active", true)
-      .order("name")
+      .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
           setProducts(data.map(mapProduct));
@@ -101,10 +103,14 @@ export function usePublicCategories() {
   return { categories };
 }
 
-/* ── usePublicHomeSections ───────────────────────────────────── */
-export function usePublicHomeSections() {
+/* ── usePublicPageSections ───────────────────────────────────── */
+function pageFallback(slug: PageSlug): HomeSection[] {
+  return slug === "home" ? DEFAULT_HOME_SECTIONS : (DEFAULT_SECTIONS_BY_PAGE[slug] ?? []);
+}
+
+export function usePublicPageSections(pageSlug: PageSlug = "home") {
   const [isPreview, setIsPreview] = useState(false);
-  const [sections, setSections] = useState<HomeSection[]>(DEFAULT_HOME_SECTIONS);
+  const [sections, setSections] = useState<HomeSection[]>(() => pageFallback(pageSlug));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -113,6 +119,7 @@ export function usePublicHomeSections() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
+      setSections(pageFallback(pageSlug));
       setLoading(false);
       return;
     }
@@ -123,15 +130,18 @@ export function usePublicHomeSections() {
       const { data, error } = await getSupabase()
         .from("home_sections")
         .select("*")
+        .eq("page_slug", pageSlug)
         .eq("is_draft", preview)
         .order("position");
 
       if (!error && data && data.length > 0) {
         const mapped = data.map(dbToSection);
         setSections(mapped);
-        if (!preview) {
+        if (!preview && pageSlug === "home") {
           useHomeSectionsStore.getState().hydratePublished(mapped);
         }
+      } else {
+        setSections(pageFallback(pageSlug));
       }
       setLoading(false);
     };
@@ -139,7 +149,7 @@ export function usePublicHomeSections() {
     load();
 
     const channel = getSupabase()
-      .channel("home-sections-public")
+      .channel(`home-sections-public-${pageSlug}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "home_sections" },
@@ -150,7 +160,7 @@ export function usePublicHomeSections() {
     return () => {
       getSupabase().removeChannel(channel);
     };
-  }, []);
+  }, [pageSlug]);
 
   const getVisible = (opts?: {
     isMobile?: boolean;
@@ -159,5 +169,10 @@ export function usePublicHomeSections() {
   }) => visibleSections(sections, opts);
 
   return { sections, loading, getVisible, isPreview };
+}
+
+/** @deprecated use usePublicPageSections("home") */
+export function usePublicHomeSections() {
+  return usePublicPageSections("home");
 }
 

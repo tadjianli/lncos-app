@@ -451,6 +451,7 @@ export interface Database {
 
       home_sections: {
         Row: {
+          page_slug: string;
           id: string;
           type: string;
           name: string;
@@ -472,6 +473,7 @@ export interface Database {
           updated_at: string;
         };
         Insert: {
+          page_slug?: string;
           id: string;
           type: string;
           name: string;
@@ -493,6 +495,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          page_slug?: string;
           type?: string;
           name?: string;
           enabled?: boolean;

@@ -7,6 +7,8 @@ import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getSupabase } from "@/lib/supabase";
+import { usePublicPageSections } from "@/lib/client-supabase";
+import { PageSectionsView } from "@/components/page/PageSectionsView";
 
 interface UserData {
   id: string;
@@ -29,6 +31,8 @@ export default function ProfilePage() {
   const [authLoading, setAuthLoading] = useState(true);
   const [orderCount, setOrderCount]   = useState<number>(0);
   const [loggingOut, setLoggingOut]   = useState(false);
+  const { getVisible } = usePublicPageSections("profile");
+  const profileSections = getVisible({ isMobile: true });
 
   const loadUser = useCallback(async () => {
     setAuthLoading(true);
@@ -90,6 +94,8 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "8px 0 24px" }}>
+        <PageSectionsView sections={profileSections.filter((s) => s.type === "hero")} />
+
         {/* Header */}
         <div style={{ padding: "0 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 44, marginBottom: 6 }}>
@@ -225,6 +231,8 @@ export default function ProfilePage() {
             </button>
           )}
         </div>
+
+        <PageSectionsView sections={profileSections.filter((s) => s.type === "newsletter")} />
       </div>
     </AppShell>
   );

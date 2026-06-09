@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function OfflinePage() {
   return (
     <div
@@ -29,7 +31,7 @@ export default function OfflinePage() {
       <p style={{ margin: 0, maxWidth: 280, lineHeight: 1.5, color: "#a3a3a3" }}>
         Vérifiez votre connexion internet, puis rechargez la page.
       </p>
-      <a
+      <Link
         href="/"
         style={{
           marginTop: 8,
@@ -42,7 +44,7 @@ export default function OfflinePage() {
         }}
       >
         Réessayer
-      </a>
+      </Link>
     </div>
   );
 }

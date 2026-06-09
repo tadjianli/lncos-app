@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { href: "/",          id: "home",       icon: "home",   label: "Accueil"    },
   { href: "/discover",  id: "categories", icon: "grid",   label: "Catégories" },
   { href: "/bag",       id: "cart",       icon: "bag",    label: "Panier"     },
-  { href: "/favorites", id: "favorites",  icon: "heart",  label: "Favoris"    },
+  { href: "/boutique",  id: "boutique",   icon: "shop",   label: "Boutique"   },
   { href: "/profile",   id: "profile",    icon: "user",   label: "Profil"     },
 ] as const;
 
@@ -29,7 +29,7 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
         const active =
           pathname === item.href ||
           (item.href !== "/" && pathname.startsWith(item.href));
-        const showFill = active && (item.id === "favorites" || item.id === "cart");
+        const showFill = active && (item.id === "boutique" || item.id === "cart");
 
         return (
           <Link
