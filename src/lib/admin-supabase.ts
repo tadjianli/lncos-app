@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase } from "./supabase";
 import type { Database, Json } from "./database.types";
 import type { Popup, Appointment, Notification } from "./rdv-store";
@@ -33,6 +34,54 @@ type DbProductVariant = Database["public"]["Tables"]["product_variants"]["Row"];
 type DbProductWithVariants = DbProduct & {
   product_variants?: DbProductVariant[] | null;
 };
+
+/* ─── Realtime admin (un canal partagé, plusieurs consommateurs) ─────────── */
+
+type AdminRealtimeEntry = {
+  refCount: number;
+  channel: RealtimeChannel | null;
+  listeners: Set<() => void>;
+};
+
+const adminRealtimeChannels = new Map<string, AdminRealtimeEntry>();
+
+/** Évite l'erreur « cannot add callbacks after subscribe() » quand plusieurs panneaux montent le même hook. */
+function useAdminRealtimeSubscription(
+  channelName: string,
+  table: string,
+  onChange: () => void
+) {
+  useEffect(() => {
+    let entry = adminRealtimeChannels.get(channelName);
+    if (!entry) {
+      entry = { refCount: 0, channel: null, listeners: new Set() };
+      adminRealtimeChannels.set(channelName, entry);
+    }
+
+    entry.listeners.add(onChange);
+    entry.refCount += 1;
+
+    if (entry.refCount === 1) {
+      entry.channel = getSupabase()
+        .channel(channelName)
+        .on("postgres_changes", { event: "*", schema: "public", table }, () => {
+          entry!.listeners.forEach((fn) => fn());
+        })
+        .subscribe();
+    }
+
+    return () => {
+      const current = adminRealtimeChannels.get(channelName);
+      if (!current) return;
+      current.listeners.delete(onChange);
+      current.refCount -= 1;
+      if (current.refCount <= 0) {
+        if (current.channel) getSupabase().removeChannel(current.channel);
+        adminRealtimeChannels.delete(channelName);
+      }
+    };
+  }, [channelName, table, onChange]);
+}
 
 /* ─── Mappers: DB → UI ─────────────────────────────────────────────────────── */
 
@@ -1163,12 +1212,9 @@ export function useProductReviewsAdmin() {
 
   useEffect(() => {
     load();
-    const channel = getSupabase()
-      .channel("reviews-admin")
-      .on("postgres_changes", { event: "*", schema: "public", table: "product_reviews" }, load)
-      .subscribe();
-    return () => { getSupabase().removeChannel(channel); };
   }, [load]);
+
+  useAdminRealtimeSubscription("reviews-admin", "product_reviews", load);
 
   const updateReview = useCallback(async (id: string, patch: Partial<ProductReview>) => {
     const { error } = await getSupabase()
@@ -1364,12 +1410,9 @@ export function useBeforeAfterResultsAdmin() {
 
   useEffect(() => {
     load();
-    const channel = getSupabase()
-      .channel("before-after-admin")
-      .on("postgres_changes", { event: "*", schema: "public", table: "before_after_results" }, load)
-      .subscribe();
-    return () => { getSupabase().removeChannel(channel); };
   }, [load]);
+
+  useAdminRealtimeSubscription("before-after-admin", "before_after_results", load);
 
   const createResult = useCallback(async (input: Partial<BeforeAfterResult>) => {
     const { data, error } = await getSupabase()
