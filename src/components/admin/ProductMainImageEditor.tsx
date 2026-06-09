@@ -80,7 +80,7 @@ export function ProductMainImageEditor({
       />
 
       <div
-        className={`adm-gallery-dropzone adm-main-image-dropzone${uploading ? " is-loading" : ""}${dropzoneDisabled ? " is-disabled" : ""}`}
+        className={`adm-gallery-dropzone adm-gallery-dropzone--compact adm-main-image-dropzone${uploading ? " is-loading" : ""}${dropzoneDisabled ? " is-disabled" : ""}`}
         onDragOver={(e) => !dropzoneDisabled && e.preventDefault()}
         onDrop={onDrop}
         onClick={() => !dropzoneDisabled && inputRef.current?.click()}
@@ -89,7 +89,7 @@ export function ProductMainImageEditor({
         aria-disabled={dropzoneDisabled}
         onKeyDown={(e) => e.key === "Enter" && !dropzoneDisabled && inputRef.current?.click()}
       >
-        <Icon name="plus" size={22} color="var(--adm-gold)" />
+        <Icon name="plus" size={16} color="var(--adm-gold)" />
         <div className="adm-gallery-dropzone-title">
           {uploading
             ? "Optimisation & envoi…"

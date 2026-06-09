@@ -787,7 +787,7 @@
 .adm-main-image-editor {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .adm-main-image-dropzone {
@@ -870,6 +870,31 @@
 }
 .adm-gallery-dropzone-title { font-size: 14px; font-weight: 600; color: var(--adm-ink); margin-top: 10px; }
 .adm-gallery-dropzone-sub { font-size: 12px; color: var(--adm-ink-soft); margin-top: 4px; }
+
+/* Zone d’upload miniatures — taille réduite */
+.adm-gallery-dropzone--compact {
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+.adm-gallery-dropzone--compact .adm-gallery-dropzone-title {
+  font-size: 12px;
+  margin-top: 4px;
+}
+.adm-gallery-dropzone--compact .adm-gallery-dropzone-sub {
+  font-size: 10px;
+  margin-top: 2px;
+}
+.adm-gallery-dropzone--compact .adm-gallery-dropzone-hint {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+/* Miniatures — zone d’upload demi-largeur */
+.adm-product-gallery .adm-gallery-dropzone--compact {
+  width: 50%;
+  max-width: 100%;
+  align-self: flex-start;
+}
 .adm-gallery-dropzone-hint { font-size: 11px; color: var(--tone-pink); margin-top: 8px; }
 .adm-gallery-error {
   font-size: 12px; color: var(--tone-pink);
