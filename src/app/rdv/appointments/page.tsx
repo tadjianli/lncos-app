@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { Icon } from "@/components/shared/Icon";
-import { getSupabase } from "@/lib/supabase";
+import { getBrowserUser, getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { services, staff, svcMin } from "@/lib/rdv-data";
 import type { Appointment } from "@/lib/rdv-store";
 
@@ -57,7 +57,14 @@ export default function AppointmentsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await getSupabase().auth.getUser();
+    if (!isSupabaseConfigured()) {
+      setIsGuest(true);
+      setAppts([]);
+      setLoading(false);
+      return;
+    }
+
+    const user = await getBrowserUser();
     if (!user) {
       setIsGuest(true);
       setAppts([]);
@@ -82,12 +89,30 @@ export default function AppointmentsPage() {
   }, []);
 
   useEffect(() => {
-    load();
-    const channel = getSupabase()
-      .channel("appointments-user")
-      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, load)
-      .subscribe();
-    return () => { getSupabase().removeChannel(channel); };
+    void load();
+    if (!isSupabaseConfigured()) return;
+
+    let channel: ReturnType<ReturnType<typeof getSupabase>["channel"]> | null = null;
+    try {
+      channel = getSupabase()
+        .channel("appointments-user")
+        .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => {
+          void load();
+        })
+        .subscribe();
+    } catch {
+      // Realtime indisponible
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          getSupabase().removeChannel(channel);
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, [load]);
 
   async function handleCancel(id: string) {

@@ -13,7 +13,7 @@ import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { findVariantByName, resolveProductImage } from "@/lib/product-catalog";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
-import { getSupabase } from "@/lib/supabase";
+import { getBrowserUser, isSupabaseConfigured } from "@/lib/supabase";
 import {
   useActiveShippingMethods,
   type ShippingMethod,
@@ -56,7 +56,8 @@ function StepAddress() {
   const [phone,     setPhone]     = useState("");
 
   useEffect(() => {
-    getSupabase().auth.getUser().then(({ data: { user } }) => {
+    if (!isSupabaseConfigured()) return;
+    void getBrowserUser().then((user) => {
       if (!user) return;
       const full = user.user_metadata?.full_name ?? "";
       const parts = full.trim().split(" ");

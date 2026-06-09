@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
-import { getSupabase } from "@/lib/supabase";
+import { getBrowserUser, getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { fetchUserReviewKeys, usePublicProducts } from "@/lib/client-supabase";
 import { productFallbackImage, resolveProductImage } from "@/lib/product-catalog";
 import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
@@ -235,7 +235,13 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await getSupabase().auth.getUser();
+    if (!isSupabaseConfigured()) {
+      setIsGuest(true);
+      setLoading(false);
+      return;
+    }
+
+    const user = await getBrowserUser();
     if (!user) { setIsGuest(true); setLoading(false); return; }
     setIsGuest(false);
     setUserId(user.id);

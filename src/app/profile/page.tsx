@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
-import { getSupabase } from "@/lib/supabase";
+import { getBrowserUser, getSupabase, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
 import { usePublicPageSections } from "@/lib/client-supabase";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
 
@@ -37,34 +37,48 @@ export default function ProfilePage() {
 
   const loadUser = useCallback(async () => {
     setAuthLoading(true);
-    const { data: { user: u } } = await getSupabase().auth.getUser();
+    if (!isSupabaseConfigured()) {
+      setUser(null);
+      setOrderCount(0);
+      setAuthLoading(false);
+      return;
+    }
+
+    const u = await getBrowserUser();
     if (u) {
       const name = u.user_metadata?.full_name ?? u.email?.split("@")[0] ?? "Membre";
       setUser({ id: u.id, name, email: u.email ?? "", initial: name[0]?.toUpperCase() ?? "M" });
-      // Fetch real order count
-      const { count } = await getSupabase()
-        .from("orders")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", u.id);
-      setOrderCount(count ?? 0);
+      try {
+        const { count } = await getSupabase()
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", u.id);
+        setOrderCount(count ?? 0);
+      } catch {
+        setOrderCount(0);
+      }
     } else {
       setUser(null);
+      setOrderCount(0);
     }
     setAuthLoading(false);
   }, []);
 
   useEffect(() => {
     loadUser();
-    // Re-run when auth state changes (login/logout from overlay)
-    const { data: { subscription } } = getSupabase().auth.onAuthStateChange(() => {
-      loadUser();
+    return subscribeAuthChanges(() => {
+      void loadUser();
     });
-    return () => subscription.unsubscribe();
   }, [loadUser]);
 
   async function handleLogout() {
     setLoggingOut(true);
-    await getSupabase().auth.signOut();
+    try {
+      if (isSupabaseConfigured()) await getSupabase().auth.signOut();
+    } catch {
+      // Hors ligne ou session déjà expirée
+    }
+    setUser(null);
     setLoggingOut(false);
   }
 

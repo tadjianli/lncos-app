@@ -96,8 +96,7 @@ if ('serviceWorker' in navigator) {
     return Promise.all(regs.map(function(reg) {
       var url = (reg.active && reg.active.scriptURL) || '';
       if (url.indexOf('admin-push-sw') !== -1) return Promise.resolve(false);
-      if (url.indexOf('sw.js') !== -1) return reg.unregister();
-      return Promise.resolve(false);
+      return reg.unregister();
     }));
   }).catch(function() {});
 }

@@ -112,18 +112,22 @@ export function usePublicProducts() {
       return;
     }
 
-    getSupabase()
-      .from("products")
-      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
-      .eq("active", true)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await getSupabase()
+          .from("products")
+          .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
+          .eq("active", true)
+          .order("created_at", { ascending: false });
         if (!error && data && data.length > 0) {
           setProducts(data.map(mapProduct));
         }
-        // On error or empty table, keep static fallback already set as initial state
+      } catch {
+        // Conserver le catalogue statique de secours
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   const byId = (id: string) => products.find((p) => p.id === id) ?? null;
@@ -138,15 +142,19 @@ export function usePublicCategories() {
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
-    getSupabase()
-      .from("categories")
-      .select("id,name,count")
-      .order("position")
-      .then(({ data, error }) => {
+    void (async () => {
+      try {
+        const { data, error } = await getSupabase()
+          .from("categories")
+          .select("id,name,count")
+          .order("position");
         if (!error && data && data.length > 0) {
           setCategories(data as Category[]);
         }
-      });
+      } catch {
+        // Conserver les catégories statiques
+      }
+    })();
   }, []);
 
   return { categories };
@@ -174,40 +182,56 @@ export function usePublicPageSections(pageSlug: PageSlug = "home") {
     }
 
     const load = async () => {
-      const preview =
-        new URLSearchParams(window.location.search).get("preview") === "1";
-      const { data, error } = await getSupabase()
-        .from("home_sections")
-        .select("*")
-        .eq("page_slug", pageSlug)
-        .eq("is_draft", preview)
-        .order("position");
+      try {
+        const preview =
+          new URLSearchParams(window.location.search).get("preview") === "1";
+        const { data, error } = await getSupabase()
+          .from("home_sections")
+          .select("*")
+          .eq("page_slug", pageSlug)
+          .eq("is_draft", preview)
+          .order("position");
 
-      if (!error && data && data.length > 0) {
-        const mapped = data.map(dbToSection);
-        setSections(mapped);
-        if (!preview && pageSlug === "home") {
-          useHomeSectionsStore.getState().hydratePublished(mapped);
+        if (!error && data && data.length > 0) {
+          const mapped = data.map(dbToSection);
+          setSections(mapped);
+          if (!preview && pageSlug === "home") {
+            useHomeSectionsStore.getState().hydratePublished(mapped);
+          }
+        } else {
+          setSections(pageFallback(pageSlug));
         }
-      } else {
+      } catch {
         setSections(pageFallback(pageSlug));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    load();
+    void load();
 
-    const channel = getSupabase()
-      .channel(`home-sections-public-${pageSlug}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "home_sections" },
-        load
-      )
-      .subscribe();
+    let channel: ReturnType<ReturnType<typeof getSupabase>["channel"]> | null = null;
+    try {
+      channel = getSupabase()
+        .channel(`home-sections-public-${pageSlug}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "home_sections" },
+          () => { void load(); }
+        )
+        .subscribe();
+    } catch {
+      // Realtime indisponible — données statiques conservées
+    }
 
     return () => {
-      getSupabase().removeChannel(channel);
+      if (channel) {
+        try {
+          getSupabase().removeChannel(channel);
+        } catch {
+          // ignore
+        }
+      }
     };
   }, [pageSlug]);
 
@@ -275,28 +299,50 @@ export function usePublicReviews() {
     }
 
     const load = async () => {
-      const { data, error } = await getSupabase()
-        .from("product_reviews")
-        .select("*")
-        .eq("status", "published")
-        .order("pinned", { ascending: false })
-        .order("featured", { ascending: false })
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await getSupabase()
+          .from("product_reviews")
+          .select("*")
+          .eq("status", "published")
+          .order("pinned", { ascending: false })
+          .order("featured", { ascending: false })
+          .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        const mapped = data.map((r) => reviewToPublic(dbToReview(r as DbReview)));
-        setReviews(mapped);
-        setTotal(data.length);
+        if (!error && data && data.length > 0) {
+          const mapped = data.map((r) => reviewToPublic(dbToReview(r as DbReview)));
+          setReviews(mapped);
+          setTotal(data.length);
+        }
+      } catch {
+        // Conserver les avis de démonstration
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    load();
-    const channel = getSupabase()
-      .channel("reviews-public")
-      .on("postgres_changes", { event: "*", schema: "public", table: "product_reviews" }, load)
-      .subscribe();
-    return () => { getSupabase().removeChannel(channel); };
+    void load();
+
+    let channel: ReturnType<ReturnType<typeof getSupabase>["channel"]> | null = null;
+    try {
+      channel = getSupabase()
+        .channel("reviews-public")
+        .on("postgres_changes", { event: "*", schema: "public", table: "product_reviews" }, () => {
+          void load();
+        })
+        .subscribe();
+    } catch {
+      // Realtime indisponible
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          getSupabase().removeChannel(channel);
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, []);
 
   const avg =

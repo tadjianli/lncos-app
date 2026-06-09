@@ -1,5 +1,11 @@
 export { createClient, getSupabase } from "./client";
 export {
+  getBrowserSession,
+  getBrowserUser,
+  clearLocalAuthSession,
+  subscribeAuthChanges,
+} from "./auth-client";
+export {
   createClient as createServerClient,
   createServiceClient,
   createSupabaseServerClient,

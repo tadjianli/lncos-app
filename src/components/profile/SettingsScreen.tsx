@@ -6,9 +6,9 @@ import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
-import { getSupabase } from "@/lib/supabase";
+import { getBrowserUser, getSupabase, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
 
-/* ─── Toggle ─────────────────────────────────────────────────────────── */
+/* --- Toggle --- */
 
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
   return (
@@ -158,7 +158,16 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await getSupabase().auth.getUser();
+    if (!isSupabaseConfigured()) {
+      setUserId(null);
+      setEmail("");
+      setFullName("");
+      setPhone("");
+      setLoading(false);
+      return;
+    }
+
+    const user = await getBrowserUser();
     if (!user) {
       setUserId(null);
       setEmail("");
@@ -186,10 +195,9 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
 
   useEffect(() => {
     loadProfile();
-    const { data: { subscription } } = getSupabase().auth.onAuthStateChange(() => {
-      loadProfile();
+    return subscribeAuthChanges(() => {
+      void loadProfile();
     });
-    return () => subscription.unsubscribe();
   }, [loadProfile]);
 
   async function handleSaveProfile() {

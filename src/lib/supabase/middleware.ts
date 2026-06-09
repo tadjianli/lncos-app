@@ -31,11 +31,14 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return { supabase, response: supabaseResponse, user };
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return { supabase, response: supabaseResponse, user };
+  } catch {
+    return { supabase, response: supabaseResponse, user: null };
+  }
 }
 
 export async function isAdminUser(
