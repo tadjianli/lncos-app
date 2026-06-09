@@ -6,16 +6,12 @@ import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { useAdminCategories, useProducts } from "@/lib/admin-supabase";
 import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
+import { ProductMainImageEditor } from "@/components/admin/ProductMainImageEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
 import { ProductCommitmentsEditor } from "@/components/admin/ProductCommitmentsEditor";
 import { DEFAULT_COMMITMENTS, DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
-import {
-  flatProductGallery,
-  resolveProductImage,
-  slugifyProductId,
-  splitProductGallery,
-} from "@/lib/product-catalog";
+import { resolveProductImage, slugifyProductId } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
@@ -55,7 +51,6 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
       id: productId,
       mainImageUrl: form.mainImageUrl ?? null,
       galleryImages: form.galleryImages ?? [],
-      thumbnailImages: form.thumbnailImages ?? [],
       productVariants: variants,
     };
     await onSave(payload, variants.map((v) => ({ ...v, productId })));
@@ -154,26 +149,24 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             onTogglesChange={(t) => set("sectionToggles", t)}
           />
 
-          <div className="adm-form-section-title">Images du produit</div>
-          <ProductImageGalleryEditor
+          <div className="adm-form-section-title">Image principale</div>
+          <p className="adm-form-section-desc">
+            Cartes produit, best-sellers, flash sales, panier, favoris et catégories — 1 seule image.
+          </p>
+          <ProductMainImageEditor
             productId={productId}
-            images={flatProductGallery(form)}
-            onChange={(urls) => {
-              const { main, gallery } = splitProductGallery(urls);
-              setForm((prev) => ({ ...prev, mainImageUrl: main, galleryImages: gallery }));
-            }}
-            mainHint="La 1<sup>re</sup> image = principale de la fiche produit"
-            badgeLabel="Principale"
+            imageUrl={form.mainImageUrl ?? null}
+            onChange={(url) => set("mainImageUrl", url)}
           />
 
-          <div className="adm-form-section-title">Miniature du produit</div>
+          <div className="adm-form-section-title">Miniatures du produit</div>
+          <p className="adm-form-section-desc">
+            Galerie de la fiche produit uniquement (max. 5 images). N&apos;utilise pas l&apos;image principale.
+          </p>
           <ProductImageGalleryEditor
             productId={productId}
-            images={form.thumbnailImages ?? []}
-            onChange={(urls) => set("thumbnailImages", urls)}
-            uploadSubfolder="thumbnails"
-            mainHint="La 1<sup>re</sup> miniature = vignette affichée en boutique"
-            badgeLabel="Vignette"
+            images={form.galleryImages ?? []}
+            onChange={(urls) => set("galleryImages", urls)}
           />
 
           <div className="adm-form-section-title">Variantes</div>
@@ -215,7 +208,6 @@ const BLANK_PRODUCT: Product = {
   commitments: DEFAULT_COMMITMENTS.map((c) => ({ ...c })),
   mainImageUrl: null,
   galleryImages: [],
-  thumbnailImages: [],
   productVariants: [],
 };
 

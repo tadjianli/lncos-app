@@ -93,8 +93,9 @@ function mapProduct(row: {
     extraSections: normalizeExtraSections(row.extra_sections),
     commitments: normalizeCommitments(row.commitments),
     mainImageUrl: row.main_image_url ?? row.image_url ?? null,
-    galleryImages: row.gallery_images ?? [],
-    thumbnailImages: row.thumbnail_images ?? [],
+    galleryImages: row.gallery_images?.length
+      ? row.gallery_images
+      : (row.thumbnail_images ?? []),
     videoUrl: row.video_url ?? null,
     imageUrl: row.image_url ?? null,
     productVariants: richVariants,

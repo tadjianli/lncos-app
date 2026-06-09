@@ -776,6 +776,52 @@
   margin-top: 0;
 }
 
+.adm-form-section-desc {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--adm-ink-soft);
+}
+
+/* Image principale — upload unique */
+.adm-main-image-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-main-image-dropzone {
+  max-width: 100%;
+}
+
+.adm-main-image-preview {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #E0D6C8;
+  background: var(--adm-surface);
+  box-shadow: 0 4px 16px rgba(26, 22, 18, 0.08);
+}
+
+.adm-main-image-preview img {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+.adm-main-image-preview-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--adm-surface-2);
+  border-top: 1px solid var(--adm-border);
+}
+
+.adm-btn.ghost.danger {
+  color: var(--tone-pink);
+}
+
 /* Product image gallery (admin) — style Shopify / beige LNcos */
 .adm-product-gallery { display: flex; flex-direction: column; gap: 12px; }
 

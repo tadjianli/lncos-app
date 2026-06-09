@@ -172,8 +172,9 @@ function dbToProduct(r: DbProductWithVariants): Product {
     extraSections: normalizeExtraSections(r.extra_sections),
     commitments: normalizeCommitments(r.commitments),
     mainImageUrl: r.main_image_url ?? r.image_url,
-    galleryImages: r.gallery_images ?? [],
-    thumbnailImages: r.thumbnail_images ?? [],
+    galleryImages: r.gallery_images?.length
+      ? r.gallery_images
+      : (r.thumbnail_images ?? []),
     videoUrl: r.video_url,
     imageUrl: r.image_url,
     productVariants: variants,
@@ -201,7 +202,6 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
     db.image_url = p.mainImageUrl ?? null;
   }
   if (p.galleryImages !== undefined) db.gallery_images = p.galleryImages;
-  if (p.thumbnailImages !== undefined) db.thumbnail_images = p.thumbnailImages;
   if ("videoUrl" in p) db.video_url = p.videoUrl ?? null;
   return db;
 }
@@ -631,7 +631,6 @@ export function useProducts() {
       main_image_url: product.mainImageUrl ?? null,
       image_url: product.mainImageUrl ?? null,
       gallery_images: product.galleryImages ?? [],
-      thumbnail_images: product.thumbnailImages ?? [],
       video_url: product.videoUrl ?? null,
       rating: 5,
       reviews: 0,

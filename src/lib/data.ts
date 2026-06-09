@@ -35,12 +35,10 @@ export interface Product {
   extraSections?: ProductExtraSection[];
   /** Badges engagements (Vegan, Made in France…) */
   commitments?: ProductCommitment[];
-  /** URL image principale (Supabase Storage) */
+  /** Image principale — cartes, listing, panier, favoris (main_image_url) */
   mainImageUrl?: string | null;
-  /** Galerie complémentaire (fiche produit) */
+  /** Miniatures fiche produit uniquement (gallery_images, max 5) */
   galleryImages?: string[];
-  /** Miniatures boutique / listing (jusqu'à 5) */
-  thumbnailImages?: string[];
   /** Réservé vidéo produit (futur) */
   videoUrl?: string | null;
   /** @deprecated alias legacy — préférer mainImageUrl */

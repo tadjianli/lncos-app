@@ -27,33 +27,18 @@ export function productFallbackImage(productId: string): string {
   return LOCAL_IMG(productId);
 }
 
-export function flatProductGallery(product: Product): string[] {
-  const urls: string[] = [];
-  const push = (url?: string | null) => {
-    if (url && !urls.includes(url)) urls.push(url);
-  };
-  push(product.mainImageUrl);
-  push(product.imageUrl);
-  for (const img of product.galleryImages ?? []) push(img);
-  return urls;
-}
-
-export function splitProductGallery(urls: string[]): { main: string | null; gallery: string[] } {
-  return { main: urls[0] ?? null, gallery: urls.slice(1) };
-}
-
+/** Image affichée partout sauf galerie fiche (cartes, panier, favoris…) */
 export function resolveProductImage(
   product: Product,
   variant?: ProductVariant | null
 ): string {
   if (variant?.imageUrl) return variant.imageUrl;
-  const thumb = product.thumbnailImages?.find(Boolean);
-  if (thumb) return thumb;
   if (product.mainImageUrl) return product.mainImageUrl;
   if (product.imageUrl) return product.imageUrl;
   return productFallbackImage(product.id);
 }
 
+/** Galerie fiche produit — miniatures uniquement (gallery_images) */
 export function buildProductGallery(
   product: Product,
   variant?: ProductVariant | null
@@ -64,10 +49,12 @@ export function buildProductGallery(
   };
 
   push(variant?.imageUrl);
-  push(product.mainImageUrl);
-  push(product.imageUrl);
   for (const img of product.galleryImages ?? []) push(img);
 
+  if (urls.length === 0) {
+    push(product.mainImageUrl);
+    push(product.imageUrl);
+  }
   if (urls.length === 0) urls.push(productFallbackImage(product.id));
   return urls;
 }

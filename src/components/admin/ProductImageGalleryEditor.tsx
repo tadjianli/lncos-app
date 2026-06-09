@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { uploadProductImage } from "@/lib/admin-media";
 
-export const MAX_PRODUCT_IMAGES = 5;
+export const MAX_PRODUCT_GALLERY_IMAGES = 5;
 
 export interface GalleryItem {
   id: string;
@@ -16,15 +16,13 @@ interface ProductImageGalleryEditorProps {
   productId: string;
   images: string[];
   onChange: (urls: string[]) => void;
-  /** Sous-dossier de stockage (ex. thumbnails → {productId}/thumbnails) */
+  /** Sous-dossier de stockage (ex. gallery → {productId}/gallery) */
   uploadSubfolder?: string;
-  mainHint?: string;
-  badgeLabel?: string;
 }
 
 function toItems(urls: string[]): GalleryItem[] {
   const unique = urls.filter((url, i, arr) => url && arr.indexOf(url) === i);
-  return unique.slice(0, MAX_PRODUCT_IMAGES).map((url, i) => ({
+  return unique.slice(0, MAX_PRODUCT_GALLERY_IMAGES).map((url, i) => ({
     id: `img-${i}-${url.slice(-16)}`,
     url,
   }));
@@ -40,9 +38,7 @@ export function ProductImageGalleryEditor({
   productId,
   images,
   onChange,
-  uploadSubfolder,
-  mainHint = "La 1<sup>re</sup> image = image principale",
-  badgeLabel = "Principale",
+  uploadSubfolder = "gallery",
 }: ProductImageGalleryEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<GalleryItem[]>(() => toItems(images));
@@ -72,8 +68,7 @@ export function ProductImageGalleryEditor({
   );
 
   const canUpload = Boolean(productId?.trim());
-  const atMax = items.length >= MAX_PRODUCT_IMAGES;
-  const mainUrl = items[0]?.url ?? null;
+  const atMax = items.length >= MAX_PRODUCT_GALLERY_IMAGES;
   const storageFolder = uploadSubfolder ? `${productId}/${uploadSubfolder}` : productId;
 
   async function handleFiles(fileList: FileList | null) {
@@ -83,7 +78,7 @@ export function ProductImageGalleryEditor({
       return;
     }
     if (atMax) {
-      setError(`Maximum ${MAX_PRODUCT_IMAGES} images par produit`);
+      setError(`Maximum ${MAX_PRODUCT_GALLERY_IMAGES} miniatures`);
       return;
     }
 
@@ -91,12 +86,12 @@ export function ProductImageGalleryEditor({
     setError(null);
     syncingRef.current = true;
 
-    const slotsLeft = MAX_PRODUCT_IMAGES - items.length;
+    const slotsLeft = MAX_PRODUCT_GALLERY_IMAGES - items.length;
     const files = Array.from(fileList).slice(0, slotsLeft);
     let working = [...items];
 
     for (const file of files) {
-      if (working.length >= MAX_PRODUCT_IMAGES) break;
+      if (working.length >= MAX_PRODUCT_GALLERY_IMAGES) break;
 
       const previewUrl = URL.createObjectURL(file);
       const pendingId = `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -138,15 +133,6 @@ export function ProductImageGalleryEditor({
     applyItems(next);
   }
 
-  function selectAsMain(id: string) {
-    const idx = items.findIndex((i) => i.id === id);
-    if (idx <= 0) return;
-    const next = [...items];
-    const [picked] = next.splice(idx, 1);
-    next.unshift(picked);
-    applyItems(next);
-  }
-
   function onDragStart(id: string) {
     setDragId(id);
   }
@@ -169,14 +155,8 @@ export function ProductImageGalleryEditor({
     <div className="adm-product-gallery">
       <div className="adm-gallery-toolbar">
         <span className="adm-gallery-counter">
-          {items.length} / {MAX_PRODUCT_IMAGES} images
+          {items.length} / {MAX_PRODUCT_GALLERY_IMAGES} miniatures
         </span>
-        {mainUrl && items.length > 0 && (
-          <span
-            className="adm-gallery-main-hint"
-            dangerouslySetInnerHTML={{ __html: mainHint }}
-          />
-        )}
       </div>
 
       <input
@@ -204,8 +184,8 @@ export function ProductImageGalleryEditor({
           {uploading
             ? "Optimisation & envoi…"
             : atMax
-              ? "Limite de 5 images atteinte"
-              : "Glisser-déposer ou cliquer"}
+              ? "Limite de 5 miniatures atteinte"
+              : "Ajouter des miniatures"}
         </div>
         <div className="adm-gallery-dropzone-sub">
           JPG, PNG, WebP · max 10 Mo · converti en WebP
@@ -219,8 +199,8 @@ export function ProductImageGalleryEditor({
 
       {error && <div className="adm-gallery-error">{error}</div>}
 
-      <div className="adm-gallery-strip" aria-label="Galerie produit">
-        {Array.from({ length: MAX_PRODUCT_IMAGES }).map((_, slot) => {
+      <div className="adm-gallery-strip" aria-label="Miniatures fiche produit">
+        {Array.from({ length: MAX_PRODUCT_GALLERY_IMAGES }).map((_, slot) => {
           const item = items[slot];
           if (!item) {
             return (
@@ -232,29 +212,18 @@ export function ProductImageGalleryEditor({
             );
           }
 
-          const isMain = items[0]?.id === item.id;
-
           return (
             <div
               key={item.id}
-              className={`adm-gallery-thumb${isMain ? " is-main" : ""}${item.pending ? " is-pending" : ""}`}
+              className={`adm-gallery-thumb${item.pending ? " is-pending" : ""}`}
               draggable={!item.pending}
               onDragStart={() => !item.pending && onDragStart(item.id)}
               onDragOver={(e) => onDragOver(e, item.id)}
               onDragEnd={() => setDragId(null)}
             >
-              <button
-                type="button"
-                className="adm-gallery-thumb-select"
-                onClick={() => selectAsMain(item.id)}
-                aria-label={isMain ? "Image principale" : `Définir ${item.url} comme principale`}
-                disabled={item.pending || isMain}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.url} alt="" />
-              </button>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.url} alt="" />
 
-              {isMain && <span className="adm-gallery-badge">{badgeLabel}</span>}
               {item.pending && <span className="adm-gallery-badge adm-gallery-badge--pending">Envoi…</span>}
 
               <div className="adm-gallery-thumb-actions">
