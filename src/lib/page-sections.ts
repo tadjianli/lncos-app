@@ -2,7 +2,7 @@
  * LN COS — Per-page section configuration (App Builder tabs)
  */
 
-import { DEFAULT_HOME_SECTIONS, type HomeSection, type PageSlug, type SectionType } from "./home-sections";
+import type { HomeSection, PageSlug, SectionType } from "./home-sections";
 
 export type { PageSlug };
 
@@ -57,8 +57,4 @@ export const ALLOWED_TYPES_BY_PAGE: Record<PageSlug, SectionType[]> = {
 export function previewPath(slug: PageSlug): string {
   const page = APP_PAGES.find((p) => p.slug === slug);
   return `${page?.path ?? "/"}?preview=1`;
-}
-
-export function defaultSectionsForPage(slug: PageSlug): HomeSection[] {
-  return slug === "home" ? DEFAULT_HOME_SECTIONS : (DEFAULT_SECTIONS_BY_PAGE[slug] ?? []);
 }
