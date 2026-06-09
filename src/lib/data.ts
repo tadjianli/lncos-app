@@ -1,6 +1,6 @@
 /* LN COS — Catalogue & données de démonstration (from handoff data.js) */
 
-import type { ProductExtraSection, ProductSectionToggles } from "./product-sections";
+import type { ProductCommitment, ProductExtraSection, ProductSectionToggles } from "./product-sections";
 
 export interface ProductVariant {
   id: string;
@@ -33,6 +33,8 @@ export interface Product {
   sectionToggles?: ProductSectionToggles;
   /** Sections éditoriales personnalisées */
   extraSections?: ProductExtraSection[];
+  /** Badges engagements (Vegan, Made in France…) */
+  commitments?: ProductCommitment[];
   /** URL image principale (Supabase Storage) */
   mainImageUrl?: string | null;
   /** Galerie complémentaire */

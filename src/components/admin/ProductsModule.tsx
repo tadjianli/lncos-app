@@ -8,7 +8,8 @@ import { useAdminCategories, useProducts } from "@/lib/admin-supabase";
 import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
-import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
+import { ProductCommitmentsEditor } from "@/components/admin/ProductCommitmentsEditor";
+import { DEFAULT_COMMITMENTS, DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { slugifyProductId, resolveProductImage } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 
@@ -140,6 +141,13 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             onExtraSectionsChange={(sections) => set("extraSections", sections)}
           />
 
+          <ProductCommitmentsEditor
+            commitments={form.commitments ?? DEFAULT_COMMITMENTS}
+            onCommitmentsChange={(items) => set("commitments", items)}
+            toggles={form.sectionToggles ?? DEFAULT_SECTION_TOGGLES}
+            onTogglesChange={(t) => set("sectionToggles", t)}
+          />
+
           <div className="adm-form-section-title">Images du produit</div>
           <ProductImageGalleryEditor
             productId={productId}
@@ -185,6 +193,7 @@ const BLANK_PRODUCT: Product = {
   usageTips: [],
   sectionToggles: { ...DEFAULT_SECTION_TOGGLES },
   extraSections: [],
+  commitments: DEFAULT_COMMITMENTS.map((c) => ({ ...c })),
   mainImageUrl: null,
   galleryImages: [],
   productVariants: [],

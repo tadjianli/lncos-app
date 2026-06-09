@@ -18,7 +18,7 @@ import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
 import type { ProductVariant } from "./product-catalog";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
-import { normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
+import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
 import type { ProductReview } from "./reviews";
 import { FALLBACK_REVIEWS, reviewToPublic, type PublicReview } from "./reviews";
 
@@ -51,6 +51,7 @@ function mapProduct(row: {
   usage_tips?: string[] | null;
   section_toggles?: unknown;
   extra_sections?: unknown;
+  commitments?: unknown;
   active: boolean;
   image_url?: string | null;
   main_image_url?: string | null;
@@ -89,6 +90,7 @@ function mapProduct(row: {
     usageTips: row.usage_tips ?? [],
     sectionToggles: normalizeSectionToggles(row.section_toggles),
     extraSections: normalizeExtraSections(row.extra_sections),
+    commitments: normalizeCommitments(row.commitments),
     mainImageUrl: row.main_image_url ?? row.image_url ?? null,
     galleryImages: row.gallery_images ?? [],
     videoUrl: row.video_url ?? null,
@@ -110,7 +112,7 @@ export function usePublicProducts() {
 
     getSupabase()
       .from("products")
-      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,active,image_url,main_image_url,gallery_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
+      .select("id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)")
       .eq("active", true)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {

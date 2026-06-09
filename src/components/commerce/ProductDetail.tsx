@@ -25,8 +25,10 @@ import {
 import type { Product } from "@/lib/data";
 import {
   DEFAULT_SECTION_TOGGLES,
+  normalizeCommitments,
   normalizeExtraSections,
   normalizeSectionToggles,
+  visibleCommitments,
   type ProductExtraSection,
 } from "@/lib/product-sections";
 
@@ -34,12 +36,6 @@ interface ProductDetailProps {
   product: Product;
   onClose: () => void;
 }
-
-const COMMITMENTS = [
-  { icon: "sparkle", label: "Vegan" },
-  { icon: "check",   label: "Made in France" },
-  { icon: "star",    label: "Dermatologiquement testé" },
-];
 
 function nonEmptyLines(lines: string[] | undefined): string[] {
   return (lines ?? []).map((l) => l.trim()).filter(Boolean);
@@ -235,6 +231,11 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const showDescription = sectionToggles.description && Boolean(p.desc?.trim());
   const showUsageTips = sectionToggles.usageTips && usageTips.length > 0;
   const showIngredients = sectionToggles.ingredients && ingredientLines.length > 0;
+  const commitments = useMemo(
+    () => visibleCommitments(normalizeCommitments(p.commitments)),
+    [p.commitments]
+  );
+  const showCommitments = sectionToggles.commitments && commitments.length > 0;
 
   const labels = variantLabels(p);
   const [selectedVariantName, setSelectedVariantName] = useState(labels[0] ?? "");
@@ -776,60 +777,57 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             ))}
           </div>
 
-          {/* ── Engagements (brand promise — always visible) ── */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              gap: 8,
-              padding: "18px 0",
-              marginBottom: 24,
-              borderTop: "1px solid rgba(255,255,255,.07)",
-              borderBottom: "1px solid rgba(255,255,255,.07)",
-            }}
-          >
-            {COMMITMENTS.map((c) => (
-              <div
-                key={c.label}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 8,
-                  flex: 1,
-                }}
-              >
-                <span
+          {showCommitments && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-around",
+                gap: 8,
+                padding: "18px 0",
+                marginBottom: 24,
+                borderTop: "1px solid rgba(255,255,255,.07)",
+                borderBottom: "1px solid rgba(255,255,255,.07)",
+              }}
+            >
+              {commitments.map((c) => (
+                <div
+                  key={c.id}
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 14,
-                    background: "rgba(212,175,55,.08)",
-                    border: "1px solid rgba(212,175,55,.15)",
-                    display: "grid",
-                    placeItems: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 8,
+                    flex: 1,
                   }}
                 >
-                  <Icon
-                    name={c.icon as "sparkle" | "check" | "star"}
-                    size={20}
-                    color="var(--gold)"
-                  />
-                </span>
-                <span
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    color: "var(--ink-soft)",
-                    textAlign: "center",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {c.label}
-                </span>
-              </div>
-            ))}
-          </div>
+                  <span
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 14,
+                      background: "rgba(212,175,55,.08)",
+                      border: "1px solid rgba(212,175,55,.15)",
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    <Icon name={c.icon} size={20} color="var(--gold)" />
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 600,
+                      color: "var(--ink-soft)",
+                      textAlign: "center",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {c.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ── Delivery info ── */}
           <div

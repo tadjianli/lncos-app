@@ -1851,3 +1851,46 @@
   color: var(--adm-ink-soft);
   cursor: pointer;
 }
+.adm-commitment-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--adm-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adm-commitment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.adm-commitment-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-icon-picker-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.adm-icon-picker-btn:hover {
+  border-color: rgba(212,175,55,.35);
+}
+.adm-icon-picker-btn.is-selected {
+  border-color: var(--gold);
+  background: rgba(212,175,55,.12);
+  box-shadow: 0 0 0 1px rgba(212,175,55,.25);
+}

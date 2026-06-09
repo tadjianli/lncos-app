@@ -16,6 +16,7 @@ import type { ProductReview, ReviewStatus } from "./reviews";
 import type { ProductVariant } from "./product-catalog";
 import {
   DEFAULT_SECTION_TOGGLES,
+  normalizeCommitments,
   normalizeExtraSections,
   normalizeSectionToggles,
 } from "./product-sections";
@@ -169,6 +170,7 @@ function dbToProduct(r: DbProductWithVariants): Product {
     usageTips: r.usage_tips ?? [],
     sectionToggles: normalizeSectionToggles(r.section_toggles),
     extraSections: normalizeExtraSections(r.extra_sections),
+    commitments: normalizeCommitments(r.commitments),
     mainImageUrl: r.main_image_url ?? r.image_url,
     galleryImages: r.gallery_images ?? [],
     videoUrl: r.video_url,
@@ -192,6 +194,7 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
   if (p.usageTips !== undefined) db.usage_tips = p.usageTips;
   if (p.sectionToggles !== undefined) db.section_toggles = p.sectionToggles as unknown as Json;
   if (p.extraSections !== undefined) db.extra_sections = p.extraSections as unknown as Json;
+  if (p.commitments !== undefined) db.commitments = p.commitments as unknown as Json;
   if ("mainImageUrl" in p) {
     db.main_image_url = p.mainImageUrl ?? null;
     db.image_url = p.mainImageUrl ?? null;
@@ -622,6 +625,7 @@ export function useProducts() {
       usage_tips: product.usageTips ?? [],
       section_toggles: (product.sectionToggles ?? DEFAULT_SECTION_TOGGLES) as unknown as Json,
       extra_sections: (product.extraSections ?? []) as unknown as Json,
+      commitments: (product.commitments ?? []) as unknown as Json,
       main_image_url: product.mainImageUrl ?? null,
       image_url: product.mainImageUrl ?? null,
       gallery_images: product.galleryImages ?? [],

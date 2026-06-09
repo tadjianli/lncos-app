@@ -64,6 +64,7 @@ export interface Database {
           usage_tips: string[];
           section_toggles: Json;
           extra_sections: Json;
+          commitments: Json;
           active: boolean;
           image_url: string | null;
           main_image_url: string | null;
@@ -89,6 +90,7 @@ export interface Database {
           usage_tips?: string[];
           section_toggles?: Json;
           extra_sections?: Json;
+          commitments?: Json;
           active?: boolean;
           image_url?: string | null;
           main_image_url?: string | null;
@@ -113,6 +115,7 @@ export interface Database {
           usage_tips?: string[];
           section_toggles?: Json;
           extra_sections?: Json;
+          commitments?: Json;
           active?: boolean;
           image_url?: string | null;
           main_image_url?: string | null;
