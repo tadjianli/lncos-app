@@ -12,7 +12,6 @@ interface ProductCardProps {
   onFav?: (id: string) => void;
   isFav?: boolean;
   onAdd?: (p: Product) => void;
-  wide?: boolean;
   priority?: boolean;
 }
 
@@ -22,7 +21,6 @@ export const ProductCard = memo(function ProductCard({
   onFav,
   isFav = false,
   onAdd,
-  wide = false,
   priority = false,
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
@@ -49,9 +47,9 @@ export const ProductCard = memo(function ProductCard({
   return (
     <div
       onClick={() => onOpen?.(p)}
-      className={`prod-card snap${wide ? " prod-card--wide" : ""}`}
+      className="prod-card snap"
     >
-      <div className={`prod-imgwrap${wide ? " prod-imgwrap--wide" : ""}`}>
+      <div className="prod-imgwrap">
         <div className="prod-img-fallback" aria-hidden>
           {initials}
         </div>
@@ -59,7 +57,7 @@ export const ProductCard = memo(function ProductCard({
           src={imgSrc}
           alt={p.name}
           fill
-          sizes={wide ? "(max-width: 480px) 50%, 240px" : "(max-width: 480px) 158px, 164px"}
+          sizes="(max-width: 480px) 158px, 164px"
           style={{ objectFit: "cover" }}
           fallbackLabel={p.name}
           priority={priority}

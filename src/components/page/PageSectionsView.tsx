@@ -117,7 +117,7 @@ function PageProducts({ section }: { section: HomeSection }) {
       <div className="prodbento">
         {list.map((p, i) => (
           <div key={p.id} className="prodbento-cell">
-            <ProductCard p={p} wide priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
+            <ProductCard p={p} priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
           </div>
         ))}
       </div>

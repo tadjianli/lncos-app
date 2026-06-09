@@ -44,37 +44,25 @@ export const SkeletonLine = memo(function SkeletonLine({
 
 /* ─── Product card ──────────────────────────────────────────────── */
 
-interface SkeletonProductCardProps {
-  wide?: boolean;
-}
-
-export const SkeletonProductCard = memo(function SkeletonProductCard({
-  wide = false,
-}: SkeletonProductCardProps) {
+export const SkeletonProductCard = memo(function SkeletonProductCard() {
   return (
     <div
       aria-hidden
-      className={wide ? undefined : "snap"}
-      style={{
-        flex: wide ? "1 1 0" : "0 0 158px",
-        width: wide ? "auto" : 158,
-        borderRadius: 18,
-        overflow: "hidden",
-        background: "var(--charcoal)",
-        border: "1px solid rgba(255,255,255,.05)",
-      }}
+      className="prod-card snap"
+      style={{ pointerEvents: "none", cursor: "default" }}
     >
-      {/* Image area */}
       <SkeletonBlock
-        height={wide ? 150 : 140}
+        height="var(--prod-card-img-h)"
         radius={0}
-        style={{ borderRadius: 0 }}
+        style={{ borderRadius: 0, flex: "0 0 var(--prod-card-img-h)" }}
       />
-      {/* Text area */}
-      <div style={{ padding: "11px 12px 13px", display: "flex", flexDirection: "column", gap: 7 }}>
+      <div
+        className="prod-card-info"
+        style={{ display: "flex", flexDirection: "column", gap: 7 }}
+      >
         <SkeletonLine width="90%" height={12} />
         <SkeletonLine width="60%" height={11} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 2 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
           <SkeletonLine width="38%" height={14} />
           <SkeletonBlock width={30} height={30} radius="50%" />
         </div>

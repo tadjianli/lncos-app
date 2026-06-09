@@ -711,7 +711,6 @@ export default function HomePage() {
                       <div key={p.id + "-" + source + "-" + pi} className="prodbento-cell">
                         <ProductCard
                           p={p}
-                          wide
                           onOpen={handleOpen}
                           onFav={handleFav}
                           isFav={favs.includes(p.id)}

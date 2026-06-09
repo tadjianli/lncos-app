@@ -128,7 +128,6 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
             <div key={p.id + i} className="prodbento-cell" style={{ animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both` }}>
               <ProductCard
                 p={p}
-                wide
                 onOpen={openProduct}
                 onFav={toggleFav}
                 isFav={favs.includes(p.id)}

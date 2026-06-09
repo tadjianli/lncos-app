@@ -492,7 +492,6 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
                 <div key={p.id} className="prodbento-cell">
                 <ProductCard
                   p={p}
-                  wide
                   onOpen={openProduct}
                   onFav={toggleFav}
                   isFav={favs.includes(p.id)}
@@ -532,16 +531,11 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
 
             {/* Loading skeletons */}
             {isSearching && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                  animation: "pulse 1.2s ease-in-out infinite",
-                }}
-              >
+              <div className="prodbento" style={{ animation: "pulse 1.2s ease-in-out infinite" }}>
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonProductCard key={i} wide />
+                  <div key={i} className="prodbento-cell">
+                    <SkeletonProductCard />
+                  </div>
                 ))}
               </div>
             )}
@@ -553,7 +547,6 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
                   <div key={p.id} className="prodbento-cell">
                     <ProductCard
                       p={p}
-                      wide
                       onOpen={openProduct}
                       onFav={toggleFav}
                       isFav={favs.includes(p.id)}

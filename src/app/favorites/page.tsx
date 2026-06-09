@@ -58,7 +58,6 @@ export default function FavoritesPage() {
           <div key={p.id} className="prodbento-cell">
             <ProductCard
               p={p}
-              wide
               isFav={favs.includes(p.id)}
               onFav={toggleFav}
               onAdd={addToCart}
