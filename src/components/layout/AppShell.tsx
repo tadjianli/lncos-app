@@ -4,13 +4,9 @@
  *
  * Architecture: fixed viewport container — the only element with height.
  *   html/body  : height 100dvh, overflow hidden (no document scroll)
- *   AppShell   : position fixed, inset 0, height 100dvh, max-width 480px,
- *                safe-top sur main uniquement, safe-bottom sur nav uniquement
- *                → flex column, clips at exact viewport height
- *   main       : flex:1 1 auto, min-height:0, overflow hidden
- *                → individual screens own their internal scroll
- *   BottomNav  : flex-shrink:0, in-flow at the bottom of the column
- *                → NEVER jumps, NEVER decoupled from content
+ *   AppShell   : position fixed, inset 0 (pas de height explicite), max-width 480px
+ *   main       : flex:1, safe-top, padding-bottom = hauteur nav si visible
+ *   BottomNav  : position fixed, bottom:0, safe-bottom unique sur la nav
  *
  * Overlay z-index layers (all position:absolute within AppShell):
  *   70  Toast          — floats above nav
@@ -89,7 +85,10 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const NAV_H = "var(--bottom-nav-h)";
 
   return (
-    <div data-render-mode={mode} className="app-shell">
+    <div
+      data-render-mode={mode}
+      className={`app-shell${navVisible ? " app-shell--with-nav" : ""}`}
+    >
       {/* ── Content area (flex:1, clips to its bounds) ─────── */}
       {/*    z:80 overlays sit here — they cover content, NOT nav */}
       <main className="app-shell-main">

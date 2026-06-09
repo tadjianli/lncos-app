@@ -1,7 +1,7 @@
 "use client";
 /**
  * LN COS — Bottom nav
- * In-flow flex child of AppShell — NOT position:fixed.
+ * position: fixed; bottom: 0 — collée au bord bas (safe-area via CSS).
  */
 
 import Link from "next/link";
