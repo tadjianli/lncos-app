@@ -6,6 +6,7 @@
  */
 
 import { memo } from "react";
+import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 
 /* ─── Primitive ─────────────────────────────────────────────────── */
 
@@ -53,9 +54,10 @@ export const SkeletonProductCard = memo(function SkeletonProductCard({
   return (
     <div
       aria-hidden
+      className={wide ? undefined : "snap"}
       style={{
-        flex: wide ? "1 1 0" : "0 0 150px",
-        width: wide ? "auto" : 150,
+        flex: wide ? "1 1 0" : "0 0 158px",
+        width: wide ? "auto" : 158,
         borderRadius: 18,
         overflow: "hidden",
         background: "var(--charcoal)",
@@ -89,11 +91,11 @@ export const SkeletonProductRow = memo(function SkeletonProductRow({
   count?: number;
 }) {
   return (
-    <div className="scroll-row" style={{ padding: "4px 18px", gap: 12, pointerEvents: "none" }}>
+    <HorizontalProductCarousel bleed={false} style={{ pointerEvents: "none" }}>
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonProductCard key={i} />
       ))}
-    </div>
+    </HorizontalProductCarousel>
   );
 });
 

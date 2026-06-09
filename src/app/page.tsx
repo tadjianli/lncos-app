@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { TopBar } from "@/components/layout/TopBar";
 import { Icon } from "@/components/shared/Icon";
+import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
@@ -462,7 +463,7 @@ function BentoUniversSection({
                 <div className="bento-s">{meta.sub}</div>
               </div>
             </div>
-            <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 0" }}>
+            <HorizontalProductCarousel>
               {products.map((p, pi) => (
                 <ProductCard
                   key={p.id + "-univ-" + key + "-" + pi}
@@ -473,7 +474,7 @@ function BentoUniversSection({
                   onAdd={onAdd}
                 />
               ))}
-            </div>
+            </HorizontalProductCarousel>
           </div>
         );
       })}
@@ -688,7 +689,7 @@ export default function HomePage() {
               {isFirst ? (
                 <>
                   <FlashHead title={section.title} />
-                  <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 8px" }}>
+                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
                     {prods.map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -700,7 +701,7 @@ export default function HomePage() {
                         priority={pi === 0}
                       />
                     ))}
-                  </div>
+                  </HorizontalProductCarousel>
                 </>
               ) : isGrid ? (
                 <Reveal>
@@ -723,7 +724,7 @@ export default function HomePage() {
               ) : (
                 <Reveal>
                   <SectionHead title={section.title} action="Voir tout" />
-                  <div className="scroll-row scroll-row--bleed" style={{ padding: "4px 0 8px" }}>
+                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -734,7 +735,7 @@ export default function HomePage() {
                         onAdd={handleAdd}
                       />
                     ))}
-                  </div>
+                  </HorizontalProductCarousel>
                 </Reveal>
               )}
             </div>

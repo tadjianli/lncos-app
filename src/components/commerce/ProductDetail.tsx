@@ -8,6 +8,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
+import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
 import { ProductReviewsSection } from "@/components/commerce/ProductReviewsSection";
@@ -921,21 +922,21 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Complétez votre rituel
               </h3>
-              <div className="scroll-row scroll-row--bleed noscroll" style={{ paddingBottom: 4 }}>
+              <HorizontalProductCarousel>
                 {routine.map((r) => (
                   <ProductCard
-                      key={r.id}
-                      p={r}
-                      onOpen={openProduct}
-                      onFav={(id) => toggleFav(id)}
-                      isFav={favs.includes(r.id)}
-                      onAdd={(pr) => {
-                        addToCart(pr, 1, pr.variants[0]);
-                        showToast(`${pr.name} ajouté ✨`);
-                      }}
-                    />
+                    key={r.id}
+                    p={r}
+                    onOpen={openProduct}
+                    onFav={(id) => toggleFav(id)}
+                    isFav={favs.includes(r.id)}
+                    onAdd={(pr) => {
+                      addToCart(pr, 1, pr.variants[0]);
+                      showToast(`${pr.name} ajouté ✨`);
+                    }}
+                  />
                 ))}
-              </div>
+              </HorizontalProductCarousel>
             </div>
           )}
 
@@ -952,76 +953,21 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Vous aimerez aussi
               </h3>
-              <div
-                className="noscroll"
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  overflowX: "auto",
-                  paddingBottom: 4,
-                  marginLeft: -18,
-                  marginRight: -18,
-                  paddingLeft: 18,
-                  paddingRight: 18,
-                }}
-              >
+              <HorizontalProductCarousel>
                 {related.map((r) => (
-                  <button
+                  <ProductCard
                     key={r.id}
-                    onClick={() => openProduct(r)}
-                    style={{
-                      flex: "0 0 120px",
-                      background: "var(--charcoal)",
-                      borderRadius: "var(--r-md)",
-                      overflow: "hidden",
-                      border: "1px solid rgba(255,255,255,.05)",
-                      textAlign: "left",
-                      WebkitTapHighlightColor: "transparent",
-                      touchAction: "manipulation",
-                      cursor: "pointer",
+                    p={r}
+                    onOpen={openProduct}
+                    onFav={(id) => toggleFav(id)}
+                    isFav={favs.includes(r.id)}
+                    onAdd={(pr) => {
+                      addToCart(pr, 1, pr.variants[0]);
+                      showToast(`${pr.name} ajouté ✨`);
                     }}
-                  >
-                    <div
-                      style={{ height: 120, position: "relative", background: "#181818" }}
-                    >
-                      <FadeImage
-                        src={resolveProductImage(r)}
-                        alt={r.name}
-                        fill
-                        sizes="120px"
-                        style={{ objectFit: "cover" }}
-                        fallbackLabel={r.name}
-                      />
-                    </div>
-                    <div style={{ padding: "10px 10px 12px" }}>
-                      <div
-                        style={{
-                          fontSize: 11.5,
-                          fontWeight: 600,
-                          color: "var(--ink)",
-                          lineHeight: 1.3,
-                          overflow: "hidden",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        } as React.CSSProperties}
-                      >
-                        {r.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "var(--ink)",
-                          marginTop: 6,
-                        }}
-                      >
-                        {r.price.toFixed(2)} €
-                      </div>
-                    </div>
-                  </button>
+                  />
                 ))}
-              </div>
+              </HorizontalProductCarousel>
             </div>
           )}
 

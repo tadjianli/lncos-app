@@ -304,6 +304,97 @@
     box-sizing: border-box;
   }
 
+  /* ── Horizontal product carousel (système unique LN COS) ── */
+  .hpc {
+    position: relative;
+    max-width: 100%;
+    --hpc-gap: var(--sp-3);
+    --hpc-pad-y: 4px;
+    --hpc-edge: max(18px, var(--safe-left));
+    --hpc-edge-r: max(18px, var(--safe-right));
+  }
+
+  .hpc__track {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--hpc-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--hpc-edge);
+    scroll-padding-right: var(--hpc-edge-r);
+    scrollbar-width: none;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-block: var(--hpc-pad-y);
+  }
+
+  .hpc__track::-webkit-scrollbar { display: none; }
+
+  .hpc:not(.hpc--bleed) .hpc__track {
+    padding-left: var(--hpc-edge);
+    padding-right: var(--hpc-edge-r);
+  }
+
+  .hpc--bleed .hpc__track {
+    margin-left: calc(-1 * var(--hpc-edge));
+    margin-right: calc(-1 * var(--hpc-edge-r));
+    padding-left: var(--hpc-edge);
+    padding-right: var(--hpc-edge-r);
+  }
+
+  .hpc__track > .prod-card,
+  .hpc__track > .snap {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+  }
+
+  .hpc__end {
+    flex: 0 0 0;
+    width: 0;
+    height: 1px;
+    scroll-snap-align: none;
+    pointer-events: none;
+  }
+
+  .hpc__fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.92;
+  }
+
+  .hpc__fade--left {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      var(--noir) 0%,
+      rgba(10, 10, 10, 0.55) 45%,
+      transparent 100%
+    );
+  }
+
+  .hpc__fade--right {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      var(--noir) 0%,
+      rgba(10, 10, 10, 0.55) 45%,
+      transparent 100%
+    );
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hpc__fade { opacity: 0.72; }
+  }
+
   /* Shell = viewport visible (inset:0, pas de height explicite → évite zone morte iOS PWA) */
   .app-shell {
     position: fixed;
@@ -1920,6 +2011,8 @@
   .home-section,
   .home-scroll,
   .scroll-row,
+  .hpc,
+  .hpc__track,
   .prod-card,
   .prodbento {
     max-width: 100%;
