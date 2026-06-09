@@ -63,7 +63,7 @@ export function TopBar({
   };
 
   return (
-    <div className="home-z" style={{ padding: "4px 18px 0", flex: "0 0 auto", position: "relative", zIndex: 10 }}>
+    <div className="home-z home-topbar-pad" style={{ flex: "0 0 auto", position: "relative", zIndex: 10 }}>
       <div
         style={{
           display: "flex",

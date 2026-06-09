@@ -118,6 +118,13 @@
   --sp-5:  20px;
   --sp-6:  24px;
   --sp-8:  32px;
+
+  /* Safe areas (iOS PWA standalone + notch) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --app-max-width: 480px;
   --sp-10: 40px;
   --sp-12: 48px;
   --sp-16: 64px;
@@ -193,23 +200,30 @@
   html {
     margin: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* Prevent rubber-band scroll at document level — app scrolls inside AppShell */
     overscroll-behavior: none;
+    /* iOS Safari / PWA — hauteur stable */
+    height: 100%;
+    height: -webkit-fill-available;
   }
 
   body {
     margin: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     font-family: var(--font-montserrat, 'Montserrat', system-ui, sans-serif);
     font-size: var(--fs-body);
-    /* AppShell sets its own background — body shows behind the 480px boundary */
     background: #040404;
     color: var(--ink);
-    /* Lock the document — all scrolling happens inside AppShell containers */
-    height: 100dvh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     overflow: hidden;
   }
 
@@ -273,16 +287,51 @@
     scroll-snap-type: x mandatory;
     scroll-padding-left: 18px;
     scroll-padding-right: 18px;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .scroll-row::-webkit-scrollbar { display: none; }
   .scroll-row > .snap { scroll-snap-align: start; flex-shrink: 0; }
 
   /* Carrousels bord à bord (compense le padding section) */
   .scroll-row--bleed {
-    margin-left: -18px;
-    margin-right: -18px;
-    padding-left: 18px;
-    padding-right: 18px;
+    margin-left: calc(-1 * max(18px, var(--safe-left)));
+    margin-right: calc(-1 * max(18px, var(--safe-right)));
+    padding-left: max(18px, var(--safe-left));
+    padding-right: max(18px, var(--safe-right));
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Shell fixe — centré sans translateX (évite débordement iOS PWA) */
+  .app-shell {
+    position: fixed;
+    top: var(--safe-top);
+    bottom: var(--safe-bottom);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: var(--app-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--noir);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .app-shell-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
   }
 
   /* ── Safe area nav padding ── */
@@ -432,19 +481,24 @@
   transform: none;
 }
 
-/* Sections accueil — overflow visible pour carrousels bleed ; pas de content-visibility (Safari mobile) */
+/* Sections accueil — clip horizontal, scroll interne dans les carrousels */
 .home-section {
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
+  max-width: 100%;
 }
 .home-scroll {
   -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ─── Product cards ──────────────────────────────────────────── */
 
 .prod-card {
-  flex: 0 0 clamp(140px, 41vw, 164px);
-  width: clamp(140px, 41vw, 164px);
+  flex: 0 0 158px;
+  width: 158px;
+  max-width: 100%;
   cursor: pointer;
   background: var(--charcoal);
   border-radius: var(--r-md);
@@ -657,7 +711,7 @@
   font-weight: 600;
   color: var(--ink-soft);
   white-space: nowrap;
-  max-width: calc(100vw - 36px);
+  max-width: 100%;
 }
 
 /* Flash sale header */
@@ -705,9 +759,11 @@
   justify-content: space-around;
   align-items: center;
   padding-top: 10px;
-  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
-  padding-left: max(10px, env(safe-area-inset-left, 0px));
-  padding-right: max(10px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(26px, var(--safe-bottom));
+  padding-left: max(10px, var(--safe-left));
+  padding-right: max(10px, var(--safe-right));
+  max-width: 100%;
+  box-sizing: border-box;
   background: rgba(10,10,10,.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -729,8 +785,16 @@
 }
 
 .home-section-pad {
-  padding-left: max(18px, env(safe-area-inset-left, 0px));
-  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-left: max(18px, var(--safe-left));
+  padding-right: max(18px, var(--safe-right));
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.home-topbar-pad {
+  padding: calc(4px + var(--safe-top)) max(18px, var(--safe-right)) 0 max(18px, var(--safe-left));
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ─── Routine section ────────────────────────────────────────── */
@@ -1051,7 +1115,7 @@
   flex: 1 1 0;
   min-width: 0;
   width: auto;
-  height: clamp(210px, 52vw, 236px);
+  height: 220px;
 }
 
 .reel-card:hover { transform: translateY(-5px); border-color: rgba(212,175,55,.32); }
@@ -1174,6 +1238,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .prodbento-cell { min-width: 0; }
 .prodbento-cell .prod-card { width: 100% !important; flex: 1 1 auto !important; }
@@ -1469,8 +1535,8 @@
 /* ─── Mobile fine-tuning ─────────────────────────────────────── */
 @media (max-width: 390px) {
   .prod-card:not(.prod-card--wide) {
-    flex-basis: clamp(132px, 39vw, 150px);
-    width: clamp(132px, 39vw, 150px);
+    flex-basis: 148px;
+    width: 148px;
   }
   .prod-card-price { font-size: 13px; }
   .prod-card-title { font-size: 12px; }
@@ -1481,8 +1547,8 @@
 
 @media (max-width: 340px) {
   .prod-card:not(.prod-card--wide) {
-    flex-basis: clamp(124px, 38vw, 140px);
-    width: clamp(124px, 38vw, 140px);
+    flex-basis: 140px;
+    width: 140px;
   }
   .bottom-nav-item { min-width: 46px; }
   .bottom-nav-label { font-size: 9px; }
@@ -1498,7 +1564,11 @@
 .pd-gallery-hero {
   display: block;
   width: 100%;
-  height: clamp(320px, 52vw, 420px);
+  max-width: 100%;
+  aspect-ratio: 1 / 1.08;
+  max-height: 420px;
+  min-height: 300px;
+  height: auto;
   position: relative;
   overflow: hidden;
   cursor: zoom-in;
@@ -1815,4 +1885,29 @@
   .home-orb, .home-particle, .reel-progress i { animation: none; }
   .home-reveal { opacity: 1; transform: none; }
   .pd-gallery-hero-inner, .pd-lightbox-img { animation: none; }
+}
+
+/* ─── PWA iOS standalone — aligné Safari ─────────────────────── */
+@media (display-mode: standalone) {
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    max-width: min(var(--app-max-width), 100%);
+  }
+
+  .home-section,
+  .home-scroll,
+  .scroll-row,
+  .prod-card,
+  .prodbento {
+    max-width: 100%;
+  }
+
+  .bottom-nav {
+    padding-bottom: max(28px, var(--safe-bottom));
+  }
 }

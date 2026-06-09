@@ -4,8 +4,8 @@
  *
  * Architecture: fixed viewport container — the only element with height.
  *   html/body  : height 100dvh, overflow hidden (no document scroll)
- *   AppShell   : position fixed, top→left→right→bottom 0, max-width 480px,
- *                centered via left:50% + translateX(-50%)
+ *   AppShell   : position fixed, safe-area insets, max-width 480px,
+ *                centered via margin auto (no translateX — évite overflow iOS PWA)
  *                → flex column, clips at exact viewport height
  *   main       : flex:1 1 auto, min-height:0, overflow hidden
  *                → individual screens own their internal scroll
@@ -88,47 +88,13 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
 
   // Nav height constant used for Toast positioning
   // 10px top + 26px bottom padding + ~34px icon+label ≈ 70px; safe-area adds more
-  const NAV_H = "calc(4.5rem + env(safe-area-inset-bottom, 0px))";
+  const NAV_H = "calc(4.5rem + var(--safe-bottom))";
 
   return (
-    <div
-      data-render-mode={mode}
-      style={{
-        /* ─── Fixed viewport container ─────────────────────── */
-        position: "fixed",
-        top: 0,
-        bottom: 0,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "100%",
-        maxWidth: 480,
-
-        /* ─── Flex column: content → nav ───────────────────── */
-        display: "flex",
-        flexDirection: "column",
-
-        /* ─── Appearance ────────────────────────────────────── */
-        background: "var(--noir)",
-
-        /* ─── Clip children to viewport bounds ─────────────── */
-        overflow: "hidden",
-
-        /* ─── Stacking context ──────────────────────────────── */
-        isolation: "isolate",
-      }}
-    >
+    <div data-render-mode={mode} className="app-shell">
       {/* ── Content area (flex:1, clips to its bounds) ─────── */}
       {/*    z:80 overlays sit here — they cover content, NOT nav */}
-      <main
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,          // allow flex child to shrink below content size
-          position: "relative",  // contains absolute overlays
-          overflow: "hidden",    // clips z:80 overlays to content area
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <main className="app-shell-main">
         {children}
 
         {/* ── z:80 content overlays ─────────────────────────── */}

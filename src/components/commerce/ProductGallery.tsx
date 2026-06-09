@@ -85,7 +85,7 @@ export function ProductGallery({
               src={heroSrc}
               alt={alt}
               fill
-              sizes="(max-width: 480px) 100vw, 480px"
+              sizes="(max-width: 480px) 100%, 480px"
               className="pd-gallery-hero-img"
               style={{ objectFit: "cover" }}
               fallbackLabel={alt}

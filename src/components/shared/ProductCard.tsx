@@ -59,7 +59,7 @@ export const ProductCard = memo(function ProductCard({
           src={imgSrc}
           alt={p.name}
           fill
-          sizes={wide ? "(max-width: 480px) 50vw, 240px" : "(max-width: 480px) 42vw, 164px"}
+          sizes={wide ? "(max-width: 480px) 50%, 240px" : "(max-width: 480px) 158px, 164px"}
           style={{ objectFit: "cover" }}
           fallbackLabel={p.name}
           priority={priority}
