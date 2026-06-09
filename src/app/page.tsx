@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AppShell } from "@/components/layout/AppShell";
 import { TopBar } from "@/components/layout/TopBar";
@@ -511,7 +512,7 @@ export default function HomePage() {
   const openProduct  = useStore((s) => s.openProduct);
   const openSideMenu = useStore((s) => s.openSideMenu);
   const openSearch   = useStore((s) => s.openSearch);
-  const openListing  = useStore((s) => s.openListing);
+  const router       = useRouter();
   const favs         = useStore((s) => s.favs);
 
   /* ── Section config — Supabase published (realtime) ─────── */
@@ -557,7 +558,7 @@ export default function HomePage() {
         case "hero":
           return (
             <div key={section.id} className="home-z">
-              <HomeHeroBanner section={section} onDiscover={() => openListing(null)} />
+              <HomeHeroBanner section={section} onDiscover={() => router.push("/boutique")} />
             </div>
           );
 
@@ -740,7 +741,7 @@ export default function HomePage() {
       }
     },
      
-    [handleAdd, handleFav, handleOpen, favs, openListing, products, productsBySource, selfCareProducts, universeGrouped]
+    [handleAdd, handleFav, handleOpen, favs, router, products, productsBySource, selfCareProducts, universeGrouped]
   );
 
   return (

@@ -102,7 +102,7 @@ function PageProducts({ section }: { section: HomeSection }) {
   const { categories } = usePublicCategories();
 
   return (
-    <div style={{ padding: "0 16px 28px" }}>
+    <div style={{ padding: "0 max(18px, var(--safe-right)) 28px max(18px, var(--safe-left))" }}>
       {section.title && (
         <h3 style={{ margin: "0 0 12px", padding: "0 2px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>{section.title}</h3>
       )}
@@ -114,10 +114,10 @@ function PageProducts({ section }: { section: HomeSection }) {
           ))}
         </div>
       )}
-      <div className="prodbento">
+      <div className="prodbento prodbento--3">
         {list.map((p, i) => (
           <div key={p.id} className="prodbento-cell">
-            <ProductCard p={p} priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
+            <ProductCard p={p} layout="grid-3" priority={i < 6} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
           </div>
         ))}
       </div>

@@ -13,6 +13,8 @@ interface ProductCardProps {
   isFav?: boolean;
   onAdd?: (p: Product) => void;
   priority?: boolean;
+  /** Grille boutique 3 colonnes — images et icônes adaptées */
+  layout?: "default" | "grid-3";
 }
 
 export const ProductCard = memo(function ProductCard({
@@ -22,6 +24,7 @@ export const ProductCard = memo(function ProductCard({
   isFav = false,
   onAdd,
   priority = false,
+  layout = "default",
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
   const [popping, setPopping] = useState(false);
@@ -57,7 +60,7 @@ export const ProductCard = memo(function ProductCard({
           src={imgSrc}
           alt={p.name}
           fill
-          sizes="(max-width: 480px) 158px, 164px"
+          sizes={layout === "grid-3" ? "(max-width: 480px) 31vw, 120px" : "(max-width: 480px) 158px, 164px"}
           style={{ objectFit: "cover" }}
           fallbackLabel={p.name}
           priority={priority}
@@ -78,7 +81,7 @@ export const ProductCard = memo(function ProductCard({
         >
           <Icon
             name="heart"
-            size={16}
+            size={layout === "grid-3" ? 13 : 16}
             color={isFav ? "var(--pink)" : "#fff"}
             fill={isFav ? "var(--pink)" : "none"}
           />
@@ -89,7 +92,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="prod-card-title">{p.name}</div>
 
         <div className="prod-card-rating">
-          <Icon name="star" size={12} color="var(--gold)" fill="var(--gold)" />
+          <Icon name="star" size={layout === "grid-3" ? 10 : 12} color="var(--gold)" fill="var(--gold)" />
           <span>{p.rating}</span>
           <span className="prod-card-reviews">({p.reviews})</span>
         </div>
@@ -108,7 +111,7 @@ export const ProductCard = memo(function ProductCard({
             className={`prod-add prod-card-add${popping ? " pop" : ""}`}
             aria-label="Ajouter au panier"
           >
-            <Icon name="plus" size={16} color="#3a1020" stroke={2.4} />
+            <Icon name="plus" size={layout === "grid-3" ? 14 : 16} color="#3a1020" stroke={2.4} />
             {pops.map((id) => (
               <span key={id} className="prod-plusone">
                 +1
