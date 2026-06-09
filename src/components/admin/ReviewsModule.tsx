@@ -94,7 +94,7 @@ export function ReviewsModule() {
           { label: "En attente", value: "—", color: "var(--tone-orange)" },
           { label: "Publiés", value: "—", color: "var(--tone-green)" },
         ].map((s) => (
-          <div key={s.label} className="adm-card adm-stat" style={{ opacity: 0.5 }}>
+          <div key={s.label} className="adm-card adm-stat rev-stat-preview">
             <div className="adm-stat-value" style={{ color: s.color }}>{s.value}</div>
             <div className="adm-stat-label">{s.label}</div>
           </div>
@@ -102,19 +102,21 @@ export function ReviewsModule() {
       </div>
 
       {/* Preview reviews */}
-      <div className="adm-card adm-card-scroll">
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--adm-border)" }}>
-          <div className="adm-card-title">Aperçu — format des avis à venir</div>
-          <div className="adm-card-sub">Ces avis sont des exemples illustratifs</div>
+      <div className="adm-card rev-preview-card">
+        <div className="rev-preview-head">
+          <div>
+            <div className="adm-card-title">Aperçu — format des avis à venir</div>
+            <div className="adm-card-sub">Exemples illustratifs de ce que vous verrez à la modération</div>
+          </div>
+          <span className="rev-preview-pill">Démo</span>
         </div>
-        <div>
+        <div className="rev-preview-list">
           {SAMPLE_REVIEWS.map((r, i) => (
             <div
               key={i}
+              className="rev-preview-row"
               style={{
-                padding: "16px 20px",
                 borderBottom: i < SAMPLE_REVIEWS.length - 1 ? "1px solid var(--adm-border-2)" : "none",
-                opacity: 0.55,
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
