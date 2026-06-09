@@ -5,6 +5,7 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore, selectFavs } from "@/lib/store";
@@ -22,13 +23,47 @@ export function TopBar({
   onSearchClick: _onSearchClick,
   onCartClick,
 }: TopBarProps) {
+  const router = useRouter();
   const storeCartCount = useStore((s) => s.cartCount);
   const favs = useStore(selectFavs);
   const count = cartCount ?? storeCartCount;
   const favCount = favs.length;
 
+  function goToBag() {
+    onCartClick?.();
+    router.push("/bag");
+  }
+
+  const iconBtnStyle: React.CSSProperties = {
+    color: "var(--ink)",
+    position: "relative",
+    width: 40,
+    height: 40,
+    display: "grid",
+    placeItems: "center",
+    flex: "0 0 auto",
+    cursor: "pointer",
+  };
+
+  const badgeStyle: React.CSSProperties = {
+    position: "absolute",
+    top: 2,
+    right: 2,
+    minWidth: 16,
+    height: 16,
+    padding: "0 4px",
+    background: "var(--pink)",
+    color: "#3a1020",
+    borderRadius: 9,
+    fontSize: 10,
+    fontWeight: 700,
+    display: "grid",
+    placeItems: "center",
+    pointerEvents: "none",
+  };
+
   return (
-    <div className="home-z" style={{ padding: "4px 18px 0", flex: "0 0 auto" }}>
+    <div className="home-z" style={{ padding: "4px 18px 0", flex: "0 0 auto", position: "relative", zIndex: 10 }}>
       <div
         style={{
           display: "flex",
@@ -58,122 +93,25 @@ export function TopBar({
         </Link>
 
         {/* Favoris + Panier */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Link
-            href="/favorites"
-            style={{
-              color: "var(--ink)",
-              position: "relative",
-              width: 30,
-              height: 30,
-              display: "grid",
-              placeItems: "center",
-            }}
-            aria-label={`Favoris (${favCount})`}
-          >
+        <div style={{ display: "flex", alignItems: "center", gap: 2, position: "relative", zIndex: 11 }}>
+          <Link href="/favorites" style={iconBtnStyle} aria-label={`Favoris (${favCount})`}>
             <Icon
               name="heart"
               size={23}
               fill={favCount > 0 ? "rgba(247,198,215,.35)" : "none"}
             />
-            {favCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: -3,
-                  right: -4,
-                  minWidth: 16,
-                  height: 16,
-                  padding: "0 4px",
-                  background: "var(--pink)",
-                  color: "#3a1020",
-                  borderRadius: 9,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                {favCount}
-              </span>
-            )}
+            {favCount > 0 && <span style={badgeStyle}>{favCount}</span>}
           </Link>
 
-          {onCartClick ? (
-            <button
-              onClick={onCartClick}
-              style={{
-                color: "var(--ink)",
-                position: "relative",
-                width: 30,
-                height: 30,
-                display: "grid",
-                placeItems: "center",
-              }}
-              aria-label={`Panier (${count})`}
-            >
-              <Icon name="bag" size={23} />
-              {count > 0 && (
-                <span
-                  className="cart-badge"
-                  style={{
-                    position: "absolute",
-                    top: -3,
-                    right: -4,
-                    minWidth: 16,
-                    height: 16,
-                    padding: "0 4px",
-                    background: "var(--pink)",
-                    color: "#3a1020",
-                    borderRadius: 9,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          ) : (
-            <Link
-              href="/bag"
-              style={{
-                color: "var(--ink)",
-                position: "relative",
-                width: 30,
-                height: 30,
-                display: "grid",
-                placeItems: "center",
-              }}
-              aria-label={`Panier (${count})`}
-            >
-              <Icon name="bag" size={23} />
-              {count > 0 && (
-                <span
-                  className="cart-badge"
-                  style={{
-                    position: "absolute",
-                    top: -3,
-                    right: -4,
-                    minWidth: 16,
-                    height: 16,
-                    padding: "0 4px",
-                    background: "var(--pink)",
-                    color: "#3a1020",
-                    borderRadius: 9,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={goToBag}
+            style={iconBtnStyle}
+            aria-label={`Panier (${count})`}
+          >
+            <Icon name="bag" size={23} />
+            {count > 0 && <span className="cart-badge" style={badgeStyle}>{count}</span>}
+          </button>
         </div>
       </div>
     </div>
