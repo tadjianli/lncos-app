@@ -93,7 +93,12 @@ export default function RootLayout({
             __html: `
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(function(regs) {
-    return Promise.all(regs.map(function(reg) { return reg.unregister(); }));
+    return Promise.all(regs.map(function(reg) {
+      var url = (reg.active && reg.active.scriptURL) || '';
+      if (url.indexOf('admin-push-sw') !== -1) return Promise.resolve(false);
+      if (url.indexOf('sw.js') !== -1) return reg.unregister();
+      return Promise.resolve(false);
+    }));
   }).catch(function() {});
 }
 if ('caches' in window) {

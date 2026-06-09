@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 
 interface OrderItem {
   id: string;
@@ -61,6 +62,8 @@ export async function POST(req: Request) {
     if (itemsErr) {
       console.error("Order items insert error:", itemsErr);
     }
+
+    await notifyAdminsNewOrder(order.id, total);
 
     const ref = "LN-" + order.id.slice(0, 6).toUpperCase();
     return NextResponse.json({ id: order.id, ref });

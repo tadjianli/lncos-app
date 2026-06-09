@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSidebar } from "./AdminSidebar";
+import { AdminPushRegister } from "./AdminPushRegister";
 import { Icon } from "@/components/shared/Icon";
 import { getSupabase } from "@/lib/supabase";
 
@@ -33,6 +34,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
   return (
     <div className="adm-shell">
+      <AdminPushRegister />
       {/* Mobile hamburger */}
       <button
         className="adm-mobile-toggle"

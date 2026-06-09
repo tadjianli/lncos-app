@@ -459,6 +459,34 @@ export function useProducts() {
   return { products, loading, updateProduct, insertProduct, deleteProduct, reload: load };
 }
 
+/* ─── useAdminOrderBadge (sidebar — temps réel) ───────────────────────────── */
+
+/** Nombre total de commandes (temps réel Supabase) */
+export function useAdminOrderBadge() {
+  const [count, setCount] = useState(0);
+
+  const load = useCallback(async () => {
+    const { count: total, error } = await getSupabase()
+      .from("orders")
+      .select("*", { count: "exact", head: true });
+
+    if (!error && total !== null) setCount(total);
+  }, []);
+
+  useEffect(() => {
+    load();
+    const channel = getSupabase()
+      .channel("admin-order-badge")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, load)
+      .subscribe();
+    return () => {
+      getSupabase().removeChannel(channel);
+    };
+  }, [load]);
+
+  return count;
+}
+
 /* ─── useDashboardKPIs ────────────────────────────────────────────────────── */
 
 export interface DashboardKPIs {
@@ -475,7 +503,8 @@ export function useDashboardKPIs() {
 
   const load = useCallback(async () => {
     const sb = getSupabase();
-    const [orders, appointments, popups] = await Promise.all([
+    const [orderCountRes, orders, appointments, popups] = await Promise.all([
+      sb.from("orders").select("*", { count: "exact", head: true }),
       sb.from("orders").select("id, status, total, created_at").order("created_at", { ascending: false }).limit(50),
       sb.from("appointments").select("id, client_name, service_id, start_at, status, price").order("start_at", { ascending: false }).limit(50),
       sb.from("popups").select("id, enabled"),
@@ -486,7 +515,7 @@ export function useDashboardKPIs() {
     const popupRows = popups.data ?? [];
 
     setKpis({
-      totalOrders: orderRows.length,
+      totalOrders: orderCountRes.count ?? orderRows.length,
       totalRevenue: orderRows.reduce((t, r) => t + Number(r.total), 0),
       totalAppointments: apptRows.length,
       activePopups: popupRows.filter((p) => p.enabled).length,

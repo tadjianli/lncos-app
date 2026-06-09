@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-05-27.dahlia",
@@ -93,6 +94,8 @@ export async function POST(req: Request) {
     if (promoCode) {
       await supabase.rpc("increment_promo_uses", { promo_code_arg: promoCode });
     }
+
+    await notifyAdminsNewOrder(order.id, amount);
 
     return NextResponse.json({ received: true });
   } catch (err) {

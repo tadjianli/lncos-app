@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 
 interface CompleteBody {
   session_id: string;
@@ -128,6 +129,8 @@ export async function POST(req: Request) {
       if (itemsErr) console.warn("[stripe/complete] order_items insert:", itemsErr);
       else console.log(`[stripe/complete] ${rows.length} order item(s) saved`);
     }
+
+    await notifyAdminsNewOrder(order.id, verifiedTotal);
 
     return NextResponse.json({ id: order.id, ref: order.id });
   } catch (err) {

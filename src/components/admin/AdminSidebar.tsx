@@ -1,12 +1,13 @@
 "use client";
 /**
- * LN COS — Admin sidebar (exact from handoff admin/components.jsx Sidebar)
+ * LN COS — Admin sidebar
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
+import { useAdminOrderBadge } from "@/lib/admin-supabase";
 
 interface NavItem {
   id: string;
@@ -14,7 +15,7 @@ interface NavItem {
   icon: string;
   label: string;
   live?: boolean;
-  badge?: number;
+  badgeKey?: "orders";
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -22,7 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "rdv",         href: "/admin/rdv",           icon: "calendar", label: "Rendez-vous",         live: true },
   { id: "popups",      href: "/admin/popups",        icon: "gift",     label: "Popups Marketing",    live: true },
   { id: "appbuilder",  href: "/admin/app-builder",   icon: "grid",     label: "Personnaliser l'app", live: true },
-  { id: "orders",      href: "/admin/orders",        icon: "bag",      label: "Commandes",           badge: 12 },
+  { id: "orders",      href: "/admin/orders",        icon: "bag",      label: "Commandes",           badgeKey: "orders" },
   { id: "products",    href: "/admin/products",      icon: "tag",      label: "Produits" },
   { id: "shipping",    href: "/admin/shipping",       icon: "truck",    label: "Livraison" },
   { id: "categories",  href: "/admin/categories",    icon: "grid",     label: "Catégories" },
@@ -42,6 +43,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSidebarProps) {
   const pathname = usePathname();
+  const orderBadge = useAdminOrderBadge();
 
   return (
     <aside className="adm-sidebar">
@@ -56,15 +58,18 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
         </button>
       )}
 
-      {/* Logo */}
       <div className="adm-logo">
         <Logo size={26} />
       </div>
 
-      {/* Nav */}
       <nav className="adm-nav">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+          const active =
+            pathname === item.href ||
+            (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+          const badge =
+            item.badgeKey === "orders" && orderBadge > 0 ? orderBadge : undefined;
+
           return (
             <Link
               key={item.id}
@@ -75,15 +80,14 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
               <Icon name={item.icon} size={19} />
               <span>{item.label}</span>
               {item.live && <span className="adm-nav-live" title="Temps réel" />}
-              {item.badge && (
-                <span className="adm-navbadge">{item.badge}</span>
+              {badge !== undefined && (
+                <span className="adm-navbadge">{badge}</span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer */}
       <div className="adm-side-foot">
         {onLogout && (
           <button
