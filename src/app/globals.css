@@ -2694,34 +2694,95 @@
   max-width: 100%;
 }
 
-.trust-badges__payments {
+/* ─── Moyens de paiement — bande premium minimaliste ─── */
+
+.payment-methods {
+  --payment-logo-h: 22px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.payment-methods__heading {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.payment-methods__list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  gap: 14px 32px;
+  max-width: 100%;
+}
+
+.payment-methods__item {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px 8px;
-  padding: 2px 0 0;
+  min-width: 0;
 }
 
-.trust-badges__pay-logo {
-  display: inline-flex;
+.payment-methods__logo {
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 28px;
-  border-radius: 5px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(212, 175, 55, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  height: var(--payment-logo-h);
+  opacity: 0.82;
 }
 
-.trust-badges__pay-logo svg {
+.payment-methods__svg {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: var(--payment-logo-h);
+  width: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 380px) {
+  .payment-methods__list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px 4px;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent 100%
+    );
+  }
+
+  .payment-methods__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .payment-methods__item {
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 420px) {
+  .payment-methods__list {
+    overflow-x: visible;
+    mask-image: none;
+    gap: 24px;
+  }
 }
 
 /* Dans AppShell au-dessus de la bottom nav — safe area gérée par la nav */

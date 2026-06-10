@@ -2,126 +2,159 @@
 
 import type { ReactNode } from "react";
 
-/** Logos de paiement officiels (SVG) — taille uniforme, pas de texte de remplacement */
+const LOGO_H = 22;
 
-const LOGO_CLASS = "trust-badges__pay-logo";
-
-function LogoWrap({ label, children }: { label: string; children: ReactNode }) {
+function PayLogo({
+  label,
+  viewBox,
+  children,
+}: {
+  label: string;
+  viewBox: string;
+  children: ReactNode;
+}) {
   return (
-    <span className={LOGO_CLASS} role="img" aria-label={label}>
-      {children}
-    </span>
+    <li className="payment-methods__item">
+      <span className="payment-methods__logo" role="img" aria-label={label}>
+        <svg
+          viewBox={viewBox}
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+          focusable="false"
+          preserveAspectRatio="xMidYMid meet"
+          className="payment-methods__svg"
+        >
+          {children}
+        </svg>
+      </span>
+    </li>
   );
 }
 
-export function VisaLogo() {
+function VisaLogo() {
   return (
-    <LogoWrap label="Visa">
-      <svg viewBox="0 0 48 16" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="16" rx="2" fill="#1A1F71" />
-        <path
-          fill="#fff"
-          d="M19.5 11.2h-2.3l1.4-8.5h2.3l-1.4 8.5zm9.8-5.5c-.5-.2-1.2-.4-2.1-.4-2.3 0-3.9 1.2-3.9 2.9 0 1.3 1.2 2 2.1 2.4.9.5 1.2.8 1.2 1.2 0 .7-.7 1-1.4 1-.9 0-1.4-.1-2.2-.5l-.3-.1-.3 2c.6.3 1.7.5 2.8.5 2.4 0 4-1.2 4-3 0-1-.6-1.7-2-2.3-.8-.4-1.3-.7-1.3-1.1 0-.4.4-.8 1.3-.8.7 0 1.3.2 1.7.3l.2.1.3-1.9zm6.5 3.5c.2-1.1.9-2.7 1.4-3.6l.1-.2h-2.2c-.1 0-.2.1-.3.3l-1.5 7.2h2.3l.6-3.4.7 3.4h2.3l1.6-8.5h-2.3l-1 5.8-.7-5.8h-2.4l-1.6 8.5h2.2l.7-3.4zm8.8-5.5l-2.2 8.5h2.2l2.2-8.5h-2.2zM14.2 2.7l-2.2 8.5h2.2l.5-1.3h2.7l.3 1.3h2.4L17.2 2.7h-3zm.5 5.2l1-2.6.6 2.6h-1.6z"
-        />
-        <path fill="#F9A533" d="M9.2 2.7L7.1 9.8c0 .1-.1.2-.3.2H4.5L6.8 2.7h2.4z" />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="Visa" viewBox="0 0 48 16">
+      <path
+        fill="#1A1F71"
+        d="M19.2 13.2h-3.1L18.6 2.8h3.1l-2.5 10.4zm9.2-5.5c-.6-.2-1.6-.4-2.8-.4-3.1 0-5.2 1.5-5.2 3.7 0 1.6 1.5 2.5 2.6 3.1 1.1.6 1.5 1 1.5 1.5 0 .9-1 1.3-1.9 1.3-1.2 0-1.9-.2-3-.6l-.5-.2-.4 2.5c1 .5 2.3.8 3.8.8 3.2 0 5.4-1.5 5.4-3.8 0-1.3-.9-2.2-2.7-3-.1-.5-1.8-.9-1.8-1.4 0-.5.6-1 1.8-1 .9 0 1.7.2 2.3.4l.3.1.4-2.4zm7.7 5.5h2.9l2.3-10.4h-2.9l-1.4 7.2-1.6-7.2h-3.1l-2.5 10.4h2.8l1.3-5.9 1.5 5.9z"
+      />
+      <path fill="#F9A533" d="M9.5 2.8 7.2 10.4c-.1.2-.3.3-.5.3H4.2l2.8-8h2.5z" />
+    </PayLogo>
   );
 }
 
-export function MastercardLogo() {
+function MastercardLogo() {
   return (
-    <LogoWrap label="Mastercard">
-      <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="30" rx="3" fill="#252525" />
-        <circle cx="19" cy="15" r="9" fill="#EB001B" />
-        <circle cx="29" cy="15" r="9" fill="#F79E1B" />
-        <path
-          fill="#FF5F00"
-          d="M24 8.2a9 9 0 0 0-3.4 6.8A9 9 0 0 0 24 21.8a9 9 0 0 0 3.4-6.8A9 9 0 0 0 24 8.2z"
-        />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="Mastercard" viewBox="0 0 36 22">
+      <circle cx="13" cy="11" r="8.5" fill="#EB001B" />
+      <circle cx="23" cy="11" r="8.5" fill="#F79E1B" />
+      <path fill="#FF5F00" d="M18 4.8a8.5 8.5 0 0 0 0 12.4 8.5 8.5 0 0 0 0-12.4z" />
+    </PayLogo>
   );
 }
 
-export function ApplePayLogo() {
+function ApplePayLogo() {
   return (
-    <LogoWrap label="Apple Pay">
-      <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="30" rx="4" fill="#000" />
-        <path
-          fill="#fff"
-          d="M12.2 10.2c-.7.8-1.8 1.4-2.9 1.3-.1-1.1.4-2.3 1-3  .6-.8 1.7-1.4 2.6-1.4.1 1.1-.3 2.2-.7 3.1zm.7 1.1c-1.5-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.8 3-.8 1.4 0 1.7.8 3 .8 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.4 1.2-2.5-.1 0-2.4-.9-2.4-3.6 0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8z"
-        />
-        <path
-          fill="#fff"
-          d="M28.2 9.5v10.8h1.6v-3.7h2.2c2 0 3.5-1.1 3.5-3.5 0-2.1-1.3-3.6-3.7-3.6h-3.6zm1.6 1.4h1.9c1.4 0 2.2.8 2.2 2.2 0 1.4-.8 2.2-2.2 2.2h-1.9V10.9zm7.5 9.4c1.5 0 2.4-.7 2.9-1.8l-1.4-.7c-.3.8-1 1.3-1.8 1.3-1.2 0-2-1-2-2.5 0-1.5.8-2.5 2-2.5.8 0 1.4.5 1.8 1.3l1.4-.7c-.5-1.1-1.4-1.8-2.9-1.8-2.1 0-3.6 1.5-3.6 3.7 0 2.2 1.5 3.7 3.6 3.7z"
-        />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="Apple Pay" viewBox="0 0 52 22">
+      <path
+        fill="#fff"
+        d="M11.8 5.2c-.6.7-1.6 1.2-2.6 1.1-.1-1 .3-2.1.9-2.8.6-.7 1.6-1.2 2.4-1.2.1 1-.3 2-.7 2.9zm.6 1c-1.4-.1-2.5.8-3.2.8-.7 0-1.7-.8-2.8-.8-1.4 0-2.7.8-3.4 2-1.5 2.4-.4 6 1 8 .7 1 1.6 2.2 2.7 2.1 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.1 0 1.9-1 2.5-2 .4-.6.6-1.1.6-1.1s-2.2-.9-2.2-3.4c0-2.1 1.8-3.1 1.9-3.2-1-1.5-2.6-1.7-3.2-1.7z"
+      />
+      <path
+        fill="#fff"
+        d="M26.2 6.2v9.6h1.5v-3.3h2c1.8 0 3.2-1 3.2-3.1 0-1.9-1.2-3.2-3.4-3.2h-3.3zm1.5 1.3h1.7c1.3 0 2 .7 2 2 0 1.3-.7 2-2 2h-1.7V7.5zm6.9 8.3c1.4 0 2.2-.6 2.7-1.6l-1.3-.6c-.3.7-.9 1.2-1.7 1.2-1.1 0-1.9-.9-1.9-2.2 0-1.4.8-2.2 1.9-2.2.7 0 1.3.4 1.7 1.2l1.3-.6c-.5-1-1.3-1.6-2.7-1.6-2 0-3.4 1.4-3.4 3.4 0 2 1.4 3.4 3.4 3.4zm5.8-8.3v9.6h1.5V7.5h-1.5zm3.2 0v9.6h1.4v-3.9l3.4 3.9h1.9l-3.6-4 3.4-3.9h-1.8l-3.1 3.6V7.5h-1.6z"
+      />
+    </PayLogo>
   );
 }
 
-export function GooglePayLogo() {
+function PayPalLogo() {
   return (
-    <LogoWrap label="Google Pay">
-      <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="30" rx="4" fill="#fff" />
-        <path fill="#4285F4" d="M23.2 14.5v3.1h4.3c-.2 1-1 2.5-2.2 3.2l-.1.1 3.2 2.5.2-.1c1.3-1.2 2.1-3 2.1-5.2 0-.5 0-1-.1-1.5H23.2z" />
-        <path fill="#34A853" d="M16.8 17.9l-.1-.1-2.5 1.9-.1.1c1.2 2.4 3.7 4 6.5 4 2 0 3.7-.8 4.9-2.1l-3.2-2.5c-.9.6-2 .9-3.2.9-2.4 0-4.4-1.6-5.1-3.8z" />
-        <path fill="#FBBC05" d="M11.6 10.6c-.4 1.1-.4 2.3 0 3.4l4.9 3.8c.6-1.9 2.4-3.2 4.5-3.2 1.1 0 2.1.4 2.9 1l3.7-2.9c-1.6-2.3-4.2-3.7-7.2-3.7-2.8 0-5.3 1.4-6.8 3.6z" />
-        <path fill="#EA4335" d="M16.8 8.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8C21.3 5.2 19.1 4.2 16.8 4.2c-2.8 0-5.3 1.4-6.8 3.6l4.9 3.8c.7-2.2 2.7-3.5 5.1-3.5z" />
-        <path
-          fill="#5F6368"
-          d="M30.5 10.2h-1.5v9.6h1.5V10.2zm3.2 0h-4.3v1.3h1.6v8.3h1.5v-8.3h1.2V10.2zm5.5 6.8c0-1.8-1-3-2.6-3-1.5 0-2.6 1.2-2.6 3s1.1 3 2.7 3c.8 0 1.5-.3 2-.8l-1-.9c-.3.3-.7.5-1.1.5-.7 0-1.2-.5-1.3-1.3h3.8v-.5zm-3.8-.8c.1-.8.6-1.3 1.3-1.3.7 0 1.2.5 1.3 1.3h-2.6z"
-        />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="PayPal" viewBox="0 0 56 14">
+      <path
+        fill="#009CDE"
+        d="M21.8 2.8h-4.5c-.3 0-.5.2-.6.4l-1.9 11.6c0 .2.1.3.3.3h2.2l.5-3h1.9c2.6 0 4.1-1.3 4.5-3.8.2-1.1 0-1.9-.6-2.6-.6-.7-1.8-1.2-3.3-1.2zm.4 3.7c-.2 1.4-1.3 1.4-2.3 1.4h-1.2l.7-4.2h1.4c.7 0 1.2 0 1.5.3.3.3.4.8.3 1.5z"
+      />
+      <path
+        fill="#003087"
+        d="M31.8 2.8h-4.5c-.3 0-.5.2-.6.4l-1.9 11.6c0 .2.1.3.3.3h2.1c.2 0 .5-.2.6-.4l.5-3.4c0-.3.3-.5.5-.5h1.1c2.6 0 4.1-1 4.5-3.2.2-1 0-1.7-.4-2.2-.6-.6-1.5-1-2.9-1zm.4 3.7c-.2 1.4-1.2 1.4-2.2 1.4h-1.1l.6-4h1.3c.6 0 1.1 0 1.4.3.3.2.4.7.3 1.3z"
+      />
+      <path
+        fill="#009CDE"
+        d="M38.2 2.8h-4.5c-.3 0-.5.2-.6.4l-1.9 11.6c0 .2.1.3.3.3h2.2l.5-3h1.9c2.6 0 4.1-1.3 4.5-3.8.2-1.1 0-1.9-.6-2.6-.6-.7-1.8-1.2-3.3-1.2zm.4 3.7c-.2 1.4-1.3 1.4-2.3 1.4h-1.2l.7-4.2h1.4c.7 0 1.2 0 1.5.3.3.3.4.8.3 1.5z"
+      />
+    </PayLogo>
   );
 }
 
-export function PayPalLogo() {
+function GooglePayLogo() {
   return (
-    <LogoWrap label="PayPal">
-      <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="30" rx="3" fill="#fff" />
-        <path
-          fill="#003087"
-          d="M17.8 8.5h-4.8c-.3 0-.6.2-.7.5l-2 12.5c0 .2.2.4.4.4h2.3l.5-3.2h2c2.8 0 4.4-1.4 4.8-4.1.2-1.2 0-2.1-.6-2.8-.7-.8-1.9-1.3-3.6-1.3zm.4 4c-.2 1.5-1.4 1.5-2.5 1.5h-1.3l.7-4.5h1.5c.7 0 1.3 0 1.6.4.3.3.4.8.3 1.6z"
-        />
-        <path
-          fill="#0070E0"
-          d="M28.5 8.5h-4.8c-.3 0-.6.2-.7.5l-2 12.5c0 .2.2.4.4.4h2.2c.3 0 .6-.2.7-.5l.6-3.7c0-.3.3-.5.6-.5h1.2c2.8 0 4.4-1.1 4.8-3.5.2-1 .1-1.8-.4-2.4-.6-.7-1.6-1.1-3.1-1.1zm.5 4c-.2 1.5-1.3 1.5-2.4 1.5h-1.2l.7-4.3h1.4c.7 0 1.2 0 1.5.3.3.3.4.8.3 1.5z"
-        />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="Google Pay" viewBox="0 0 56 22">
+      <path
+        fill="#4285F4"
+        d="M24.8 11.2v2.8h3.9c-.2.9-.9 2.3-2 2.9l-.1.1 2.9 2.2.2-.1c1.2-1.1 1.9-2.7 1.9-4.7 0-.5 0-.9-.1-1.4h-6.7z"
+      />
+      <path
+        fill="#34A853"
+        d="M18.9 14.3l-.1-.1-2.3 1.7-.1.1c1.1 2.2 3.4 3.6 5.9 3.6 1.8 0 3.3-.7 4.4-1.9l-2.9-2.2c-.8.5-1.8.8-2.9.8-2.2 0-4-1.5-4.6-3.5z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M14.2 8.4c-.4 1-.4 2.1 0 3.1l4.4 3.4c.5-1.7 2.2-2.9 4.1-2.9 1 0 1.9.3 2.6.9l3.3-2.6C26.8 5.8 24.5 4.6 22 4.6c-2.5 0-4.8 1.3-6 3.2l4.2 3.2z"
+      />
+      <path
+        fill="#EA4335"
+        d="M18.9 6.5c1.3 0 2.5.5 3.4 1.3l2.5-2.5C23.2 4.2 21.2 3.3 18.9 3.3c-2.5 0-4.8 1.3-6 3.2l4.4 3.4c.6-2 2.4-3.2 4.6-3.2z"
+      />
+      <path
+        fill="#E8EAED"
+        d="M31.8 6.8h-1.3v8.7h1.3V6.8zm2.9 0h-3.8v1.2h1.4v7.5h1.3V8h1.1V6.8zm5 5.9c0-1.6-.9-2.7-2.4-2.7-1.4 0-2.4 1.1-2.4 2.7s1 2.7 2.5 2.7c.7 0 1.3-.2 1.8-.7l-.9-.8c-.3.3-.6.4-1 .4-.6 0-1.1-.4-1.2-1.1h3.6v-.5zm-3.5-.7c.1-.7.6-1.2 1.2-1.2.6 0 1.1.5 1.2 1.2h-2.4z"
+      />
+    </PayLogo>
   );
 }
 
-export function StripeLogo() {
+function KlarnaLogo() {
   return (
-    <LogoWrap label="Stripe">
-      <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden focusable="false">
-        <rect width="48" height="30" rx="3" fill="#635BFF" />
-        <path
-          fill="#fff"
-          d="M22.1 12.4c0-.8-.6-1.1-1.7-1.1-1.7 0-3.9.5-3.9 3.5v.5h5.6zm-5.6 1.8c0 2.2 1.3 3.3 3.9 3.3 1.2 0 2.3-.2 3.2-.6v-2.4c-.8.4-1.7.6-2.7.6-1 0-1.5-.3-1.5-.9 0-.6.5-.9 1.6-.9 1.2 0 2.3.3 3.3.8V11.1c-.9-.4-2-.6-3.3-.6-3.4 0-5.5 1.8-5.5 4.5 0 2.8 2 4.2 5.2 4.2 1.3 0 2.5-.2 3.5-.6v-2.5c-.9.4-1.9.6-3 .6-1.1 0-1.7-.3-1.7-.9zM34.6 9.8c-1.2 0-2.1.6-2.6 1.5l-.1-.1v-1.2h-2.7v9.6h2.8v-5.2c0-1.2.6-1.9 1.6-1.9.9 0 1.4.6 1.4 1.7v5.4h2.8v-5.8c0-2.3-1.2-3.4-3.2-3.4z"
-        />
-      </svg>
-    </LogoWrap>
+    <PayLogo label="Klarna" viewBox="0 0 62 16">
+      <text
+        x="0"
+        y="12.5"
+        fill="#FFB3C7"
+        fontFamily="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        fontSize="13.5"
+        fontWeight="700"
+        letterSpacing="-0.02em"
+      >
+        Klarna.
+      </text>
+    </PayLogo>
   );
 }
+
+const PAYMENT_LOGOS = [
+  { id: "visa", Logo: VisaLogo },
+  { id: "mastercard", Logo: MastercardLogo },
+  { id: "apple-pay", Logo: ApplePayLogo },
+  { id: "paypal", Logo: PayPalLogo },
+  { id: "google-pay", Logo: GooglePayLogo },
+  { id: "klarna", Logo: KlarnaLogo },
+] as const;
 
 export function PaymentMethodLogos() {
   return (
-    <div className="trust-badges__payments" aria-label="Moyens de paiement acceptés">
-      <VisaLogo />
-      <MastercardLogo />
-      <ApplePayLogo />
-      <GooglePayLogo />
-      <PayPalLogo />
-      <StripeLogo />
+    <div className="payment-methods">
+      <p className="payment-methods__heading">Moyens de paiement</p>
+      <ul className="payment-methods__list" aria-label="Moyens de paiement acceptés">
+        {PAYMENT_LOGOS.map(({ id, Logo }) => (
+          <Logo key={id} />
+        ))}
+      </ul>
     </div>
   );
 }
+
+// Named exports for reuse elsewhere
+export { VisaLogo, MastercardLogo, ApplePayLogo, PayPalLogo, GooglePayLogo, KlarnaLogo };
+
+export const PAYMENT_LOGO_HEIGHT = LOGO_H;
