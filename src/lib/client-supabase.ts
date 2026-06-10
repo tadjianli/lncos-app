@@ -68,6 +68,11 @@ function mapProduct(row: {
   thumbnail_images?: string[] | null;
   home_visibility?: unknown;
   video_url?: string | null;
+  seo_keyword?: string | null;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  seo_slug?: string | null;
+  image_alt?: string | null;
   product_variants?: DbVariantRow[] | null;
 }): Product {
   const richVariants: ProductVariant[] = (row.product_variants ?? [])
@@ -111,11 +116,16 @@ function mapProduct(row: {
     productVariants: richVariants,
     homeVisibility: normalizeHomeVisibility(row.home_visibility, row.tag),
     active: row.active ?? true,
+    seoKeyword: row.seo_keyword ?? null,
+    seoTitle: row.seo_title ?? null,
+    metaDescription: row.meta_description ?? null,
+    seoSlug: row.seo_slug ?? null,
+    imageAlt: row.image_alt ?? null,
   };
 }
 
 const PRODUCT_SELECT =
-  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
 
 /** Charge un produit par identifiant (preview = inclut les produits inactifs). */
 export async function fetchPublicProductById(

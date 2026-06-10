@@ -50,12 +50,24 @@ export interface Product {
   homeVisibility?: ProductHomeVisibility;
   /** Publié côté boutique (products.active) */
   active?: boolean;
+  /** SEO — mot-clé principal */
+  seoKeyword?: string | null;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  seoSlug?: string | null;
+  imageAlt?: string | null;
 }
 
 export interface Category {
   id: string;
   name: string;
   count: number;
+  coverUrl?: string | null;
+  seoKeyword?: string | null;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  seoSlug?: string | null;
+  imageAlt?: string | null;
 }
 
 export interface Review {

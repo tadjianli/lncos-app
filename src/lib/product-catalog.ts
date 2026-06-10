@@ -25,34 +25,38 @@ export function getProductViewActionLabel(
   return isProductPublishedForStorefront(product) ? "Voir" : "Prévisualiser";
 }
 
-/** Chemin boutique : /product/{id} */
+/** Chemin boutique SEO : /produit/{slug} */
 export function getProductStorefrontPath(
-  productId: string,
+  product: Pick<import("./data").Product, "id" | "seoSlug" | "name"> | string,
   options?: { preview?: boolean }
 ): string {
-  const base = `/product/${encodeURIComponent(productId)}`;
+  const slug =
+    typeof product === "string"
+      ? product
+      : (product.seoSlug?.trim() || product.id || slugifyProductId(product.name));
+  const base = `/produit/${encodeURIComponent(slug)}`;
   return options?.preview ? `${base}?preview=1` : base;
 }
 
 /** URL absolue pour ouvrir la fiche dans un nouvel onglet depuis l'admin */
 export function getProductStorefrontUrl(
-  productId: string,
+  product: Pick<Product, "id" | "seoSlug" | "name" | "active">,
   options?: { preview?: boolean; origin?: string }
 ): string {
   const origin =
     options?.origin ??
     (typeof window !== "undefined" ? window.location.origin : "");
-  return `${origin}${getProductStorefrontPath(productId, options)}`;
+  return `${origin}${getProductStorefrontPath(product, options)}`;
 }
 
 export function openProductInStorefront(
-  product: Pick<Product, "id" | "active">,
+  product: Pick<Product, "id" | "seoSlug" | "name" | "active">,
   options?: { origin?: string }
 ): void {
   if (typeof window === "undefined") return;
   const preview = !isProductPublishedForStorefront(product);
   window.open(
-    getProductStorefrontUrl(product.id, { preview, origin: options?.origin }),
+    getProductStorefrontUrl(product, { preview, origin: options?.origin }),
     "_blank",
     "noopener,noreferrer"
   );

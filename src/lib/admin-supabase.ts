@@ -231,6 +231,11 @@ function dbToProduct(r: DbProductWithVariants): Product {
     productVariants: variants,
     homeVisibility: normalizeHomeVisibility(r.home_visibility, r.tag),
     active: r.active ?? true,
+    seoKeyword: r.seo_keyword ?? null,
+    seoTitle: r.seo_title ?? null,
+    metaDescription: r.meta_description ?? null,
+    seoSlug: r.seo_slug ?? null,
+    imageAlt: r.image_alt ?? null,
   };
 }
 
@@ -259,6 +264,11 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
     db.home_visibility = p.homeVisibility as unknown as Json;
   }
   if ("videoUrl" in p) db.video_url = p.videoUrl ?? null;
+  if ("seoKeyword" in p) db.seo_keyword = p.seoKeyword ?? null;
+  if ("seoTitle" in p) db.seo_title = p.seoTitle ?? null;
+  if ("metaDescription" in p) db.meta_description = p.metaDescription ?? null;
+  if ("seoSlug" in p) db.seo_slug = p.seoSlug ?? null;
+  if ("imageAlt" in p) db.image_alt = p.imageAlt ?? null;
   return db;
 }
 
@@ -689,6 +699,11 @@ export function useProducts() {
       gallery_images: product.galleryImages ?? [],
       home_visibility: (product.homeVisibility ?? {}) as unknown as Json,
       video_url: product.videoUrl ?? null,
+      seo_keyword: product.seoKeyword ?? null,
+      seo_title: product.seoTitle ?? null,
+      meta_description: product.metaDescription ?? null,
+      seo_slug: product.seoSlug ?? product.id,
+      image_alt: product.imageAlt ?? null,
       rating: 5,
       reviews: 0,
     }).select("*, product_variants(*)").single();

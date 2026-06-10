@@ -72,6 +72,11 @@ export interface Database {
           thumbnail_images: string[];
           home_visibility: Json;
           video_url: string | null;
+          seo_keyword: string | null;
+          seo_title: string | null;
+          meta_description: string | null;
+          seo_slug: string | null;
+          image_alt: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -100,6 +105,11 @@ export interface Database {
           thumbnail_images?: string[];
           home_visibility?: Json;
           video_url?: string | null;
+          seo_keyword?: string | null;
+          seo_title?: string | null;
+          meta_description?: string | null;
+          seo_slug?: string | null;
+          image_alt?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -127,6 +137,11 @@ export interface Database {
           thumbnail_images?: string[];
           home_visibility?: Json;
           video_url?: string | null;
+          seo_keyword?: string | null;
+          seo_title?: string | null;
+          meta_description?: string | null;
+          seo_slug?: string | null;
+          image_alt?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -184,6 +199,11 @@ export interface Database {
           count: number;
           cover_url: string | null;
           position: number;
+          seo_keyword: string | null;
+          seo_title: string | null;
+          meta_description: string | null;
+          seo_slug: string | null;
+          image_alt: string | null;
         };
         Insert: {
           id: string;
@@ -191,12 +211,22 @@ export interface Database {
           count?: number;
           cover_url?: string | null;
           position?: number;
+          seo_keyword?: string | null;
+          seo_title?: string | null;
+          meta_description?: string | null;
+          seo_slug?: string | null;
+          image_alt?: string | null;
         };
         Update: {
           name?: string;
           count?: number;
           cover_url?: string | null;
           position?: number;
+          seo_keyword?: string | null;
+          seo_title?: string | null;
+          meta_description?: string | null;
+          seo_slug?: string | null;
+          image_alt?: string | null;
         };
         Relationships: [];
       };

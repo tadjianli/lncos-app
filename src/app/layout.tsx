@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -18,8 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "LN COS — Beauté & Cosmétique",
   description: "Cosmétiques premium. Formulés en France.",
+  alternates: { canonical: "/" },
   applicationName: "LN COS",
   keywords: ["beauté", "cosmétique", "soins", "maquillage", "premium"],
   authors: [{ name: "LN COS" }],

@@ -23,6 +23,8 @@ import {
 } from "@/lib/product-catalog";
 import type { ProductVariant } from "@/lib/product-catalog";
 import { AdminProductSaveDialog } from "@/components/admin/AdminProductSaveDialog";
+import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
+import { computeProductSeoScore, seoLevelColor } from "@/lib/seo";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
 function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
@@ -36,6 +38,8 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   const [variants, setVariants] = useState<ProductVariant[]>(product.productVariants ?? []);
   const [productId, setProductId] = useState(isNew ? slugifyProductId(product.name || "nouveau-produit") : product.id);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"info" | "seo">("info");
+  const seoScore = computeProductSeoScore(form);
 
   useEffect(() => {
     if (isNew && form.name) {
@@ -59,6 +63,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
     const payload: Product = {
       ...form,
       id: productId,
+      seoSlug: form.seoSlug?.trim() || productId,
       mainImageUrl: form.mainImageUrl ?? null,
       galleryImages: form.galleryImages ?? [],
       homeVisibility: form.homeVisibility ?? {},
@@ -98,7 +103,39 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           <button className="adm-iconbtn" onClick={onClose} aria-label="Fermer"><Icon name="x" size={17} /></button>
         </div>
 
+        <div style={{ display: "flex", gap: 6, padding: "0 0 16px", borderBottom: "1px solid var(--adm-border-2)", marginBottom: 16 }}>
+          <button
+            type="button"
+            className={`adm-btn sm${activeTab === "info" ? " gold" : " ghost"}`}
+            onClick={() => setActiveTab("info")}
+          >
+            Informations
+          </button>
+          <button
+            type="button"
+            className={`adm-btn sm${activeTab === "seo" ? " gold" : " ghost"}`}
+            onClick={() => setActiveTab("seo")}
+            style={activeTab !== "seo" ? { borderColor: `${seoLevelColor(seoScore.level)}44` } : undefined}
+          >
+            SEO
+            <span
+              style={{
+                marginLeft: 6,
+                fontSize: 10,
+                fontWeight: 800,
+                color: activeTab === "seo" ? "#1a1306" : seoLevelColor(seoScore.level),
+              }}
+            >
+              {seoScore.score}
+            </span>
+          </button>
+        </div>
+
         <div className="ab-modal-scroll">
+          {activeTab === "seo" ? (
+            <ProductSeoTab form={form} onChange={set} />
+          ) : (
+          <>
           <div className="adm-form-section-title">Informations</div>
 
           {isNew && (
@@ -220,6 +257,8 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
 
           {!isNew && <ProductReviewsPanel product={{ ...form, id: productId, productVariants: variants }} />}
           {!isNew && <ProductBeforeAfterPanel product={{ ...form, id: productId, productVariants: variants }} />}
+          </>
+          )}
         </div>
 
         <div className="ab-modal-foot ab-modal-foot--product">
