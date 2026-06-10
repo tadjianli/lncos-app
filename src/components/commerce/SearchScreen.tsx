@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -169,45 +170,26 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
   /* ── Render ── */
   return (
     <div
+      className="overlay-screen"
       style={{
-        position: "absolute",
-        inset: 0,
         background: "rgba(8,8,8,.94)",
         backdropFilter: "blur(32px) saturate(1.2)",
         WebkitBackdropFilter: "blur(32px) saturate(1.2)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 80,
-        animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both",
         willChange: "transform",
       }}
     >
       {/* ── Frosted header ── */}
       <div
+        className="mobile-screen-header mobile-screen-header--safe"
         style={{
-          flex: "0 0 auto",
           background: "rgba(10,10,10,.85)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          padding: "52px 16px 14px",
-          display: "flex",
-          alignItems: "center",
+          paddingBottom: 14,
           gap: 10,
         }}
       >
-        {/* Back button */}
-        <button
-          onClick={onClose}
-          style={{
-            color: "var(--ink)",
-            flexShrink: 0,
-            WebkitTapHighlightColor: "transparent",
-            touchAction: "manipulation",
-            padding: 4,
-          }}
-        >
-          <Icon name="chevL" size={22} />
-        </button>
+        <MobileBackButton onClick={onClose} />
 
         {/* Search pill */}
         <div

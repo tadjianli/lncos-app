@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Icon } from "@/components/shared/Icon";
-import { PinkBtn } from "@/components/shared/ActionButtons";
+import { PinkBtn, SubHeader } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
 
@@ -21,8 +21,8 @@ export default function FavoritesPage() {
     <AppShell>
       {/* Scrollable container */}
       <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto" }}>
-      {/* Header */}
-      <div style={{ padding: "58px 18px 16px" }}>
+      <SubHeader title="Mes Favoris" backHref="/profile" />
+      <div style={{ padding: "0 18px 16px" }}>
         <p
           style={{
             fontSize: "var(--fs-nano)",
@@ -35,17 +35,6 @@ export default function FavoritesPage() {
         >
           Sélection personnelle
         </p>
-        <h1
-          style={{
-            margin: "0 0 4px",
-            fontSize: "var(--fs-h2)",
-            fontWeight: 700,
-            color: "var(--ink)",
-            letterSpacing: "-.01em",
-          }}
-        >
-          Mes Favoris
-        </h1>
         <p style={{ fontSize: "var(--fs-xs)", color: "var(--ink-mute)", margin: 0 }}>
           {favProducts.length} produit{favProducts.length !== 1 ? "s" : ""} sauvegardé
           {favProducts.length !== 1 ? "s" : ""}

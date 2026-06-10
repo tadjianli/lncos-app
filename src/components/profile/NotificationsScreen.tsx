@@ -453,23 +453,12 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
   const [allRead, setAllRead] = useState(false);
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 80,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both",
-      }}
-    >
-      {/* Header */}
-      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader
-          title="Notifications"
-          onBack={onClose}
-          right={
+    <div className="overlay-screen">
+      <SubHeader
+        title="Notifications"
+        onBack={onClose}
+        safeArea
+        right={
             <button
               onClick={() => setAllRead(true)}
               style={{
@@ -488,8 +477,7 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
               Tout marquer lu
             </button>
           }
-        />
-      </div>
+      />
 
       {/* Scroll container */}
       <div

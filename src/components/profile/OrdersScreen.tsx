@@ -309,10 +309,13 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
   }, [byId]);
 
   return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 80, background: "var(--noir)", display: "flex", flexDirection: "column", animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both" }}>
-      <div style={{ paddingTop: 16, flex: "0 0 auto" }}>
-        <SubHeader title="Mes commandes" onBack={handleBack} right={<span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-mute)" }}>{orders.length}</span>} />
-      </div>
+    <div className="overlay-screen">
+      <SubHeader
+        title="Mes commandes"
+        onBack={handleBack}
+        safeArea
+        right={<span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-mute)" }}>{orders.length}</span>}
+      />
 
       <div style={{ flex: "0 0 auto", display: "flex", gap: 8, padding: "0 16px 12px", overflowX: "auto", scrollbarWidth: "none" }}>
         {TABS.map((tab) => (

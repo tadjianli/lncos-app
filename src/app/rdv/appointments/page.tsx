@@ -138,19 +138,17 @@ export default function AppointmentsPage() {
 
   return (
     <AppShell>
-      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
-        <SubHeader
-          title="Mes rendez-vous"
-          backHref="/profile"
-          right={
+      <SubHeader
+        title="Mes rendez-vous"
+        backHref="/profile"
+        right={
             !isGuest ? (
               <Link href="/rdv" style={{ fontSize: 12.5, color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>
                 + Réserver
               </Link>
             ) : undefined
-          }
-        />
-      </div>
+        }
+      />
 
       {/* Tabs */}
       {!isGuest && (

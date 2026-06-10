@@ -6,6 +6,8 @@
 import { useRouter } from "next/navigation";
 import { Icon } from "./Icon";
 
+type AppRouter = ReturnType<typeof useRouter>;
+
 interface BtnProps {
   children: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -77,74 +79,89 @@ export function GoldBtn({ children, onClick, style, icon, disabled, type = "butt
   );
 }
 
+/* ─── Smart back navigation ─────────────────────────────────────────── */
+
+export function handleSmartBack(
+  router: AppRouter,
+  options?: { onBack?: () => void; backHref?: string },
+) {
+  const { onBack, backHref = "/profile" } = options ?? {};
+  if (onBack) {
+    onBack();
+    return;
+  }
+  if (typeof window !== "undefined" && window.history.length > 1) {
+    router.back();
+    return;
+  }
+  router.push(backHref);
+}
+
+/* ─── Mobile back button (shared touch target) ──────────────────────── */
+
+interface MobileBackButtonProps {
+  onClick: () => void;
+  floating?: boolean;
+  "aria-label"?: string;
+}
+
+export function MobileBackButton({
+  onClick,
+  floating = false,
+  "aria-label": ariaLabel = "Retour",
+}: MobileBackButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`mobile-screen-header__back${floating ? " mobile-screen-header__back--floating" : ""}`}
+      aria-label={ariaLabel}
+    >
+      <Icon name="chevL" size={20} />
+    </button>
+  );
+}
+
 /* ─── SubHeader (back + title + optional right) ─────────────────────── */
 
 interface SubHeaderProps {
   title: string;
   onBack?: () => void;
-  /** Navigation explicite si pas d'historique (ex. /) */
+  /** Navigation explicite si pas d'historique (défaut : /profile) */
   backHref?: string;
   right?: React.ReactNode;
+  /** true pour les overlays plein écran (ignorent le padding safe du shell) */
+  safeArea?: boolean;
+  className?: string;
 }
 
-export function SubHeader({ title, onBack, backHref = "/", right }: SubHeaderProps) {
+export function SubHeader({
+  title,
+  onBack,
+  backHref = "/profile",
+  right,
+  safeArea = false,
+  className = "",
+}: SubHeaderProps) {
   const router = useRouter();
 
   function handleBack() {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-    router.push(backHref);
+    handleSmartBack(router, { onBack, backHref });
   }
 
+  const headerClass = [
+    "mobile-screen-header",
+    safeArea ? "mobile-screen-header--safe" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "2px 16px 12px",
-        flex: "0 0 auto",
-      }}
-    >
-      <button
-        type="button"
-        onClick={handleBack}
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          background: "var(--charcoal)",
-          display: "grid",
-          placeItems: "center",
-          color: "var(--ink)",
-          border: "1px solid rgba(255,255,255,.06)",
-          cursor: "pointer",
-          WebkitTapHighlightColor: "transparent",
-          touchAction: "manipulation",
-        }}
-        aria-label="Retour"
-      >
-        <Icon name="chevL" size={20} />
-      </button>
-      <h2
-        style={{
-          margin: 0,
-          fontWeight: 600,
-          fontSize: "var(--fs-h2)",
-          color: "var(--ink)",
-        }}
-      >
-        {title}
-      </h2>
-      <div style={{ width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-        {right}
-      </div>
+    <div className={headerClass}>
+      <MobileBackButton onClick={handleBack} />
+      <h2 className="mobile-screen-header__title">{title}</h2>
+      <div className="mobile-screen-header__slot">{right}</div>
     </div>
   );
 }

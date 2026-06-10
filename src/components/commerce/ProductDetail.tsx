@@ -8,6 +8,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
+import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
@@ -340,58 +341,28 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
       <div
         style={{
           position: "absolute",
-          top: 52,
-          left: 16,
-          right: 16,
-          zIndex: 30,
+          top: "max(8px, var(--safe-top))",
+          left: "max(16px, var(--safe-left))",
+          right: "max(16px, var(--safe-right))",
+          zIndex: 100,
           display: "flex",
           justifyContent: "space-between",
         }}
       >
-        <button
-          onClick={onClose}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            background: "rgba(0,0,0,.4)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            display: "grid",
-            placeItems: "center",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,.15)",
-            WebkitTapHighlightColor: "transparent",
-            touchAction: "manipulation",
-            cursor: "pointer",
-          }}
-        >
-          <Icon name="chevL" size={21} />
-        </button>
+        <MobileBackButton onClick={onClose} floating />
 
         <div style={{ display: "flex", gap: 10 }}>
           {/* Floating favourite button */}
           <button
+            type="button"
             onClick={() => toggleFav(p.id)}
+            className="mobile-screen-header__back mobile-screen-header__back--floating"
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: fav
-                ? "rgba(247,198,215,.25)"
-                : "rgba(0,0,0,.4)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              display: "grid",
-              placeItems: "center",
-              border: fav
-                ? "1px solid rgba(247,198,215,.5)"
-                : "1px solid rgba(255,255,255,.15)",
+              background: fav ? "rgba(247,198,215,.25)" : undefined,
+              border: fav ? "1px solid rgba(247,198,215,.5)" : undefined,
               transition: "background 0.22s, border-color 0.22s",
-              WebkitTapHighlightColor: "transparent",
-              touchAction: "manipulation",
-              cursor: "pointer",
             }}
+            aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
           >
             <Icon
               name="heart"
@@ -402,21 +373,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
           </button>
 
           <button
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "rgba(0,0,0,.4)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              display: "grid",
-              placeItems: "center",
-              color: "#fff",
-              border: "1px solid rgba(255,255,255,.15)",
-              WebkitTapHighlightColor: "transparent",
-              touchAction: "manipulation",
-              cursor: "pointer",
-            }}
+            type="button"
+            className="mobile-screen-header__back mobile-screen-header__back--floating"
+            aria-label="Partager"
           >
             <Icon name="share" size={18} />
           </button>

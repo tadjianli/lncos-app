@@ -267,20 +267,8 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
   const isLoggedIn = Boolean(userId);
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 80,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both",
-      }}
-    >
-      <div style={{ flex: "0 0 auto", paddingTop: 4 }}>
-        <SubHeader title="Paramètres" onBack={onClose} />
-      </div>
+    <div className="overlay-screen">
+      <SubHeader title="Paramètres" onBack={onClose} safeArea />
 
       <div
         className="noscroll"

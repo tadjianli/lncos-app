@@ -36,24 +36,20 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
   const title = category ? category.name : "Tous les produits";
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 80,
-        animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both",
-      }}
-    >
-      {/* Header */}
-      <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
+    <div className="overlay-screen" style={{ animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both" }}>
+      <div style={{ flex: "0 0 auto" }}>
         <SubHeader
           title={title}
           onBack={onClose}
+          safeArea
           right={
-            <button onClick={() => setShowFilter((f) => !f)} style={{ color: "var(--ink)" }}>
+            <button
+              type="button"
+              onClick={() => setShowFilter((f) => !f)}
+              className="mobile-screen-header__back"
+              style={{ background: "transparent", border: "none" }}
+              aria-label="Filtrer"
+            >
               <Icon name="filter" size={20} />
             </button>
           }

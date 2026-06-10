@@ -82,21 +82,8 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
   }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 80,
-        animation: "overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both",
-      }}
-    >
-      {/* Header */}
-      <div style={{ flex: "0 0 auto", paddingTop: 16 }}>
-        <SubHeader title="Programme Fidélité" onBack={onClose} />
-      </div>
+    <div className="overlay-screen">
+      <SubHeader title="Programme Fidélité" onBack={onClose} safeArea />
 
       {/* Scroll area */}
       <div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { SubHeader } from "@/components/shared/ActionButtons";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -11,6 +11,9 @@ interface PageHeaderProps {
   className?: string;
   /** Large left-aligned title style (profile page) vs centered sub-page */
   variant?: "page" | "subpage";
+  /** true pour les overlays plein écran */
+  safeArea?: boolean;
+  backHref?: string;
 }
 
 export function PageHeader({
@@ -20,14 +23,9 @@ export function PageHeader({
   rightAction,
   className,
   variant = "subpage",
+  safeArea = false,
+  backHref = "/profile",
 }: PageHeaderProps) {
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (onBack) onBack();
-    else router.back();
-  };
-
   if (variant === "page") {
     return (
       <div className={cn("flex items-center justify-between px-5 pt-14 pb-6", className)}>
@@ -37,38 +35,24 @@ export function PageHeader({
     );
   }
 
+  if (!showBack) {
+    return (
+      <div className={cn("mobile-screen-header", safeArea && "mobile-screen-header--safe", className)}>
+        <div className="mobile-screen-header__slot" aria-hidden />
+        <h2 className="mobile-screen-header__title">{title}</h2>
+        <div className="mobile-screen-header__slot">{rightAction}</div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        "flex items-center justify-between px-4 pt-14 pb-4",
-        className
-      )}
-    >
-      {/* Back button */}
-      {showBack ? (
-        <button
-          onClick={handleBack}
-          className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform duration-100"
-          style={{ background: "#1E1E1E" }}
-          aria-label="Back"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 4L6 9l5 5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      ) : (
-        <div className="w-10" />
-      )}
-
-      {/* Centered title */}
-      <h1 className="text-[1.25rem] font-bold text-white tracking-[-0.01em]">{title}</h1>
-
-      {/* Right action */}
-      {rightAction ? (
-        <div>{rightAction}</div>
-      ) : (
-        <div className="w-10" />
-      )}
-    </div>
+    <SubHeader
+      title={title}
+      onBack={onBack}
+      backHref={backHref}
+      right={rightAction}
+      safeArea={safeArea}
+      className={className}
+    />
   );
 }
