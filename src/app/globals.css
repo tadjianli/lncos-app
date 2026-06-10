@@ -137,11 +137,26 @@
   --pd-gallery-top: calc(var(--safe-top) + var(--pd-island-gap));
   --pd-gallery-max-h: 48dvh;
   --app-max-width: 480px;
-  /* Hauteur nav : icônes + padding vertical + safe area (une seule fois) */
-  --bottom-nav-content-h: 1.75rem;
-  --bottom-nav-pad-y: 4px;
-  --bottom-nav-safe-bottom: max(6px, env(safe-area-inset-bottom, 0px));
-  --bottom-nav-h: calc(var(--bottom-nav-content-h) + 8px + var(--bottom-nav-safe-bottom));
+  /* Bottom nav iOS — barre compacte + bouton panier flottant */
+  --bottom-nav-icon-size: 31px;
+  --bottom-nav-label-size: 11px;
+  --bottom-nav-pad-y: 2px;
+  --bottom-nav-item-gap: 1px;
+  --bottom-nav-cart-size: 72px;
+  --bottom-nav-cart-overlap: 12px;
+  --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-nav-bar-h: calc(
+    var(--bottom-nav-pad-y) + var(--bottom-nav-icon-size) +
+    var(--bottom-nav-item-gap) + var(--bottom-nav-label-size) + 2px
+  );
+  --bottom-nav-cart-protrusion: calc(
+    var(--bottom-nav-cart-size) / 2 - var(--bottom-nav-cart-overlap)
+  );
+  --bottom-nav-h: calc(
+    var(--bottom-nav-bar-h) + var(--bottom-nav-safe-bottom) + var(--bottom-nav-cart-protrusion)
+  );
+  /* legacy alias */
+  --bottom-nav-content-h: var(--bottom-nav-bar-h);
   --bottom-action-cta-h: 36px;
   --pd-action-bar-pad-y: 4px;
   --sp-10: 40px;
@@ -1236,7 +1251,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Bottom navigation — ancrée au bas de l'app-shell (pas de zone morte sous la nav) */
+/* Bottom navigation — iOS premium, ancrée au bas (safe-area unique) */
 .bottom-nav {
   position: absolute;
   bottom: 0;
@@ -1246,36 +1261,146 @@
   width: 100%;
   max-width: var(--app-max-width);
   margin: 0 auto;
+  box-sizing: border-box;
+  padding-left: max(6px, var(--safe-left));
+  padding-right: max(6px, var(--safe-right));
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-bar {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
+  align-items: flex-end;
+  justify-content: space-between;
   padding-top: var(--bottom-nav-pad-y);
   padding-bottom: var(--bottom-nav-safe-bottom);
-  padding-left: max(8px, var(--safe-left));
-  padding-right: max(8px, var(--safe-right));
-  box-sizing: border-box;
-  background: rgba(10,10,10,.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(212,175,55,.14);
+  background: rgba(10, 10, 10, 0.96);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 0.5px solid rgba(212, 175, 55, 0.18);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.04);
+  pointer-events: auto;
+}
+.bottom-nav-group {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  min-width: 0;
+  padding-bottom: 1px;
+}
+.bottom-nav-cart-slot {
+  flex: 0 0 var(--bottom-nav-cart-size);
+  width: var(--bottom-nav-cart-size);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 1px;
+}
+.bottom-nav-cart-bar-label {
+  color: var(--ink-mute);
+  font-weight: 500;
+}
+.bottom-nav-cart-bar-label.bottom-nav-item--active {
+  color: var(--gold);
+  font-weight: 600;
 }
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1px;
+  justify-content: flex-end;
+  gap: var(--bottom-nav-item-gap);
   position: relative;
-  min-width: 44px;
-  min-height: var(--bottom-nav-content-h);
-  padding-bottom: 0;
+  min-width: 52px;
+  min-height: var(--bottom-nav-bar-h);
+  padding: 0 2px;
   text-decoration: none;
-  transition: color .25s;
+  color: var(--ink-mute);
+  transition: color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item:active {
+  transform: scale(0.94);
+  opacity: 0.85;
+}
+.bottom-nav-item--active {
+  color: var(--gold);
+}
+.bottom-nav-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bottom-nav-icon-size);
+  height: var(--bottom-nav-icon-size);
+  flex-shrink: 0;
 }
 .bottom-nav-label {
-  font-size: 9px;
+  font-size: var(--bottom-nav-label-size);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.bottom-nav-item--active .bottom-nav-label {
+  font-weight: 600;
+}
+.bottom-nav-cart {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--bottom-nav-safe-bottom) + var(--bottom-nav-cart-overlap));
+  transform: translateX(-50%);
+  width: var(--bottom-nav-cart-size);
+  height: var(--bottom-nav-cart-size);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-decoration: none;
+  pointer-events: auto;
+  background: linear-gradient(145deg, #e8c96a 0%, #d4af37 42%, #b8922a 100%);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 6px 20px rgba(212, 175, 55, 0.42),
+    0 12px 32px rgba(0, 0, 0, 0.48),
+    0 0 0 0.5px rgba(212, 175, 55, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.18s cubic-bezier(0.22, 0.68, 0, 1), box-shadow 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-cart:active {
+  transform: translateX(-50%) scale(0.94);
+  box-shadow:
+    0 4px 14px rgba(212, 175, 55, 0.35),
+    0 8px 22px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.bottom-nav-cart--active {
+  background: linear-gradient(145deg, #f0d478 0%, #e0bc45 45%, #c9a030 100%);
+  box-shadow:
+    0 8px 24px rgba(212, 175, 55, 0.52),
+    0 14px 36px rgba(0, 0, 0, 0.52),
+    0 0 0 2px rgba(212, 175, 55, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+.bottom-nav-cart-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--pink);
+  color: #3a1020;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
   line-height: 1;
-  letter-spacing: .02em;
+  border: 2px solid rgba(10, 10, 10, 0.85);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Social proof toast (discret, au-dessus de la bottom nav) ── */
@@ -2304,8 +2429,8 @@
   :root {
     --prod-card-w: 140px;
   }
-  .bottom-nav-item { min-width: 46px; }
-  .bottom-nav-label { font-size: 9px; }
+  .bottom-nav-item { min-width: 44px; }
+  .bottom-nav-label { font-size: 10px; }
 }
 
 /* ─── Product detail overlay — safe areas iOS (Dynamic Island / encoche) ─ */
@@ -2986,7 +3111,9 @@
 html.standalone-pwa {
   --viewport-h: 100dvh;
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --bottom-nav-h: calc(var(--bottom-nav-content-h) + 8px + env(safe-area-inset-bottom, 0px));
+  --bottom-nav-h: calc(
+    var(--bottom-nav-bar-h) + env(safe-area-inset-bottom, 0px) + var(--bottom-nav-cart-protrusion)
+  );
   width: 100%;
   max-width: 100%;
   height: var(--viewport-h);
@@ -3024,7 +3151,12 @@ html.standalone-pwa .app-shell {
 html.standalone-pwa .bottom-nav {
   position: absolute;
   bottom: 0;
+}
+html.standalone-pwa .bottom-nav-bar {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html.standalone-pwa .bottom-nav-cart {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--bottom-nav-cart-overlap));
 }
 
 html.standalone-pwa .pd-overlay {
