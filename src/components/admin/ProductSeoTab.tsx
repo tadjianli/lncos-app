@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
 import { GooglePreview } from "@/components/admin/GooglePreview";
@@ -9,12 +9,15 @@ import { SeoLengthBar } from "@/components/admin/SeoLengthBar";
 import {
   computeProductSeoScore,
   countWords,
-  generateSeoFieldsFromProduct,
   generateSeoImageFilename,
   getGooglePreview,
+  hasProductImage,
+  optimizeProductSeo,
+  previewProductSeoOptimization,
   seoLevelColor,
   seoLevelLabel,
   slugifySeo,
+  type SeoOptimizeMode,
 } from "@/lib/seo";
 
 function getClientSiteUrl(): string {
@@ -39,26 +42,49 @@ const BREAKDOWN_LABELS: Record<keyof ReturnType<typeof computeProductSeoScore>["
   images: "Images",
 };
 
+function applyOptimization(
+  result: NonNullable<ReturnType<typeof optimizeProductSeo>>,
+  onChange: ProductSeoTabProps["onChange"]
+) {
+  onChange("seoKeyword", result.seoKeyword);
+  onChange("seoTitle", result.seoTitle);
+  onChange("metaDescription", result.metaDescription);
+  onChange("imageAlt", result.imageAlt);
+  onChange("seoSlug", result.seoSlug);
+  onChange("desc", result.desc);
+  onChange("benefits", result.benefits);
+  onChange("extraSections", result.extraSections);
+}
+
 export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
   const [showPreview, setShowPreview] = useState(false);
   const score = computeProductSeoScore(form);
+  const previewStandard = useMemo(
+    () => previewProductSeoOptimization(form, "standard"),
+    [form]
+  );
+  const previewMaximal = useMemo(
+    () => previewProductSeoOptimization(form, "maximal"),
+    [form]
+  );
   const google = getGooglePreview(form, getClientSiteUrl());
   const seoFilename = generateSeoImageFilename(form.seoKeyword || form.name);
   const descWords = countWords(form.desc);
+  const hasImage = hasProductImage(form);
 
-  function optimizeAutomatically() {
+  function runOptimization(mode: SeoOptimizeMode) {
     if (!form.name.trim()) return;
-    const generated = generateSeoFieldsFromProduct(form.name);
-    onChange("seoKeyword", generated.seoKeyword);
-    onChange("seoTitle", generated.seoTitle);
-    onChange("metaDescription", generated.metaDescription);
-    onChange("imageAlt", generated.imageAlt);
-    onChange("seoSlug", generated.seoSlug);
+    const result = optimizeProductSeo(form, mode);
+    if (!result) return;
+    applyOptimization(result, onChange);
   }
+
+  const preview = previewMaximal;
+  const canReach95 = preview ? preview.predictedScore >= 95 : false;
 
   return (
     <div>
-      {/* Score + breakdown */}
+      {/* Score actuel + prévisionnel */}
       <div
         className="adm-card"
         style={{
@@ -68,7 +94,7 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
           background: `${seoLevelColor(score.level)}0d`,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-ink-mute)", textTransform: "uppercase", letterSpacing: ".06em" }}>
               Score SEO professionnel
@@ -91,6 +117,42 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
             {seoLevelLabel(score.level)}
           </div>
         </div>
+
+        {preview && preview.predictedScore !== score.score && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              borderRadius: 10,
+              marginBottom: 14,
+              background: `${seoLevelColor(preview.predictedLevel)}14`,
+              border: `1px solid ${seoLevelColor(preview.predictedLevel)}33`,
+              fontSize: 12.5,
+            }}
+          >
+            <Icon name="sparkle" size={15} color={seoLevelColor(preview.predictedLevel)} />
+            <span>
+              Score prévisionnel après optimisation :{" "}
+              <strong style={{ color: seoLevelColor(preview.predictedLevel) }}>
+                {preview.predictedScore}/100
+              </strong>
+              {!hasImage && (
+                <span style={{ color: "var(--adm-ink-mute)", display: "block", marginTop: 4 }}>
+                  Ajoutez une image produit pour dépasser 85/100 (bloc Images).
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {preview && canReach95 && hasImage && score.score < 95 && (
+          <div style={{ fontSize: 12, color: "#2F9E68", marginBottom: 12, fontWeight: 600 }}>
+            L&apos;optimisation automatique peut atteindre {preview.predictedScore}/100 sans saisie manuelle.
+          </div>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8 }}>
           {(Object.entries(score.breakdown) as [keyof typeof score.breakdown, number][]).map(([key, pts]) => (
             <div key={key} style={{ fontSize: 11.5, padding: "8px 10px", borderRadius: 8, background: "var(--adm-bg)" }}>
@@ -102,16 +164,47 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        <button type="button" className="adm-btn gold sm" onClick={optimizeAutomatically} disabled={!form.name.trim()}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+        <button
+          type="button"
+          className="adm-btn gold sm"
+          onClick={() => runOptimization("standard")}
+          disabled={!form.name.trim()}
+          title="Complète les champs SEO pour viser 95–100/100"
+        >
           <Icon name="sparkle" size={14} />
           Optimiser automatiquement
+        </button>
+        <button
+          type="button"
+          className="adm-btn sm"
+          onClick={() => runOptimization("maximal")}
+          disabled={!form.name.trim()}
+          title="Régénère tous les champs SEO manquants ou incomplets"
+          style={{
+            background: "linear-gradient(135deg, #1B7F4E 0%, #2F9E68 100%)",
+            color: "#fff",
+            border: "none",
+          }}
+        >
+          <Icon name="bolt" size={14} />
+          Optimisation SEO maximale
         </button>
         <button type="button" className="adm-btn ghost sm" onClick={() => setShowPreview(true)} disabled={!form.name.trim()}>
           <Icon name="eye" size={14} />
           Aperçu SEO
         </button>
       </div>
+
+      {previewStandard && (
+        <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginBottom: 16, lineHeight: 1.5 }}>
+          Standard → <strong>{previewStandard.predictedScore}/100</strong>
+          {" · "}
+          Maximale → <strong>{previewMaximal?.predictedScore ?? "—"}/100</strong>
+          {" · "}
+          Description générée : {countWords(previewMaximal?.desc)} mots (min. 300)
+        </div>
+      )}
 
       {/* Google Preview — live */}
       <div style={{ marginBottom: 20 }}>
@@ -141,7 +234,7 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
           label="Longueur titre"
           length={(form.seoTitle ?? "").length}
           displayMax={60}
-          idealMin={30}
+          idealMin={40}
           idealMax={60}
         />
       </div>
@@ -169,7 +262,7 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
           label="Longueur meta"
           length={(form.metaDescription ?? "").length}
           displayMax={160}
-          idealMin={120}
+          idealMin={140}
           idealMax={160}
         />
       </div>
@@ -227,7 +320,14 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
 
       {/* Description stats */}
       <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 16 }}>
-        Description produit : <strong>{descWords} mots</strong> · objectif &gt; 300 mots pour un score maximal
+        Description produit : <strong>{descWords} mots</strong>
+        {" · "}
+        objectif 350–500 mots (minimum 300)
+        {descWords > 0 && descWords < 300 && (
+          <span style={{ color: "#C2557A", display: "block", marginTop: 4 }}>
+            Description trop courte — lancez l&apos;optimisation pour générer un texte complet.
+          </span>
+        )}
       </div>
 
       {/* Advanced analysis */}

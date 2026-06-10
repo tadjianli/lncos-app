@@ -61,9 +61,17 @@ const REGION = "La Réunion";
 const TITLE_IDEAL_MIN = 30;
 const TITLE_IDEAL_MAX = 60;
 const TITLE_DISPLAY_MAX = 60;
+const TITLE_GEN_MIN = 40;
+const TITLE_GEN_MAX = 60;
 const META_IDEAL_MIN = 120;
 const META_IDEAL_MAX = 160;
 const META_DISPLAY_MAX = 160;
+const META_GEN_MIN = 140;
+const META_GEN_MAX = 160;
+const DESC_WORD_MIN = 300;
+const DESC_WORD_TARGET_MIN = 350;
+const DESC_WORD_TARGET_MAX = 500;
+const SEO_FAQ_SECTION_ID_PREFIX = "seo-faq-";
 
 export function slugifySeo(text: string): string {
   return slugifyProductId(text);
@@ -85,6 +93,67 @@ function extractMainKeyword(name: string): string {
 function capitalizeKeyword(keyword: string): string {
   if (!keyword) return keyword;
   return keyword.charAt(0).toUpperCase() + keyword.slice(1);
+}
+
+function titleCaseKeyword(keyword: string): string {
+  return keyword
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function fitCharLength(text: string, min: number, max: number): string {
+  let result = text.trim();
+  if (result.length > max) {
+    const cut = result.slice(0, max - 1).trimEnd();
+    const lastSpace = cut.lastIndexOf(" ");
+    result = (lastSpace > min ? cut.slice(0, lastSpace) : cut).trimEnd();
+    if (result.length < min && text.length >= min) {
+      result = text.slice(0, max).trimEnd();
+    }
+  }
+  const fillers = [
+    ` — ${BRAND}`,
+    ` | ${BRAND}`,
+    ` · ${REGION}`,
+    ` · Livraison rapide`,
+    ` · Qualité premium`,
+    ` · Résultats visibles`,
+  ];
+  let fillerIdx = 0;
+  while (result.length < min && fillerIdx < fillers.length) {
+    const next = `${result}${fillers[fillerIdx]}`;
+    if (next.length <= max) result = next;
+    fillerIdx += 1;
+  }
+  if (result.length < min) {
+    result = result.padEnd(min, ".").slice(0, max);
+  }
+  return result.slice(0, max);
+}
+
+function truncateToWordCount(text: string, maxWords: number): string {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return text.trim();
+  return words.slice(0, maxWords).join(" ");
+}
+
+function keywordInFirstParagraph(desc: string, keyword: string): boolean {
+  const first = desc.split(/\n\n+/)[0]?.trim() ?? "";
+  return containsKeyword(first, keyword);
+}
+
+function keywordInH2(desc: string, keyword: string): boolean {
+  const headings = desc.match(/^#{2}\s+.+$/gm) ?? [];
+  return headings.some((h) => containsKeyword(h, keyword));
+}
+
+function resolvePrimaryKeyword(fields: ProductSeoFields): string {
+  const fromField = fields.seoKeyword?.trim();
+  if (fromField && fromField.length >= 3) return fromField.toLowerCase();
+  return extractMainKeyword(fields.name);
 }
 
 function normalize(text: string): string {
@@ -257,12 +326,17 @@ export function computeProductSeoScore(fields: ProductSeoFields): SeoScoreResult
       breakdown.images
   );
 
+  const kwInFirstPara = keywordInFirstParagraph(desc, keyword);
+  const kwInH2Heading = keywordInH2(desc, keyword);
+
   const checks: SeoCheck[] = [
     { id: "kw-title", label: "Mot-clé dans le titre SEO", ok: kwInTitle, points: kwInTitle ? 1 : 0, maxPoints: 1 },
     { id: "kw-meta", label: "Mot-clé dans la meta description", ok: kwInMeta, points: kwInMeta ? 1 : 0, maxPoints: 1 },
     { id: "kw-slug", label: "Mot-clé dans le slug", ok: kwInSlug, points: kwInSlug ? 1 : 0, maxPoints: 1 },
     { id: "kw-alt", label: "Mot-clé dans l'alt image", ok: kwInAlt, points: kwInAlt ? 1 : 0, maxPoints: 1 },
     { id: "kw-desc", label: "Mot-clé dans la description produit", ok: kwInDesc, points: kwInDesc ? 1 : 0, maxPoints: 1 },
+    { id: "kw-first-para", label: "Mot-clé dans le premier paragraphe", ok: kwInFirstPara, points: kwInFirstPara ? 1 : 0, maxPoints: 1 },
+    { id: "kw-h2", label: "Mot-clé dans au moins un H2", ok: kwInH2Heading, points: kwInH2Heading ? 1 : 0, maxPoints: 1 },
     { id: "desc-words", label: "Longueur description > 300 mots", ok: wordCount >= 300, points: wordCount >= 300 ? 1 : 0, maxPoints: 1 },
     { id: "subheadings", label: "Présence de sous-titres", ok: hasSubheadings(fields), points: hasSubheadings(fields) ? 1 : 0, maxPoints: 1 },
     { id: "bullets", label: "Présence de listes à puces", ok: hasBulletLists(fields), points: hasBulletLists(fields) ? 1 : 0, maxPoints: 1 },
@@ -307,6 +381,248 @@ export function seoLevelLabel(level: SeoLevel): string {
   }
 }
 
+export type SeoOptimizeMode = "standard" | "maximal";
+
+export interface ProductSeoOptimizationResult {
+  seoKeyword: string;
+  seoTitle: string;
+  metaDescription: string;
+  seoSlug: string;
+  imageAlt: string;
+  seoImageFilename: string;
+  desc: string;
+  benefits: string[];
+  extraSections: ProductExtraSection[];
+  predictedScore: number;
+  predictedLevel: SeoLevel;
+}
+
+function generateSeoTitle(keyword: string, productName: string): string {
+  const kwTitle = titleCaseKeyword(keyword);
+  const candidates = [
+    `${kwTitle} Premium | ${BRAND} — ${REGION}`,
+    `${kwTitle} | ${BRAND} · Cosmétiques ${REGION}`,
+    `Acheter ${kwTitle} | ${BRAND} — Livraison ${REGION}`,
+    `${productName.trim()} | ${BRAND} · ${kwTitle}`,
+    `${kwTitle} — Qualité ${BRAND} | ${REGION}`,
+  ];
+  const picked =
+    candidates.find((c) => c.length >= TITLE_GEN_MIN && c.length <= TITLE_GEN_MAX) ??
+    candidates[0];
+  return fitCharLength(picked, TITLE_GEN_MIN, TITLE_GEN_MAX);
+}
+
+function generateMetaDescription(keyword: string): string {
+  const kw = keyword.trim();
+  const base = `Découvrez ${kw} chez ${BRAND} : formule premium, résultats visibles et routine beauté simplifiée. Livraison rapide à ${REGION}. Commandez en ligne.`;
+  return fitCharLength(base, META_GEN_MIN, META_GEN_MAX);
+}
+
+function generateImageAlt(keyword: string): string {
+  return fitCharLength(
+    `${titleCaseKeyword(keyword)} ${BRAND} — photo produit officielle`,
+    24,
+    125
+  );
+}
+
+function generateSeoSlug(keyword: string, productName: string): string {
+  const fromKeyword = slugifySeo(keyword);
+  const fromName = slugifySeo(productName);
+  const slug = fromKeyword.length >= 3 ? fromKeyword : fromName;
+  return slug.length <= 80 ? slug : slug.slice(0, 80).replace(/-$/, "");
+}
+
+function generateBenefits(keyword: string): string[] {
+  const kw = titleCaseKeyword(keyword);
+  return [
+    `${kw} : formule soignée pour un résultat visible dès les premières utilisations`,
+    `Texture agréable et fini élégant, pensé pour le quotidien à ${REGION}`,
+    `Qualité premium ${BRAND}, adapté aux peaux sensibles et aux routines exigeantes`,
+    `Format pratique et tenue optimisée pour accompagner votre rituel beauté`,
+    `Sélectionné par l'équipe ${BRAND} pour sa efficacité et sa facilité d'usage`,
+  ];
+}
+
+function generateFaqSection(keyword: string): ProductExtraSection {
+  const kw = keyword.trim();
+  const kwCap = titleCaseKeyword(kw);
+  return {
+    id: `${SEO_FAQ_SECTION_ID_PREFIX}${slugifySeo(kw) || "produit"}`,
+    title: `FAQ — ${kwCap}`,
+    type: "list",
+    body: "",
+    enabled: true,
+    items: [
+      `Qu'est-ce que ${kw} ? ${kwCap} est une solution beauté premium proposée par ${BRAND}, conçue pour offrir des résultats visibles tout en respectant votre peau.`,
+      `Comment utiliser ${kw} ? Appliquez ${kw} sur une peau propre selon les indications du produit, en massant délicatement jusqu'à absorption complète.`,
+      `Pourquoi choisir ${kw} chez ${BRAND} ? Vous bénéficiez d'une qualité contrôlée, d'une livraison rapide à ${REGION} et d'un accompagnement beauté personnalisé.`,
+    ],
+  };
+}
+
+function generateLongDescription(keyword: string, productName: string): string {
+  const kw = keyword.trim();
+  const kwCap = titleCaseKeyword(kw);
+  const displayName = productName.trim() || kwCap;
+
+  const intro = `${kwCap} par ${BRAND} répond aux attentes des clientes exigeantes à la recherche de ${kw} fiable, confortable et simple à intégrer dans une routine beauté moderne. Dès le premier paragraphe, ${kw} s'impose comme une référence pour sublimer votre look au quotidien, que vous découvriez ${displayName} ou que vous souhaitiez le réapprovisionner.`;
+
+  const sections: Array<{ heading: string; body: string }> = [
+    {
+      heading: `Pourquoi choisir ${kwCap}`,
+      body: `Le marché propose de nombreuses alternatives, mais ${kw} ${BRAND} se distingue par sa formulation étudiée, sa finition soignée et sa régularité d'usage. Chaque détail a été pensé pour vous faire gagner du temps tout en conservant un rendu élégant. Les clientes de ${REGION} apprécient particulièrement la constance du résultat et la sensation de confort, même en utilisation prolongée. En choisissant ${kw}, vous optez pour une expérience premium accessible, sans compromis sur la qualité.`,
+    },
+    {
+      heading: `Les avantages de ${kw}`,
+      body: `Avec ${kwCap}, vous profitez d'une tenue maîtrisée, d'une application intuitive et d'un rendu harmonieux. Le produit s'adapte aux routines matinales comme aux préparatifs du soir. Sa texture a été calibrée pour limiter les retouches et offrir une sensation légère sur la peau. ${BRAND} sélectionne des ingrédients et des finitions qui respectent les standards exigeants de la maison, pour que ${kw} devienne un indispensable de votre trousse beauté.`,
+    },
+    {
+      heading: `Comment utiliser ${kwCap} au quotidien`,
+      body: `Pour tirer le meilleur parti de ${kw}, commencez par préparer la zone d'application sur une peau propre et sèche. Appliquez une quantité adaptée, puis laissez le produit s'installer quelques instants avant de poursuivre votre maquillage ou votre soin. En cas d'usage répété, ${kwCap} conserve sa performance sans alourdir le résultat. Cette méthode simple convient aux débutantes comme aux habituées des produits ${BRAND}.`,
+    },
+    {
+      heading: `${kwCap} et votre routine beauté`,
+      body: `Intégrer ${kw} dans votre rituel permet de structurer vos gestes et d'obtenir un résultat plus cohérent jour après jour. Associé aux autres essentiels ${BRAND}, ${kwCap} complète une routine complète : préparation, mise en valeur et finition. Les clientes partagent souvent une meilleure confiance lorsqu'elles maîtrisent chaque étape. ${displayName} s'inscrit ainsi dans une logique de soin global, où qualité, confort et esthétique avancent ensemble.`,
+    },
+    {
+      heading: `Commander ${kw} en ligne`,
+      body: `Passer commande de ${kwCap} sur ${BRAND} est rapide et sécurisé. Nous préparons chaque colis avec soin et assurons une livraison vers ${REGION} dans les meilleurs délais. Vous pouvez suivre votre achat et contacter notre équipe en cas de question sur ${kw}, les modalités d'utilisation ou le choix des compléments. Faites confiance à ${BRAND} pour une expérience d'achat fluide et un service client attentif.`,
+    },
+  ];
+
+  let text = `${intro}\n\n`;
+  for (const section of sections) {
+    text += `## ${section.heading}\n\n${section.body}\n\n`;
+  }
+
+  const enrichments = [
+    `${kwCap} incarne l'ADN ${BRAND} : exigence, douceur et résultat visible. Les retours clientes confirment que ${kw} facilite la mise en beauté et renforce l'assurance au quotidien.`,
+    `Que vous soyez à la recherche de ${kw} pour une occasion spéciale ou pour un usage régulier, ${displayName} offre un équilibre rare entre performance et confort.`,
+    `Notre équipe teste et valide ${kwCap} avant chaque mise en ligne afin de garantir une expérience cohérente avec les standards ${BRAND}.`,
+    `En résumé, ${kw} est le choix idéal si vous souhaitez allier praticité, élégance et fiabilité, avec un service de livraison adapté à ${REGION}.`,
+  ];
+
+  let enrichIdx = 0;
+  while (countWords(text) < DESC_WORD_TARGET_MIN && enrichIdx < enrichments.length) {
+    text += `${enrichments[enrichIdx]}\n\n`;
+    enrichIdx += 1;
+  }
+
+  while (countWords(text) < DESC_WORD_MIN) {
+    text += `${kwCap} ${BRAND} accompagne vos journées avec une formule pensée pour durer, simplifier vos gestes beauté et valoriser votre style naturel, où que vous soyez à ${REGION}.\n\n`;
+  }
+
+  if (countWords(text) > DESC_WORD_TARGET_MAX) {
+    text = truncateToWordCount(text, DESC_WORD_TARGET_MAX);
+  }
+
+  return text.trim();
+}
+
+function mergeExtraSections(
+  existing: ProductExtraSection[] | undefined,
+  faq: ProductExtraSection,
+  mode: SeoOptimizeMode
+): ProductExtraSection[] {
+  const list = [...(existing ?? [])];
+  const faqIdx = list.findIndex((s) => s.id.startsWith(SEO_FAQ_SECTION_ID_PREFIX));
+
+  if (mode === "maximal") {
+    const withoutFaq = list.filter((s) => !s.id.startsWith(SEO_FAQ_SECTION_ID_PREFIX));
+    return [...withoutFaq, faq];
+  }
+
+  if (faqIdx >= 0) {
+    list[faqIdx] = { ...list[faqIdx], ...faq, enabled: true };
+    return list;
+  }
+  return [...list, faq];
+}
+
+function shouldRegenerateDescription(fields: ProductSeoFields, keyword: string, mode: SeoOptimizeMode): boolean {
+  if (mode === "maximal") return true;
+  const desc = fields.desc?.trim() ?? "";
+  const words = countWords(desc);
+  if (words < DESC_WORD_MIN) return true;
+  if (!keywordInFirstParagraph(desc, keyword)) return true;
+  if (!keywordInH2(desc, keyword)) return true;
+  if (!hasSubheadings(fields) && !/^#{2}\s/m.test(desc)) return true;
+  return false;
+}
+
+function shouldRegenerateBenefits(fields: ProductSeoFields, mode: SeoOptimizeMode): boolean {
+  if (mode === "maximal") return true;
+  return (fields.benefits?.filter((b) => b.trim()).length ?? 0) < 3;
+}
+
+/**
+ * Moteur d'optimisation SEO — vise 95–100/100 (texte + structure).
+ * Sans image produit, le score plafonne à ~85 pts (bloc Images).
+ */
+export function optimizeProductSeo(
+  fields: ProductSeoFields,
+  mode: SeoOptimizeMode = "standard"
+): ProductSeoOptimizationResult | null {
+  const productName = fields.name?.trim();
+  if (!productName) return null;
+
+  const keyword = resolvePrimaryKeyword(fields);
+  const seoTitle = generateSeoTitle(keyword, productName);
+  const metaDescription = generateMetaDescription(keyword);
+  const seoSlug = generateSeoSlug(keyword, productName);
+  const imageAlt = generateImageAlt(keyword);
+  const seoImageFilename = generateSeoImageFilename(keyword);
+
+  const desc = shouldRegenerateDescription(fields, keyword, mode)
+    ? generateLongDescription(keyword, productName)
+    : (fields.desc?.trim() ?? generateLongDescription(keyword, productName));
+
+  const benefits = shouldRegenerateBenefits(fields, mode)
+    ? generateBenefits(keyword)
+    : (fields.benefits?.filter((b) => b.trim()) ?? generateBenefits(keyword));
+
+  const faq = generateFaqSection(keyword);
+  const extraSections = mergeExtraSections(fields.extraSections, faq, mode);
+
+  const optimized: ProductSeoFields = {
+    ...fields,
+    seoKeyword: keyword,
+    seoTitle,
+    metaDescription,
+    seoSlug,
+    imageAlt,
+    desc,
+    benefits,
+    extraSections,
+  };
+
+  const scoreResult = computeProductSeoScore(optimized);
+
+  return {
+    seoKeyword: keyword,
+    seoTitle,
+    metaDescription,
+    seoSlug,
+    imageAlt,
+    seoImageFilename,
+    desc,
+    benefits,
+    extraSections,
+    predictedScore: scoreResult.score,
+    predictedLevel: scoreResult.level,
+  };
+}
+
+/** Score prévisionnel après optimisation (sans modifier le formulaire). */
+export function previewProductSeoOptimization(
+  fields: ProductSeoFields,
+  mode: SeoOptimizeMode = "standard"
+): ProductSeoOptimizationResult | null {
+  return optimizeProductSeo(fields, mode);
+}
+
+/** @deprecated Utiliser optimizeProductSeo */
 export function generateSeoFieldsFromProduct(name: string): {
   seoKeyword: string;
   seoTitle: string;
@@ -315,18 +631,25 @@ export function generateSeoFieldsFromProduct(name: string): {
   seoSlug: string;
   seoImageFilename: string;
 } {
-  const keyword = extractMainKeyword(name);
-  const slug = generateSeoSlugFromName(name);
-  const displayName = name.trim();
-  const titleBase = displayName.length > 45 ? displayName.slice(0, 42).trim() + "…" : displayName;
-
+  const result = optimizeProductSeo({ name, desc: "" }, "maximal");
+  if (!result) {
+    const keyword = extractMainKeyword(name);
+    return {
+      seoKeyword: keyword,
+      seoTitle: `${titleCaseKeyword(keyword)} | ${BRAND}`,
+      metaDescription: generateMetaDescription(keyword),
+      imageAlt: generateImageAlt(keyword),
+      seoSlug: generateSeoSlug(keyword, name),
+      seoImageFilename: generateSeoImageFilename(keyword),
+    };
+  }
   return {
-    seoKeyword: keyword,
-    seoTitle: `${titleBase} | ${BRAND}`,
-    metaDescription: `Découvrez ${keyword} ${BRAND}. Qualité premium, résultats visibles. Livraison rapide à ${REGION}.`,
-    imageAlt: `${capitalizeKeyword(keyword)} ${BRAND}`,
-    seoSlug: slug,
-    seoImageFilename: generateSeoImageFilename(keyword),
+    seoKeyword: result.seoKeyword,
+    seoTitle: result.seoTitle,
+    metaDescription: result.metaDescription,
+    imageAlt: result.imageAlt,
+    seoSlug: result.seoSlug,
+    seoImageFilename: result.seoImageFilename,
   };
 }
 
