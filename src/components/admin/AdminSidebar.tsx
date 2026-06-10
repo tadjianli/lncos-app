@@ -21,6 +21,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: "dashboard",   href: "/admin/dashboard",    icon: "home",     label: "Tableau de bord" },
   { id: "rdv",         href: "/admin/rdv",           icon: "calendar", label: "Rendez-vous",         live: true },
+  { id: "service-categories", href: "/admin/service-categories", icon: "grid", label: "Catég. prestations", live: true },
   { id: "popups",      href: "/admin/popups",        icon: "gift",     label: "Popups Marketing",    live: true },
   { id: "appbuilder",  href: "/admin/app-builder",   icon: "grid",     label: "Personnaliser l'app", live: true },
   { id: "orders",      href: "/admin/orders",        icon: "bag",      label: "Commandes",           badgeKey: "orders" },

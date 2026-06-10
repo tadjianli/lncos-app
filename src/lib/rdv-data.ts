@@ -5,7 +5,8 @@
 
 export interface Service {
   id: string;
-  cat: "manucure" | "extensions";
+  /** ID catégorie prestation (service_categories.id) */
+  categoryId: string;
   name: string;
   price: number;
   min: number;
@@ -43,12 +44,12 @@ export interface Availability {
 }
 
 export const services: Service[] = [
-  { id: "vsp-main",  cat: "manucure",   name: "Vernis semi-permanent · Mains", price: 25, min: 45,  color: "#D4AF37", pop: true,  active: true, desc: "Pose longue tenue, fini brillant jusqu'à 3 semaines." },
-  { id: "vsp-pieds", cat: "manucure",   name: "Vernis semi-permanent · Pieds", price: 25, min: 45,  color: "#C99A4B",             active: true, desc: "Soin des pieds et pose semi-permanente impeccable." },
-  { id: "formule",   cat: "manucure",   name: "Formule Mains + Pieds",         price: 45, min: 90,  color: "#EFA9C0", pop: true,  active: true, desc: "Le duo complet mains et pieds en une séance." },
-  { id: "gainage",   cat: "manucure",   name: "Gainage sur ongle naturel",     price: 40, min: 75,  color: "#B98AC9",             active: true, desc: "Renforce et protège l'ongle naturel." },
-  { id: "chablon",   cat: "extensions", name: "Extension chablon",             price: 45, min: 120, color: "#6FA8C9", pop: true,  active: true, desc: "Allongement sur mesure au chablon." },
-  { id: "capsule",   cat: "extensions", name: "Capsule américaine",            price: 35, min: 105, color: "#6FC9A0",             active: true, desc: "Longueur instantanée et résistante." },
+  { id: "vsp-main",  categoryId: "manucure",   name: "Vernis semi-permanent · Mains", price: 25, min: 45,  color: "#D4AF37", pop: true,  active: true, desc: "Pose longue tenue, fini brillant jusqu'à 3 semaines." },
+  { id: "vsp-pieds", categoryId: "manucure",   name: "Vernis semi-permanent · Pieds", price: 25, min: 45,  color: "#C99A4B",             active: true, desc: "Soin des pieds et pose semi-permanente impeccable." },
+  { id: "formule",   categoryId: "manucure",   name: "Formule Mains + Pieds",         price: 45, min: 90,  color: "#EFA9C0", pop: true,  active: true, desc: "Le duo complet mains et pieds en une séance." },
+  { id: "gainage",   categoryId: "manucure",   name: "Gainage sur ongle naturel",     price: 40, min: 75,  color: "#B98AC9",             active: true, desc: "Renforce et protège l'ongle naturel." },
+  { id: "chablon",   categoryId: "extensions", name: "Extension chablon",             price: 45, min: 120, color: "#6FA8C9", pop: true,  active: true, desc: "Allongement sur mesure au chablon." },
+  { id: "capsule",   categoryId: "extensions", name: "Capsule américaine",            price: 35, min: 105, color: "#6FC9A0",             active: true, desc: "Longueur instantanée et résistante." },
 ];
 
 export const extras: Extra[] = [
@@ -92,8 +93,8 @@ export const availability: Availability[] = [
 
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
 
-export function byService(id: string): Service | undefined {
-  return services.find((s) => s.id === id);
+export function byService(id: string, list: Service[] = services): Service | undefined {
+  return list.find((s) => s.id === id);
 }
 export function byStaff(id: string): Staff | undefined {
   return staff.find((s) => s.id === id);
@@ -102,13 +103,13 @@ export function byExtra(id: string): Extra | undefined {
   return extras.find((e) => e.id === id);
 }
 
-export function svcMin(serviceId: string, extraIds: string[] = []): number {
-  const s = byService(serviceId);
+export function svcMin(serviceId: string, extraIds: string[] = [], list: Service[] = services): number {
+  const s = byService(serviceId, list);
   if (!s) return 60;
   return s.min + extraIds.reduce((t, id) => t + (byExtra(id)?.min ?? 0), 0);
 }
-export function svcPrice(serviceId: string, extraIds: string[] = []): number {
-  const s = byService(serviceId);
+export function svcPrice(serviceId: string, extraIds: string[] = [], list: Service[] = services): number {
+  const s = byService(serviceId, list);
   if (!s) return 0;
   return s.price + extraIds.reduce((t, id) => t + (byExtra(id)?.price ?? 0), 0);
 }

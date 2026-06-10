@@ -707,10 +707,46 @@ export interface Database {
         Relationships: [];
       };
 
+      service_categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          icon: string;
+          color: string;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          slug: string;
+          icon?: string;
+          color?: string;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          slug?: string;
+          icon?: string;
+          color?: string;
+          sort_order?: number;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       services: {
         Row: {
           id: string;
           cat: string;
+          category_id: string | null;
           name: string;
           price: number;
           duration: number;
@@ -722,6 +758,7 @@ export interface Database {
         Insert: {
           id: string;
           cat: string;
+          category_id?: string | null;
           name: string;
           price: number;
           duration: number;
@@ -732,6 +769,7 @@ export interface Database {
         };
         Update: {
           cat?: string;
+          category_id?: string | null;
           name?: string;
           price?: number;
           duration?: number;
@@ -740,7 +778,15 @@ export interface Database {
           active?: boolean;
           description?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "services_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "service_categories";
+            referencedColumns: ["id"];
+          },
+        ];
       };
 
       staff: {

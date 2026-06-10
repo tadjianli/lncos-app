@@ -11,18 +11,17 @@ import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { GoldBtn, PinkBtn, SectionHead, MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
-import { services, extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
+import { extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
 import type { Service, Staff } from "@/lib/rdv-data";
+import {
+  categoryChipLabel,
+  usePublicRdvCatalog,
+  type CategoryFilterChip,
+} from "@/lib/rdv-services-db";
 import { calcDeposit, type RdvSettings } from "@/lib/rdv-settings";
 import { useRdvSettings } from "@/lib/rdv-settings-db";
 import { usePublicPageSections } from "@/lib/client-supabase";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
-
-const CATS = [
-  { id: "all",        name: "Tout" },
-  { id: "manucure",   name: "Manucure" },
-  { id: "extensions", name: "Extensions" },
-];
 
 const DAYS    = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
 const MONTHS  = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -53,16 +52,18 @@ interface Draft {
 /* ─── Booking Confirmation Screen ────────────────────────────── */
 function BookingConfirmationScreen({
   draft,
+  services,
   onReset,
   settings,
 }: {
   draft: Draft;
+  services: Service[];
   onReset: () => void;
   settings: RdvSettings;
 }) {
   const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
-  const total = svcPrice(draft.serviceId, draft.extrasIds);
-  const durMin = svcMin(draft.serviceId, draft.extrasIds);
+  const total = svcPrice(draft.serviceId, draft.extrasIds, services);
+  const durMin = svcMin(draft.serviceId, draft.extrasIds, services);
   const staffMember = draft.staffId === "any"
     ? null
     : staff.find((s) => s.id === draft.staffId) ?? null;
@@ -270,7 +271,7 @@ function BookingConfirmationScreen({
                 const [hh, mm] = (draft.time || "12:00").split(":").map(Number);
                 const start = new Date(draft.date);
                 start.setHours(hh, mm, 0, 0);
-                const end = new Date(start.getTime() + svcMin(draft.serviceId, draft.extrasIds) * 60000);
+                const end = new Date(start.getTime() + svcMin(draft.serviceId, draft.extrasIds, services) * 60000);
                 const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
                 const staffMemberName = draft.staffId === "any"
                   ? "Premier disponible"
@@ -350,18 +351,23 @@ function BookingConfirmationScreen({
 
 function BookingWizard({
   initialService,
+  services,
+  filters,
   onClose,
   onConfirm,
   settings,
 }: {
   initialService?: string | null;
+  services: Service[];
+  filters: CategoryFilterChip[];
   onClose: () => void;
   onConfirm: (draft: Draft) => void | Promise<void>;
   settings: RdvSettings;
 }) {
+  const [wizardCat, setWizardCat] = useState("all");
   const [step, setStep] = useState(initialService ? 1 : 0);
   const [draft, setDraft] = useState<Draft>({
-    serviceId: initialService ?? services[0].id,
+    serviceId: initialService ?? services[0]?.id ?? "",
     extrasIds: [],
     staffId: "any",
     date: null,
@@ -371,9 +377,10 @@ function BookingWizard({
     notes: "",
   });
 
+  const wizardList = services.filter((s) => wizardCat === "all" || s.categoryId === wizardCat);
   const svc     = services.find((s) => s.id === draft.serviceId) ?? services[0];
-  const total   = svcPrice(draft.serviceId, draft.extrasIds);
-  const durMin  = svcMin(draft.serviceId, draft.extrasIds);
+  const total   = svcPrice(draft.serviceId, draft.extrasIds, services);
+  const durMin  = svcMin(draft.serviceId, draft.extrasIds, services);
   const deposit = calcDeposit(total, settings);
 
   const STEPS = ["Prestation", "Options", "Artiste", "Date", "Heure", "Infos"];
@@ -424,19 +431,29 @@ function BookingWizard({
         {step === 0 && (
           <div>
             <div className="noscroll" style={{ display: "flex", gap: 8, marginBottom: 16, overflowX: "auto" }}>
-              {CATS.map((c) => {
-                const on = c.id === "all"
-                  ? true
-                  : services.some((s) => s.id === draft.serviceId && s.cat === c.id);
-                return (
-                  <button key={c.id} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: "var(--charcoal)", color: "var(--ink-soft)", border: "1px solid rgba(255,255,255,.07)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}>
-                    {c.name}
-                  </button>
-                );
-              })}
+              {filters.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setWizardCat(c.id)}
+                  style={{
+                    flex: "0 0 auto",
+                    padding: "9px 16px",
+                    borderRadius: "var(--r-pill)",
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    background: wizardCat === c.id ? "var(--gold-grad)" : "var(--charcoal)",
+                    color: wizardCat === c.id ? "#1a1306" : "var(--ink-soft)",
+                    border: wizardCat === c.id ? "none" : "1px solid rgba(255,255,255,.07)",
+                    WebkitTapHighlightColor: "transparent",
+                    touchAction: "manipulation",
+                  }}
+                >
+                  {categoryChipLabel(c)}
+                </button>
+              ))}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {services.map((s) => (
+              {wizardList.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setDraft((d) => ({ ...d, serviceId: s.id }))}
@@ -810,8 +827,8 @@ function BookingWizard({
 }
 
 /* ─── Confirmation overlay ───────────────────────────────────── */
-function ConfirmOverlay({ draft, onClose }: { draft: Draft; onClose: () => void }) {
-  const svc = services.find((s) => s.id === draft.serviceId)!;
+function ConfirmOverlay({ draft, services, onClose }: { draft: Draft; services: Service[]; onClose: () => void }) {
+  const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
   return (
     <div
       className="overlay-shell overlay-shell--fixed"
@@ -867,6 +884,7 @@ function apptToDraft(appt: {
 /* ─── RDV Home ────────────────────────────────────────────────── */
 export default function RdvPage() {
   const { settings } = useRdvSettings();
+  const { services, filters, loading: catalogLoading } = usePublicRdvCatalog();
   const { getVisible: getPageSections } = usePublicPageSections("rdv");
   const rdvLayoutSections = getPageSections({ isMobile: true }).filter((s) =>
     ["hero", "trust", "cta"].includes(s.type)
@@ -877,7 +895,7 @@ export default function RdvPage() {
   const [paying, setPaying] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
 
-  const list = services.filter((s) => cat === "all" || s.cat === cat);
+  const list = services.filter((s) => cat === "all" || s.categoryId === cat);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -917,7 +935,7 @@ export default function RdvPage() {
       ? (() => { const d = new Date(draft.date); const [h, m] = (draft.time || "10:00").split(":").map(Number); d.setHours(h, m, 0, 0); return d.toISOString(); })()
       : new Date().toISOString();
     const ref = "LN-" + String(1000 + Math.abs(draft.serviceId.charCodeAt(0) * 37 + (draft.date?.getDate() ?? 0) * 13) % 9000);
-    const total = svcPrice(draft.serviceId, draft.extrasIds);
+    const total = svcPrice(draft.serviceId, draft.extrasIds, services);
     const deposit = calcDeposit(total, settings);
     const svc = services.find((s) => s.id === draft.serviceId) ?? services[0];
 
@@ -932,7 +950,7 @@ export default function RdvPage() {
           staff_id: staffId,
           extras_ids: draft.extrasIds,
           start_at: isoDate,
-          duration_min: svcMin(draft.serviceId, draft.extrasIds),
+          duration_min: svcMin(draft.serviceId, draft.extrasIds, services),
           price: total,
           deposit,
           payment_status: "unpaid",
@@ -987,6 +1005,7 @@ export default function RdvPage() {
       <AppShell bottomNav={false}>
         <BookingConfirmationScreen
           draft={confirmed}
+          services={services}
           settings={settings}
           onReset={() => setConfirmed(null)}
         />
@@ -1052,19 +1071,23 @@ export default function RdvPage() {
               <h3 style={{ margin: 0, fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>Nos prestations</h3>
             </div>
             <div className="noscroll" style={{ display: "flex", gap: 8, marginBottom: 16, overflowX: "auto" }}>
-              {CATS.map((c) => (
+              {filters.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => setCat(c.id)}
                   style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", background: cat === c.id ? "var(--gold-grad)" : "var(--charcoal)", color: cat === c.id ? "#1a1306" : "var(--ink-soft)", border: cat === c.id ? "none" : "1px solid rgba(255,255,255,.07)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                 >
-                  {c.name}
+                  {categoryChipLabel(c)}
                 </button>
               ))}
             </div>
 
+            {catalogLoading && (
+              <div style={{ padding: 24, textAlign: "center", color: "var(--ink-mute)", fontSize: 13 }}>Chargement des prestations…</div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-              {list.map((s, i) => (
+              {!catalogLoading && list.map((s, i) => (
                 <div key={s.id} style={{ display: "flex", gap: 13, padding: 12, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", animation: `fadeUp .4s ease ${i * 0.04}s both` }}>
                   <div style={{ width: 80, height: 80, borderRadius: 14, flex: "0 0 auto", background: s.color + "22", display: "grid", placeItems: "center", position: "relative" }}>
                     <Icon name="scissors" size={32} color={s.color} />
@@ -1113,9 +1136,11 @@ export default function RdvPage() {
           </div>
         )}
 
-        {booking && (
+        {booking && services.length > 0 && (
           <BookingWizard
             initialService={booking.serviceId}
+            services={services}
+            filters={filters}
             onClose={() => setBooking(null)}
             onConfirm={handleConfirm}
             settings={settings}

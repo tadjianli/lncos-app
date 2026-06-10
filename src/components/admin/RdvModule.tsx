@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useAllAppointments, useRdvNotifications } from "@/lib/admin-supabase";
 import type { Appointment, Notification } from "@/lib/rdv-store";
-import { services, staff, availability, type Service } from "@/lib/rdv-data";
+import { staff, availability, type Service } from "@/lib/rdv-data";
+import { useAdminServiceCategories } from "@/lib/rdv-services-db";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
+import { ServiceCategoriesModule } from "@/components/admin/ServiceCategoriesModule";
 
-type Tab = "dashboard" | "calendar" | "availability" | "services" | "staff" | "notifications";
+type Tab = "dashboard" | "calendar" | "availability" | "services" | "categories" | "staff" | "notifications";
 
 /* ── helpers ────────────────────────────────────────────────────────── */
 
@@ -55,8 +57,9 @@ const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 08:00 → 19:00
 const STAFF_COLOR: Record<string, string> = { lea: "#D4AF37", ines: "#EFA9C0", maya: "#6FA8C9" };
 
 /* ── Appointment detail drawer ──────────────────────────────────────── */
-function ApptDrawer({ appt, onClose, onStatusChange }: {
+function ApptDrawer({ appt, services, onClose, onStatusChange }: {
   appt: Appointment;
+  services: Service[];
   onClose: () => void;
   onStatusChange: (id: string, status: Appointment["status"]) => void;
 }) {
@@ -156,9 +159,10 @@ function ApptDrawer({ appt, onClose, onStatusChange }: {
 }
 
 /* ── Dashboard tab ──────────────────────────────────────────────────── */
-function Dashboard({ appointments, notifications, onOpenCalendar }: {
+function Dashboard({ appointments, notifications, services, onOpenCalendar }: {
   appointments: Appointment[];
   notifications: Notification[];
+  services: Service[];
   onOpenCalendar: () => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -300,8 +304,9 @@ function Dashboard({ appointments, notifications, onOpenCalendar }: {
 }
 
 /* ── Calendar tab ───────────────────────────────────────────────────── */
-function CalendarView({ appointments, onSelectAppt }: {
+function CalendarView({ appointments, services, onSelectAppt }: {
   appointments: Appointment[];
+  services: Service[];
   onSelectAppt: (a: Appointment) => void;
 }) {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -502,15 +507,24 @@ function AvailabilityView() {
 }
 
 /* ── Service edit modal ─────────────────────────────────────────────── */
-function ServiceModal({ svc, onClose, onSave }: {
+function ServiceModal({
+  svc,
+  categories,
+  defaultCategoryId,
+  onClose,
+  onSave,
+}: {
   svc?: Service;
+  categories: { id: string; name: string; isActive: boolean }[];
+  defaultCategoryId: string;
   onClose: () => void;
   onSave: (s: Service) => void;
 }) {
   const isNew = !svc;
+  const activeCategories = categories.filter((c) => c.isActive);
   const [form, setForm] = useState<Service>(() => svc ?? {
     id: `svc-${Date.now()}`,
-    cat: "manucure",
+    categoryId: defaultCategoryId,
     name: "",
     price: 0,
     min: 60,
@@ -548,10 +562,19 @@ function ServiceModal({ svc, onClose, onSave }: {
           </div>
         ))}
         <div className="ab-field">
-          <label>Catégorie</label>
-          <select className="ab-input" value={form.cat} onChange={(e) => set("cat", e.target.value as Service["cat"])}>
-            <option value="manucure">Manucure</option>
-            <option value="extensions">Extensions</option>
+          <label>Catégorie *</label>
+          <select
+            className="ab-input"
+            value={form.categoryId}
+            onChange={(e) => set("categoryId", e.target.value)}
+            required
+          >
+            {activeCategories.length === 0 && (
+              <option value="">Aucune catégorie — créez-en une dans Catégories</option>
+            )}
+            {activeCategories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
           </select>
         </div>
         <div className="ab-field" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -564,7 +587,7 @@ function ServiceModal({ svc, onClose, onSave }: {
         </div>
         <div className="ab-modal-foot">
           <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
-          <button className="adm-btn gold" onClick={() => onSave(form)} disabled={!form.name.trim()}>
+          <button className="adm-btn gold" onClick={() => onSave(form)} disabled={!form.name.trim() || !form.categoryId}>
             <Icon name="check" size={15} /> {isNew ? "Créer" : "Enregistrer"}
           </button>
         </div>
@@ -575,21 +598,15 @@ function ServiceModal({ svc, onClose, onSave }: {
 
 /* ── Services tab ───────────────────────────────────────────────────── */
 function ServicesView() {
-  const [svcList, setSvcList] = useState<Service[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("lncos-services");
-      if (saved) return JSON.parse(saved) as Service[];
-    }
-    return [...services];
-  });
+  const { categories, services: svcList, loading, upsertService, deleteService } = useAdminServiceCategories();
   const [addingSvc, setAddingSvc] = useState(false);
   const [editingSvc, setEditingSvc] = useState<Service | null>(null);
   const [confirmDeleteSvc, setConfirmDeleteSvc] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const defaultCategoryId = categories.find((c) => c.isActive)?.id ?? categories[0]?.id ?? "";
 
-  function persist(list: Service[]) {
-    setSvcList(list);
-    localStorage.setItem("lncos-services", JSON.stringify(list));
+  function categoryName(id: string): string {
+    return categories.find((c) => c.id === id)?.name ?? id;
   }
 
   function showToast(msg: string) {
@@ -597,16 +614,24 @@ function ServicesView() {
     setTimeout(() => setToast(null), 2500);
   }
 
-  function handleSave(s: Service) {
+  async function handleSave(s: Service) {
     const existing = svcList.findIndex((x) => x.id === s.id);
-    persist(existing >= 0 ? svcList.map((x) => x.id === s.id ? s : x) : [...svcList, s]);
+    const { error } = await upsertService(s);
+    if (error) {
+      showToast(`Erreur : ${error}`);
+      return;
+    }
     setAddingSvc(false);
     setEditingSvc(null);
     showToast(existing >= 0 ? "Prestation mise à jour" : "Prestation créée");
   }
 
-  function deleteSvc(id: string) {
-    persist(svcList.filter((s) => s.id !== id));
+  async function deleteSvc(id: string) {
+    const { error } = await deleteService(id);
+    if (error) {
+      showToast(`Erreur : ${error}`);
+      return;
+    }
     setConfirmDeleteSvc(null);
     showToast("Prestation supprimée");
   }
@@ -621,14 +646,17 @@ function ServicesView() {
           </div>
           <button className="adm-btn gold sm" onClick={() => setAddingSvc(true)}><Icon name="plus" size={14} /> Ajouter</button>
         </div>
-        {svcList.map((svc) => (
+        {loading && (
+          <div style={{ padding: 24, textAlign: "center", color: "var(--adm-ink-mute)", fontSize: 13 }}>Chargement…</div>
+        )}
+        {!loading && svcList.map((svc) => (
           <div key={svc.id} className="rdv-svc-row">
             <div className="rdv-svc-dot" style={{ background: svc.color }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="rdv-svc-name">{svc.name}</div>
               <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>{svc.desc}</div>
             </div>
-            <span className="rdv-svc-cat">{svc.cat}</span>
+            <span className="rdv-svc-cat">{categoryName(svc.categoryId)}</span>
             <div className="rdv-svc-dur">{svc.min} min</div>
             <div className="rdv-svc-price">{svc.price} €</div>
             <div className="adm-rowactions">
@@ -647,8 +675,23 @@ function ServicesView() {
           </div>
         )}
       </div>
-      {addingSvc && <ServiceModal onClose={() => setAddingSvc(false)} onSave={handleSave} />}
-      {editingSvc && <ServiceModal svc={editingSvc} onClose={() => setEditingSvc(null)} onSave={handleSave} />}
+      {addingSvc && (
+        <ServiceModal
+          categories={categories}
+          defaultCategoryId={defaultCategoryId}
+          onClose={() => setAddingSvc(false)}
+          onSave={handleSave}
+        />
+      )}
+      {editingSvc && (
+        <ServiceModal
+          svc={editingSvc}
+          categories={categories}
+          defaultCategoryId={defaultCategoryId}
+          onClose={() => setEditingSvc(null)}
+          onSave={handleSave}
+        />
+      )}
       {toast && <AdminToast msg={toast} />}
     </>
   );
@@ -704,8 +747,9 @@ function StaffView() {
 }
 
 /* ── Notifications tab ──────────────────────────────────────────────── */
-function NotificationsView({ notifications, onMarkAllRead }: {
+function NotificationsView({ notifications, services, onMarkAllRead }: {
   notifications: Notification[];
+  services: Service[];
   onMarkAllRead: () => void;
 }) {
   const sorted = [...notifications].sort((a, b) => b.ts.localeCompare(a.ts));
@@ -760,6 +804,7 @@ export function RdvModule() {
 
   const { appointments, updateStatus } = useAllAppointments();
   const { notifications: rawNotifications } = useRdvNotifications();
+  const { services: catalogServices } = useAdminServiceCategories();
 
   const notifications = rawNotifications.map((n) => ({ ...n, read: readIds.has(n.id) }));
 
@@ -779,6 +824,7 @@ export function RdvModule() {
     { id: "calendar",     icon: "calendar", label: "Calendrier" },
     { id: "availability", icon: "clock",    label: "Disponibilités" },
     { id: "services",     icon: "sliders",  label: "Prestations" },
+    { id: "categories",   icon: "grid",     label: "Catégories" },
     { id: "staff",        icon: "user",     label: "Prothésistes" },
     { id: "notifications",icon: "bell",     label: "Notifications", badge: unreadCount },
   ];
@@ -819,17 +865,19 @@ export function RdvModule() {
           <Dashboard
             appointments={appointments}
             notifications={notifications}
+            services={catalogServices}
             onOpenCalendar={() => setTab("calendar")}
           />
         )}
         {tab === "calendar" && (
-          <CalendarView appointments={appointments} onSelectAppt={setSelectedAppt} />
+          <CalendarView appointments={appointments} services={catalogServices} onSelectAppt={setSelectedAppt} />
         )}
         {tab === "availability" && <AvailabilityView />}
         {tab === "services" && <ServicesView />}
+        {tab === "categories" && <ServiceCategoriesModule embedded />}
         {tab === "staff" && <StaffView />}
         {tab === "notifications" && (
-          <NotificationsView notifications={notifications} onMarkAllRead={handleMarkAllRead} />
+          <NotificationsView notifications={notifications} services={catalogServices} onMarkAllRead={handleMarkAllRead} />
         )}
       </div>
 
@@ -837,6 +885,7 @@ export function RdvModule() {
       {selectedAppt && (
         <ApptDrawer
           appt={selectedAppt}
+          services={catalogServices}
           onClose={() => setSelectedAppt(null)}
           onStatusChange={handleStatusChange}
         />
