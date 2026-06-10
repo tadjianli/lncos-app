@@ -2236,9 +2236,9 @@
   display: block;
   width: 100%;
   max-width: 100%;
-  aspect-ratio: 1 / 1.08;
-  max-height: 420px;
-  min-height: 300px;
+  aspect-ratio: 1 / 0.95;
+  max-height: 360px;
+  min-height: 255px;
   height: auto;
   position: relative;
   overflow: hidden;
@@ -2253,7 +2253,14 @@
 .pd-gallery-hero-inner {
   position: absolute;
   inset: 0;
-  animation: pdHeroIn 0.35s cubic-bezier(.22,.68,0,1) both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pdHeroIn 0.4s cubic-bezier(.22,.68,0,1) both;
+}
+
+.pd-gallery-hero-img {
+  object-position: center center !important;
 }
 
 @keyframes pdHeroIn {
@@ -2325,9 +2332,9 @@
 }
 
 .pd-gallery-thumb {
-  width: 68px;
-  height: 68px;
-  flex: 0 0 68px;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -2336,15 +2343,61 @@
   padding: 0;
   cursor: pointer;
   scroll-snap-align: start;
-  transition: border-color .2s, box-shadow .2s, transform .2s;
+  transition: border-color .28s ease, box-shadow .28s ease, transform .28s cubic-bezier(.22,.68,0,1), opacity .28s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .pd-gallery-thumb.is-active {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(212,175,55,.22);
-  transform: scale(1.02);
+  border-width: 2.5px;
+  box-shadow: 0 0 0 3px rgba(212,175,55,.35), 0 4px 14px -4px rgba(212,175,55,.45);
+  transform: scale(1.04);
 }
-.pd-gallery-thumb:not(.is-active) img { opacity: .55; }
+.pd-gallery-thumb.is-zooming {
+  transform: scale(1.1);
+}
+.pd-gallery-thumb:not(.is-active) img { opacity: .5; }
+.pd-gallery-thumb.is-active img { opacity: 1; }
+
+/* Boutons flottants fiche produit — visibles uniquement sur la galerie */
+.pd-float-controls {
+  transition: opacity .32s ease, transform .32s ease, visibility .32s;
+  will-change: opacity, transform;
+}
+.pd-float-controls.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+}
+
+.pd-sticky-bar {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  background: rgba(10,10,10,.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(212,175,55,.14);
+}
+
+.pd-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: var(--r-md);
+  background: rgba(247,198,215,.06);
+  border: 1px solid rgba(247,198,215,.14);
+}
+.pd-benefits-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
 
 /* Lightbox zoom */
 .pd-lightbox {

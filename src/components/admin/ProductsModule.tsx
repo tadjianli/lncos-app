@@ -207,6 +207,8 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           <ProductContentSectionsEditor
             desc={form.desc}
             onDescChange={(v) => set("desc", v)}
+            benefits={form.benefits ?? []}
+            onBenefitsChange={(items) => set("benefits", items)}
             usageTips={form.usageTips ?? []}
             onUsageTipsChange={(tips) => set("usageTips", tips)}
             ingredients={form.ingredients}

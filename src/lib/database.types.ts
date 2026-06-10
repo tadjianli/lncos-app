@@ -62,6 +62,7 @@ export interface Database {
           description: string;
           ingredients: string[];
           usage_tips: string[];
+          benefits: string[];
           section_toggles: Json;
           extra_sections: Json;
           commitments: Json;
@@ -95,6 +96,7 @@ export interface Database {
           description?: string;
           ingredients?: string[];
           usage_tips?: string[];
+          benefits?: string[];
           section_toggles?: Json;
           extra_sections?: Json;
           commitments?: Json;
@@ -127,6 +129,7 @@ export interface Database {
           description?: string;
           ingredients?: string[];
           usage_tips?: string[];
+          benefits?: string[];
           section_toggles?: Json;
           extra_sections?: Json;
           commitments?: Json;

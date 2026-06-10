@@ -7,6 +7,8 @@ import { newExtraSection } from "@/lib/product-sections";
 interface ProductContentSectionsEditorProps {
   desc: string;
   onDescChange: (v: string) => void;
+  benefits: string[];
+  onBenefitsChange: (items: string[]) => void;
   usageTips: string[];
   onUsageTipsChange: (tips: string[]) => void;
   ingredients: string[];
@@ -106,6 +108,8 @@ function LinesEditor({
 export function ProductContentSectionsEditor({
   desc,
   onDescChange,
+  benefits,
+  onBenefitsChange,
   usageTips,
   onUsageTipsChange,
   ingredients,
@@ -142,6 +146,23 @@ export function ProductContentSectionsEditor({
             value={desc}
             placeholder="Décrivez le produit…"
             onChange={(e) => onDescChange(e.target.value)}
+          />
+        )}
+      </div>
+
+      <div className="adm-section-card">
+        <ToggleRow
+          label="Bénéfices clés"
+          hint="Liste à puces avant la description (ex. Sans colle, Réutilisable…)"
+          checked={toggles.benefits}
+          onChange={(benefitsToggle) => onTogglesChange({ ...toggles, benefits: benefitsToggle })}
+        />
+        {toggles.benefits && (
+          <LinesEditor
+            label="Bénéfices"
+            placeholder="Ex. Pose en 30 secondes"
+            lines={benefits}
+            onChange={onBenefitsChange}
           />
         )}
       </div>

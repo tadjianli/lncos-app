@@ -9,6 +9,7 @@ export interface ProductSectionToggles {
   usageTips: boolean;
   ingredients: boolean;
   commitments: boolean;
+  benefits: boolean;
 }
 
 export interface ProductCommitment {
@@ -59,6 +60,7 @@ export const DEFAULT_SECTION_TOGGLES: ProductSectionToggles = {
   usageTips: true,
   ingredients: true,
   commitments: true,
+  benefits: true,
 };
 
 export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
@@ -69,6 +71,7 @@ export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
     usageTips: o.usageTips !== false,
     ingredients: o.ingredients !== false,
     commitments: o.commitments !== false,
+    benefits: o.benefits !== false,
   };
 }
 

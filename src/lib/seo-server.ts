@@ -12,7 +12,7 @@ import { getProductSeoPath, getCategorySeoPath } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
 
 const PRODUCT_SELECT =
-  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,benefits,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
 
 type DbVariantRow = {
   id: string;
@@ -40,6 +40,7 @@ type DbProductRow = {
   description: string;
   ingredients: string[];
   usage_tips?: string[] | null;
+  benefits?: string[] | null;
   section_toggles?: unknown;
   extra_sections?: unknown;
   commitments?: unknown;
@@ -88,6 +89,7 @@ function mapProductRow(row: DbProductRow): Product {
     desc: row.description,
     ingredients: row.ingredients ?? [],
     usageTips: row.usage_tips ?? [],
+    benefits: row.benefits ?? [],
     sectionToggles: normalizeSectionToggles(row.section_toggles),
     extraSections: normalizeExtraSections(row.extra_sections),
     commitments: normalizeCommitments(row.commitments),

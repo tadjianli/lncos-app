@@ -65,8 +65,8 @@ export function ProductStockAlert({
       }}
     >
       <span>⚠️</span>
-      {stock <= 5 ? (
-        <span>Plus que {stock} exemplaire{stock > 1 ? "s" : ""} disponible{stock > 1 ? "s" : ""}</span>
+      {stock <= 20 ? (
+        <span>🔥 Plus que {stock} exemplaire{stock > 1 ? "s" : ""} disponible{stock > 1 ? "s" : ""}</span>
       ) : (
         <span>Stock limité</span>
       )}
@@ -92,6 +92,92 @@ export function ProductSalesCounter({ productId }: { productId: string }) {
   );
 }
 
+export function ProductReassuranceLines() {
+  const lines = [
+    "Livraison rapide Réunion",
+    "Paiement sécurisé",
+    "Retours faciles",
+    "Expédition sous 24h",
+  ];
+
+  return (
+    <ul
+      className="pd-reassurance"
+      style={{
+        margin: "0 0 14px",
+        padding: 0,
+        listStyle: "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 7,
+      }}
+    >
+      {lines.map((line) => (
+        <li
+          key={line}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12.5,
+            color: "var(--ink-soft)",
+            lineHeight: 1.35,
+          }}
+        >
+          <Icon name="check" size={12} color="var(--tone-green, #2F9E68)" stroke={2.8} />
+          {line}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function ProductDeliveryTrustBlock() {
+  const items = [
+    { emoji: "🚚", label: "Livraison offerte dès 50€" },
+    { emoji: "🎁", label: "Échantillon offert" },
+    { emoji: "↩️", label: "Retour 30 jours" },
+    { emoji: "🔒", label: "Paiement sécurisé" },
+  ];
+
+  return (
+    <div
+      className="pd-trust-grid"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "8px 10px",
+        padding: "12px 14px",
+        borderRadius: "var(--r-md)",
+        background: "var(--charcoal)",
+        border: "1px solid rgba(212,175,55,.12)",
+        marginBottom: 24,
+      }}
+    >
+      {items.map((item) => (
+        <div
+          key={item.label}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 11.5,
+            fontWeight: 600,
+            color: "var(--ink-soft)",
+            lineHeight: 1.3,
+            minWidth: 0,
+          }}
+        >
+          <span style={{ fontSize: 14, flexShrink: 0 }} aria-hidden>
+            {item.emoji}
+          </span>
+          <span>{item.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProductTrustBadges() {
   const { settings, loading } = useSocialProofSettings();
   if (loading) return null;
@@ -110,8 +196,9 @@ export function ProductTrustBadges() {
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: "6px 12px",
-        marginTop: 10,
+        gap: "4px 10px",
+        marginTop: 6,
+        justifyContent: "center",
       }}
     >
       {badges.map((b) => (
@@ -121,7 +208,7 @@ export function ProductTrustBadges() {
             display: "inline-flex",
             alignItems: "center",
             gap: 5,
-            fontSize: 10.5,
+            fontSize: 10,
             fontWeight: 600,
             color: "var(--ink-mute)",
           }}

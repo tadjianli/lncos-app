@@ -5,20 +5,22 @@
  * expandable editorial accordions, routine carousel, sticky CTA.
  */
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { ProductGallery } from "@/components/commerce/ProductGallery";
-import { ProductReviewsSection } from "@/components/commerce/ProductReviewsSection";
+import { ProductReviewsSection, ProductReviewsSummary } from "@/components/commerce/ProductReviewsSection";
 import { ProductBeforeAfterSection } from "@/components/commerce/ProductBeforeAfterSection";
 import {
   ProductLiveViewers,
   ProductSalesCounter,
   ProductStockAlert,
   ProductTrustBadges,
+  ProductReassuranceLines,
+  ProductDeliveryTrustBlock,
 } from "@/components/social-proof/ProductSocialProof";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
@@ -233,11 +235,13 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
     [p.sectionToggles]
   );
   const usageTips = useMemo(() => nonEmptyLines(p.usageTips), [p.usageTips]);
+  const benefitLines = useMemo(() => nonEmptyLines(p.benefits), [p.benefits]);
   const ingredientLines = useMemo(() => nonEmptyLines(p.ingredients), [p.ingredients]);
   const extraSections = useMemo(
     () => normalizeExtraSections(p.extraSections).filter((s) => s.enabled && extraSectionHasContent(s)),
     [p.extraSections]
   );
+  const showBenefits = sectionToggles.benefits && benefitLines.length > 0;
   const showDescription = sectionToggles.description && Boolean(p.desc?.trim());
   const showUsageTips = sectionToggles.usageTips && usageTips.length > 0;
   const showIngredients = sectionToggles.ingredients && ingredientLines.length > 0;
@@ -262,6 +266,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const [openSections, setOpenSections] = useState<Set<string>>(
     () => new Set(["description"])
   );
+  const [galleryInView, setGalleryInView] = useState(true);
+  const galleryRef = useRef<HTMLElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const addToCart = useStore((s) => s.addToCart);
   const toggleFav = useStore((s) => s.toggleFav);
   const favs = useStore((s) => s.favs);
@@ -279,6 +286,19 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
     setActiveImg(0);
     setQty(1);
   }, [selectedVariant?.id, p.id]);
+
+  useEffect(() => {
+    const gallery = galleryRef.current;
+    const root = scrollRef.current;
+    if (!gallery || !root) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setGalleryInView(entry.isIntersecting && entry.intersectionRatio > 0.15),
+      { root, threshold: [0, 0.15, 0.5, 1] }
+    );
+    observer.observe(gallery);
+    return () => observer.disconnect();
+  }, [p.id]);
 
   const setGalleryIndex = useCallback((i: number) => setActiveImg(i), []);
 
@@ -307,6 +327,27 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   }
 
   const totalPrice = (displayPrice * qty).toFixed(2);
+  const isBestSeller = p.tag === "Best-seller" || p.homeVisibility?.best_seller;
+
+  const scrollToReviews = useCallback(() => {
+    const el = document.getElementById("product-reviews");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const shareData = { title: p.name, text: p.name, url };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        showToast("Lien copié ✨");
+      }
+    } catch {
+      /* annulation utilisateur */
+    }
+  }, [p.name, showToast]);
 
   return (
     <div
@@ -337,8 +378,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
         }}
       />
 
-      {/* ── Floating controls ── */}
+      {/* ── Floating controls (zone galerie uniquement) ── */}
       <div
+        className={`pd-float-controls${galleryInView ? "" : " is-hidden"}`}
         style={{
           position: "absolute",
           top: "var(--safe-header-top)",
@@ -376,6 +418,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             type="button"
             className="mobile-screen-header__back mobile-screen-header__back--floating"
             aria-label="Partager"
+            onClick={handleShare}
           >
             <Icon name="share" size={18} />
           </button>
@@ -384,11 +427,13 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
 
       {/* ── Scrollable body ── */}
       <div
+        ref={scrollRef}
         className="noscroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 90 }}
+        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 82 }}
       >
 
         <ProductGallery
+          sectionRef={galleryRef}
           images={gallery}
           activeIndex={activeImg}
           onActiveIndexChange={setGalleryIndex}
@@ -423,40 +468,32 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
           </h1>
 
           {/* Category + vol */}
-          <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 10 }}>
             {p.cat} · {p.ml}
           </div>
 
-          {/* Rating row */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 14,
-            }}
-          >
-            <div style={{ display: "flex", gap: 2 }}>
-              {[0, 1, 2, 3, 4].map((s) => (
-                <Icon
-                  key={s}
-                  name="star"
-                  size={14}
-                  color={s < Math.round(p.rating) ? "var(--gold)" : "var(--charcoal-3)"}
-                  fill={s < Math.round(p.rating) ? "var(--gold)" : "var(--charcoal-3)"}
-                />
-              ))}
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
-              {p.rating}
+          {isBestSeller && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                marginBottom: 12,
+                padding: "4px 11px",
+                borderRadius: "var(--r-pill)",
+                background: "rgba(212,175,55,.12)",
+                border: "1px solid rgba(212,175,55,.28)",
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: ".06em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+              }}
+            >
+              <Icon name="star" size={11} color="var(--gold)" fill="var(--gold)" />
+              Best-seller
             </span>
-            <span style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>
-              ({p.reviews} avis)
-            </span>
-          </div>
-
-          <ProductLiveViewers productId={p.id} />
-          <ProductStockAlert stock={displayStock} />
+          )}
 
           {/* Price row */}
           <div
@@ -498,15 +535,8 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             )}
           </div>
 
-          {/* SKU */}
-          {displaySku && (
-            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginBottom: 12, letterSpacing: ".06em" }}>
-              Réf. {displaySku}
-            </div>
-          )}
-
           {/* Stock indicator */}
-          <div style={{ marginBottom: 22 }}>
+          <div style={{ marginBottom: 14 }}>
             {outOfStock ? (
               <span
                 style={{
@@ -578,6 +608,24 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               </span>
             )}
           </div>
+
+          <ProductReassuranceLines />
+          <ProductStockAlert stock={displayStock} />
+
+          <ProductReviewsSummary
+            productId={p.id}
+            fallbackRating={p.rating}
+            fallbackCount={p.reviews}
+            onViewReviews={scrollToReviews}
+          />
+
+          {displaySku && (
+            <div style={{ fontSize: 11, color: "var(--ink-mute)", marginBottom: 14, letterSpacing: ".06em" }}>
+              Réf. {displaySku}
+            </div>
+          )}
+
+          <ProductLiveViewers productId={p.id} />
 
           <VariantSwatches
             product={p}
@@ -655,6 +703,17 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               </button>
             </div>
           </div>
+
+          {showBenefits && (
+            <div className="pd-benefits" aria-label="Bénéfices produit">
+              {benefitLines.map((line) => (
+                <div key={line} className="pd-benefits-item">
+                  <Icon name="check" size={14} color="var(--pink)" stroke={2.5} />
+                  <span>{line}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ── Expandable editorial sections ── */}
           <div
@@ -800,63 +859,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </div>
           )}
 
-          {/* ── Delivery info ── */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              padding: "16px 16px",
-              borderRadius: "var(--r-md)",
-              background: "var(--charcoal)",
-              marginBottom: 30,
-              border: "1px solid rgba(255,255,255,.05)",
-            }}
-          >
-            {[
-              { i: "truck",   t: "Livraison offerte",     s: "dès 50 € · 2-3 jours ouvrés" },
-              { i: "sparkle", t: "Échantillon offert",    s: "avec chaque commande" },
-              { i: "clock",   t: "Retours sous 30 jours", s: "satisfait ou remboursé" },
-            ].map((d) => (
-              <div key={d.i} style={{ display: "flex", alignItems: "center", gap: 13 }}>
-                <span
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 11,
-                    background: "rgba(212,175,55,.1)",
-                    display: "grid",
-                    placeItems: "center",
-                    flex: "0 0 auto",
-                  }}
-                >
-                  <Icon
-                    name={d.i as "truck" | "sparkle" | "clock"}
-                    size={18}
-                    color="var(--gold)"
-                  />
-                </span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
-                    {d.t}
-                  </div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 1 }}>
-                    {d.s}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <ProductReviewsSection
-            productId={p.id}
-            fallbackRating={p.rating}
-            fallbackCount={p.reviews}
-          />
-
-          <ProductBeforeAfterSection productId={p.id} />
-
-          {/* ── Routine associée ── */}
+          {/* ── Routine associée (cross-sell avant avis) ── */}
           {routine.length > 0 && (
             <div style={{ marginBottom: 30 }}>
               <div
@@ -930,55 +933,29 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </div>
           )}
 
+          <ProductDeliveryTrustBlock />
+
+          <ProductBeforeAfterSection productId={p.id} />
+
+          <ProductReviewsSection
+            productId={p.id}
+            fallbackRating={p.rating}
+            fallbackCount={p.reviews}
+            sectionId="product-reviews"
+          />
+
         </div>
       </div>
 
       {/* ── Sticky add bar ── */}
-      <div
-        style={{
-          flexShrink: 0,
-          padding: "12px 16px",
-          paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))",
-          background: "rgba(10,10,10,.96)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(212,175,55,.14)",
-        }}
-      >
+      <div className="pd-sticky-bar">
         <ProductSalesCounter productId={p.id} />
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        {/* Price total */}
-        <div style={{ flex: "0 0 auto" }}>
-          <div
-            style={{
-              fontSize: 10,
-              color: "var(--ink-mute)",
-              fontWeight: 500,
-              marginBottom: 2,
-              letterSpacing: ".04em",
-            }}
-          >
-            TOTAL
-          </div>
-          <div
-            style={{
-              fontSize: 19,
-              fontWeight: 800,
-              color: "var(--ink)",
-              letterSpacing: "-.01em",
-            }}
-          >
-            {totalPrice} €
-          </div>
-        </div>
-
-        {/* Add to cart button */}
         <button
           onClick={handleAdd}
           disabled={outOfStock}
           style={{
-            flex: 1,
-            height: 52,
+            width: "100%",
+            height: 46,
             borderRadius: "var(--r-pill)",
             background: outOfStock
               ? "rgba(255,255,255,.08)"
@@ -988,17 +965,17 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             color: outOfStock ? "var(--ink-mute)" : added ? "#fff" : "#3a1020",
             fontSize: 14,
             fontWeight: 700,
-            letterSpacing: ".02em",
+            letterSpacing: ".01em",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 9,
+            gap: 8,
             transition: "background 0.3s cubic-bezier(.22,.68,0,1)",
             boxShadow: outOfStock
               ? "none"
               : added
                 ? "0 8px 20px -8px rgba(76,175,80,.5)"
-                : "0 12px 30px -12px rgba(239,169,192,.7)",
+                : "0 10px 26px -12px rgba(239,169,192,.65)",
             cursor: outOfStock ? "not-allowed" : "pointer",
             WebkitTapHighlightColor: "transparent",
             touchAction: "manipulation",
@@ -1010,17 +987,18 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             "Rupture de stock"
           ) : added ? (
             <>
-              <Icon name="check" size={18} color="#fff" stroke={2.5} />
-              Ajouté !
+              <Icon name="check" size={17} color="#fff" stroke={2.5} />
+              Ajouté au panier !
             </>
           ) : (
             <>
-              <Icon name="bag" size={18} />
+              <Icon name="bag" size={17} />
               Ajouter au panier
+              <span style={{ opacity: 0.55, fontWeight: 600 }}>•</span>
+              {totalPrice} €
             </>
           )}
         </button>
-        </div>
         <ProductTrustBadges />
       </div>
     </div>

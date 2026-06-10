@@ -30,6 +30,8 @@ export interface Product {
   ingredients: string[];
   /** Conseils d'utilisation — étapes numérotées */
   usageTips?: string[];
+  /** Bénéfices clés (fiche produit — avant description) */
+  benefits?: string[];
   /** Activation des sections accordion fiche produit */
   sectionToggles?: ProductSectionToggles;
   /** Sections éditoriales personnalisées */

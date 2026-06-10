@@ -16,6 +16,45 @@ interface ProductGalleryProps {
   onActiveIndexChange: (index: number) => void;
   alt: string;
   tag?: string | null;
+  /** Ref sur la section galerie (IntersectionObserver boutons flottants) */
+  sectionRef?: React.Ref<HTMLElement>;
+}
+
+type ImageFit = "contain" | "cover";
+
+function resolveImageFit(naturalWidth: number, naturalHeight: number): ImageFit {
+  if (!naturalWidth || !naturalHeight) return "contain";
+  const ratio = naturalWidth / naturalHeight;
+  /* Portrait lifestyle : éviter de couper le visage */
+  if (ratio < 0.92) return "contain";
+  /* Paysage / packshot : afficher le produit en entier */
+  if (ratio > 1.15) return "contain";
+  return "contain";
+}
+
+function GalleryHeroImage({ src, alt }: { src: string; alt: string }) {
+  const [fit, setFit] = useState<ImageFit>("contain");
+
+  return (
+    <FadeImage
+      src={src}
+      alt={alt}
+      fill
+      sizes="(max-width: 480px) 100vw, 480px"
+      className="pd-gallery-hero-img"
+      style={{
+        objectFit: fit,
+        objectPosition: "center center",
+      }}
+      fallbackLabel={alt}
+      priority
+      loading="eager"
+      unoptimized={src.includes("supabase.co")}
+      onLoadingComplete={(img) => {
+        setFit(resolveImageFit(img.naturalWidth, img.naturalHeight));
+      }}
+    />
+  );
 }
 
 export function ProductGallery({
@@ -24,14 +63,28 @@ export function ProductGallery({
   onActiveIndexChange,
   alt,
   tag,
+  sectionRef,
 }: ProductGalleryProps) {
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomThumb, setZoomThumb] = useState<number | null>(null);
   const touchStartX = useRef(0);
   const heroSrc = images[activeIndex] ?? images[0];
 
   useEffect(() => {
     if (activeIndex >= images.length) onActiveIndexChange(0);
   }, [activeIndex, images.length, onActiveIndexChange]);
+
+  useEffect(() => {
+    if (!heroSrc || typeof document === "undefined") return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = heroSrc;
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [heroSrc]);
 
   useEffect(() => {
     if (!zoomOpen) return;
@@ -68,9 +121,15 @@ export function ProductGallery({
     if (e.key === "ArrowRight") goNext();
   }
 
+  function selectThumb(i: number) {
+    onActiveIndexChange(i);
+    setZoomThumb(i);
+    window.setTimeout(() => setZoomThumb(null), 280);
+  }
+
   if (!heroSrc) {
     return (
-      <section className="pd-gallery" aria-label="Galerie produit">
+      <section ref={sectionRef} className="pd-gallery" aria-label="Galerie produit">
         <div className="pd-gallery-hero" style={{ cursor: "default" }}>
           <div className="pd-gallery-hero-inner">
             <ProductImagePlaceholder label={alt} className="prod-img-placeholder--hero" />
@@ -90,7 +149,7 @@ export function ProductGallery({
 
   return (
     <>
-      <section className="pd-gallery" aria-label="Galerie produit">
+      <section ref={sectionRef} className="pd-gallery" aria-label="Galerie produit">
         <button
           type="button"
           className="pd-gallery-hero"
@@ -100,17 +159,7 @@ export function ProductGallery({
           aria-label="Agrandir l'image"
         >
           <div className="pd-gallery-hero-inner" key={heroSrc}>
-            <FadeImage
-              src={heroSrc}
-              alt={alt}
-              fill
-              sizes="(max-width: 480px) 100%, 480px"
-              className="pd-gallery-hero-img"
-              style={{ objectFit: "cover" }}
-              fallbackLabel={alt}
-              priority
-              unoptimized={heroSrc.includes("supabase.co")}
-            />
+            <GalleryHeroImage src={heroSrc} alt={alt} />
           </div>
 
           <div className="pd-gallery-hero-overlay" aria-hidden />
@@ -145,15 +194,16 @@ export function ProductGallery({
                 role="tab"
                 aria-selected={activeIndex === i}
                 aria-label={`Vue ${i + 1}`}
-                className={`pd-gallery-thumb${activeIndex === i ? " is-active" : ""}`}
-                onClick={() => onActiveIndexChange(i)}
+                className={`pd-gallery-thumb${activeIndex === i ? " is-active" : ""}${zoomThumb === i ? " is-zooming" : ""}`}
+                onClick={() => selectThumb(i)}
               >
                 <FadeImage
                   src={src}
                   alt={`${alt} — vue ${i + 1}`}
                   fill
-                  sizes="72px"
-                  style={{ objectFit: "cover" }}
+                  sizes="80px"
+                  loading="lazy"
+                  style={{ objectFit: "cover", objectPosition: "center center" }}
                   unoptimized={src.includes("supabase.co")}
                 />
               </button>
@@ -218,6 +268,7 @@ export function ProductGallery({
                 src={heroSrc}
                 alt={alt}
                 className="pd-lightbox-img"
+                style={{ objectPosition: "center center" }}
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

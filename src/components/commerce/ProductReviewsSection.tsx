@@ -123,14 +123,83 @@ function ReviewCard({ review }: { review: PublicReview }) {
   );
 }
 
-export function ProductReviewsSection({
+function ReviewStars({ rating, size = 14 }: { rating: number; size?: number }) {
+  return <Stars rating={rating} size={size} />;
+}
+
+export function ProductReviewsSummary({
   productId,
   fallbackRating,
   fallbackCount,
+  onViewReviews,
 }: {
   productId: string;
   fallbackRating: number;
   fallbackCount: number;
+  onViewReviews: () => void;
+}) {
+  const { loading, count, avg } = useProductReviews(productId);
+  const displayCount = count > 0 ? count : fallbackCount;
+  const displayAvg = count > 0 ? avg : fallbackRating;
+  if (!loading && displayCount === 0) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onViewReviews}
+      className="pd-reviews-summary"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        flexWrap: "wrap",
+        width: "100%",
+        margin: "0 0 18px",
+        padding: "10px 12px",
+        borderRadius: "var(--r-sm)",
+        background: "rgba(212,175,55,.06)",
+        border: "1px solid rgba(212,175,55,.14)",
+        cursor: "pointer",
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
+        textAlign: "left",
+      }}
+    >
+      <ReviewStars rating={displayAvg} size={13} />
+      <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>
+        {displayAvg.toFixed(1)}
+      </span>
+      <span style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>
+        ({displayCount} avis)
+      </span>
+      <span
+        style={{
+          marginLeft: "auto",
+          fontSize: 12,
+          fontWeight: 700,
+          color: "var(--gold)",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        Voir les avis
+        <Icon name="chevD" size={14} color="var(--gold)" />
+      </span>
+    </button>
+  );
+}
+
+export function ProductReviewsSection({
+  productId,
+  fallbackRating,
+  fallbackCount,
+  sectionId = "product-reviews",
+}: {
+  productId: string;
+  fallbackRating: number;
+  fallbackCount: number;
+  sectionId?: string;
 }) {
   const { reviews, loading, count, avg } = useProductReviews(productId);
   const displayCount = count > 0 ? count : fallbackCount;
@@ -138,7 +207,7 @@ export function ProductReviewsSection({
   if (!loading && reviews.length === 0 && fallbackCount === 0) return null;
 
   return (
-    <section style={{ marginTop: 28, paddingTop: 8 }}>
+    <section id={sectionId} style={{ marginTop: 28, paddingTop: 8, scrollMarginTop: 80 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "var(--ink)" }}>Avis clients</h3>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -221,6 +221,7 @@ function dbToProduct(r: DbProductWithVariants): Product {
     desc: r.description,
     ingredients: r.ingredients ?? [],
     usageTips: r.usage_tips ?? [],
+    benefits: r.benefits ?? [],
     sectionToggles: normalizeSectionToggles(r.section_toggles),
     extraSections: normalizeExtraSections(r.extra_sections),
     commitments: normalizeCommitments(r.commitments),
@@ -254,6 +255,7 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
   if (p.variants !== undefined) db.variants = p.variants;
   if (p.ingredients !== undefined) db.ingredients = p.ingredients;
   if (p.usageTips !== undefined) db.usage_tips = p.usageTips;
+  if (p.benefits !== undefined) db.benefits = p.benefits;
   if (p.sectionToggles !== undefined) db.section_toggles = p.sectionToggles as unknown as Json;
   if (p.extraSections !== undefined) db.extra_sections = p.extraSections as unknown as Json;
   if (p.commitments !== undefined) db.commitments = p.commitments as unknown as Json;
@@ -694,6 +696,7 @@ export function useProducts() {
       variants: variantNames,
       ingredients: product.ingredients,
       usage_tips: product.usageTips ?? [],
+      benefits: product.benefits ?? [],
       section_toggles: (product.sectionToggles ?? DEFAULT_SECTION_TOGGLES) as unknown as Json,
       extra_sections: (product.extraSections ?? []) as unknown as Json,
       commitments: (product.commitments ?? []) as unknown as Json,
