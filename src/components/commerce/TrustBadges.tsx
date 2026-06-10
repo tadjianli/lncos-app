@@ -14,7 +14,7 @@ const REASSURANCE_CARDS = [
 
 export function TrustBadges() {
   return (
-    <section className="trust-badges" aria-label="Garanties et moyens de paiement">
+    <section className="trust-badges" aria-label="Garanties produit">
       <div className="trust-badges__cards">
         {REASSURANCE_CARDS.map((card) => (
           <div key={card.title} className="trust-badges__card">

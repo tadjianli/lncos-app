@@ -2694,43 +2694,73 @@
   max-width: 100%;
 }
 
-/* ─── Moyens de paiement — bande premium minimaliste ─── */
+/* ─── Moyens de paiement — premium Sephora / Apple Store ─── */
 
 .payment-methods {
-  --payment-logo-h: 22px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  --payment-logo-h: clamp(14px, 3.6vw, 20px);
+  --payment-logo-gap: clamp(14px, 4.2vw, 28px);
+  background: transparent;
+  margin-top: 14px;
+  padding: 14px 0 2px;
 }
 
-.payment-methods__heading {
-  margin: 0 0 10px;
-  text-align: center;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+.payment-methods__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 16px);
+  margin: 0 0 16px;
+  padding: 0 4px;
+}
+
+.payment-methods__rule {
+  flex: 1 1 0;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.55) 20%,
+    rgba(212, 175, 55, 0.55) 80%,
+    transparent
+  );
+}
+
+.payment-methods__title {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: clamp(8.5px, 2.4vw, 10px);
+  font-weight: 500;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .payment-methods__list {
   list-style: none;
-  margin: 0 auto;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, auto);
+  margin: 0;
+  padding: 0 2px;
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  justify-items: center;
-  gap: 14px 32px;
-  max-width: 100%;
+  gap: var(--payment-logo-gap);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.payment-methods__list::-webkit-scrollbar {
+  display: none;
 }
 
 .payment-methods__item {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 0;
 }
 
 .payment-methods__logo {
@@ -2738,50 +2768,35 @@
   align-items: center;
   justify-content: center;
   height: var(--payment-logo-h);
-  opacity: 0.82;
+  background: none;
+  border: none;
+  box-shadow: none;
 }
 
 .payment-methods__svg {
   display: block;
   height: var(--payment-logo-h);
   width: auto;
-  max-width: 100%;
+  max-width: none;
+  background: none;
+  border: none;
+  box-shadow: none;
+  filter: none;
 }
 
-@media (min-width: 380px) {
-  .payment-methods__list {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
-    gap: 22px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 2px 4px;
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 12px,
-      #000 calc(100% - 12px),
-      transparent 100%
-    );
+@media (min-width: 400px) {
+  .payment-methods {
+    margin-top: 16px;
+    padding-top: 16px;
   }
 
-  .payment-methods__list::-webkit-scrollbar {
-    display: none;
+  .payment-methods__header {
+    margin-bottom: 18px;
   }
 
-  .payment-methods__item {
-    flex: 0 0 auto;
-  }
-}
-
-@media (min-width: 420px) {
   .payment-methods__list {
     overflow-x: visible;
-    mask-image: none;
-    gap: 24px;
+    justify-content: center;
   }
 }
 
