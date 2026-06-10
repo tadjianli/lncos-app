@@ -11,7 +11,8 @@ export interface ProductDraft {
   variants: ProductVariant[];
 }
 
-const LOCAL_IMG = (id: string) => `/assets/products/${id}.png`;
+const PRODUCT_PLACEHOLDER = "/assets/icon-192.png";
+const LOCAL_IMG = (_id: string) => PRODUCT_PLACEHOLDER;
 
 export function isProductPublishedForStorefront(
   product: Pick<Product, "active">

@@ -117,7 +117,9 @@ function dbToPopup(r: DbPopup): Popup {
     image: r.image,
     imageId: r.image_id,
     delaySec: r.delay_sec,
-    trigger: r.trigger_type,
+    trigger: (r as { trigger_type?: string; trigger?: string }).trigger_type
+      ?? (r as { trigger?: string }).trigger
+      ?? "delay",
     frequency: freq,
     audience: r.audience,
     device: r.device,
@@ -1149,17 +1151,7 @@ export async function validatePromoCode(
 }
 
 /** Compute item discount (excludes shipping). */
-export function computePromoDiscount(promo: Promo, subtotal: number): number {
-  if (promo.type === "shipping") return 0;
-  if (promo.type === "percentage") return parseFloat((subtotal * (promo.value / 100)).toFixed(2));
-  if (promo.type === "fixed") return Math.min(promo.value, subtotal);
-  return 0;
-}
-
-/** True when the promo grants free shipping (either type=shipping or freeShipping flag). */
-export function promoGrantsFreeShipping(promo: Promo): boolean {
-  return promo.type === "shipping" || promo.freeShipping;
-}
+export { computePromoDiscount, promoGrantsFreeShipping } from "@/lib/promotions";
 
 /* ─── Product reviews (admin) ───────────────────────────────────────────── */
 

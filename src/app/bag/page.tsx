@@ -401,7 +401,7 @@ function CartScreen({
           <div style={{ fontSize: 13, color: "var(--ink-mute)", lineHeight: 1.5, marginBottom: 26 }}>
             Découvrez nos best-sellers et offrez-vous un moment de beauté.
           </div>
-          <Link href="/">
+          <Link href="/boutique">
             <PinkBtn style={{ width: "auto", padding: "14px 34px" }}>Découvrir la boutique</PinkBtn>
           </Link>
         </div>

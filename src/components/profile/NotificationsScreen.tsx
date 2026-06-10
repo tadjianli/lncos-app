@@ -281,7 +281,7 @@ function NotifCard({ n, allRead, delay = 0 }: { n: Notif; allRead: boolean; dela
               }}
             >
               <FadeImage
-                src="/products/serum-eclat.jpg"
+                src="/assets/icon-192.png"
                 alt="Commande"
                 width={40}
                 height={40}
@@ -350,7 +350,7 @@ function NotifCard({ n, allRead, delay = 0 }: { n: Notif; allRead: boolean; dela
               }}
             >
               <FadeImage
-                src="/products/masque-argile.jpg"
+                src="/assets/icon-192.png"
                 alt="Nouveau produit"
                 width={44}
                 height={44}

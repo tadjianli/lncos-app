@@ -11,7 +11,7 @@ import { products } from "@/lib/data";
 const REELS = [
   {
     id: 1,
-    img: "/assets/products/serum-eclat.png",
+    img: "/assets/icon-192.png",
     title: "Rituel Éclat Parfait",
     creator: "@lncos_beaute",
     likes: "4.2K",
@@ -23,7 +23,7 @@ const REELS = [
   },
   {
     id: 2,
-    img: "/assets/products/parfum-noir.png",
+    img: "/assets/icon-192.png",
     title: "Nuit d'Or — Le Parfum",
     creator: "@lncos_beaute",
     likes: "8.7K",
@@ -35,7 +35,7 @@ const REELS = [
   },
   {
     id: 3,
-    img: "/assets/products/rouge-mat.png",
+    img: "/assets/icon-192.png",
     title: "Rouge Matte Perfection",
     creator: "@lncos_beaute",
     likes: "6.3K",
@@ -47,7 +47,7 @@ const REELS = [
   },
   {
     id: 4,
-    img: "/assets/products/masque-argile.png",
+    img: "/assets/icon-192.png",
     title: "Masque Argile Rose",
     creator: "@lncos_beaute",
     likes: "3.9K",

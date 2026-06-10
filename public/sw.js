@@ -8,7 +8,7 @@ const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-images`;
 const FONT_CACHE = `${CACHE_VERSION}-fonts`;
 
-const SHELL_URLS = ["/", "/discover", "/bag", "/favorites", "/profile", "/rdv", "/offline"];
+const SHELL_URLS = ["/", "/boutique", "/discover", "/bag", "/favorites", "/profile", "/rdv", "/offline"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

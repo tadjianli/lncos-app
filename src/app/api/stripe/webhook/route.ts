@@ -19,7 +19,11 @@ export async function POST(req: Request) {
   try {
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!secret) {
-      console.warn("[stripe/webhook] STRIPE_WEBHOOK_SECRET not set — skipping signature verification");
+      if (process.env.NODE_ENV === "production") {
+        console.error("[stripe/webhook] STRIPE_WEBHOOK_SECRET required in production");
+        return NextResponse.json({ error: "Webhook non configuré" }, { status: 503 });
+      }
+      console.warn("[stripe/webhook] STRIPE_WEBHOOK_SECRET not set — skipping signature verification (dev only)");
     }
 
     // Must read raw body (not parsed JSON) for signature verification

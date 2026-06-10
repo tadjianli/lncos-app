@@ -40,8 +40,8 @@
   "shortcuts": [
     {
       "name": "Boutique",
-      "url": "/discover",
-      "description": "Parcourir les catégories"
+      "url": "/boutique",
+      "description": "Parcourir le catalogue"
     },
     {
       "name": "Rendez-vous",

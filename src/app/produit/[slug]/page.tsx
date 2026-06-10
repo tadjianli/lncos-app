@@ -36,7 +36,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       url: canonical,
       siteName: "LN COS",
       locale: "fr_FR",
-      type: "website",
+      type: "website" as const,
       ...(image ? { images: [{ url: image, alt: product.imageAlt ?? product.name }] } : {}),
     },
     twitter: {
