@@ -1,111 +1,160 @@
 "use client";
 
+import { useState } from "react";
 import type { Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
+import { GooglePreview } from "@/components/admin/GooglePreview";
+import { ProductSeoPreviewModal } from "@/components/admin/ProductSeoPreviewModal";
+import { SeoLengthBar } from "@/components/admin/SeoLengthBar";
 import {
   computeProductSeoScore,
+  countWords,
   generateSeoFieldsFromProduct,
-  generateSeoSlugFromName,
+  generateSeoImageFilename,
+  getGooglePreview,
   seoLevelColor,
   seoLevelLabel,
   slugifySeo,
 } from "@/lib/seo";
+
+function getClientSiteUrl(): string {
+  const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (env) return env;
+  if (typeof window !== "undefined") return window.location.origin;
+  return "https://lncos.re";
+}
 
 interface ProductSeoTabProps {
   form: Product;
   onChange: <K extends keyof Product>(key: K, val: Product[K]) => void;
 }
 
-export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
-  const score = computeProductSeoScore(form);
+const BREAKDOWN_LABELS: Record<keyof ReturnType<typeof computeProductSeoScore>["breakdown"], string> = {
+  title: "Titre SEO",
+  meta: "Meta Description",
+  slug: "Slug",
+  alt: "Alt Image",
+  description: "Description Produit",
+  keyword: "Mot-clé principal",
+  images: "Images",
+};
 
-  function fillSeoFields() {
+export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
+  const [showPreview, setShowPreview] = useState(false);
+  const score = computeProductSeoScore(form);
+  const google = getGooglePreview(form, getClientSiteUrl());
+  const seoFilename = generateSeoImageFilename(form.seoKeyword || form.name);
+  const descWords = countWords(form.desc);
+
+  function optimizeAutomatically() {
     if (!form.name.trim()) return;
     const generated = generateSeoFieldsFromProduct(form.name);
     onChange("seoKeyword", generated.seoKeyword);
     onChange("seoTitle", generated.seoTitle);
     onChange("metaDescription", generated.metaDescription);
     onChange("imageAlt", generated.imageAlt);
-    if (!form.seoSlug?.trim()) {
-      onChange("seoSlug", generated.seoSlug);
-    }
-  }
-
-  function generateSlug() {
-    if (!form.name.trim()) return;
-    onChange("seoSlug", generateSeoSlugFromName(form.name));
+    onChange("seoSlug", generated.seoSlug);
   }
 
   return (
     <div>
+      {/* Score + breakdown */}
       <div
         className="adm-card"
         style={{
           padding: 16,
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
+          marginBottom: 16,
           border: `1px solid ${seoLevelColor(score.level)}33`,
           background: `${seoLevelColor(score.level)}0d`,
         }}
       >
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-ink-mute)", textTransform: "uppercase", letterSpacing: ".06em" }}>
-            Score SEO
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-ink-mute)", textTransform: "uppercase", letterSpacing: ".06em" }}>
+              Score SEO professionnel
+            </div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 4 }}>
+              <span style={{ fontSize: 36, fontWeight: 800, color: seoLevelColor(score.level) }}>{score.score}</span>
+              <span style={{ fontSize: 14, color: "var(--adm-ink-mute)" }}>/ 100</span>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 4 }}>
-            <span style={{ fontSize: 32, fontWeight: 800, color: seoLevelColor(score.level) }}>{score.score}</span>
-            <span style={{ fontSize: 14, color: "var(--adm-ink-mute)" }}>/ 100</span>
+          <div
+            style={{
+              padding: "8px 16px",
+              borderRadius: 999,
+              background: seoLevelColor(score.level),
+              color: "#fff",
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            {seoLevelLabel(score.level)}
           </div>
         </div>
-        <div
-          style={{
-            padding: "6px 14px",
-            borderRadius: 999,
-            background: seoLevelColor(score.level),
-            color: "#fff",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          {seoLevelLabel(score.level)}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8 }}>
+          {(Object.entries(score.breakdown) as [keyof typeof score.breakdown, number][]).map(([key, pts]) => (
+            <div key={key} style={{ fontSize: 11.5, padding: "8px 10px", borderRadius: 8, background: "var(--adm-bg)" }}>
+              <div style={{ color: "var(--adm-ink-mute)", marginBottom: 2 }}>{BREAKDOWN_LABELS[key]}</div>
+              <div style={{ fontWeight: 800, color: "var(--adm-ink)" }}>{pts} pts</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-        <button type="button" className="adm-btn ghost sm" onClick={generateSlug} disabled={!form.name.trim()}>
-          <Icon name="tag" size={14} />
-          Générer le slug
-        </button>
-        <button type="button" className="adm-btn gold sm" onClick={fillSeoFields} disabled={!form.name.trim()}>
+      {/* Actions */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        <button type="button" className="adm-btn gold sm" onClick={optimizeAutomatically} disabled={!form.name.trim()}>
           <Icon name="sparkle" size={14} />
-          Remplir les champs SEO
+          Optimiser automatiquement
+        </button>
+        <button type="button" className="adm-btn ghost sm" onClick={() => setShowPreview(true)} disabled={!form.name.trim()}>
+          <Icon name="eye" size={14} />
+          Aperçu SEO
         </button>
       </div>
 
-      {([
-        { label: "Mot-clé principal", key: "seoKeyword" as const, placeholder: "palette contouring professionnelle" },
-        { label: "SEO Title", key: "seoTitle" as const, placeholder: "Palette Contouring Professionnelle | LN COS" },
-        { label: "URL Slug", key: "seoSlug" as const, placeholder: "palette-contouring-professionnelle" },
-        { label: "Alt image", key: "imageAlt" as const, placeholder: "Palette contouring professionnelle LN COS" },
-      ] as const).map(({ label, key, placeholder }) => (
-        <div key={key} className="ab-field">
-          <label>{label}</label>
-          <input
-            className="ab-input"
-            value={form[key] ?? ""}
-            onChange={(e) =>
-              onChange(
-                key,
-                key === "seoSlug" ? slugifySeo(e.target.value) : e.target.value
-              )
-            }
-            placeholder={placeholder}
-          />
-        </div>
-      ))}
+      {/* Google Preview — live */}
+      <div style={{ marginBottom: 20 }}>
+        <GooglePreview preview={google} />
+      </div>
+
+      {/* Fields */}
+      <div className="ab-field">
+        <label>Mot-clé principal</label>
+        <input
+          className="ab-input"
+          value={form.seoKeyword ?? ""}
+          onChange={(e) => onChange("seoKeyword", e.target.value)}
+          placeholder="cils magnétiques réutilisables"
+        />
+      </div>
+
+      <div className="ab-field">
+        <label>SEO Title</label>
+        <input
+          className="ab-input"
+          value={form.seoTitle ?? ""}
+          onChange={(e) => onChange("seoTitle", e.target.value)}
+          placeholder="Cils Magnétiques Réutilisables | LN COS"
+        />
+        <SeoLengthBar
+          label="Longueur titre"
+          length={(form.seoTitle ?? "").length}
+          displayMax={60}
+          idealMin={30}
+          idealMax={60}
+        />
+      </div>
+
+      <div className="ab-field">
+        <label>URL Slug</label>
+        <input
+          className="ab-input"
+          value={form.seoSlug ?? ""}
+          onChange={(e) => onChange("seoSlug", slugifySeo(e.target.value))}
+          placeholder="cils-magnetiques-reutilisables"
+        />
+      </div>
 
       <div className="ab-field">
         <label>Meta Description</label>
@@ -114,31 +163,98 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
           rows={3}
           value={form.metaDescription ?? ""}
           onChange={(e) => onChange("metaDescription", e.target.value)}
-          placeholder="Découvrez la palette contouring professionnelle LN COS. Livraison rapide à La Réunion."
+          placeholder="Découvrez nos cils magnétiques LN COS. Faciles à poser, réutilisables et confortables. Livraison rapide à La Réunion."
         />
-        <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
-          {(form.metaDescription ?? "").length} caractères · idéal 120–160
+        <SeoLengthBar
+          label="Longueur meta"
+          length={(form.metaDescription ?? "").length}
+          displayMax={160}
+          idealMin={120}
+          idealMax={160}
+        />
+      </div>
+
+      <div className="ab-field">
+        <label>Alt image</label>
+        <input
+          className="ab-input"
+          value={form.imageAlt ?? ""}
+          onChange={(e) => onChange("imageAlt", e.target.value)}
+          placeholder="Cils magnétiques réutilisables LN COS"
+        />
+      </div>
+
+      {/* SEO Image */}
+      <div className="adm-card" style={{ padding: 14, marginBottom: 18 }}>
+        <div className="adm-form-section-title" style={{ marginTop: 0 }}>SEO Image</div>
+        <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 8 }}>
+          Nom de fichier recommandé pour l&apos;upload :
+        </div>
+        <code
+          style={{
+            display: "block",
+            padding: "10px 12px",
+            borderRadius: 8,
+            background: "var(--adm-bg)",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--adm-ink)",
+            marginBottom: 10,
+          }}
+        >
+          {seoFilename}
+        </code>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {score.checks
+            .filter((c) => c.id === "file-opt" || c.id === "file-kw")
+            .map((check) => (
+              <div
+                key={check.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12.5,
+                  color: check.ok ? "#2F9E68" : "var(--adm-ink-mute)",
+                }}
+              >
+                <Icon name={check.ok ? "check" : "x"} size={14} color={check.ok ? "#2F9E68" : "var(--adm-ink-mute)"} />
+                {check.label}
+              </div>
+            ))}
         </div>
       </div>
 
-      <div className="adm-form-section-title" style={{ marginTop: 8 }}>Analyse automatique</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {score.checks.map((check) => (
-          <div
-            key={check.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 12.5,
-              color: check.ok ? "#2F9E68" : "var(--adm-ink-mute)",
-            }}
-          >
-            <Icon name={check.ok ? "check" : "x"} size={14} color={check.ok ? "#2F9E68" : "var(--adm-ink-mute)"} />
-            {check.label}
-          </div>
-        ))}
+      {/* Description stats */}
+      <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 16 }}>
+        Description produit : <strong>{descWords} mots</strong> · objectif &gt; 300 mots pour un score maximal
       </div>
+
+      {/* Advanced analysis */}
+      <div className="adm-form-section-title">Analyse SEO avancée</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+        {score.checks
+          .filter((c) => !c.id.startsWith("file-"))
+          .map((check) => (
+            <div
+              key={check.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12.5,
+                color: check.ok ? "#2F9E68" : "var(--adm-ink-mute)",
+              }}
+            >
+              <Icon name={check.ok ? "check" : "x"} size={14} color={check.ok ? "#2F9E68" : "var(--adm-ink-mute)"} />
+              {check.label}
+            </div>
+          ))}
+      </div>
+
+      {showPreview && (
+        <ProductSeoPreviewModal product={form} onClose={() => setShowPreview(false)} />
+      )}
     </div>
   );
 }
