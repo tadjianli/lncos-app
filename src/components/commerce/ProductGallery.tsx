@@ -1,7 +1,7 @@
 "use client";
 /**
- * LN COS — Galerie produit premium (Sephora / Shopify)
- * Hero grand format · miniatures · zoom lightbox · swipe mobile
+ * LN COS — Galerie produit (Shopify-style)
+ * Hero 1:1 pleine largeur · miniatures carrées · zoom lightbox · swipe mobile
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -20,21 +20,7 @@ interface ProductGalleryProps {
   sectionRef?: React.Ref<HTMLElement>;
 }
 
-type ImageFit = "contain" | "cover";
-
-function resolveImageFit(naturalWidth: number, naturalHeight: number): ImageFit {
-  if (!naturalWidth || !naturalHeight) return "contain";
-  const ratio = naturalWidth / naturalHeight;
-  /* Portrait lifestyle : éviter de couper le visage */
-  if (ratio < 0.92) return "contain";
-  /* Paysage / packshot : afficher le produit en entier */
-  if (ratio > 1.15) return "contain";
-  return "contain";
-}
-
 function GalleryHeroImage({ src, alt }: { src: string; alt: string }) {
-  const [fit, setFit] = useState<ImageFit>("contain");
-
   return (
     <FadeImage
       src={src}
@@ -42,17 +28,10 @@ function GalleryHeroImage({ src, alt }: { src: string; alt: string }) {
       fill
       sizes="(max-width: 480px) 100vw, 480px"
       className="pd-gallery-hero-img"
-      style={{
-        objectFit: fit,
-        objectPosition: "center center",
-      }}
       fallbackLabel={alt}
       priority
       loading="eager"
       unoptimized={src.includes("supabase.co")}
-      onLoadingComplete={(img) => {
-        setFit(resolveImageFit(img.naturalWidth, img.naturalHeight));
-      }}
     />
   );
 }
@@ -201,9 +180,9 @@ export function ProductGallery({
                   src={src}
                   alt={`${alt} — vue ${i + 1}`}
                   fill
-                  sizes="80px"
+                  sizes="72px"
+                  className="pd-gallery-thumb-img"
                   loading="lazy"
-                  style={{ objectFit: "cover", objectPosition: "center center" }}
                   unoptimized={src.includes("supabase.co")}
                 />
               </button>
@@ -268,7 +247,6 @@ export function ProductGallery({
                 src={heroSrc}
                 alt={alt}
                 className="pd-lightbox-img"
-                style={{ objectPosition: "center center" }}
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

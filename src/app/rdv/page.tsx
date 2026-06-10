@@ -91,7 +91,15 @@ function BookingConfirmationScreen({
           animation: "fadeIn .6s ease both",
         }}
       >
-        <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 32 }}>
+        <div
+          className="noscroll"
+          style={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            overflowY: "auto",
+            paddingBottom: "max(32px, env(safe-area-inset-bottom, 0px))",
+          }}
+        >
 
           {/* Success celebration header */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 60, paddingLeft: 18, paddingRight: 18 }}>
@@ -390,7 +398,7 @@ function BookingWizard({
   function isClosed(d: Date) { return d.getDay() === 0 || d.getDay() === 1; }
 
   return (
-    <div className="overlay-shell" style={{ animation: "slideUp .35s cubic-bezier(.2,.8,.2,1) both" }}>
+    <div className="overlay-shell overlay-shell--fixed" style={{ animation: "slideUp .35s cubic-bezier(.2,.8,.2,1) both" }}>
       <div className="mobile-screen-header" style={{ paddingBottom: 0 }}>
         <MobileBackButton onClick={back} />
         <div style={{ textAlign: "center", flex: 1, minWidth: 0 }}>
@@ -779,7 +787,7 @@ function BookingWizard({
       </div>
 
       {/* Footer CTA */}
-      <div style={{ flex: "0 0 auto", padding: "12px 18px 16px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
+      <div className="bottom-action-bar">
         <PinkBtn
           onClick={next}
           disabled={
@@ -788,6 +796,7 @@ function BookingWizard({
             (step === 5 && !draft.name.trim())
           }
           icon={step === 5 ? "check" : "arrowR"}
+          compact
         >
           {step === 5
             ? deposit > 0
@@ -804,7 +813,16 @@ function BookingWizard({
 function ConfirmOverlay({ draft, onClose }: { draft: Draft; onClose: () => void }) {
   const svc = services.find((s) => s.id === draft.serviceId)!;
   return (
-    <div className="overlay-shell" style={{ zIndex: 95, alignItems: "center", justifyContent: "center", padding: "40px 24px", animation: "fadeIn .3s ease both" }}>
+    <div
+      className="overlay-shell overlay-shell--fixed"
+      style={{
+        zIndex: 95,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 24px max(40px, env(safe-area-inset-bottom, 0px))",
+        animation: "fadeIn .3s ease both",
+      }}
+    >
       <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--gold-grad)", display: "grid", placeItems: "center", marginBottom: 24 }}>
         <Icon name="check" size={36} color="#1a1306" stroke={2.5} />
       </div>

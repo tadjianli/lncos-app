@@ -86,7 +86,7 @@ export function ProductSalesCounter({ productId }: { productId: string }) {
       : `🔥 ${week} vente${week > 1 ? "s" : ""} cette semaine`;
 
   return (
-    <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--gold)", marginBottom: 8 }}>
+    <div className="bottom-action-bar__meta">
       {label}
     </div>
   );
@@ -192,28 +192,10 @@ export function ProductTrustBadges() {
   if (badges.length === 0) return null;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "4px 10px",
-        marginTop: 6,
-        justifyContent: "center",
-      }}
-    >
+    <div className="bottom-action-bar__trust">
       {badges.map((b) => (
-        <span
-          key={b.label}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            fontSize: 10,
-            fontWeight: 600,
-            color: "var(--ink-mute)",
-          }}
-        >
-          <Icon name={b.icon} size={11} color="var(--tone-green, #2F9E68)" stroke={2.5} />
+        <span key={b.label} className="bottom-action-bar__trust-item">
+          <Icon name={b.icon} size={10} color="var(--tone-green, #2F9E68)" stroke={2.5} />
           {b.label}
         </span>
       ))}

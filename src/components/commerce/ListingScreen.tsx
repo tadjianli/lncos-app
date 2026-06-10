@@ -112,10 +112,7 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
       </div>
 
       {/* Grid */}
-      <div
-        className="noscroll"
-        style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 16px 24px" }}
-      >
+      <div className="noscroll overlay-screen-scroll" style={{ padding: "4px 16px 16px" }}>
         <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
           {list.length} produit{list.length > 1 ? "s" : ""}
         </div>

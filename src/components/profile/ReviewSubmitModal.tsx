@@ -63,7 +63,6 @@ export function ReviewSubmitModal({
         background: "rgba(0,0,0,.72)",
         display: "grid",
         placeItems: "center",
-        padding: 20,
         boxSizing: "border-box",
       }}
       onClick={onClose}

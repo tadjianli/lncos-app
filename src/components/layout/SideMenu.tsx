@@ -68,7 +68,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
           borderRight: "1px solid rgba(212,175,55,.22)",
           display: "flex",
           flexDirection: "column",
-          padding: "calc(var(--safe-top) + 12px) 0 calc(26px + var(--safe-bottom)) 0",
+          padding: "calc(var(--safe-top) + 12px) 0 var(--safe-bottom) 0",
           /* Lux ease drawer — slightly longer for premium feel */
           animation: "drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both",
           /* Soft elevation shadow */

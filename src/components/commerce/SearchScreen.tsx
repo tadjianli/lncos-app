@@ -247,15 +247,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
       </div>
 
       {/* ── Scrollable body ── */}
-      <div
-        className="noscroll"
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,
-          overflowY: "auto",
-          padding: "4px 16px 24px",
-        }}
-      >
+      <div className="noscroll overlay-screen-scroll" style={{ padding: "4px 16px 16px" }}>
         {/* ── No query: discovery view ── */}
         {!hasQuery && (
           <>

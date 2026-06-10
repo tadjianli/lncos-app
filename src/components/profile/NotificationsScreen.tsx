@@ -480,15 +480,7 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
       />
 
       {/* Scroll container */}
-      <div
-        className="noscroll"
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,
-          overflowY: "auto",
-          padding: "0 18px 40px",
-        }}
-      >
+      <div className="noscroll overlay-screen-scroll" style={{ padding: "0 18px 16px" }}>
         <GroupLabel label="Aujourd'hui" first />
         {TODAY.map((n, i) => (
           <NotifCard key={`today-${i}`} n={n} allRead={allRead} delay={i * 0.05} />

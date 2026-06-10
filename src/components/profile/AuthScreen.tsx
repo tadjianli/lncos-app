@@ -66,7 +66,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
         style={{
           alignItems: "center",
           justifyContent: "center",
-          padding: "32px 28px",
+          padding: "32px 28px max(32px, env(safe-area-inset-bottom, 0px))",
           textAlign: "center",
         }}
       >
@@ -126,7 +126,14 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
       </div>
 
       {/* Body */}
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "24px 24px 32px" }}>
+      <div
+        className="noscroll"
+        style={{
+          flex: "1 1 auto",
+          overflowY: "auto",
+          padding: "24px 24px calc(24px + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         {/* Headline */}
         <div style={{ marginBottom: 28, textAlign: "center" }}>
           <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--gold-grad)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>

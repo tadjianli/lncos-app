@@ -270,10 +270,7 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
     <div className="overlay-screen">
       <SubHeader title="Paramètres" onBack={onClose} safeArea />
 
-      <div
-        className="noscroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "0 18px 40px" }}
-      >
+      <div className="noscroll overlay-screen-scroll" style={{ padding: "0 18px 16px" }}>
         {/* ── Compte ─────────────────────────────────────────────── */}
         <SectionTitle>Compte</SectionTitle>
         <div

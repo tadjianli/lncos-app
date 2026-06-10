@@ -52,16 +52,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 function ProductNotFoundView({ slug }: { slug: string }) {
   return (
     <AppShell>
-      <article
-        className="noscroll"
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,
-          overflowY: "auto",
-          padding: "48px 18px 32px",
-          textAlign: "center",
-        }}
-      >
+      <article className="product-page-fallback noscroll" style={{ textAlign: "center" }}>
         <h1 style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", margin: "0 0 12px" }}>
           Produit introuvable
         </h1>
@@ -130,10 +121,7 @@ export default async function ProduitPage({ params, searchParams }: Props) {
   return (
     <AppShell>
       <JsonLd data={productJsonLd} />
-      <article
-        className="noscroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "16px 18px 32px" }}
-      >
+      <article className="product-page-fallback noscroll">
         <h1 style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", margin: "0 0 8px" }}>
           {title.replace(/ \| LN COS$/, "")}
         </h1>

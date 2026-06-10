@@ -199,7 +199,7 @@ function ProductTag({ productRef, img, onTap }: ProductTagProps) {
       onClick={onTap}
       style={{
         position: "absolute",
-        bottom: 108,
+        bottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
         left: 16,
         right: 80,
         zIndex: 10,
@@ -451,7 +451,7 @@ function ReelCard({
           right: 72,
           bottom: 0,
           zIndex: 10,
-          padding: "0 16px 32px",
+          padding: "0 16px max(24px, env(safe-area-inset-bottom, 0px))",
         }}
       >
         {/* Creator row */}
@@ -579,7 +579,7 @@ function DotsIndicator({
     <div
       style={{
         position: "absolute",
-        bottom: 16,
+        bottom: "max(16px, env(safe-area-inset-bottom, 0px))",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 20,

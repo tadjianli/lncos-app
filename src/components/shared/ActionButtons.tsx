@@ -15,9 +15,11 @@ interface BtnProps {
   icon?: string;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  /** Barre d’action fixe — bouton plus compact (Sephora / Shopify) */
+  compact?: boolean;
 }
 
-export function PinkBtn({ children, onClick, style, icon, disabled, type = "button" }: BtnProps) {
+export function PinkBtn({ children, onClick, style, icon, disabled, type = "button", compact }: BtnProps) {
   return (
     <button
       type={type}
@@ -25,30 +27,31 @@ export function PinkBtn({ children, onClick, style, icon, disabled, type = "butt
       onClick={onClick}
       style={{
         width: "100%",
-        padding: "16px",
+        padding: compact ? "11px 14px" : "16px",
+        minHeight: compact ? "var(--bottom-action-cta-h, 40px)" : undefined,
         borderRadius: "var(--r-pill)",
         background: "var(--pink-grad)",
         color: "#3a1020",
         fontWeight: 700,
-        fontSize: "var(--fs-lg)",
+        fontSize: compact ? 13 : "var(--fs-lg)",
         letterSpacing: ".02em",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        boxShadow: "0 12px 30px -12px rgba(239,169,192,.7)",
+        boxShadow: compact ? "0 8px 22px -12px rgba(239,169,192,.65)" : "0 12px 30px -12px rgba(239,169,192,.7)",
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? "not-allowed" : "pointer",
         ...style,
       }}
     >
-      {icon && <Icon name={icon} size={19} stroke={2.2} />}
+      {icon && <Icon name={icon} size={compact ? 17 : 19} stroke={2.2} />}
       {children}
     </button>
   );
 }
 
-export function GoldBtn({ children, onClick, style, icon, disabled, type = "button" }: BtnProps) {
+export function GoldBtn({ children, onClick, style, icon, disabled, type = "button", compact }: BtnProps) {
   return (
     <button
       type={type}
@@ -56,24 +59,25 @@ export function GoldBtn({ children, onClick, style, icon, disabled, type = "butt
       onClick={onClick}
       style={{
         width: "100%",
-        padding: "16px",
+        padding: compact ? "11px 14px" : "16px",
+        minHeight: compact ? "var(--bottom-action-cta-h, 40px)" : undefined,
         borderRadius: "var(--r-pill)",
         background: "var(--gold-grad)",
         color: "#1a1306",
         fontWeight: 700,
-        fontSize: "var(--fs-lg)",
+        fontSize: compact ? 13 : "var(--fs-lg)",
         letterSpacing: ".02em",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        boxShadow: "0 12px 30px -12px rgba(212,175,55,.55)",
+        boxShadow: compact ? "0 8px 22px -12px rgba(212,175,55,.5)" : "0 12px 30px -12px rgba(212,175,55,.55)",
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? "not-allowed" : "pointer",
         ...style,
       }}
     >
-      {icon && <Icon name={icon} size={19} stroke={2.2} />}
+      {icon && <Icon name={icon} size={compact ? 17 : 19} stroke={2.2} />}
       {children}
     </button>
   );

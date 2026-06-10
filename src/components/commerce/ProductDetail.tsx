@@ -341,46 +341,12 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   }, [p.name, showToast]);
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 80,
-        animation: "sheetIn 0.42s cubic-bezier(0.22,0.68,0,1) both",
-        willChange: "transform",
-      }}
-    >
-      {/* ── Drag handle pill ── */}
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 36,
-          height: 4,
-          borderRadius: 999,
-          background: "rgba(255,255,255,.18)",
-          zIndex: 40,
-          pointerEvents: "none",
-        }}
-      />
+    <div className="pd-overlay">
+      <div className="pd-overlay__handle" aria-hidden />
 
-      {/* ── Floating controls (zone galerie uniquement) ── */}
+      {/* ── Header produit — sous la barre système iOS ── */}
       <div
-        className={`pd-float-controls${galleryInView ? "" : " is-hidden"}`}
-        style={{
-          position: "absolute",
-          top: "var(--safe-header-top)",
-          left: "max(16px, var(--safe-left))",
-          right: "max(16px, var(--safe-right))",
-          zIndex: 100,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
+        className={`pd-overlay__header pd-float-controls${galleryInView ? "" : " is-hidden"}`}
       >
         <MobileBackButton onClick={onClose} floating />
 
@@ -417,11 +383,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
       </div>
 
       {/* ── Scrollable body ── */}
-      <div
-        ref={scrollRef}
-        className="noscroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 82 }}
-      >
+      <div ref={scrollRef} className="pd-overlay__scroll noscroll">
 
         <ProductGallery
           sectionRef={galleryRef}
@@ -863,51 +825,24 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
       </div>
 
       {/* ── Sticky add bar ── */}
-      <div className="pd-sticky-bar">
+      <div className="bottom-action-bar">
         <ProductSalesCounter productId={p.id} />
         <button
+          type="button"
           onClick={handleAdd}
           disabled={outOfStock}
-          style={{
-            width: "100%",
-            height: 46,
-            borderRadius: "var(--r-pill)",
-            background: outOfStock
-              ? "rgba(255,255,255,.08)"
-              : added
-                ? "linear-gradient(135deg,#4CAF50,#388E3C)"
-                : "var(--pink-grad)",
-            color: outOfStock ? "var(--ink-mute)" : added ? "#fff" : "#3a1020",
-            fontSize: 14,
-            fontWeight: 700,
-            letterSpacing: ".01em",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            transition: "background 0.3s cubic-bezier(.22,.68,0,1)",
-            boxShadow: outOfStock
-              ? "none"
-              : added
-                ? "0 8px 20px -8px rgba(76,175,80,.5)"
-                : "0 10px 26px -12px rgba(239,169,192,.65)",
-            cursor: outOfStock ? "not-allowed" : "pointer",
-            WebkitTapHighlightColor: "transparent",
-            touchAction: "manipulation",
-            willChange: "background",
-            opacity: outOfStock ? 0.7 : 1,
-          }}
+          className={`pd-cta-btn${outOfStock ? " pd-cta-btn--disabled" : added ? " pd-cta-btn--success" : " pd-cta-btn--pink"}`}
         >
           {outOfStock ? (
             "Rupture de stock"
           ) : added ? (
             <>
-              <Icon name="check" size={17} color="#fff" stroke={2.5} />
+              <Icon name="check" size={16} color="#fff" stroke={2.5} />
               Ajouté au panier !
             </>
           ) : (
             <>
-              <Icon name="bag" size={17} />
+              <Icon name="bag" size={16} />
               Ajouter au panier
               <span style={{ opacity: 0.55, fontWeight: 600 }}>•</span>
               {totalPrice} €

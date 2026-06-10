@@ -323,8 +323,8 @@ function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () =>
       <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
         <StepConfirm orderRef={orderRef} />
       </div>
-      <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
-        <GoldBtn icon="home" onClick={onHome}>Retour à l&apos;accueil</GoldBtn>
+      <div className="bottom-action-bar bottom-action-bar--in-shell">
+        <GoldBtn icon="home" onClick={onHome} compact>Retour à l&apos;accueil</GoldBtn>
       </div>
     </div>
   );
@@ -555,8 +555,8 @@ function CartScreen({
         </div>
       </div>
 
-      <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
-        <PinkBtn icon="arrowR" onClick={onCheckout}>
+      <div className="bottom-action-bar bottom-action-bar--in-shell">
+        <PinkBtn icon="arrowR" onClick={onCheckout} compact>
           Passer la commande · {total.toFixed(2)} €
         </PinkBtn>
       </div>
@@ -728,8 +728,8 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
         </div>
       )}
 
-      <div style={{ flex: "0 0 auto", padding: "12px 16px 26px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
-        <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
+      <div className="bottom-action-bar bottom-action-bar--in-shell">
+        <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing} compact>
           {placing ? "Initialisation…" : step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
         </PinkBtn>
       </div>

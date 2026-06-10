@@ -333,8 +333,8 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
         ))}
       </div>
 
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto" }}>
-        <div style={{ padding: "4px 18px 32px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="noscroll overlay-screen-scroll">
+        <div style={{ padding: "4px 18px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
           {loading ? (
             // Skeleton
             Array.from({ length: 2 }).map((_, i) => (

@@ -86,10 +86,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
       <SubHeader title="Programme Fidélité" onBack={onClose} safeArea />
 
       {/* Scroll area */}
-      <div
-        className="noscroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", paddingBottom: 28 }}
-      >
+      <div className="noscroll overlay-screen-scroll" style={{ paddingBottom: 16 }}>
         <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* ── VIP Member Card ────────────────────────────────────────── */}
