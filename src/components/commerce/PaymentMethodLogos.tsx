@@ -128,16 +128,8 @@ const PAYMENT_LOGOS = [
 
 export function PaymentMethodLogos() {
   return (
-    <section className="payment-methods" aria-labelledby="payment-methods-title">
-      <div className="payment-methods__header">
-        <span className="payment-methods__rule" aria-hidden />
-        <h3 id="payment-methods-title" className="payment-methods__title">
-          Moyens de paiement
-        </h3>
-        <span className="payment-methods__rule" aria-hidden />
-      </div>
-
-      <ul className="payment-methods__list" aria-label="Moyens de paiement acceptés">
+    <section className="payment-methods" aria-label="Moyens de paiement acceptés">
+      <ul className="payment-methods__list">
         {PAYMENT_LOGOS.map(({ id, Logo }) => (
           <Logo key={id} />
         ))}
