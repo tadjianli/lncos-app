@@ -27,7 +27,7 @@ function measureOffset(navVisible: boolean): { offset: number; hasSticky: boolea
   });
 
   if (navVisible) {
-    for (const selector of [".bottom-nav-cart", ".bottom-nav-bar"]) {
+    for (const selector of [".bottom-nav-bar"]) {
       const node = document.querySelector(selector);
       if (!(node instanceof HTMLElement) || !isVisible(node)) continue;
       topmost = Math.min(topmost, node.getBoundingClientRect().top);
