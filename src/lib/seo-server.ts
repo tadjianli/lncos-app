@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { products as STATIC_PRODUCTS, type Product, type Category } from "@/lib/data";
 import type { ProductVariant } from "@/lib/product-catalog";
-import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-sections";
+import { normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-sections";
 import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
 import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
@@ -40,12 +40,10 @@ type DbProductRow = {
   stock: number;
   variants: string[];
   description: string;
-  ingredients: string[];
   usage_tips?: string[] | null;
   benefits?: string[] | null;
   section_toggles?: unknown;
   extra_sections?: unknown;
-  commitments?: unknown;
   active: boolean;
   image_url?: string | null;
   main_image_url?: string | null;
@@ -89,12 +87,10 @@ function mapProductRow(row: DbProductRow): Product {
     stock: row.stock,
     variants: richVariants.length > 0 ? richVariants.map((v) => v.name) : (row.variants ?? []),
     desc: row.description,
-    ingredients: row.ingredients ?? [],
     usageTips: row.usage_tips ?? [],
     benefits: row.benefits ?? [],
     sectionToggles: normalizeSectionToggles(row.section_toggles),
     extraSections: normalizeExtraSections(row.extra_sections),
-    commitments: normalizeCommitments(row.commitments),
     mainImageUrl: row.main_image_url ?? row.image_url ?? null,
     galleryImages: row.gallery_images?.length ? row.gallery_images : (row.thumbnail_images ?? []),
     videoUrl: row.video_url ?? null,

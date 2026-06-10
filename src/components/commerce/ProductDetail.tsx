@@ -37,10 +37,8 @@ import {
 import type { Product } from "@/lib/data";
 import {
   DEFAULT_SECTION_TOGGLES,
-  normalizeCommitments,
   normalizeExtraSections,
   normalizeSectionToggles,
-  visibleCommitments,
   type ProductExtraSection,
 } from "@/lib/product-sections";
 
@@ -236,7 +234,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   );
   const usageTips = useMemo(() => nonEmptyLines(p.usageTips), [p.usageTips]);
   const benefitLines = useMemo(() => nonEmptyLines(p.benefits), [p.benefits]);
-  const ingredientLines = useMemo(() => nonEmptyLines(p.ingredients), [p.ingredients]);
   const extraSections = useMemo(
     () => normalizeExtraSections(p.extraSections).filter((s) => s.enabled && extraSectionHasContent(s)),
     [p.extraSections]
@@ -244,12 +241,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const showBenefits = sectionToggles.benefits && benefitLines.length > 0;
   const showDescription = sectionToggles.description && Boolean(p.desc?.trim());
   const showUsageTips = sectionToggles.usageTips && usageTips.length > 0;
-  const showIngredients = sectionToggles.ingredients && ingredientLines.length > 0;
-  const commitments = useMemo(
-    () => visibleCommitments(normalizeCommitments(p.commitments)),
-    [p.commitments]
-  );
-  const showCommitments = sectionToggles.commitments && commitments.length > 0;
 
   const labels = variantLabels(p);
   const [selectedVariantName, setSelectedVariantName] = useState(labels[0] ?? "");
@@ -771,30 +762,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               </AccordionSection>
             )}
 
-            {showIngredients && (
-              <AccordionSection
-                title="Ingrédients"
-                open={openSections.has("ingredients")}
-                onToggle={() => toggleSection("ingredients")}
-              >
-                <BulletList items={ingredientLines} />
-                <div
-                  style={{
-                    marginTop: 12,
-                    padding: "10px 14px",
-                    borderRadius: "var(--r-sm)",
-                    background: "rgba(212,175,55,.04)",
-                    border: "1px solid rgba(212,175,55,.1)",
-                    fontSize: 11,
-                    color: "var(--ink-mute)",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  * Ingrédient d&apos;origine naturelle certifié. Liste non exhaustive.
-                </div>
-              </AccordionSection>
-            )}
-
             {extraSections.map((section) => (
               <AccordionSection
                 key={section.id}
@@ -806,58 +773,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               </AccordionSection>
             ))}
           </div>
-
-          {showCommitments && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-around",
-                gap: 8,
-                padding: "18px 0",
-                marginBottom: 24,
-                borderTop: "1px solid rgba(255,255,255,.07)",
-                borderBottom: "1px solid rgba(255,255,255,.07)",
-              }}
-            >
-              {commitments.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 8,
-                    flex: 1,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 14,
-                      background: "rgba(212,175,55,.08)",
-                      border: "1px solid rgba(212,175,55,.15)",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
-                  >
-                    <Icon name={c.icon} size={20} color="var(--gold)" />
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 600,
-                      color: "var(--ink-soft)",
-                      textAlign: "center",
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {c.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
 
           {/* ── Routine associée (cross-sell avant avis) ── */}
           {routine.length > 0 && (

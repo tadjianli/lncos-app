@@ -18,7 +18,7 @@ import { useHomeSectionsStore } from "./stores/home-sections-store";
 import type { Product, Category } from "./data";
 import type { ProductVariant } from "./product-catalog";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
-import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
+import { normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
 import type { ProductReview } from "./reviews";
 import {
@@ -57,12 +57,10 @@ function mapProduct(row: {
   stock: number;
   variants: string[];
   description: string;
-  ingredients: string[];
   usage_tips?: string[] | null;
   benefits?: string[] | null;
   section_toggles?: unknown;
   extra_sections?: unknown;
-  commitments?: unknown;
   active: boolean;
   image_url?: string | null;
   main_image_url?: string | null;
@@ -104,12 +102,10 @@ function mapProduct(row: {
     stock: row.stock,
     variants: richVariants.length > 0 ? richVariants.map((v) => v.name) : (row.variants ?? []),
     desc: row.description,
-    ingredients: row.ingredients ?? [],
     usageTips: row.usage_tips ?? [],
     benefits: row.benefits ?? [],
     sectionToggles: normalizeSectionToggles(row.section_toggles),
     extraSections: normalizeExtraSections(row.extra_sections),
-    commitments: normalizeCommitments(row.commitments),
     mainImageUrl: row.main_image_url ?? row.image_url ?? null,
     galleryImages: row.gallery_images?.length
       ? row.gallery_images

@@ -16,7 +16,7 @@ export interface ProductSeoFields {
   mainImageUrl?: string | null;
   imageUrl?: string | null;
   galleryImages?: string[];
-  ingredients?: string[];
+  benefits?: string[];
   usageTips?: string[];
   extraSections?: ProductExtraSection[];
   active?: boolean;
@@ -145,13 +145,13 @@ function hasSubheadings(fields: ProductSeoFields): boolean {
   const extras = fields.extraSections?.filter((s) => s.enabled && s.title.trim()) ?? [];
   if (extras.length > 0) return true;
   if ((fields.usageTips?.length ?? 0) > 0) return true;
-  if ((fields.ingredients?.length ?? 0) > 0) return true;
+  if ((fields.benefits?.length ?? 0) > 0) return true;
   const desc = fields.desc ?? "";
   return /^#{2,3}\s/m.test(desc) || /^[A-ZÀ-Ÿ][^\n]{2,40}$/m.test(desc);
 }
 
 function hasBulletLists(fields: ProductSeoFields): boolean {
-  if ((fields.ingredients?.length ?? 0) > 0) return true;
+  if ((fields.benefits?.length ?? 0) > 0) return true;
   if ((fields.usageTips?.length ?? 0) > 0) return true;
   return (fields.extraSections ?? []).some(
     (s) => s.enabled && (s.type === "list" || s.type === "steps") && s.items.some((i) => i.trim())

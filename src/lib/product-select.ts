@@ -3,7 +3,7 @@
  */
 
 const PRODUCT_SELECT_BASE =
-  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,usage_tips,section_toggles,extra_sections,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
 
 /** Schéma complet (après migration benefits) */
 export const PRODUCT_SELECT =

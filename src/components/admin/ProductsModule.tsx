@@ -9,8 +9,7 @@ import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGaller
 import { ProductMainImageEditor } from "@/components/admin/ProductMainImageEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
-import { ProductCommitmentsEditor } from "@/components/admin/ProductCommitmentsEditor";
-import { DEFAULT_COMMITMENTS, DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
+import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
 import { ProductBeforeAfterPanel } from "@/components/admin/ProductBeforeAfterPanel";
@@ -211,19 +210,10 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             onBenefitsChange={(items) => set("benefits", items)}
             usageTips={form.usageTips ?? []}
             onUsageTipsChange={(tips) => set("usageTips", tips)}
-            ingredients={form.ingredients}
-            onIngredientsChange={(items) => set("ingredients", items)}
             toggles={form.sectionToggles ?? DEFAULT_SECTION_TOGGLES}
             onTogglesChange={(t) => set("sectionToggles", t)}
             extraSections={form.extraSections ?? []}
             onExtraSectionsChange={(sections) => set("extraSections", sections)}
-          />
-
-          <ProductCommitmentsEditor
-            commitments={form.commitments ?? DEFAULT_COMMITMENTS}
-            onCommitmentsChange={(items) => set("commitments", items)}
-            toggles={form.sectionToggles ?? DEFAULT_SECTION_TOGGLES}
-            onTogglesChange={(t) => set("sectionToggles", t)}
           />
 
           <div className="adm-form-section-title">Image principale</div>
@@ -307,11 +297,9 @@ const BLANK_PRODUCT: Product = {
   stock: 0,
   variants: [],
   desc: "",
-  ingredients: [],
   usageTips: [],
   sectionToggles: { ...DEFAULT_SECTION_TOGGLES },
   extraSections: [],
-  commitments: DEFAULT_COMMITMENTS.map((c) => ({ ...c })),
   mainImageUrl: null,
   galleryImages: [],
   homeVisibility: {},

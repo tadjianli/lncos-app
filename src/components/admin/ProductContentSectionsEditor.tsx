@@ -11,8 +11,6 @@ interface ProductContentSectionsEditorProps {
   onBenefitsChange: (items: string[]) => void;
   usageTips: string[];
   onUsageTipsChange: (tips: string[]) => void;
-  ingredients: string[];
-  onIngredientsChange: (items: string[]) => void;
   toggles: ProductSectionToggles;
   onTogglesChange: (t: ProductSectionToggles) => void;
   extraSections: ProductExtraSection[];
@@ -112,8 +110,6 @@ export function ProductContentSectionsEditor({
   onBenefitsChange,
   usageTips,
   onUsageTipsChange,
-  ingredients,
-  onIngredientsChange,
   toggles,
   onTogglesChange,
   extraSections,
@@ -181,23 +177,6 @@ export function ProductContentSectionsEditor({
             lines={usageTips}
             onChange={onUsageTipsChange}
             numbered
-          />
-        )}
-      </div>
-
-      <div className="adm-section-card">
-        <ToggleRow
-          label="Ingrédients"
-          hint="Liste à puces"
-          checked={toggles.ingredients}
-          onChange={(ingredients) => onTogglesChange({ ...toggles, ingredients })}
-        />
-        {toggles.ingredients && (
-          <LinesEditor
-            label="Ingrédients"
-            placeholder="Ex. Acide hyaluronique"
-            lines={ingredients}
-            onChange={onIngredientsChange}
           />
         )}
       </div>

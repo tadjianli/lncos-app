@@ -1,6 +1,6 @@
 /* LN COS — Catalogue & données de démonstration (from handoff data.js) */
 
-import type { ProductCommitment, ProductExtraSection, ProductSectionToggles } from "./product-sections";
+import type { ProductExtraSection, ProductSectionToggles } from "./product-sections";
 import type { ProductHomeVisibility } from "./product-home-visibility";
 
 export interface ProductVariant {
@@ -27,7 +27,6 @@ export interface Product {
   stock: number;
   variants: string[];
   desc: string;
-  ingredients: string[];
   /** Conseils d'utilisation — étapes numérotées */
   usageTips?: string[];
   /** Bénéfices clés (fiche produit — avant description) */
@@ -36,8 +35,6 @@ export interface Product {
   sectionToggles?: ProductSectionToggles;
   /** Sections éditoriales personnalisées */
   extraSections?: ProductExtraSection[];
-  /** Badges engagements (Vegan, Made in France…) */
-  commitments?: ProductCommitment[];
   /** Image principale — cartes, listing, panier, favoris (main_image_url) */
   mainImageUrl?: string | null;
   /** Miniatures fiche produit uniquement (gallery_images, max 5) */
@@ -114,7 +111,6 @@ export const products: Product[] = [
     rating: 4.8, reviews: 124, tag: 'Best-seller', stock: 50,
     variants: ['30ml', '50ml', '100ml'],
     desc: "Un sérum ultra-hydratant qui illumine et revitalise la peau en profondeur. Texture légère, fini lumineux, peau repulpée dès la première application.",
-    ingredients: ['Acide Hyaluronique', 'Vitamine C', 'Niacinamide', 'Extrait de Rose'],
   },
   {
     id: 'creme-hydra', name: 'Crème Hydratante Soyeuse', cat: 'visage',
@@ -122,7 +118,6 @@ export const products: Product[] = [
     rating: 4.7, reviews: 89, tag: 'Nouveau', stock: 35,
     variants: ['50ml', '100ml'],
     desc: "Crème fondante enrichie en céramides pour une hydratation 24h. Confort immédiat, peau lissée et apaisée.",
-    ingredients: ['Céramides', 'Beurre de Karité', 'Aloe Vera'],
   },
   {
     id: 'parfum-noir', name: 'Parfum Élixir Noir', cat: 'parfums',
@@ -130,7 +125,6 @@ export const products: Product[] = [
     rating: 4.9, reviews: 213, tag: 'Édition limitée', stock: 20,
     variants: ['50ml', '100ml'],
     desc: "Une fragrance boisée et ambrée, sensuelle et mystérieuse. Notes de oud, vanille noire et fève tonka.",
-    ingredients: ['Oud', 'Vanille noire', 'Fève Tonka', 'Ambre'],
   },
   {
     id: 'rouge-mat', name: 'Rouge à Lèvres Velours', cat: 'maquillage',
@@ -138,7 +132,6 @@ export const products: Product[] = [
     rating: 4.6, reviews: 156, tag: 'Best-seller', stock: 60,
     variants: ['Rose Nude', 'Rouge Désir', 'Prune'],
     desc: "Fini mat velouté, tenue longue durée sans dessécher. Couleur intense en un seul geste.",
-    ingredients: ['Huile de Jojoba', 'Vitamine E', 'Pigments naturels'],
   },
   {
     id: 'palette-glow', name: 'Palette Glow Doré', cat: 'maquillage',
@@ -146,7 +139,6 @@ export const products: Product[] = [
     rating: 4.8, reviews: 98, tag: 'Flash', stock: 25,
     variants: ['Warm', 'Cool'],
     desc: "12 teintes nacrées et mates pour un regard intense. Pigmentation haute définition, longue tenue.",
-    ingredients: ['Poudres minérales', 'Mica', 'Huiles végétales'],
   },
   {
     id: 'huile-demaq', name: 'Huile Démaquillante', cat: 'visage',
@@ -154,7 +146,6 @@ export const products: Product[] = [
     rating: 4.5, reviews: 67, tag: null, stock: 40,
     variants: ['150ml'],
     desc: "Dissout maquillage et impuretés sans film gras. Se transforme en lait au contact de l'eau.",
-    ingredients: ["Huile de Camélia", "Vitamine E"],
   },
   {
     id: 'masque-purifiant', name: 'Masque Purifiant Argile Rose', cat: 'visage',
@@ -162,7 +153,6 @@ export const products: Product[] = [
     rating: 4.7, reviews: 74, tag: 'Nouveau', stock: 25,
     variants: ['75ml'],
     desc: "Masque à l'argile rose qui purifie et resserre les pores. Peau nette, douce et éclatante.",
-    ingredients: ['Argile Rose', 'Eau de Rose', 'Zinc'],
   },
   {
     id: 'brume-corps', name: 'Brume Parfumée Corps', cat: 'corps',
@@ -170,7 +160,6 @@ export const products: Product[] = [
     rating: 4.4, reviews: 52, tag: 'Flash', stock: 45,
     variants: ['200ml'],
     desc: "Voile parfumé fleuri et fruité pour une peau délicatement scintillante.",
-    ingredients: ['Pivoine', 'Litchi', 'Musc blanc'],
   },
   {
     id: 'serum-cheveux', name: 'Sérum Brillance Cheveux', cat: 'cheveux',
@@ -178,7 +167,6 @@ export const products: Product[] = [
     rating: 4.6, reviews: 61, tag: null, stock: 30,
     variants: ['50ml'],
     desc: "Discipline et fait briller sans alourdir. Protège de la chaleur jusqu'à 230°C.",
-    ingredients: ["Huile d'Argan", 'Kératine', 'Vitamine B5'],
   },
   {
     id: 'coffret-rituel', name: 'Coffret Rituel Éclat', cat: 'coffrets',
@@ -186,7 +174,6 @@ export const products: Product[] = [
     rating: 4.9, reviews: 41, tag: 'Coffret', stock: 15,
     variants: ['Coffret complet'],
     desc: "Le rituel beauté complet : sérum, crème, masque et brume dans un écrin doré.",
-    ingredients: ['Sérum Éclat', 'Crème Soyeuse', 'Masque Rose', 'Brume Corps'],
   },
 ];
 
