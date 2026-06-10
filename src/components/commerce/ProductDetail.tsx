@@ -563,6 +563,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
           </div>
 
           <ProductReassuranceLines />
+          <div style={{ marginTop: 10, marginBottom: 14 }}>
+            <ProductTrustBadges />
+          </div>
           <ProductStockAlert stock={displayStock} />
 
           <ProductReviewsSummary
@@ -824,7 +827,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
         </div>
       </div>
 
-      {/* ── Sticky add bar ── */}
+      {/* ── Sticky add bar (compact — garanties dans le scroll) ── */}
       <div className="bottom-action-bar">
         <ProductSalesCounter productId={p.id} />
         <button
@@ -837,19 +840,18 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             "Rupture de stock"
           ) : added ? (
             <>
-              <Icon name="check" size={16} color="#fff" stroke={2.5} />
+              <Icon name="check" size={15} color="#fff" stroke={2.5} />
               Ajouté au panier !
             </>
           ) : (
             <>
-              <Icon name="bag" size={16} />
+              <Icon name="bag" size={15} />
               Ajouter au panier
               <span style={{ opacity: 0.55, fontWeight: 600 }}>•</span>
               {totalPrice} €
             </>
           )}
         </button>
-        <ProductTrustBadges />
       </div>
     </div>
   );
