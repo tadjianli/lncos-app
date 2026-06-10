@@ -6,10 +6,9 @@ export interface HorizontalProductCarouselProps {
   children: ReactNode;
   /** Compense le padding parent pour un défilement bord à bord (sections home, fiche produit). */
   bleed?: boolean;
-  /**
-   * Nombre de cartes visibles — largeur = (100% − gaps) ÷ n.
-   * Défaut mobile : 2 colonnes pleine largeur (Best Sellers, Nouveautés, liés).
-   */
+  /** Cartes fixes 170–190px — Best Sellers, produits liés (scroll horizontal). */
+  premium?: boolean;
+  /** Nombre de cartes visibles — largeur = (100% − gaps) ÷ n (legacy, éviter sur mobile). */
   visibleCards?: number;
   className?: string;
   style?: CSSProperties;
@@ -21,17 +20,23 @@ export interface HorizontalProductCarouselProps {
 export const HorizontalProductCarousel = memo(function HorizontalProductCarousel({
   children,
   bleed = true,
-  visibleCards = 2,
+  premium = false,
+  visibleCards,
   className = "",
   style,
 }: HorizontalProductCarouselProps) {
-  const cols = visibleCards > 0 ? visibleCards : 2;
-  const fillClass = ` hpc--fill-${cols}`;
+  const fillClass =
+    !premium && visibleCards && visibleCards > 0 ? ` hpc--fill-${visibleCards}` : "";
+  const premiumClass = premium ? " hpc--premium" : "";
 
   return (
     <div
-      className={`hpc${bleed ? " hpc--bleed" : ""}${fillClass}${className ? ` ${className}` : ""}`}
-      style={{ "--hpc-visible": cols } as CSSProperties}
+      className={`hpc${bleed ? " hpc--bleed" : ""}${premiumClass}${fillClass}${className ? ` ${className}` : ""}`}
+      style={
+        !premium && visibleCards && visibleCards > 0
+          ? ({ "--hpc-visible": visibleCards } as CSSProperties)
+          : undefined
+      }
     >
       <div className="hpc__fade hpc__fade--left" aria-hidden />
       <div className="hpc__track noscroll" style={style}>

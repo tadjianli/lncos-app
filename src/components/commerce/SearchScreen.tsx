@@ -472,14 +472,14 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
             <div className="prodbento prodbento--2">
               {products.slice(0, 4).map((p) => (
                 <div key={p.id} className="prodbento-cell">
-                  <ProductCard
-                    p={p}
-                    layout="grid-2"
-                    onOpen={openProduct}
-                    onFav={toggleFav}
-                    isFav={favs.includes(p.id)}
-                    onAdd={addToCart}
-                  />
+                <ProductCard
+                  p={p}
+                  layout="grid-2"
+                  onOpen={openProduct}
+                  onFav={toggleFav}
+                  isFav={favs.includes(p.id)}
+                  onAdd={addToCart}
+                />
                 </div>
               ))}
             </div>
@@ -517,7 +517,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
               <div className="prodbento prodbento--2" style={{ animation: "pulse 1.2s ease-in-out infinite" }}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="prodbento-cell">
-                    <SkeletonProductCard layout="grid-2" />
+                    <SkeletonProductCard />
                   </div>
                 ))}
               </div>

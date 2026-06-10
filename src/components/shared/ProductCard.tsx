@@ -49,10 +49,10 @@ export const ProductCard = memo(function ProductCard({
   const plusSize = layout === "grid-2" ? 16 : layout === "grid-3" ? 14 : 16;
   const imageSizes =
     layout === "grid-2"
-      ? "(max-width: 480px) 48vw, 190px"
+      ? "(max-width: 480px) 46vw, 220px"
       : layout === "grid-3"
         ? "(max-width: 480px) 31vw, 120px"
-        : "(max-width: 480px) 180px, 190px";
+        : "(max-width: 480px) 158px, 164px";
 
   return (
     <div

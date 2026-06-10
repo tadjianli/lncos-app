@@ -44,28 +44,17 @@ export const SkeletonLine = memo(function SkeletonLine({
 
 /* ─── Product card ──────────────────────────────────────────────── */
 
-export const SkeletonProductCard = memo(function SkeletonProductCard({
-  layout = "default",
-}: {
-  layout?: "default" | "grid-2";
-}) {
-  const isGrid = layout === "grid-2";
+export const SkeletonProductCard = memo(function SkeletonProductCard() {
   return (
     <div
       aria-hidden
       className="prod-card snap"
-      style={{ pointerEvents: "none", cursor: "default", height: isGrid ? "100%" : undefined }}
+      style={{ pointerEvents: "none", cursor: "default" }}
     >
       <SkeletonBlock
-        height={isGrid ? undefined : "var(--prod-card-img-h)"}
+        height="var(--prod-card-img-h)"
         radius={0}
-        style={{
-          borderRadius: 0,
-          flex: isGrid ? "0 0 auto" : "0 0 var(--prod-card-img-h)",
-          width: "100%",
-          aspectRatio: isGrid ? "4 / 5" : undefined,
-          minHeight: isGrid ? 172 : undefined,
-        }}
+        style={{ borderRadius: 0, flex: "0 0 var(--prod-card-img-h)" }}
       />
       <div
         className="prod-card-info"
@@ -90,9 +79,9 @@ export const SkeletonProductRow = memo(function SkeletonProductRow({
   count?: number;
 }) {
   return (
-    <HorizontalProductCarousel bleed={false} style={{ pointerEvents: "none" }}>
+    <HorizontalProductCarousel bleed={false} premium style={{ pointerEvents: "none" }}>
       {Array.from({ length: count }).map((_, i) => (
-        <SkeletonProductCard key={i} layout="grid-2" />
+        <SkeletonProductCard key={i} />
       ))}
     </HorizontalProductCarousel>
   );

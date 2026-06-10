@@ -132,10 +132,9 @@
   /* Header overlay : inset système + marge respiration */
   --safe-header-top: calc(var(--safe-top) + 12px);
   --app-max-width: 480px;
-  /* Hauteur nav : padding haut + icônes/labels + safe area (aligné sur .bottom-nav) */
-  --bottom-nav-pad-top: 4px;
-  --bottom-nav-inner-h: 38px;
-  --bottom-nav-content-h: calc(var(--bottom-nav-pad-top) + var(--bottom-nav-inner-h));
+  /* Hauteur barre nav : padding + icônes/labels + safe area bas (une seule fois) */
+  /* Hauteur nav : contenu + safe area (une seule fois, appliquée sur la nav fixe) */
+  --bottom-nav-content-h: 2.875rem;
   --bottom-nav-h: calc(var(--bottom-nav-content-h) + var(--safe-bottom));
   --sp-10: 40px;
   --sp-12: 48px;
@@ -405,16 +404,12 @@
     .hpc__fade { opacity: 0.5; }
   }
 
-  /* Carrousel 2 colonnes — 2 cartes remplissent 100% : (100% − gap) ÷ 2 */
+  /* 3 cartes (ou n) remplissent 100% de la largeur utile : (100% − gaps) ÷ n */
   .hpc[class*="hpc--fill-"] {
-    --hpc-visible: 2;
-    --hpc-gap: 14px;
-    width: 100%;
-    max-width: 100%;
+    --hpc-visible: 3;
   }
 
   .hpc[class*="hpc--fill-"] .hpc__track {
-    width: 100%;
     --hpc-slot: calc(
       (100% - (var(--hpc-visible) - 1) * var(--hpc-gap)) / var(--hpc-visible)
     );
@@ -426,58 +421,88 @@
     width: var(--hpc-slot);
     max-width: var(--hpc-slot);
     --prod-card-w: var(--hpc-slot);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-imgwrap {
+    height: calc(var(--hpc-slot) * 140 / 158);
+    flex: 0 0 calc(var(--hpc-slot) * 140 / 158);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-info {
+    height: calc(var(--hpc-slot) * 108 / 158);
+    flex: 0 0 calc(var(--hpc-slot) * 108 / 158);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-title {
+    font-size: clamp(10px, calc(var(--hpc-slot) * 0.079), 12.5px);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-price {
+    font-size: clamp(11px, calc(var(--hpc-slot) * 0.089), 14px);
+  }
+
+  .hpc[class*="hpc--fill-"] .prod-card-add {
+    width: clamp(26px, calc(var(--hpc-slot) * 0.19), 30px);
+    height: clamp(26px, calc(var(--hpc-slot) * 0.19), 30px);
+  }
+
+  /* Carrousel premium — cartes 170–190px (Best Sellers, produits liés) */
+  .hpc--premium {
+    --hpc-card-w: clamp(170px, 47vw, 190px);
+    --hpc-gap: clamp(12px, 3.5vw, 16px);
+  }
+
+  .hpc--premium .hpc__track > .prod-card,
+  .hpc--premium .hpc__track > .snap.prod-card {
+    flex: 0 0 var(--hpc-card-w);
+    width: var(--hpc-card-w);
+    max-width: var(--hpc-card-w);
+    --prod-card-w: var(--hpc-card-w);
     height: auto;
     display: flex;
     flex-direction: column;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-imgwrap {
+  .hpc--premium .prod-imgwrap {
     flex: 0 0 auto;
     width: 100%;
     height: auto;
     aspect-ratio: 4 / 5;
-    min-height: 0;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-card-info {
-    flex: 1 1 auto;
+  .hpc--premium .prod-card-info {
     height: auto;
-    min-height: 102px;
+    flex: 1 1 auto;
+    min-height: 104px;
     padding: 11px 12px 13px;
     display: flex;
     flex-direction: column;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-card-title {
+  .hpc--premium .prod-card-title {
     font-size: 13px;
     line-height: 1.35;
     min-height: 2.7em;
-    height: auto;
-    max-height: none;
+    -webkit-line-clamp: 2;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-card-rating {
-    margin: 5px 0 8px;
-    font-size: 11px;
-  }
-
-  .hpc[class*="hpc--fill-"] .prod-card-price {
-    font-size: 15px;
+  .hpc--premium .prod-card-price {
+    font-size: 14px;
     font-weight: 700;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-card-price-row {
+  .hpc--premium .prod-card-price-row {
     margin-top: auto;
   }
 
-  .hpc[class*="hpc--fill-"] .prod-card-add {
-    width: 36px;
-    height: 36px;
-  }
-
-  .hpc[class*="hpc--fill-"] .prod-fav-btn {
+  .hpc--premium .prod-card-add {
     width: 34px;
     height: 34px;
+  }
+
+  .hpc--premium .prod-fav-btn {
+    width: 32px;
+    height: 32px;
   }
 
   /* Shell = viewport visible (inset:0, pas de height explicite → évite zone morte iOS PWA) */
@@ -1141,12 +1166,10 @@
   max-width: var(--app-max-width);
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 0;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  min-height: var(--bottom-nav-content-h);
-  padding-top: var(--bottom-nav-pad-top);
+  padding-top: 8px;
   padding-bottom: var(--safe-bottom);
   padding-left: max(10px, var(--safe-left));
   padding-right: max(10px, var(--safe-right));
@@ -1160,7 +1183,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
   position: relative;
   min-width: 52px;
   text-decoration: none;
@@ -1676,20 +1699,19 @@
   font-weight: 700;
 }
 
-/* ─── Product grid mobile premium — 2 colonnes, gap 14px, cartes ≥48% ─── */
+/* ─── Product grid premium — 2 colonnes mobile (grid-cols-2) ─── */
 
-.prodbento,
-.prodbento--2 {
-  --prodbento-gap: 14px;
+.prodbento {
+  display: grid;
+  --prodbento-gap: clamp(12px, 3.5vw, 16px);
   --prodbento-cols: 2;
   --prodbento-slot: calc(
     (100% - (var(--prodbento-cols) - 1) * var(--prodbento-gap)) / var(--prodbento-cols)
   );
-  display: grid;
-  grid-template-columns: repeat(2, minmax(min(48%, 100%), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--prodbento-gap);
-  justify-content: stretch;
   align-items: stretch;
+  justify-content: stretch;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -1703,38 +1725,40 @@
 
 .prodbento-cell.lead { grid-column: span 2; }
 
-.prodbento .prod-card,
-.prodbento--2 .prod-card {
+/* Alias explicite boutique / favoris / recherche */
+.prodbento--2 {
+  /* hérite de .prodbento */
+}
+
+/* Grille 2 col — cartes uniformes, images 4:5 */
+.prodbento:not(.prodbento--3) .prod-card {
   width: 100%;
-  height: 100%;
   flex: 1 1 auto;
   max-width: 100%;
+  height: 100%;
   --prod-card-w: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.prodbento .prod-imgwrap,
-.prodbento--2 .prod-imgwrap {
+.prodbento:not(.prodbento--3) .prod-imgwrap {
   flex: 0 0 auto;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 5;
-  min-height: 172px;
+  min-height: 180px;
 }
 
-.prodbento .prod-card-info,
-.prodbento--2 .prod-card-info {
+.prodbento:not(.prodbento--3) .prod-card-info {
   height: auto;
   flex: 1 1 auto;
-  min-height: 108px;
+  min-height: 110px;
   padding: 12px 12px 14px;
   display: flex;
   flex-direction: column;
 }
 
-.prodbento .prod-card-title,
-.prodbento--2 .prod-card-title {
+.prodbento:not(.prodbento--3) .prod-card-title {
   font-size: 13px;
   line-height: 1.35;
   height: auto;
@@ -1743,37 +1767,31 @@
   -webkit-line-clamp: 2;
 }
 
-.prodbento .prod-card-rating,
-.prodbento--2 .prod-card-rating {
+.prodbento:not(.prodbento--3) .prod-card-rating {
   margin: 5px 0 8px;
   font-size: 11px;
   gap: 4px;
 }
 
-.prodbento .prod-card-rating svg,
-.prodbento--2 .prod-card-rating svg {
+.prodbento:not(.prodbento--3) .prod-card-rating svg {
   width: 11px;
   height: 11px;
 }
 
-.prodbento .prod-card-price-row,
-.prodbento--2 .prod-card-price-row {
+.prodbento:not(.prodbento--3) .prod-card-price-row {
   margin-top: auto;
 }
 
-.prodbento .prod-card-price,
-.prodbento--2 .prod-card-price {
+.prodbento:not(.prodbento--3) .prod-card-price {
   font-size: 15px;
   font-weight: 700;
 }
 
-.prodbento .prod-card-price-old,
-.prodbento--2 .prod-card-price-old {
+.prodbento:not(.prodbento--3) .prod-card-price-old {
   font-size: 11px;
 }
 
-.prodbento .prod-tag,
-.prodbento--2 .prod-tag {
+.prodbento:not(.prodbento--3) .prod-tag {
   top: 10px;
   left: 10px;
   padding: 4px 8px;
@@ -1781,29 +1799,25 @@
   letter-spacing: 0.05em;
 }
 
-.prodbento .prod-fav-btn,
-.prodbento--2 .prod-fav-btn {
+.prodbento:not(.prodbento--3) .prod-fav-btn {
   top: 8px;
   right: 8px;
   width: 34px;
   height: 34px;
 }
 
-.prodbento .prod-fav-btn svg,
-.prodbento--2 .prod-fav-btn svg {
+.prodbento:not(.prodbento--3) .prod-fav-btn svg {
   width: 15px;
   height: 15px;
 }
 
-.prodbento .prod-card-add,
-.prodbento--2 .prod-card-add {
+.prodbento:not(.prodbento--3) .prod-card-add {
   width: 36px;
   height: 36px;
   flex-shrink: 0;
 }
 
-.prodbento .prod-card-add svg,
-.prodbento--2 .prod-card-add svg {
+.prodbento:not(.prodbento--3) .prod-card-add svg {
   width: 16px;
   height: 16px;
 }

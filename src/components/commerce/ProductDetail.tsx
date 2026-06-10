@@ -881,12 +881,11 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Complétez votre rituel
               </h3>
-              <HorizontalProductCarousel>
+              <HorizontalProductCarousel premium>
                 {routine.map((r) => (
                   <ProductCard
                     key={r.id}
                     p={r}
-                    layout="grid-2"
                     onOpen={openProduct}
                     onFav={(id) => toggleFav(id)}
                     isFav={favs.includes(r.id)}
@@ -913,12 +912,11 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Vous aimerez aussi
               </h3>
-              <HorizontalProductCarousel>
+              <HorizontalProductCarousel premium>
                 {related.map((r) => (
                   <ProductCard
                     key={r.id}
                     p={r}
-                    layout="grid-2"
                     onOpen={openProduct}
                     onFav={(id) => toggleFav(id)}
                     isFav={favs.includes(r.id)}

@@ -367,12 +367,11 @@ function BentoUniversSection({
                 <div className="bento-s">{meta.sub}</div>
               </div>
             </div>
-            <HorizontalProductCarousel>
+            <HorizontalProductCarousel premium>
               {products.map((p, pi) => (
                 <ProductCard
                   key={p.id + "-univ-" + key + "-" + pi}
                   p={p}
-                  layout="grid-2"
                   onOpen={onOpen}
                   onFav={onFav}
                   isFav={favs.includes(p.id)}
@@ -594,12 +593,11 @@ export default function HomePage() {
               {isFirst ? (
                 <>
                   <FlashHead title={section.title} />
-                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel premium style={{ paddingBottom: 4 }}>
                     {prods.map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
                         p={p}
-                        layout="grid-2"
                         onOpen={handleOpen}
                         onFav={handleFav}
                         isFav={favs.includes(p.id)}
@@ -630,12 +628,11 @@ export default function HomePage() {
               ) : (
                 <Reveal>
                   <SectionHead title={section.title} action="Voir tout" />
-                  <HorizontalProductCarousel style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel premium style={{ paddingBottom: 4 }}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
                         p={p}
-                        layout="grid-2"
                         onOpen={handleOpen}
                         onFav={handleFav}
                         isFav={favs.includes(p.id)}
