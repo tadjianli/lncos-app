@@ -8,6 +8,11 @@ export interface HorizontalProductCarouselProps {
   bleed?: boolean;
   /** Nombre de cartes visibles — largeur = (100% − gaps) ÷ n (ex. 3 cartes pleine largeur). */
   visibleCards?: number;
+  /**
+   * Carrousel premium (Best Sellers, produits liés) — cartes 170–190px,
+   * scroll horizontal, lisibilité prioritaire.
+   */
+  premium?: boolean;
   className?: string;
   style?: CSSProperties;
 }
@@ -19,15 +24,16 @@ export const HorizontalProductCarousel = memo(function HorizontalProductCarousel
   children,
   bleed = true,
   visibleCards,
+  premium = false,
   className = "",
   style,
 }: HorizontalProductCarouselProps) {
   const fillClass =
-    visibleCards && visibleCards > 0 ? ` hpc--fill-${visibleCards}` : "";
+    !premium && visibleCards && visibleCards > 0 ? ` hpc--fill-${visibleCards}` : "";
 
   return (
     <div
-      className={`hpc${bleed ? " hpc--bleed" : ""}${fillClass}${className ? ` ${className}` : ""}`}
+      className={`hpc${bleed ? " hpc--bleed" : ""}${premium ? " hpc--premium" : ""}${fillClass}${className ? ` ${className}` : ""}`}
       style={
         visibleCards && visibleCards > 0
           ? ({ "--hpc-visible": visibleCards } as CSSProperties)

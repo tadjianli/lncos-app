@@ -446,6 +446,71 @@
     height: clamp(26px, calc(var(--hpc-slot) * 0.19), 30px);
   }
 
+  /* Carrousel premium — Best Sellers, produits liés (170–190px, scroll horizontal) */
+  .hpc--premium {
+    --hpc-gap: 14px;
+    --hpc-card-w: clamp(170px, 47vw, 190px);
+  }
+
+  .hpc--premium .hpc__track > .prod-card,
+  .hpc--premium .hpc__track > .snap.prod-card {
+    flex: 0 0 var(--hpc-card-w);
+    width: var(--hpc-card-w);
+    max-width: var(--hpc-card-w);
+    --prod-card-w: var(--hpc-card-w);
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hpc--premium .prod-imgwrap {
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+  .hpc--premium .prod-card-info {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 102px;
+    padding: 11px 12px 13px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hpc--premium .prod-card-title {
+    font-size: 13px;
+    line-height: 1.35;
+    min-height: 2.7em;
+    height: auto;
+    max-height: none;
+  }
+
+  .hpc--premium .prod-card-rating {
+    margin: 5px 0 8px;
+    font-size: 11px;
+  }
+
+  .hpc--premium .prod-card-price {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .hpc--premium .prod-card-price-row {
+    margin-top: auto;
+  }
+
+  .hpc--premium .prod-card-add {
+    width: 34px;
+    height: 34px;
+  }
+
+  .hpc--premium .prod-fav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
   /* Shell = viewport visible (inset:0, pas de height explicite → évite zone morte iOS PWA) */
   .app-shell {
     position: fixed;
@@ -1640,62 +1705,64 @@
   font-weight: 700;
 }
 
-/* ─── Product grid (2-col bento) ─────────────────────────────── */
+/* ─── Product grid mobile premium — 2 colonnes, gap 14px, cartes ≥48% ─── */
 
-.prodbento {
-  display: grid;
-  grid-template-columns: repeat(2, var(--prod-card-w));
-  gap: var(--sp-3);
-  justify-content: space-between;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-.prodbento-cell {
-  width: var(--prod-card-w);
-  min-width: 0;
-}
-.prodbento-cell.lead { grid-column: span 2; }
-
-/* Grille boutique premium — 2 colonnes (grid-cols-2), gap 16px */
+.prodbento,
 .prodbento--2 {
-  --prodbento-gap: var(--sp-4);
+  --prodbento-gap: 14px;
   --prodbento-cols: 2;
   --prodbento-slot: calc(
     (100% - (var(--prodbento-cols) - 1) * var(--prodbento-gap)) / var(--prodbento-cols)
   );
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(min(48%, 100%), 1fr));
   gap: var(--prodbento-gap);
   justify-content: stretch;
+  align-items: stretch;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.prodbento--2 .prodbento-cell {
+.prodbento-cell {
   width: 100%;
   min-width: 0;
+  display: flex;
 }
 
+.prodbento-cell.lead { grid-column: span 2; }
+
+.prodbento .prod-card,
 .prodbento--2 .prod-card {
   width: 100%;
+  height: 100%;
   flex: 1 1 auto;
   max-width: 100%;
   --prod-card-w: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
+.prodbento .prod-imgwrap,
 .prodbento--2 .prod-imgwrap {
   flex: 0 0 auto;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 5;
-  min-height: 168px;
+  min-height: 172px;
 }
 
+.prodbento .prod-card-info,
 .prodbento--2 .prod-card-info {
   height: auto;
   flex: 1 1 auto;
-  min-height: 104px;
+  min-height: 108px;
   padding: 12px 12px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
+.prodbento .prod-card-title,
 .prodbento--2 .prod-card-title {
   font-size: 13px;
   line-height: 1.35;
@@ -1705,26 +1772,36 @@
   -webkit-line-clamp: 2;
 }
 
+.prodbento .prod-card-rating,
 .prodbento--2 .prod-card-rating {
   margin: 5px 0 8px;
   font-size: 11px;
   gap: 4px;
 }
 
+.prodbento .prod-card-rating svg,
 .prodbento--2 .prod-card-rating svg {
   width: 11px;
   height: 11px;
 }
 
+.prodbento .prod-card-price-row,
+.prodbento--2 .prod-card-price-row {
+  margin-top: auto;
+}
+
+.prodbento .prod-card-price,
 .prodbento--2 .prod-card-price {
   font-size: 15px;
   font-weight: 700;
 }
 
+.prodbento .prod-card-price-old,
 .prodbento--2 .prod-card-price-old {
   font-size: 11px;
 }
 
+.prodbento .prod-tag,
 .prodbento--2 .prod-tag {
   top: 10px;
   left: 10px;
@@ -1733,6 +1810,7 @@
   letter-spacing: 0.05em;
 }
 
+.prodbento .prod-fav-btn,
 .prodbento--2 .prod-fav-btn {
   top: 8px;
   right: 8px;
@@ -1740,17 +1818,20 @@
   height: 34px;
 }
 
+.prodbento .prod-fav-btn svg,
 .prodbento--2 .prod-fav-btn svg {
   width: 15px;
   height: 15px;
 }
 
+.prodbento .prod-card-add,
 .prodbento--2 .prod-card-add {
   width: 36px;
   height: 36px;
   flex-shrink: 0;
 }
 
+.prodbento .prod-card-add svg,
 .prodbento--2 .prod-card-add svg {
   width: 16px;
   height: 16px;

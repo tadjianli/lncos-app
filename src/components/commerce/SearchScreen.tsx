@@ -469,16 +469,17 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
             >
               Suggestions
             </div>
-            <div className="prodbento">
+            <div className="prodbento prodbento--2">
               {products.slice(0, 4).map((p) => (
                 <div key={p.id} className="prodbento-cell">
-                <ProductCard
-                  p={p}
-                  onOpen={openProduct}
-                  onFav={toggleFav}
-                  isFav={favs.includes(p.id)}
-                  onAdd={addToCart}
-                />
+                  <ProductCard
+                    p={p}
+                    layout="grid-2"
+                    onOpen={openProduct}
+                    onFav={toggleFav}
+                    isFav={favs.includes(p.id)}
+                    onAdd={addToCart}
+                  />
                 </div>
               ))}
             </div>
@@ -513,10 +514,10 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
 
             {/* Loading skeletons */}
             {isSearching && (
-              <div className="prodbento" style={{ animation: "pulse 1.2s ease-in-out infinite" }}>
+              <div className="prodbento prodbento--2" style={{ animation: "pulse 1.2s ease-in-out infinite" }}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="prodbento-cell">
-                    <SkeletonProductCard />
+                    <SkeletonProductCard layout="grid-2" />
                   </div>
                 ))}
               </div>
@@ -524,11 +525,12 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
 
             {/* Results grid */}
             {!isSearching && results.length > 0 && (
-              <div className="prodbento">
+              <div className="prodbento prodbento--2">
                 {results.map((p) => (
                   <div key={p.id} className="prodbento-cell">
                     <ProductCard
                       p={p}
+                      layout="grid-2"
                       onOpen={openProduct}
                       onFav={toggleFav}
                       isFav={favs.includes(p.id)}

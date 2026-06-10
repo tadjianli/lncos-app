@@ -119,11 +119,12 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
         <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
           {list.length} produit{list.length > 1 ? "s" : ""}
         </div>
-        <div className="prodbento">
+        <div className="prodbento prodbento--2">
           {list.map((p, i) => (
             <div key={p.id + i} className="prodbento-cell" style={{ animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both` }}>
               <ProductCard
                 p={p}
+                layout="grid-2"
                 onOpen={openProduct}
                 onFav={toggleFav}
                 isFav={favs.includes(p.id)}
