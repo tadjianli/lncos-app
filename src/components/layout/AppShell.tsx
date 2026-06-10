@@ -3,10 +3,10 @@
  * LN COS — Unified AppShell
  *
  * Architecture: fixed viewport container — the only element with height.
- *   html/body  : height 100dvh, overflow hidden (no document scroll)
- *   AppShell   : position fixed, inset 0 (pas de height explicite), max-width 480px
+ *   html/body  : Safari → inset 0 ; PWA → --viewport-h (innerHeight) via StandaloneViewportSync
+ *   AppShell   : position fixed, remplit le viewport, max-width 480px
  *   main       : flex:1, safe-top, padding-bottom = hauteur nav si visible
- *   BottomNav  : position fixed, bottom:0, safe-bottom unique sur la nav
+ *   BottomNav  : position absolute, bottom:0, safe-bottom unique sur la nav
  *
  * Overlay z-index layers (all position:absolute within AppShell):
  *   70  Toast          — floats above nav

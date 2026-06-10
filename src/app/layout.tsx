@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
 import { getSiteUrl } from "@/lib/site-url";
+import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -90,6 +91,22 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
+        {/* PWA iOS : hauteur viewport avant hydratation React (évite zone noire sous TabBar) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function () {
+  var standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator && navigator.standalone);
+  if (!standalone) return;
+  var h = window.innerHeight;
+  document.documentElement.classList.add("standalone-pwa");
+  document.documentElement.style.setProperty("--viewport-h", h + "px");
+})();
+            `.trim(),
+          }}
+        />
         {/* Disable legacy service workers that cached broken 404 responses */}
         <script
           dangerouslySetInnerHTML={{
@@ -115,7 +132,10 @@ if ('caches' in window) {
           }}
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <StandaloneViewportSync />
+        {children}
+      </body>
     </html>
   );
 }
