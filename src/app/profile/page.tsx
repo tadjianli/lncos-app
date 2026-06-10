@@ -116,7 +116,7 @@ export default function ProfilePage() {
         <div style={{ padding: "0 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 44, marginBottom: 6 }}>
             <h2 style={{ margin: 0, fontWeight: 600, fontSize: 22, color: "var(--ink)" }}>Profil</h2>
-            <button onClick={openNotifications} style={{ color: "var(--ink)", position: "relative" }}>
+            <button type="button" onClick={openNotifications} className="touch-target" style={{ color: "var(--ink)", position: "relative" }} aria-label="Notifications">
               <Icon name="bell" size={22} />
               <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: "var(--pink)" }} />
             </button>

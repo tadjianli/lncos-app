@@ -68,7 +68,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
           borderRight: "1px solid rgba(212,175,55,.22)",
           display: "flex",
           flexDirection: "column",
-          padding: "60px 0 26px",
+          padding: "calc(var(--safe-top) + 12px) 0 calc(26px + var(--safe-bottom)) 0",
           /* Lux ease drawer — slightly longer for premium feel */
           animation: "drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both",
           /* Soft elevation shadow */
@@ -86,7 +86,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
           }}
         >
           <Logo size={28} />
-          <button onClick={onClose} style={{ color: "var(--ink-soft)" }}>
+          <button type="button" onClick={onClose} className="touch-target" style={{ color: "var(--ink-soft)" }} aria-label="Fermer le menu">
             <Icon name="x" size={22} />
           </button>
         </div>

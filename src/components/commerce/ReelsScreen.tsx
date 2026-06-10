@@ -102,9 +102,9 @@ function ProgressBar({ progress }: { progress: number }) {
     <div
       style={{
         position: "absolute",
-        top: 44,
-        left: 16,
-        right: 16,
+        top: "calc(var(--safe-header-top) + 44px)",
+        left: "max(16px, var(--safe-left))",
+        right: "max(16px, var(--safe-right))",
         zIndex: 10,
         height: 2.5,
         background: "rgba(255,255,255,.25)",
@@ -364,8 +364,8 @@ function ReelCard({
       <div
         style={{
           position: "absolute",
-          top: 54,
-          right: 16,
+          top: "var(--safe-header-top)",
+          right: "max(16px, var(--safe-right))",
           zIndex: 10,
         }}
       >
@@ -716,31 +716,23 @@ export function ReelsScreen({ onClose }: ReelsScreenProps) {
       }}
     >
       {/* Close button */}
-      <button
-        onClick={handleClose}
+      <div
         style={{
           position: "absolute",
-          top: 54,
-          left: 16,
-          zIndex: 20,
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          background: "rgba(0,0,0,.50)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,.15)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          WebkitTapHighlightColor: "transparent",
-          touchAction: "manipulation",
+          top: "var(--safe-header-top)",
+          left: "max(16px, var(--safe-left))",
+          zIndex: 120,
         }}
-        aria-label="Fermer"
       >
-        <Icon name="x" size={20} color="#fff" stroke={2} />
-      </button>
+        <button
+          type="button"
+          onClick={handleClose}
+          className="mobile-screen-header__back mobile-screen-header__back--floating"
+          aria-label="Fermer"
+        >
+          <Icon name="x" size={20} color="#fff" stroke={2} />
+        </button>
+      </div>
 
       {/* Snap scroll container */}
       <div

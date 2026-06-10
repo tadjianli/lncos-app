@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { SeoPageHeader } from "@/components/layout/SeoPageHeader";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { absoluteUrl } from "@/lib/site-url";
 import {
@@ -65,10 +66,8 @@ export default async function CategoriePage({ params }: Props) {
   return (
     <AppShell>
       <JsonLd data={collectionJsonLd} />
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "16px 18px 32px" }}>
-        <h1 style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", margin: "0 0 8px" }}>
-          {category.name}
-        </h1>
+      <SeoPageHeader title={category.name} backHref="/discover" />
+      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "0 18px 32px" }}>
         <p style={{ fontSize: 14, color: "var(--ink-mute)", margin: "0 0 20px", lineHeight: 1.5 }}>
           {description}
         </p>

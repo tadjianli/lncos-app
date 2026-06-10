@@ -9,7 +9,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
-import { GoldBtn, PinkBtn, SectionHead } from "@/components/shared/ActionButtons";
+import { GoldBtn, PinkBtn, SectionHead, MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
 import { services, extras, staff, svcMin, svcPrice } from "@/lib/rdv-data";
 import type { Service, Staff } from "@/lib/rdv-data";
@@ -390,43 +390,16 @@ function BookingWizard({
   function isClosed(d: Date) { return d.getDay() === 0 || d.getDay() === 1; }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "var(--noir)",
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 90,
-        animation: "slideUp .35s cubic-bezier(.2,.8,.2,1) both",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "56px 18px 0",
-          flex: "0 0 auto",
-        }}
-      >
-        <button
-          onClick={back}
-          style={{ color: "var(--ink-soft)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
-        >
-          <Icon name="chevL" size={22} />
-        </button>
-        <div style={{ textAlign: "center" }}>
+    <div className="overlay-shell" style={{ animation: "slideUp .35s cubic-bezier(.2,.8,.2,1) both" }}>
+      <div className="mobile-screen-header" style={{ paddingBottom: 0 }}>
+        <MobileBackButton onClick={back} />
+        <div style={{ textAlign: "center", flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 11, color: "var(--gold)", fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase" }}>
             Étape {step + 1}/{STEPS.length}
           </div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", marginTop: 2 }}>{STEPS[step]}</div>
         </div>
-        <button
-          onClick={onClose}
-          style={{ color: "var(--ink-mute)", WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
-        >
+        <button type="button" onClick={onClose} className="mobile-screen-header__back" style={{ background: "transparent", border: "none" }} aria-label="Fermer">
           <Icon name="x" size={20} />
         </button>
       </div>
@@ -806,7 +779,7 @@ function BookingWizard({
       </div>
 
       {/* Footer CTA */}
-      <div style={{ flex: "0 0 auto", padding: "12px 18px 30px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
+      <div style={{ flex: "0 0 auto", padding: "12px 18px 16px", background: "rgba(10,10,10,.95)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(212,175,55,.14)" }}>
         <PinkBtn
           onClick={next}
           disabled={
@@ -831,7 +804,7 @@ function BookingWizard({
 function ConfirmOverlay({ draft, onClose }: { draft: Draft; onClose: () => void }) {
   const svc = services.find((s) => s.id === draft.serviceId)!;
   return (
-    <div style={{ position: "absolute", inset: 0, background: "var(--noir)", zIndex: 95, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", animation: "fadeIn .3s ease both" }}>
+    <div className="overlay-shell" style={{ zIndex: 95, alignItems: "center", justifyContent: "center", padding: "40px 24px", animation: "fadeIn .3s ease both" }}>
       <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--gold-grad)", display: "grid", placeItems: "center", marginBottom: 24 }}>
         <Icon name="check" size={36} color="#1a1306" stroke={2.5} />
       </div>

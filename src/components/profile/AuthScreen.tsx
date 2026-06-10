@@ -6,6 +6,7 @@
 
 import { useState, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
 
 type Tab = "login" | "signup";
@@ -60,12 +61,15 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
 
   if (sent) {
     return (
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 90,
-        background: "var(--noir)", display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center", padding: "32px 28px",
-        textAlign: "center", animation: "overlayIn .38s cubic-bezier(.22,.68,0,1) both",
-      }}>
+      <div
+        className="overlay-shell"
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "32px 28px",
+          textAlign: "center",
+        }}
+      >
         <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--gold-grad)", display: "grid", placeItems: "center", marginBottom: 24 }}>
           <Icon name="check" size={36} color="#1a1306" stroke={2.5} />
         </div>
@@ -102,22 +106,23 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
   };
 
   return (
-    <div style={{
-      position: "absolute", inset: 0, zIndex: 90,
-      background: "var(--noir)", display: "flex", flexDirection: "column",
-      animation: "overlayIn .38s cubic-bezier(.22,.68,0,1) both",
-    }}>
-      {/* Header */}
-      <div style={{ padding: "16px 18px 0", flex: "0 0 auto" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 44 }}>
-          <button onClick={onClose} style={{ color: "var(--ink-mute)", display: "flex", alignItems: "center", gap: 6 }}>
-            <Icon name="chevL" size={22} />
-          </button>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".18em", textTransform: "uppercase", color: "var(--gold)" }}>
-            LN COS
-          </div>
-          <div style={{ width: 28 }} />
+    <div className="overlay-shell">
+      <div className="mobile-screen-header" style={{ paddingBottom: 0 }}>
+        <MobileBackButton onClick={onClose} />
+        <div
+          style={{
+            flex: 1,
+            textAlign: "center",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: ".18em",
+            textTransform: "uppercase",
+            color: "var(--gold)",
+          }}
+        >
+          LN COS
         </div>
+        <div className="mobile-screen-header__slot" aria-hidden />
       </div>
 
       {/* Body */}

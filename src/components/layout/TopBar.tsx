@@ -37,12 +37,16 @@ export function TopBar({
   const iconBtnStyle: React.CSSProperties = {
     color: "var(--ink)",
     position: "relative",
-    width: 40,
-    height: 40,
+    minWidth: 44,
+    minHeight: 44,
+    width: 44,
+    height: 44,
     display: "grid",
     placeItems: "center",
     flex: "0 0 auto",
     cursor: "pointer",
+    WebkitTapHighlightColor: "transparent",
+    touchAction: "manipulation",
   };
 
   const badgeStyle: React.CSSProperties = {
@@ -74,14 +78,10 @@ export function TopBar({
       >
         {/* Menu */}
         <button
+          type="button"
           onClick={onMenuClick}
-          style={{
-            color: "var(--ink)",
-            display: "grid",
-            placeItems: "center",
-            width: 30,
-            height: 30,
-          }}
+          className="touch-target"
+          style={{ color: "var(--ink)" }}
           aria-label="Menu"
         >
           <Icon name="menu" size={23} />

@@ -1930,10 +1930,10 @@
 .adm-sidebar-close {
   display: none;
   position: absolute;
-  top: 18px;
+  top: max(18px, env(safe-area-inset-top, 0px));
   right: 14px;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,.1);
   background: rgba(255,255,255,.06);
@@ -2177,11 +2177,12 @@
 /* ── Admin Login ──────────────────────────────────────────────────────────── */
 .adm-login-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #0a0a0a;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
 }
 .adm-login-card {
   width: 100%;
@@ -2257,6 +2258,7 @@
   border: none;
   border-radius: 10px;
   padding: 14px;
+  min-height: 44px;
   cursor: pointer;
   transition: opacity .2s;
   margin-top: 4px;

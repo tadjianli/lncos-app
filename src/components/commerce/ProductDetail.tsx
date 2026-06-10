@@ -341,7 +341,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
       <div
         style={{
           position: "absolute",
-          top: "max(8px, var(--safe-top))",
+          top: "var(--safe-header-top)",
           left: "max(16px, var(--safe-left))",
           right: "max(16px, var(--safe-right))",
           zIndex: 100,

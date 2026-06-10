@@ -55,6 +55,7 @@ export function ReviewSubmitModal({
 
   return (
     <div
+      className="safe-area-layout safe-area-layout--top safe-area-layout--bottom safe-area-layout--left safe-area-layout--right"
       style={{
         position: "fixed",
         inset: 0,
@@ -63,6 +64,7 @@ export function ReviewSubmitModal({
         display: "grid",
         placeItems: "center",
         padding: 20,
+        boxSizing: "border-box",
       }}
       onClick={onClose}
     >
@@ -79,7 +81,7 @@ export function ReviewSubmitModal({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "var(--ink)" }}>Votre avis</h3>
-          <button type="button" onClick={onClose} style={{ color: "var(--ink-mute)" }} aria-label="Fermer">
+          <button type="button" onClick={onClose} className="touch-target" style={{ color: "var(--ink-mute)" }} aria-label="Fermer">
             <Icon name="x" size={20} />
           </button>
         </div>

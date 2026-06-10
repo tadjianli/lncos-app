@@ -129,6 +129,8 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  /* Header overlay : inset système + marge respiration */
+  --safe-header-top: calc(var(--safe-top) + 12px);
   --app-max-width: 480px;
   /* Hauteur barre nav : padding + icônes/labels + safe area bas (une seule fois) */
   /* Hauteur nav : contenu + safe area (une seule fois, appliquée sur la nav fixe) */
@@ -489,9 +491,63 @@
   }
 
   .mobile-screen-header--safe {
-    padding-top: max(8px, var(--safe-top));
+    padding-top: var(--safe-header-top);
     padding-left: max(16px, var(--safe-left));
     padding-right: max(16px, var(--safe-right));
+  }
+
+  /* SafeAreaLayout — enveloppe globale */
+  .safe-area-layout--top    { padding-top: var(--safe-top); }
+  .safe-area-layout--bottom { padding-bottom: var(--safe-bottom); }
+  .safe-area-layout--left   { padding-left: var(--safe-left); }
+  .safe-area-layout--right  { padding-right: var(--safe-right); }
+
+  /* Zone tactile minimum Apple HIG / Material */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: grid;
+    place-items: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+
+  .mobile-page-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* z-90 — modales shell (hors app-shell-main, safe-area obligatoire) */
+  .overlay-shell {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    background: var(--noir);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    animation: overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both;
+  }
+
+  .overlay-shell .mobile-screen-header--safe {
+    padding-top: 8px;
+  }
+
+  /* Bouton flottant safe (Reels, galerie produit) */
+  .safe-floating-top {
+    top: var(--safe-header-top);
   }
 
   .mobile-screen-header__back {
