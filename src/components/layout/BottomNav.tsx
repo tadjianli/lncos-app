@@ -1,7 +1,7 @@
 "use client";
 /**
  * LN COS — Bottom nav
- * position: fixed; bottom: 0 — collée au bord bas (safe-area via CSS).
+ * position: absolute; bottom: 0 — ancrée au bas de l'app-shell (safe-area via CSS).
  */
 
 import Link from "next/link";

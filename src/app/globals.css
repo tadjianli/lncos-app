@@ -135,9 +135,11 @@
   --pd-gallery-top: calc(var(--safe-top) + var(--pd-island-gap));
   --pd-gallery-max-h: 48dvh;
   --app-max-width: 480px;
-  /* Hauteur nav : contenu compact + safe area (une seule fois, sur la nav fixe) */
+  /* Hauteur nav : icônes + padding vertical + safe area (une seule fois) */
   --bottom-nav-content-h: 1.75rem;
-  --bottom-nav-h: calc(var(--bottom-nav-content-h) + var(--safe-bottom));
+  --bottom-nav-pad-y: 4px;
+  --bottom-nav-safe-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  --bottom-nav-h: calc(var(--bottom-nav-content-h) + 8px + var(--bottom-nav-safe-bottom));
   --bottom-action-cta-h: 36px;
   --pd-action-bar-pad-y: 4px;
   --sp-10: 40px;
@@ -217,8 +219,7 @@
     padding: 0;
     width: 100%;
     max-width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
+    height: 100%;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -232,8 +233,6 @@
     padding: 0;
     width: 100%;
     max-width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
     overflow: hidden;
     font-family: var(--font-montserrat, 'Montserrat', system-ui, sans-serif);
     font-size: var(--fs-body);
@@ -579,9 +578,6 @@
     max-width: var(--app-max-width);
     margin-left: auto;
     margin-right: auto;
-    height: 100dvh;
-    min-height: 100dvh;
-    max-height: 100dvh;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -1238,9 +1234,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Bottom navigation — fixée au bord bas du viewport */
+/* Bottom navigation — ancrée au bas de l'app-shell (pas de zone morte sous la nav) */
 .bottom-nav {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
@@ -1250,10 +1246,9 @@
   margin: 0 auto;
   display: flex;
   justify-content: space-around;
-  align-items: flex-end;
-  min-height: var(--bottom-nav-h);
-  padding-top: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  align-items: center;
+  padding-top: var(--bottom-nav-pad-y);
+  padding-bottom: var(--bottom-nav-safe-bottom);
   padding-left: max(8px, var(--safe-left));
   padding-right: max(8px, var(--safe-right));
   box-sizing: border-box;
@@ -1266,11 +1261,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 1px;
   position: relative;
   min-width: 44px;
-  height: var(--bottom-nav-content-h);
+  min-height: var(--bottom-nav-content-h);
   padding-bottom: 0;
   text-decoration: none;
   transition: color .25s;
@@ -2912,7 +2907,7 @@
 
   .bottom-nav {
     bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: var(--bottom-nav-safe-bottom);
   }
 
   .pd-overlay {
