@@ -18,10 +18,8 @@ import {
   ProductLiveViewers,
   ProductSalesCounter,
   ProductStockAlert,
-  ProductTrustBadges,
-  ProductReassuranceLines,
-  ProductDeliveryTrustBlock,
 } from "@/components/social-proof/ProductSocialProof";
+import { TrustBadges } from "@/components/commerce/TrustBadges";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -243,6 +241,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const showUsageTips = sectionToggles.usageTips && usageTips.length > 0;
 
   const labels = variantLabels(p);
+  const showVariants = sectionToggles.variants && labels.length > 0;
   const [selectedVariantName, setSelectedVariantName] = useState(labels[0] ?? "");
   const selectedVariant = findVariantByName(p, selectedVariantName);
 
@@ -562,10 +561,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             )}
           </div>
 
-          <ProductReassuranceLines />
-          <div style={{ marginTop: 10, marginBottom: 14 }}>
-            <ProductTrustBadges />
-          </div>
           <ProductStockAlert stock={displayStock} />
 
           <ProductReviewsSummary
@@ -583,11 +578,13 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
 
           <ProductLiveViewers productId={p.id} />
 
-          <VariantSwatches
-            product={p}
-            selectedName={selectedVariantName}
-            onSelect={setSelectedVariantName}
-          />
+          {showVariants && (
+            <VariantSwatches
+              product={p}
+              selectedName={selectedVariantName}
+              onSelect={setSelectedVariantName}
+            />
+          )}
 
           {/* ── Quantity stepper ── */}
           <div style={{ marginBottom: 28 }}>
@@ -813,8 +810,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </div>
           )}
 
-          <ProductDeliveryTrustBlock />
-
           <ProductBeforeAfterSection productId={p.id} />
 
           <ProductReviewsSection
@@ -827,8 +822,8 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
         </div>
       </div>
 
-      {/* ── Sticky add bar (compact — garanties dans le scroll) ── */}
-      <div className="bottom-action-bar">
+      {/* ── Sticky CTA + réassurance premium ── */}
+      <div className="bottom-action-bar bottom-action-bar--product">
         <ProductSalesCounter productId={p.id} />
         <button
           type="button"
@@ -852,6 +847,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </>
           )}
         </button>
+        <TrustBadges />
       </div>
     </div>
   );

@@ -248,10 +248,20 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           />
 
           <div className="adm-form-section-title">Variantes</div>
+          <p className="adm-form-section-desc">
+            Contenances, teintes ou formats. Activez ou désactivez l&apos;affichage du sélecteur sur la fiche produit.
+          </p>
           <ProductVariantsEditor
             productId={productId}
             variants={variants}
             onChange={setVariants}
+            showOnStorefront={form.sectionToggles?.variants ?? true}
+            onShowOnStorefrontChange={(variantsToggle) =>
+              set("sectionToggles", {
+                ...(form.sectionToggles ?? DEFAULT_SECTION_TOGGLES),
+                variants: variantsToggle,
+              })
+            }
           />
 
           {!isNew && <ProductReviewsPanel product={{ ...form, id: productId, productVariants: variants }} />}

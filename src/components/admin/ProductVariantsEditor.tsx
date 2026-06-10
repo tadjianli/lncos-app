@@ -10,9 +10,18 @@ interface ProductVariantsEditorProps {
   productId: string;
   variants: ProductVariant[];
   onChange: (variants: ProductVariant[]) => void;
+  /** Afficher le sélecteur (contenance / teinte) sur la fiche produit */
+  showOnStorefront?: boolean;
+  onShowOnStorefrontChange?: (show: boolean) => void;
 }
 
-export function ProductVariantsEditor({ productId, variants, onChange }: ProductVariantsEditorProps) {
+export function ProductVariantsEditor({
+  productId,
+  variants,
+  onChange,
+  showOnStorefront = true,
+  onShowOnStorefrontChange,
+}: ProductVariantsEditorProps) {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   function updateVariant(id: string, patch: Partial<ProductVariant>) {
@@ -40,6 +49,26 @@ export function ProductVariantsEditor({ productId, variants, onChange }: Product
 
   return (
     <div className="adm-variants-editor">
+      {onShowOnStorefrontChange && (
+        <label className="adm-section-toggle">
+          <span className="adm-section-toggle-text">
+            <span className="adm-section-toggle-label">Afficher sur la fiche produit</span>
+            <span className="adm-section-toggle-hint">
+              Sélecteur de contenance ou teinte (section « Contenance » / « Teinte »)
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showOnStorefront}
+            className={`adm-switch${showOnStorefront ? " is-on" : ""}`}
+            onClick={() => onShowOnStorefrontChange(!showOnStorefront)}
+          >
+            <span className="adm-switch-knob" />
+          </button>
+        </label>
+      )}
+
       {variants.length === 0 && (
         <p className="adm-variants-empty">Aucune variante — le prix et stock du produit principal s&apos;appliquent.</p>
       )}

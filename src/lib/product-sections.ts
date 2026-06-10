@@ -8,6 +8,8 @@ export interface ProductSectionToggles {
   description: boolean;
   usageTips: boolean;
   benefits: boolean;
+  /** Sélecteur contenance / teinte sur la fiche produit */
+  variants: boolean;
 }
 
 export interface ProductExtraSection {
@@ -25,6 +27,7 @@ export const DEFAULT_SECTION_TOGGLES: ProductSectionToggles = {
   description: true,
   usageTips: true,
   benefits: true,
+  variants: true,
 };
 
 export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
@@ -34,6 +37,7 @@ export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
     description: o.description !== false,
     usageTips: o.usageTips !== false,
     benefits: o.benefits !== false,
+    variants: o.variants !== false,
   };
 }
 

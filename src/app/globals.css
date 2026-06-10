@@ -2561,16 +2561,115 @@
   box-sizing: border-box;
 }
 
-/* Fiche produit plein écran — barre CTA compacte, safe-bottom seul */
-.pd-overlay .bottom-action-bar {
+/* Fiche produit plein écran — CTA + TrustBadges, safe-bottom sur le bloc */
+.pd-overlay .bottom-action-bar--product {
   padding-top: var(--pd-action-bar-pad-y);
-  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
 }
 
 .pd-overlay .bottom-action-bar__meta {
   margin-bottom: 2px;
   font-size: 11px;
   line-height: 1.15;
+}
+
+/* ─── TrustBadges — réassurance premium sous CTA produit ─── */
+
+.trust-badges {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.trust-badges__tagline {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  line-height: 1.35;
+}
+
+.trust-badges__tagline span {
+  margin: 0 5px;
+  color: rgba(212, 175, 55, 0.45);
+}
+
+.trust-badges__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 400px) {
+  .trust-badges__cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+}
+
+.trust-badges__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 62px;
+  padding: 8px 6px;
+  border-radius: var(--r-sm);
+  background: rgba(18, 18, 18, 0.92);
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.trust-badges__card-emoji {
+  font-size: 15px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.trust-badges__card-title {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  max-width: 100%;
+}
+
+.trust-badges__payments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+  padding: 2px 0 0;
+}
+
+.trust-badges__pay-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 28px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.trust-badges__pay-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Dans AppShell au-dessus de la bottom nav — safe area gérée par la nav */

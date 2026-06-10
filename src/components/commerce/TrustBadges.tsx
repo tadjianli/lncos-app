@@ -1,0 +1,36 @@
+"use client";
+/**
+ * LN COS — Bloc réassurance premium sous le CTA sticky (toutes fiches produit)
+ */
+
+import { PaymentMethodLogos } from "@/components/commerce/PaymentMethodLogos";
+
+const REASSURANCE_CARDS = [
+  { emoji: "🔒", title: "Paiement 100% sécurisé" },
+  { emoji: "🚚", title: "Livraison express Réunion" },
+  { emoji: "↩️", title: "Satisfait ou remboursé" },
+  { emoji: "📦", title: "Expédition sous 24h" },
+] as const;
+
+export function TrustBadges() {
+  return (
+    <section className="trust-badges" aria-label="Garanties et moyens de paiement">
+      <p className="trust-badges__tagline">
+        Paiement sécurisé <span aria-hidden>•</span> Livraison rapide <span aria-hidden>•</span> Retours faciles
+      </p>
+
+      <div className="trust-badges__cards">
+        {REASSURANCE_CARDS.map((card) => (
+          <div key={card.title} className="trust-badges__card">
+            <span className="trust-badges__card-emoji" aria-hidden>
+              {card.emoji}
+            </span>
+            <span className="trust-badges__card-title">{card.title}</span>
+          </div>
+        ))}
+      </div>
+
+      <PaymentMethodLogos />
+    </section>
+  );
+}
