@@ -5,6 +5,7 @@
  */
 
 import { FadeImage } from "@/components/shared/FadeImage";
+import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import type { Product } from "@/lib/data";
 import {
   effectiveStock,
@@ -55,14 +56,18 @@ export function VariantSwatches({ product, selectedName, onSelect }: VariantSwat
               >
                 <span className="pd-swatch-ring">
                   <span className="pd-swatch-img">
-                    <FadeImage
-                      src={img}
-                      alt={v.name}
-                      fill
-                      sizes="56px"
-                      style={{ objectFit: "cover" }}
-                      unoptimized={img.includes("supabase.co")}
-                    />
+                    {img ? (
+                      <FadeImage
+                        src={img}
+                        alt={v.name}
+                        fill
+                        sizes="56px"
+                        style={{ objectFit: "cover" }}
+                        unoptimized={img.includes("supabase.co")}
+                      />
+                    ) : (
+                      <ProductImagePlaceholder label={v.name} />
+                    )}
                   </span>
                 </span>
                 <span className="pd-swatch-name">{v.name}</span>

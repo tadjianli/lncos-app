@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FadeImage } from "@/components/shared/FadeImage";
+import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
 
 interface ProductGalleryProps {
@@ -67,7 +68,25 @@ export function ProductGallery({
     if (e.key === "ArrowRight") goNext();
   }
 
-  if (!heroSrc) return null;
+  if (!heroSrc) {
+    return (
+      <section className="pd-gallery" aria-label="Galerie produit">
+        <div className="pd-gallery-hero" style={{ cursor: "default" }}>
+          <div className="pd-gallery-hero-inner">
+            <ProductImagePlaceholder label={alt} className="prod-img-placeholder--hero" />
+          </div>
+          {tag && (
+            <span
+              className="pd-gallery-tag"
+              data-flash={["Flash", "Édition limitée"].includes(tag) ? "1" : "0"}
+            >
+              {tag}
+            </span>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>

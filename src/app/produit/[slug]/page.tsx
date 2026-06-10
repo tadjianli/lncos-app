@@ -104,7 +104,9 @@ export default async function ProduitPage({ params, searchParams }: Props) {
     "@type": "Product",
     name: product.name,
     description: product.metaDescription || product.desc || description,
-    image: image.startsWith("http") ? image : absoluteUrl(image),
+    ...(image
+      ? { image: image.startsWith("http") ? image : absoluteUrl(image) }
+      : {}),
     sku: product.id,
     brand: { "@type": "Brand", name: "LN COS" },
     offers: {
@@ -141,12 +143,14 @@ export default async function ProduitPage({ params, searchParams }: Props) {
         <p style={{ fontSize: 18, fontWeight: 700, color: "var(--gold)", margin: "0 0 16px" }}>
           {product.price.toFixed(2)} €
         </p>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={image}
-          alt={product.imageAlt ?? product.name}
-          style={{ width: "100%", maxWidth: 360, borderRadius: "var(--r-md)", marginBottom: 16 }}
-        />
+        {image ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={image}
+            alt={product.imageAlt ?? product.name}
+            style={{ width: "100%", maxWidth: 360, borderRadius: "var(--r-md)", marginBottom: 16 }}
+          />
+        ) : null}
         <Suspense fallback={null}>
           <ProductPageClient product={product} />
         </Suspense>

@@ -3,8 +3,9 @@
 import { useState, memo, useCallback } from "react";
 import { Icon } from "./Icon";
 import { FadeImage } from "./FadeImage";
+import { ProductImagePlaceholder } from "./ProductImagePlaceholder";
 import type { Product } from "@/lib/data";
-import { resolveProductImage } from "@/lib/product-catalog";
+import { hasProductImage, resolveProductImage } from "@/lib/product-catalog";
 
 interface ProductCardProps {
   p: Product;
@@ -13,8 +14,8 @@ interface ProductCardProps {
   isFav?: boolean;
   onAdd?: (p: Product) => void;
   priority?: boolean;
-  /** Grille boutique 3 colonnes — images et icônes adaptées */
-  layout?: "default" | "grid-3";
+  /** Grille boutique 2 colonnes — format premium */
+  layout?: "default" | "grid-2" | "grid-3";
 }
 
 export const ProductCard = memo(function ProductCard({
@@ -28,6 +29,7 @@ export const ProductCard = memo(function ProductCard({
 }: ProductCardProps) {
   const [pops, setPops] = useState<number[]>([]);
   const [popping, setPopping] = useState(false);
+  const isBoutiqueGrid = layout === "grid-2" || layout === "grid-3";
 
   const handleAdd = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -40,31 +42,37 @@ export const ProductCard = memo(function ProductCard({
   }, [onAdd, p]);
 
   const imgSrc = resolveProductImage(p);
-  const initials = p.name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
+  const showImage = hasProductImage(p) && imgSrc != null;
+
+  const favIconSize = layout === "grid-2" ? 15 : layout === "grid-3" ? 13 : 16;
+  const starSize = layout === "grid-2" ? 11 : layout === "grid-3" ? 10 : 12;
+  const plusSize = layout === "grid-2" ? 16 : layout === "grid-3" ? 14 : 16;
+  const imageSizes =
+    layout === "grid-2"
+      ? "(max-width: 480px) 46vw, 220px"
+      : layout === "grid-3"
+        ? "(max-width: 480px) 31vw, 120px"
+        : "(max-width: 480px) 158px, 164px";
 
   return (
     <div
       onClick={() => onOpen?.(p)}
-      className="prod-card snap"
+      className={`prod-card snap${isBoutiqueGrid ? ` prod-card--${layout}` : ""}`}
     >
       <div className="prod-imgwrap">
-        <div className="prod-img-fallback" aria-hidden>
-          {initials}
-        </div>
-        <FadeImage
-          src={imgSrc}
-          alt={p.name}
-          fill
-          sizes={layout === "grid-3" ? "(max-width: 480px) 31vw, 120px" : "(max-width: 480px) 158px, 164px"}
-          style={{ objectFit: "cover" }}
-          fallbackLabel={p.name}
-          priority={priority}
-        />
+        {showImage ? (
+          <FadeImage
+            src={imgSrc}
+            alt={p.name}
+            fill
+            sizes={imageSizes}
+            style={{ objectFit: "cover" }}
+            fallbackLabel={p.name}
+            priority={priority}
+          />
+        ) : (
+          <ProductImagePlaceholder label={p.name} />
+        )}
 
         {p.tag && (
           <span className={`prod-tag${p.tag === "Flash" ? " prod-tag--flash" : ""}`}>
@@ -81,7 +89,7 @@ export const ProductCard = memo(function ProductCard({
         >
           <Icon
             name="heart"
-            size={layout === "grid-3" ? 13 : 16}
+            size={favIconSize}
             color={isFav ? "var(--pink)" : "#fff"}
             fill={isFav ? "var(--pink)" : "none"}
           />
@@ -92,7 +100,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="prod-card-title">{p.name}</div>
 
         <div className="prod-card-rating">
-          <Icon name="star" size={layout === "grid-3" ? 10 : 12} color="var(--gold)" fill="var(--gold)" />
+          <Icon name="star" size={starSize} color="var(--gold)" fill="var(--gold)" />
           <span>{p.rating}</span>
           <span className="prod-card-reviews">({p.reviews})</span>
         </div>
@@ -111,7 +119,7 @@ export const ProductCard = memo(function ProductCard({
             className={`prod-add prod-card-add${popping ? " pop" : ""}`}
             aria-label="Ajouter au panier"
           >
-            <Icon name="plus" size={layout === "grid-3" ? 14 : 16} color="#3a1020" stroke={2.4} />
+            <Icon name="plus" size={plusSize} color="#3a1020" stroke={2.4} />
             {pops.map((id) => (
               <span key={id} className="prod-plusone">
                 +1

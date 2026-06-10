@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { Product } from "@/lib/data";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { FadeImage } from "@/components/shared/FadeImage";
+import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
 import { resolveProductImage } from "@/lib/product-catalog";
 
@@ -18,7 +19,11 @@ function CartLinePreview({ product }: { product: Product }) {
   return (
     <div className="adm-sf-cart-row">
       <div className="adm-sf-cart-thumb">
-        <FadeImage src={imgSrc} alt={product.imageAlt ?? product.name} fill sizes="56px" style={{ objectFit: "cover" }} />
+        {imgSrc ? (
+          <FadeImage src={imgSrc} alt={product.imageAlt ?? product.name} fill sizes="56px" style={{ objectFit: "cover" }} />
+        ) : (
+          <ProductImagePlaceholder label={product.name} />
+        )}
       </div>
       <div className="adm-sf-cart-body">
         <div className="adm-sf-cart-name">{product.name}</div>
@@ -48,17 +53,17 @@ export function ProductImageStorefrontPreview({ product }: ProductImageStorefron
     {
       id: "card",
       label: "Carte produit",
-      node: <ProductCard p={cardProduct} layout="grid-3" priority />,
+      node: <ProductCard p={cardProduct} layout="grid-2" priority />,
     },
     {
       id: "best",
       label: "Best Seller",
-      node: <ProductCard p={bestSellerProduct} layout="grid-3" priority />,
+      node: <ProductCard p={bestSellerProduct} layout="grid-2" priority />,
     },
     {
       id: "fav",
       label: "Favoris",
-      node: <ProductCard p={cardProduct} layout="grid-3" isFav priority />,
+      node: <ProductCard p={cardProduct} layout="grid-2" isFav priority />,
     },
     {
       id: "cart",

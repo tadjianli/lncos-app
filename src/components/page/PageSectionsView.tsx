@@ -114,10 +114,10 @@ function PageProducts({ section }: { section: HomeSection }) {
           ))}
         </div>
       )}
-      <div className="prodbento prodbento--3">
+      <div className="prodbento prodbento--2">
         {list.map((p, i) => (
           <div key={p.id} className="prodbento-cell">
-            <ProductCard p={p} layout="grid-3" priority={i < 6} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
+            <ProductCard p={p} layout="grid-2" priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
           </div>
         ))}
       </div>

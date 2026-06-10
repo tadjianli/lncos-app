@@ -42,11 +42,12 @@ export default function FavoritesPage() {
       </div>
 
       {/* Grid */}
-      <div className="prodbento" style={{ padding: "0 16px 24px" }}>
+      <div className="prodbento prodbento--2" style={{ padding: "0 16px 24px" }}>
         {favProducts.map((p) => (
           <div key={p.id} className="prodbento-cell">
             <ProductCard
               p={p}
+              layout="grid-2"
               isFav={favs.includes(p.id)}
               onFav={toggleFav}
               onAdd={addToCart}

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { SeoPageHeader } from "@/components/layout/SeoPageHeader";
+import { CategoryProductGrid } from "@/components/commerce/CategoryProductGrid";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { absoluteUrl } from "@/lib/site-url";
 import {
@@ -71,22 +71,7 @@ export default async function CategoriePage({ params }: Props) {
         <p style={{ fontSize: 14, color: "var(--ink-mute)", margin: "0 0 20px", lineHeight: 1.5 }}>
           {description}
         </p>
-        <div className="prodbento prodbento--3">
-          {products.map((p) => (
-            <Link
-              key={p.id}
-              href={getProductSeoPath(p)}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <div className="prod-card" style={{ width: "100%" }}>
-                <div className="prod-card-info">
-                  <div className="prod-card-title">{p.name}</div>
-                  <div className="prod-card-price">{p.price.toFixed(2)} €</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CategoryProductGrid products={products} />
         {products.length === 0 && (
           <p style={{ color: "var(--ink-mute)", fontSize: 14 }}>Aucun produit dans cette catégorie.</p>
         )}

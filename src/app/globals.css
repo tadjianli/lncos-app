@@ -816,6 +816,62 @@
   color: rgba(212,175,55,.38);
   pointer-events: none;
 }
+
+/* Placeholder premium — sans logo LN COS */
+.prod-img-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(212,175,55,.16) 0%, transparent 58%),
+    radial-gradient(ellipse 80% 60% at 80% 90%, rgba(247,198,215,.12) 0%, transparent 55%),
+    linear-gradient(165deg, #2a2228 0%, #1a1618 42%, #221c20 100%);
+  overflow: hidden;
+}
+
+.prod-img-placeholder::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.02) 0 12px,
+    transparent 12px 24px
+  );
+  pointer-events: none;
+}
+
+.prod-img-placeholder-silhouette {
+  width: 32%;
+  max-width: 72px;
+  height: 48%;
+  max-height: 120px;
+  border-radius: 10px 10px 5px 5px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 100%);
+  border: 1px solid rgba(212,175,55,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.1),
+    0 12px 32px -16px rgba(0,0,0,.65);
+  flex-shrink: 0;
+}
+
+.prod-img-placeholder-initials {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(212,175,55,.45);
+  max-width: 80%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .prod-tag {
   position: absolute;
   top: 10px;
@@ -1600,7 +1656,114 @@
 }
 .prodbento-cell.lead { grid-column: span 2; }
 
-/* Grille boutique — 3 produits / ligne, même densité que hpc--fill-3 */
+/* Grille boutique premium — 2 colonnes (grid-cols-2), gap 16px */
+.prodbento--2 {
+  --prodbento-gap: var(--sp-4);
+  --prodbento-cols: 2;
+  --prodbento-slot: calc(
+    (100% - (var(--prodbento-cols) - 1) * var(--prodbento-gap)) / var(--prodbento-cols)
+  );
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--prodbento-gap);
+  justify-content: stretch;
+  width: 100%;
+}
+
+.prodbento--2 .prodbento-cell {
+  width: 100%;
+  min-width: 0;
+}
+
+.prodbento--2 .prod-card {
+  width: 100%;
+  flex: 1 1 auto;
+  max-width: 100%;
+  --prod-card-w: 100%;
+}
+
+.prodbento--2 .prod-imgwrap {
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  min-height: 168px;
+}
+
+.prodbento--2 .prod-card-info {
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 104px;
+  padding: 12px 12px 14px;
+}
+
+.prodbento--2 .prod-card-title {
+  font-size: 13px;
+  line-height: 1.35;
+  height: auto;
+  max-height: none;
+  min-height: 2.7em;
+  -webkit-line-clamp: 2;
+}
+
+.prodbento--2 .prod-card-rating {
+  margin: 5px 0 8px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.prodbento--2 .prod-card-rating svg {
+  width: 11px;
+  height: 11px;
+}
+
+.prodbento--2 .prod-card-price {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.prodbento--2 .prod-card-price-old {
+  font-size: 11px;
+}
+
+.prodbento--2 .prod-tag {
+  top: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+}
+
+.prodbento--2 .prod-fav-btn {
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+}
+
+.prodbento--2 .prod-fav-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.prodbento--2 .prod-card-add {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.prodbento--2 .prod-card-add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.prod-img-placeholder--hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+}
+
+/* Legacy 3-col — admin previews */
 .prodbento--3 {
   --prodbento-gap: 12px;
   --prodbento-cols: 3;

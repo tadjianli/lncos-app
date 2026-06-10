@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
+import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { getBrowserUser, getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { fetchUserReviewKeys, usePublicProducts } from "@/lib/client-supabase";
-import { productFallbackImage, resolveProductImage } from "@/lib/product-catalog";
+import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
 import { useStore } from "@/lib/store";
 
@@ -108,7 +109,7 @@ function OrderCard({
   onToggle: () => void;
   reviewKeys: Set<string>;
   onReview: (item: OrderItem) => void;
-  itemImage: (item: OrderItem) => string;
+  itemImage: (item: OrderItem) => string | null;
 }) {
   const MAX = 3;
   const visible  = order.items.slice(0, MAX);
@@ -131,8 +132,12 @@ function OrderCard({
         <div style={{ display: "flex", gap: 8 }}>
           {visible.map((item, i) => (
             <div key={item.id + i} style={{ position: "relative", flexShrink: 0 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 10, overflow: "hidden", background: "var(--charcoal-3)" }}>
-                <FadeImage src={itemImage(item)} alt={item.name} width={52} height={52} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+              <div style={{ width: 52, height: 52, borderRadius: 10, overflow: "hidden", background: "var(--charcoal-3)", position: "relative" }}>
+                {itemImage(item) ? (
+                  <FadeImage src={itemImage(item)!} alt={item.name} width={52} height={52} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                ) : (
+                  <ProductImagePlaceholder label={item.name} />
+                )}
               </div>
               {i === visible.length - 1 && overflow > 0 && (
                 <div style={{ position: "absolute", inset: 0, borderRadius: 10, background: "rgba(10,10,10,.72)", display: "grid", placeItems: "center", color: "var(--ink)", fontSize: 13, fontWeight: 700 }}>+{overflow}</div>
@@ -165,8 +170,12 @@ function OrderCard({
             const reviewed = reviewKeys.has(`${order.id}:${item.id}`);
             return (
               <div key={item.id + i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", background: "var(--charcoal-3)", flexShrink: 0 }}>
-                  <FadeImage src={itemImage(item)} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                <div style={{ width: 40, height: 40, borderRadius: 8, overflow: "hidden", background: "var(--charcoal-3)", flexShrink: 0, position: "relative" }}>
+                  {itemImage(item) ? (
+                    <FadeImage src={itemImage(item)!} alt={item.name} width={40} height={40} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
+                  ) : (
+                    <ProductImagePlaceholder label={item.name} />
+                  )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</p>
@@ -304,8 +313,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
   const itemImage = useCallback((item: OrderItem) => {
     if (item.image_url) return item.image_url;
     const product = byId(item.id);
-    if (product) return resolveProductImage(product);
-    return productFallbackImage(item.id);
+    return product ? resolveProductImage(product) : null;
   }, [byId]);
 
   return (

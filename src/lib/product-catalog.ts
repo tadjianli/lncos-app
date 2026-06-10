@@ -11,8 +11,13 @@ export interface ProductDraft {
   variants: ProductVariant[];
 }
 
-const PRODUCT_PLACEHOLDER = "/assets/icon-192.png";
-const LOCAL_IMG = (_id: string) => PRODUCT_PLACEHOLDER;
+/** Ne jamais utiliser le logo comme image produit */
+export function hasProductImage(
+  product: Product,
+  variant?: ProductVariant | null
+): boolean {
+  return !!(variant?.imageUrl || product.mainImageUrl || product.imageUrl);
+}
 
 export function isProductPublishedForStorefront(
   product: Pick<Product, "active">
@@ -79,19 +84,20 @@ export function slugifyProductId(name: string): string {
   return base || `produit-${Date.now()}`;
 }
 
-export function productFallbackImage(productId: string): string {
-  return LOCAL_IMG(productId);
+/** @deprecated Retourne null — utiliser ProductImagePlaceholder côté UI */
+export function productFallbackImage(_productId: string): null {
+  return null;
 }
 
-/** Image affichée partout sauf galerie fiche (cartes, panier, favoris…) */
+/** Image affichée partout sauf galerie fiche (cartes, panier, favoris…) — null si aucune image */
 export function resolveProductImage(
   product: Product,
   variant?: ProductVariant | null
-): string {
+): string | null {
   if (variant?.imageUrl) return variant.imageUrl;
   if (product.mainImageUrl) return product.mainImageUrl;
   if (product.imageUrl) return product.imageUrl;
-  return productFallbackImage(product.id);
+  return null;
 }
 
 /** Galerie fiche produit — miniatures uniquement (gallery_images) */
@@ -111,7 +117,6 @@ export function buildProductGallery(
     push(product.mainImageUrl);
     push(product.imageUrl);
   }
-  if (urls.length === 0) urls.push(productFallbackImage(product.id));
   return urls;
 }
 

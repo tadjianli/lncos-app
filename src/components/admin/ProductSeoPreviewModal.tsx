@@ -45,12 +45,26 @@ export function ProductSeoPreviewModal({ product, onClose }: ProductSeoPreviewMo
 
         <div className="ab-modal-scroll" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image}
-              alt={product.imageAlt ?? product.name}
-              style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, flexShrink: 0 }}
-            />
+            {image ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={image}
+                alt={product.imageAlt ?? product.name}
+                style={{ width: 120, height: 120, objectFit: "cover", borderRadius: 12, flexShrink: 0 }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: 12,
+                  flexShrink: 0,
+                  background: "linear-gradient(165deg,#2a2228,#1a1618)",
+                  border: "1px solid rgba(212,175,55,.2)",
+                }}
+                aria-hidden
+              />
+            )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700 }}>{product.name}</h2>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--adm-gold)", marginBottom: 8 }}>

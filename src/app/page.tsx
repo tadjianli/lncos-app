@@ -209,12 +209,16 @@ function RoutineSection({
             <div key={p.id} className="routine-step">
               <span className="routine-step-num">{i + 1}</span>
               <span className="routine-step-img">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={resolveProductImage(p)}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                {resolveProductImage(p) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={resolveProductImage(p)!}
+                    alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <span style={{ display: "block", width: "100%", height: "100%", background: "linear-gradient(155deg,#2a2228,#1a1618)" }} />
+                )}
               </span>
               <div className="routine-step-main">
                 <div className="routine-step-name">{p.name}</div>
@@ -345,12 +349,14 @@ function BentoUniversSection({
           <div key={key}>
             <div className="bento-tile" style={{ height: 120, marginBottom: 12, borderRadius: 18 }}>
               <div className="bento-bg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={resolveProductImage(hero)}
-                  alt=""
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                {resolveProductImage(hero) ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={resolveProductImage(hero)!}
+                    alt=""
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : null}
               </div>
               <div className="bento-grad" style={{ background: meta.grad }} />
               <span className="bento-ic">

@@ -12,6 +12,7 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { findVariantByName, resolveProductImage } from "@/lib/product-catalog";
+import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getBrowserUser, isSupabaseConfigured } from "@/lib/supabase";
 import {
@@ -445,7 +446,14 @@ function CartScreen({
                 onClick={() => openProduct(it)}
                 style={{ width: 78, height: 78, borderRadius: 14, flex: "0 0 auto", overflow: "hidden", position: "relative", background: "#181818" }}
               >
-                <FadeImage src={resolveProductImage(it, findVariantByName(it, it.variant))} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
+                {(() => {
+                  const thumb = resolveProductImage(it, findVariantByName(it, it.variant));
+                  return thumb ? (
+                    <FadeImage src={thumb} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
+                  ) : (
+                    <ProductImagePlaceholder label={it.name} />
+                  );
+                })()}
               </button>
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div>
