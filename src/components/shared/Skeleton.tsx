@@ -90,7 +90,7 @@ export const SkeletonProductRow = memo(function SkeletonProductRow({
   count?: number;
 }) {
   return (
-    <HorizontalProductCarousel bleed={false} premium style={{ pointerEvents: "none" }}>
+    <HorizontalProductCarousel bleed={false} style={{ pointerEvents: "none" }}>
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonProductCard key={i} layout="grid-2" />
       ))}

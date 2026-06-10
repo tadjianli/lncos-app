@@ -42,7 +42,7 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
             <span style={{ position: "relative" }}>
               <Icon
                 name={item.icon}
-                size={23}
+                size={22}
                 stroke={active ? 2 : 1.7}
                 color={active ? "var(--gold)" : "var(--ink-mute)"}
                 fill={showFill ? "rgba(212,175,55,.18)" : "none"}
