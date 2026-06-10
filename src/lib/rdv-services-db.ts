@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { slugifyProductId } from "./product-catalog";
 import { services as seedServices, type Service } from "./rdv-data";
@@ -143,16 +144,61 @@ function attachCounts(categories: ServiceCategory[], serviceList: Service[]): Se
   }));
 }
 
-function subscribeRdvCatalog(onChange: () => void): (() => void) | undefined {
-  if (!isSupabaseConfigured()) return undefined;
-  const channel = getSupabase()
-    .channel("rdv-catalog")
-    .on("postgres_changes", { event: "*", schema: "public", table: "service_categories" }, onChange)
-    .on("postgres_changes", { event: "*", schema: "public", table: "services" }, onChange)
-    .subscribe();
-  return () => {
-    getSupabase().removeChannel(channel);
-  };
+/* Canal realtime partagé — évite « cannot add callbacks after subscribe() » */
+const RDV_CATALOG_CHANNEL = "rdv-catalog";
+
+type RdvCatalogRealtimeState = {
+  refCount: number;
+  channel: RealtimeChannel | null;
+  listeners: Set<() => void>;
+};
+
+const rdvCatalogRealtime: RdvCatalogRealtimeState = {
+  refCount: 0,
+  channel: null,
+  listeners: new Set(),
+};
+
+function notifyRdvCatalogListeners() {
+  rdvCatalogRealtime.listeners.forEach((fn) => fn());
+}
+
+/** Abonnement realtime mutualisé (plusieurs hooks / onglets admin). */
+function useRdvCatalogRealtime(onChange: () => void) {
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    rdvCatalogRealtime.listeners.add(onChange);
+    rdvCatalogRealtime.refCount += 1;
+
+    if (rdvCatalogRealtime.refCount === 1) {
+      rdvCatalogRealtime.channel = getSupabase()
+        .channel(RDV_CATALOG_CHANNEL)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "service_categories" },
+          notifyRdvCatalogListeners
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "services" },
+          notifyRdvCatalogListeners
+        )
+        .subscribe();
+    }
+
+    return () => {
+      rdvCatalogRealtime.listeners.delete(onChange);
+      rdvCatalogRealtime.refCount -= 1;
+      if (rdvCatalogRealtime.refCount <= 0) {
+        if (rdvCatalogRealtime.channel) {
+          getSupabase().removeChannel(rdvCatalogRealtime.channel);
+        }
+        rdvCatalogRealtime.channel = null;
+        rdvCatalogRealtime.refCount = 0;
+      }
+    };
+  }, [onChange]);
 }
 
 /* ─── Public catalog (client RDV) ─────────────────────────────────────────── */
@@ -193,8 +239,9 @@ export function usePublicRdvCatalog() {
 
   useEffect(() => {
     load();
-    return subscribeRdvCatalog(load);
   }, [load]);
+
+  useRdvCatalogRealtime(load);
 
   const filters = useMemo(
     () => buildCategoryFilters(categories, services, true),
@@ -241,8 +288,9 @@ export function useAdminServiceCategories() {
 
   useEffect(() => {
     load();
-    return subscribeRdvCatalog(load);
   }, [load]);
+
+  useRdvCatalogRealtime(load);
 
   const insertCategory = useCallback(
     async (input: Omit<ServiceCategory, "createdAt" | "updatedAt" | "serviceCount">) => {
