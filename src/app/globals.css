@@ -2643,8 +2643,8 @@
 /* ─── TrustBadges — réassurance premium sous CTA produit ─── */
 
 .trust-badges {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid rgba(212, 175, 55, 0.1);
   max-width: 100%;
   overflow: hidden;
@@ -2653,14 +2653,14 @@
 .trust-badges__cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 @media (min-width: 400px) {
   .trust-badges__cards {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
+    gap: 5px;
   }
 }
 
@@ -2669,28 +2669,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-height: 62px;
-  padding: 8px 6px;
-  border-radius: var(--r-sm);
+  gap: 2px;
+  min-height: 46px;
+  padding: 4px 4px 5px;
+  border-radius: 10px;
   background: rgba(18, 18, 18, 0.92);
-  border: 1px solid rgba(212, 175, 55, 0.14);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
   text-align: center;
 }
 
 .trust-badges__card-emoji {
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 
 .trust-badges__card-title {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.15;
   color: var(--ink-soft);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   max-width: 100%;
 }
 
