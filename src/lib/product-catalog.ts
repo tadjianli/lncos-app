@@ -55,11 +55,17 @@ export function openProductInStorefront(
 ): void {
   if (typeof window === "undefined") return;
   const preview = !isProductPublishedForStorefront(product);
-  window.open(
-    getProductStorefrontUrl(product, { preview, origin: options?.origin }),
-    "_blank",
-    "noopener,noreferrer"
-  );
+  const slug = product.seoSlug?.trim() || product.id || slugifyProductId(product.name);
+  const url = getProductStorefrontUrl(product, { preview, origin: options?.origin });
+  console.log("[openProductInStorefront]", {
+    url,
+    slug,
+    productId: product.id,
+    seoSlug: product.seoSlug ?? null,
+    preview,
+    active: product.active ?? true,
+  });
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 export function slugifyProductId(name: string): string {

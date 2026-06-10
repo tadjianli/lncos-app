@@ -73,7 +73,12 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
     setSaving(false);
   }
 
-  const previewProduct: Product = { ...form, id: productId, productVariants: variants };
+  const previewProduct: Product = {
+    ...form,
+    id: productId,
+    seoSlug: form.seoSlug?.trim() || productId,
+    productVariants: variants,
+  };
   const viewLabel = getProductViewActionLabel(previewProduct);
   const canPreview = Boolean(productId.trim() && form.name.trim());
 

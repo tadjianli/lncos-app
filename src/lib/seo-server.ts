@@ -3,7 +3,8 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
-import type { Product, Category } from "@/lib/data";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { products as STATIC_PRODUCTS, type Product, type Category } from "@/lib/data";
 import type { ProductVariant } from "@/lib/product-catalog";
 import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-sections";
 import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
@@ -131,25 +132,58 @@ function mapCategoryRow(row: DbCategoryRow): Category {
   };
 }
 
+function findStaticProductBySlug(slug: string): Product | null {
+  const match = STATIC_PRODUCTS.find(
+    (p) => p.seoSlug === slug || p.id === slug
+  );
+  return match ? { ...match, active: true } : null;
+}
+
 export async function fetchProductBySeoSlug(
   slug: string,
   options?: { preview?: boolean }
 ): Promise<Product | null> {
+  const normalizedSlug = decodeURIComponent(slug).trim();
+  const preview = options?.preview ?? false;
+
+  if (!normalizedSlug) {
+    console.warn("[fetchProductBySeoSlug] slug vide");
+    return null;
+  }
+
+  if (!isSupabaseConfigured()) {
+    console.warn("[fetchProductBySeoSlug] Supabase non configuré, slug:", normalizedSlug);
+    return findStaticProductBySlug(normalizedSlug);
+  }
+
   const supabase = await createClient();
 
-  const buildQuery = (column: "seo_slug" | "id") => {
-    let q = supabase.from("products").select(PRODUCT_SELECT).eq(column, slug);
-    if (!options?.preview) q = q.eq("active", true);
-    return q.maybeSingle();
+  const queryProduct = async (column: "seo_slug" | "id") => {
+    let q = supabase.from("products").select(PRODUCT_SELECT).eq(column, normalizedSlug);
+    if (!preview) q = q.eq("active", true);
+    const result = await q.maybeSingle();
+    if (result.error) {
+      console.error(
+        `[fetchProductBySeoSlug] Erreur Supabase (${column}=${normalizedSlug}, preview=${preview}):`,
+        result.error.message
+      );
+    } else {
+      console.log(
+        `[fetchProductBySeoSlug] ${column}=${normalizedSlug} preview=${preview} →`,
+        result.data ? `trouvé (id=${(result.data as DbProductRow).id})` : "non trouvé"
+      );
+    }
+    return result;
   };
 
-  const { data: bySlug } = await buildQuery("seo_slug");
+  const { data: bySlug } = await queryProduct("seo_slug");
   if (bySlug) return mapProductRow(bySlug as DbProductRow);
 
-  const { data: byId } = await buildQuery("id");
+  const { data: byId } = await queryProduct("id");
   if (byId) return mapProductRow(byId as DbProductRow);
 
-  return null;
+  console.warn("[fetchProductBySeoSlug] Produit introuvable, slug:", normalizedSlug);
+  return findStaticProductBySlug(normalizedSlug);
 }
 
 export async function fetchCategoryBySeoSlug(slug: string): Promise<Category | null> {

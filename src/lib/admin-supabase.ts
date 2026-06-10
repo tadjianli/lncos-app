@@ -267,7 +267,7 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
   if ("seoKeyword" in p) db.seo_keyword = p.seoKeyword ?? null;
   if ("seoTitle" in p) db.seo_title = p.seoTitle ?? null;
   if ("metaDescription" in p) db.meta_description = p.metaDescription ?? null;
-  if ("seoSlug" in p) db.seo_slug = p.seoSlug ?? null;
+  if ("seoSlug" in p) db.seo_slug = p.seoSlug?.trim() || (typeof p.id === "string" ? p.id : null) || null;
   if ("imageAlt" in p) db.image_alt = p.imageAlt ?? null;
   return db;
 }
@@ -656,6 +656,7 @@ export function useProducts() {
     const variantNames = variants.filter((v) => v.name.trim()).map((v) => v.name);
     const payload: Product = {
       ...product,
+      seoSlug: product.seoSlug?.trim() || product.id,
       variants: variantNames.length > 0 ? variantNames : product.variants,
       productVariants: variants,
     };

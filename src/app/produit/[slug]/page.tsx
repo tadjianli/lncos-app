@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { absoluteUrl } from "@/lib/site-url";
@@ -20,7 +20,8 @@ type Props = {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const sp = await searchParams;
-  const product = await fetchProductBySeoSlug(slug, { preview: sp.preview === "1" });
+  const normalizedSlug = decodeURIComponent(slug).trim();
+  const product = await fetchProductBySeoSlug(normalizedSlug, { preview: sp.preview === "1" });
   if (!product) return { title: "Produit introuvable | LN COS" };
 
   const { title, description, canonical, image } = productMetadata(product);
@@ -48,11 +49,51 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   };
 }
 
+function ProductNotFoundView({ slug }: { slug: string }) {
+  return (
+    <AppShell>
+      <article
+        className="noscroll"
+        style={{
+          flex: "1 1 auto",
+          minHeight: 0,
+          overflowY: "auto",
+          padding: "48px 18px 32px",
+          textAlign: "center",
+        }}
+      >
+        <h1 style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", margin: "0 0 12px" }}>
+          Produit introuvable
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--ink-soft)", lineHeight: 1.6, margin: "0 0 20px" }}>
+          Aucun produit ne correspond à « {slug} ».
+        </p>
+        <Link
+          href="/boutique"
+          style={{
+            display: "inline-block",
+            padding: "10px 18px",
+            borderRadius: "var(--r-md)",
+            background: "var(--gold)",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: 14,
+            textDecoration: "none",
+          }}
+        >
+          Retour à la boutique
+        </Link>
+      </article>
+    </AppShell>
+  );
+}
+
 export default async function ProduitPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
-  const product = await fetchProductBySeoSlug(slug, { preview: sp.preview === "1" });
-  if (!product) notFound();
+  const normalizedSlug = decodeURIComponent(slug).trim();
+  const product = await fetchProductBySeoSlug(normalizedSlug, { preview: sp.preview === "1" });
+  if (!product) return <ProductNotFoundView slug={normalizedSlug} />;
 
   const { title, description, canonical } = productMetadata(product);
   const image = resolveProductImage(product);
