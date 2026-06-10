@@ -1,6 +1,6 @@
 "use client";
 
-import type { SocialProofNotification, SocialProofEventType } from "@/lib/social-proof";
+import type { SocialProofNotification } from "@/lib/social-proof";
 
 function compactCopy(notification: SocialProofNotification): { line1: string; line2: string } {
   const { type, customerName, productName, rating } = notification;
@@ -27,11 +27,11 @@ function compactCopy(notification: SocialProofNotification): { line1: string; li
 export function SocialProofToast({
   notification,
   visible,
-  bottomOffset,
+  bottomOffsetPx,
 }: {
   notification: SocialProofNotification | null;
   visible: boolean;
-  bottomOffset: string;
+  bottomOffsetPx: number;
 }) {
   if (!notification) return null;
 
@@ -42,7 +42,7 @@ export function SocialProofToast({
       role="status"
       aria-live="polite"
       className={`sp-toast${visible ? " sp-toast--visible" : " sp-toast--hidden"}`}
-      style={{ bottom: bottomOffset }}
+      style={{ bottom: `${bottomOffsetPx}px` }}
     >
       <div className="sp-toast__card">
         <div className="sp-toast__line1">{line1}</div>

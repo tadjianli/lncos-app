@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePublicProducts } from "@/lib/client-supabase";
 import { useSocialProofNotifications } from "@/lib/social-proof-db";
+import { useSocialProofBottomOffset } from "@/lib/use-social-proof-bottom-offset";
 import { SocialProofToast } from "@/components/social-proof/SocialProofToast";
 import type { SocialProofNotification } from "@/lib/social-proof";
 
@@ -10,6 +11,7 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
   const { products } = usePublicProducts();
   const productList = useMemo(() => products.map((p) => ({ id: p.id, name: p.name })), [products]);
   const { notifications, settings, loading } = useSocialProofNotifications(productList);
+  const bottomOffsetPx = useSocialProofBottomOffset(navVisible);
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(false);
@@ -67,16 +69,12 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
 
   if (!anyEnabled || queue.length === 0) return null;
 
-  const bottomOffset = navVisible
-    ? "calc(var(--bottom-nav-h) + 8px)"
-    : "max(10px, env(safe-area-inset-bottom, 0px))";
-
   return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 74 }}>
+    <div className="sp-toast-layer" aria-hidden={!visible}>
       <SocialProofToast
         notification={current}
         visible={visible}
-        bottomOffset={bottomOffset}
+        bottomOffsetPx={bottomOffsetPx}
       />
     </div>
   );

@@ -1403,15 +1403,22 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Social proof toast (discret, au-dessus de la bottom nav) ── */
+/* ─── Social proof toast — au-dessus des CTA sticky / bottom nav ── */
+.sp-toast-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 41;
+}
+
 .sp-toast {
   position: absolute;
   left: max(10px, var(--safe-left));
-  z-index: 74;
+  z-index: 1;
   pointer-events: none;
-  width: clamp(240px, 68vw, 268px);
-  max-width: 280px;
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 0.68, 0, 1);
+  width: min(320px, 80vw);
+  max-width: min(320px, 80vw);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 0.68, 0, 1);
 }
 
 .sp-toast--visible {
@@ -1421,7 +1428,7 @@
 
 .sp-toast--hidden {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(10px);
 }
 
 .sp-toast__card {
@@ -2676,6 +2683,8 @@
 /* ─── Bottom action bars (Sephora / Amazon / Shopify mobile) ─── */
 
 .bottom-action-bar {
+  position: relative;
+  z-index: 42;
   flex-shrink: 0;
   padding: var(--pd-action-bar-pad-y, 6px) 12px;
   padding-bottom: max(var(--pd-action-bar-pad-y, 6px), env(safe-area-inset-bottom, 0px));
