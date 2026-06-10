@@ -367,7 +367,7 @@ function BentoUniversSection({
                 <div className="bento-s">{meta.sub}</div>
               </div>
             </div>
-            <HorizontalProductCarousel premium>
+            <HorizontalProductCarousel fillColumns={2}>
               {products.map((p, pi) => (
                 <ProductCard
                   key={p.id + "-univ-" + key + "-" + pi}
@@ -593,7 +593,7 @@ export default function HomePage() {
               {isFirst ? (
                 <>
                   <FlashHead title={section.title} />
-                  <HorizontalProductCarousel premium style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel fillColumns={2}>
                     {prods.map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -628,7 +628,7 @@ export default function HomePage() {
               ) : (
                 <Reveal>
                   <SectionHead title={section.title} action="Voir tout" />
-                  <HorizontalProductCarousel premium style={{ paddingBottom: 4 }}>
+                  <HorizontalProductCarousel fillColumns={2}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
                         key={p.id + "-" + source + "-" + pi}
@@ -762,7 +762,7 @@ export default function HomePage() {
       {/* Scrollable content — dynamic section order driven by home-sections store */}
       <div
         className="noscroll home-scroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 28 }}
+        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}
       >
         {activeSections.map((section, i) => renderSection(section, i))}
       </div>

@@ -79,7 +79,7 @@ export const SkeletonProductRow = memo(function SkeletonProductRow({
   count?: number;
 }) {
   return (
-    <HorizontalProductCarousel bleed={false} premium style={{ pointerEvents: "none" }}>
+    <HorizontalProductCarousel bleed={false} fillColumns={2} style={{ pointerEvents: "none" }}>
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonProductCard key={i} />
       ))}
@@ -154,7 +154,7 @@ export function SkeletonPage() {
         flex: "1 1 auto",
         minHeight: 0,
         overflowY: "auto",
-        paddingBottom: 28,
+        paddingBottom: 8,
         display: "flex",
         flexDirection: "column",
         gap: 28,
@@ -163,9 +163,9 @@ export function SkeletonPage() {
     >
       <SkeletonHero />
       <SkeletonSectionHeader />
-      <SkeletonProductRow count={3} />
+      <SkeletonProductRow count={2} />
       <SkeletonSectionHeader />
-      <SkeletonProductRow count={3} />
+      <SkeletonProductRow count={2} />
     </div>
   );
 }

@@ -884,7 +884,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Complétez votre rituel
               </h3>
-              <HorizontalProductCarousel premium>
+              <HorizontalProductCarousel fillColumns={2} bleed={false}>
                 {routine.map((r) => (
                   <ProductCard
                     key={r.id}
@@ -915,7 +915,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
               >
                 Vous aimerez aussi
               </h3>
-              <HorizontalProductCarousel premium>
+              <HorizontalProductCarousel fillColumns={2} bleed={false}>
                 {related.map((r) => (
                   <ProductCard
                     key={r.id}
