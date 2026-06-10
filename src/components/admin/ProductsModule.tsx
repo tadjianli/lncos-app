@@ -231,6 +231,8 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           <ProductMainImageEditor
             productId={productId}
             imageUrl={form.mainImageUrl ?? null}
+            imageAlt={form.imageAlt}
+            product={{ ...form, id: productId, productVariants: variants }}
             onChange={(url) => set("mainImageUrl", url)}
           />
 
