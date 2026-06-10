@@ -8,11 +8,13 @@ import { products as STATIC_PRODUCTS, type Product, type Category } from "@/lib/
 import type { ProductVariant } from "@/lib/product-catalog";
 import { normalizeCommitments, normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-sections";
 import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
-import { getProductSeoPath, getCategorySeoPath } from "@/lib/seo";
+import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
-
-const PRODUCT_SELECT =
-  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,benefits,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+import {
+  PRODUCT_SELECT,
+  PRODUCT_SELECT_LEGACY,
+  isMissingColumnError,
+} from "@/lib/product-select";
 
 type DbVariantRow = {
   id: string;
@@ -134,11 +136,79 @@ function mapCategoryRow(row: DbCategoryRow): Category {
   };
 }
 
+function productMatchesSlug(
+  row: { id: string; name: string; seo_slug?: string | null },
+  slug: string
+): boolean {
+  const normalized = slug.trim().toLowerCase();
+  const seoSlug = row.seo_slug?.trim().toLowerCase();
+  if (seoSlug === normalized) return true;
+  if (row.id.toLowerCase() === normalized) return true;
+  if (slugifySeo(row.name) === normalized) return true;
+  if (seoSlug && slugifySeo(seoSlug) === normalized) return true;
+  return false;
+}
+
 function findStaticProductBySlug(slug: string): Product | null {
-  const match = STATIC_PRODUCTS.find(
-    (p) => p.seoSlug === slug || p.id === slug
+  const match = STATIC_PRODUCTS.find((p) =>
+    productMatchesSlug({ id: p.id, name: p.name, seo_slug: p.seoSlug ?? null }, slug)
   );
   return match ? { ...match, active: true } : null;
+}
+
+async function queryProductRow(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  select: string,
+  column: "seo_slug" | "id",
+  value: string,
+  preview: boolean
+) {
+  let q = supabase.from("products").select(select).eq(column, value);
+  if (!preview) q = q.eq("active", true);
+  return q.maybeSingle();
+}
+
+async function fetchProductRowBySlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  slug: string,
+  preview: boolean
+): Promise<DbProductRow | null> {
+  const selects = [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY];
+
+  for (const select of selects) {
+    for (const column of ["seo_slug", "id"] as const) {
+      const result = await queryProductRow(supabase, select, column, slug, preview);
+      if (result.error) {
+        if (isMissingColumnError(result.error.message, "benefits") && select === PRODUCT_SELECT) {
+          continue;
+        }
+        console.error(
+          `[fetchProductBySeoSlug] Erreur (${column}=${slug}):`,
+          result.error.message
+        );
+        continue;
+      }
+      if (result.data) return result.data as unknown as DbProductRow;
+    }
+    if (select === PRODUCT_SELECT_LEGACY) break;
+  }
+
+  for (const select of selects) {
+    let q = supabase.from("products").select(select);
+    if (!preview) q = q.eq("active", true);
+    const { data, error } = await q;
+    if (error) {
+      if (isMissingColumnError(error.message, "benefits") && select === PRODUCT_SELECT) continue;
+      break;
+    }
+    const match = (data as unknown as DbProductRow[] | null)?.find((row) =>
+      productMatchesSlug(row, slug)
+    );
+    if (match) return match;
+    if (select === PRODUCT_SELECT_LEGACY) break;
+  }
+
+  return null;
 }
 
 export async function fetchProductBySeoSlug(
@@ -154,35 +224,12 @@ export async function fetchProductBySeoSlug(
   }
 
   if (!isSupabaseConfigured()) {
-    console.warn("[fetchProductBySeoSlug] Supabase non configuré, slug:", normalizedSlug);
     return findStaticProductBySlug(normalizedSlug);
   }
 
   const supabase = await createClient();
-
-  const queryProduct = async (column: "seo_slug" | "id") => {
-    let q = supabase.from("products").select(PRODUCT_SELECT).eq(column, normalizedSlug);
-    if (!preview) q = q.eq("active", true);
-    const result = await q.maybeSingle();
-    if (result.error) {
-      console.error(
-        `[fetchProductBySeoSlug] Erreur Supabase (${column}=${normalizedSlug}, preview=${preview}):`,
-        result.error.message
-      );
-    } else {
-      console.log(
-        `[fetchProductBySeoSlug] ${column}=${normalizedSlug} preview=${preview} →`,
-        result.data ? `trouvé (id=${(result.data as DbProductRow).id})` : "non trouvé"
-      );
-    }
-    return result;
-  };
-
-  const { data: bySlug } = await queryProduct("seo_slug");
-  if (bySlug) return mapProductRow(bySlug as DbProductRow);
-
-  const { data: byId } = await queryProduct("id");
-  if (byId) return mapProductRow(byId as DbProductRow);
+  const row = await fetchProductRowBySlug(supabase, normalizedSlug, preview);
+  if (row) return mapProductRow(row);
 
   console.warn("[fetchProductBySeoSlug] Produit introuvable, slug:", normalizedSlug);
   return findStaticProductBySlug(normalizedSlug);
@@ -208,15 +255,82 @@ export async function fetchCategoryBySeoSlug(slug: string): Promise<Category | n
   return null;
 }
 
+async function fetchAllActiveProducts(): Promise<Product[]> {
+  const supabase = await createClient();
+  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY]) {
+    const { data, error } = await supabase
+      .from("products")
+      .select(select)
+      .eq("active", true)
+      .order("name");
+    if (!error && data) {
+      return (data as unknown as DbProductRow[]).map((r) => mapProductRow(r));
+    }
+    if (!isMissingColumnError(error?.message ?? "", "benefits")) break;
+  }
+  return [];
+}
+
 export async function fetchProductsByCategory(catId: string): Promise<Product[]> {
+  const products = await fetchAllActiveProducts();
+  return products.filter((p) => p.cat === catId);
+}
+
+/** Audit catalogue — pages produit accessibles vs cassées */
+export async function auditProductCatalog(): Promise<{
+  total: number;
+  accessible: number;
+  broken: { id: string; name: string; seoSlug: string | null; reason: string }[];
+  invalidSlugs: { id: string; name: string; seoSlug: string | null }[];
+}> {
+  if (!isSupabaseConfigured()) {
+    const staticTotal = STATIC_PRODUCTS.length;
+    return {
+      total: staticTotal,
+      accessible: staticTotal,
+      broken: [],
+      invalidSlugs: [],
+    };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("active", true)
-    .eq("cat", catId)
-    .order("name");
-  return (data ?? []).map((r) => mapProductRow(r as DbProductRow));
+    .select("id,name,seo_slug,active")
+    .eq("active", true);
+
+  const rows = data ?? [];
+  const broken: { id: string; name: string; seoSlug: string | null; reason: string }[] = [];
+  const invalidSlugs: { id: string; name: string; seoSlug: string | null }[] = [];
+
+  for (const row of rows) {
+    const slug = row.seo_slug?.trim() || null;
+    const isUuidSlug =
+      slug &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    if (!slug || isUuidSlug) {
+      invalidSlugs.push({ id: row.id, name: row.name, seoSlug: slug });
+    }
+
+    const resolved = await fetchProductBySeoSlug(slug || row.id);
+    const pathSlug = slug || slugifySeo(row.name) || row.id;
+    const resolvedByPath = await fetchProductBySeoSlug(pathSlug);
+    if (!resolved && !resolvedByPath) {
+      broken.push({
+        id: row.id,
+        name: row.name,
+        seoSlug: slug,
+        reason: "fetchProductBySeoSlug retourne null",
+      });
+    }
+  }
+
+  return {
+    total: rows.length,
+    accessible: rows.length - broken.length,
+    broken,
+    invalidSlugs,
+  };
 }
 
 export async function fetchSitemapEntries(): Promise<{ url: string; lastModified?: Date }[]> {

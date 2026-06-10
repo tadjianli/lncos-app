@@ -30,6 +30,7 @@ import {
 } from "./reviews";
 import type { BeforeAfterResult, PublicBeforeAfterResult, ResultDuration } from "./before-after";
 import { sortBeforeAfterResults, toPublicBeforeAfter } from "./before-after";
+import { PRODUCT_SELECT, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
 
 type DbVariantRow = {
   id: string;
@@ -126,8 +127,23 @@ function mapProduct(row: {
   };
 }
 
-const PRODUCT_SELECT =
-  "id,name,cat,price,old_price,ml,rating,reviews,tag,stock,variants,description,ingredients,usage_tips,benefits,section_toggles,extra_sections,commitments,active,image_url,main_image_url,gallery_images,thumbnail_images,home_visibility,video_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt,created_at,product_variants(id,product_id,name,price,stock,sku,image_url,position)";
+async function fetchActiveProductsFromDb(): Promise<Product[] | null> {
+  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY]) {
+    const { data, error } = await getSupabase()
+      .from("products")
+      .select(select)
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+    if (!error && data && data.length > 0) {
+      return (data as unknown as Parameters<typeof mapProduct>[0][]).map(mapProduct);
+    }
+    if (error && !isMissingColumnError(error.message, "benefits")) {
+      console.error("[usePublicProducts] Erreur Supabase:", error.message);
+      break;
+    }
+  }
+  return null;
+}
 
 /** Charge un produit par identifiant (preview = inclut les produits inactifs). */
 export async function fetchPublicProductById(
@@ -140,20 +156,17 @@ export async function fetchPublicProductById(
   }
 
   try {
-    let query = getSupabase()
-      .from("products")
-      .select(PRODUCT_SELECT)
-      .eq("id", id);
-
-    if (!options?.preview) {
-      query = query.eq("active", true);
+    for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY]) {
+      let query = getSupabase().from("products").select(select).eq("id", id);
+      if (!options?.preview) query = query.eq("active", true);
+      const { data, error } = await query.maybeSingle();
+      if (error) {
+        if (isMissingColumnError(error.message, "benefits") && select === PRODUCT_SELECT) continue;
+        break;
+      }
+      if (data) return mapProduct(data as unknown as Parameters<typeof mapProduct>[0]);
     }
-
-    const { data, error } = await query.maybeSingle();
-    if (error || !data) {
-      return options?.preview ? null : fallback ? { ...fallback, active: true } : null;
-    }
-    return mapProduct(data);
+    return options?.preview ? null : fallback ? { ...fallback, active: true } : null;
   } catch {
     return fallback ? { ...fallback, active: true } : null;
   }
@@ -177,14 +190,8 @@ export function usePublicProducts() {
 
     void (async () => {
       try {
-        const { data, error } = await getSupabase()
-          .from("products")
-          .select(PRODUCT_SELECT)
-          .eq("active", true)
-          .order("created_at", { ascending: false });
-        if (!error && data && data.length > 0) {
-          setProducts(data.map(mapProduct));
-        }
+        const loaded = await fetchActiveProductsFromDb();
+        if (loaded) setProducts(loaded);
       } catch {
         // Conserver le catalogue statique de secours
       } finally {
