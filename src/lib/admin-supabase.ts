@@ -23,6 +23,10 @@ import {
   normalizeSectionToggles,
 } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
+import { isMissingColumnError, omitBenefitsFromRow } from "./product-select";
+
+type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
+type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
 
 /* ─── Type aliases ─────────────────────────────────────────────────────────── */
 
@@ -242,8 +246,8 @@ function dbToProduct(r: DbProductWithVariants): Product {
   };
 }
 
-function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"]["products"]["Update"]> {
-  const db: Partial<Database["public"]["Tables"]["products"]["Update"]> = {};
+function productToDb(p: Partial<Product>): ProductUpdate {
+  const db: ProductUpdate = {};
   if (p.name !== undefined) db.name = p.name;
   if (p.cat !== undefined) db.cat = p.cat;
   if (p.price !== undefined) db.price = p.price;
@@ -274,6 +278,62 @@ function productToDb(p: Partial<Product>): Partial<Database["public"]["Tables"][
   if ("seoSlug" in p) db.seo_slug = p.seoSlug?.trim() || (typeof p.id === "string" ? p.id : null) || null;
   if ("imageAlt" in p) db.image_alt = p.imageAlt ?? null;
   return db;
+}
+
+function buildProductInsertRow(product: Product, variantNames: string[]): ProductInsert {
+  return {
+    ...productToDb(product),
+    id: product.id !== "__new__" ? product.id : undefined,
+    name: product.name,
+    cat: product.cat,
+    price: product.price,
+    old_price: product.old ?? null,
+    ml: product.ml,
+    tag: product.tag,
+    stock: product.stock,
+    description: product.desc,
+    variants: variantNames,
+    ingredients: product.ingredients,
+    usage_tips: product.usageTips ?? [],
+    benefits: product.benefits ?? [],
+    section_toggles: (product.sectionToggles ?? DEFAULT_SECTION_TOGGLES) as unknown as Json,
+    extra_sections: (product.extraSections ?? []) as unknown as Json,
+    commitments: (product.commitments ?? []) as unknown as Json,
+    main_image_url: product.mainImageUrl ?? null,
+    image_url: product.mainImageUrl ?? null,
+    gallery_images: product.galleryImages ?? [],
+    home_visibility: (product.homeVisibility ?? {}) as unknown as Json,
+    video_url: product.videoUrl ?? null,
+    seo_keyword: product.seoKeyword ?? null,
+    seo_title: product.seoTitle ?? null,
+    meta_description: product.metaDescription ?? null,
+    seo_slug: product.seoSlug ?? product.id,
+    image_alt: product.imageAlt ?? null,
+    rating: 5,
+    reviews: 0,
+  };
+}
+
+async function insertProductRow(row: ProductInsert) {
+  const supabase = getSupabase();
+  let result = await supabase.from("products").insert(row).select("*, product_variants(*)").single();
+  if (result.error && isMissingColumnError(result.error.message, "benefits")) {
+    result = await supabase
+      .from("products")
+      .insert(omitBenefitsFromRow(row))
+      .select("*, product_variants(*)")
+      .single();
+  }
+  return result;
+}
+
+async function updateProductRow(id: string, patch: ProductUpdate) {
+  const supabase = getSupabase();
+  let result = await supabase.from("products").update(patch).eq("id", id);
+  if (result.error && isMissingColumnError(result.error.message, "benefits")) {
+    result = await supabase.from("products").update(omitBenefitsFromRow(patch)).eq("id", id);
+  }
+  return result;
 }
 
 function variantToDb(v: ProductVariant, position: number): Database["public"]["Tables"]["product_variants"]["Insert"] {
@@ -649,7 +709,7 @@ export function useProducts() {
   useEffect(() => { load(); }, [load]);
 
   const updateProduct = useCallback(async (id: string, patch: Partial<Product>) => {
-    await getSupabase().from("products").update(productToDb(patch)).eq("id", id);
+    await updateProductRow(id, productToDb(patch));
     setProducts((prev) => prev.map((p) => p.id === id ? { ...p, ...patch } : p));
   }, []);
 
@@ -665,10 +725,7 @@ export function useProducts() {
       productVariants: variants,
     };
 
-    const { error: prodErr } = await getSupabase()
-      .from("products")
-      .update(productToDb(payload))
-      .eq("id", product.id);
+    const { error: prodErr } = await updateProductRow(product.id, productToDb(payload));
     if (prodErr) return { error: prodErr.message };
 
     const { error: varErr } = await saveProductVariants(product.id, variants);
@@ -683,36 +740,11 @@ export function useProducts() {
     variants: ProductVariant[]
   ): Promise<{ error: string | null; id?: string }> => {
     const variantNames = variants.filter((v) => v.name.trim()).map((v) => v.name);
-    const { data, error } = await getSupabase().from("products").insert({
-      id: product.id !== "__new__" ? product.id : undefined,
-      name: product.name,
-      cat: product.cat,
-      price: product.price,
-      old_price: product.old ?? null,
-      ml: product.ml,
-      tag: product.tag,
-      stock: product.stock,
-      description: product.desc,
-      variants: variantNames,
-      ingredients: product.ingredients,
-      usage_tips: product.usageTips ?? [],
-      benefits: product.benefits ?? [],
-      section_toggles: (product.sectionToggles ?? DEFAULT_SECTION_TOGGLES) as unknown as Json,
-      extra_sections: (product.extraSections ?? []) as unknown as Json,
-      commitments: (product.commitments ?? []) as unknown as Json,
-      main_image_url: product.mainImageUrl ?? null,
-      image_url: product.mainImageUrl ?? null,
-      gallery_images: product.galleryImages ?? [],
-      home_visibility: (product.homeVisibility ?? {}) as unknown as Json,
-      video_url: product.videoUrl ?? null,
-      seo_keyword: product.seoKeyword ?? null,
-      seo_title: product.seoTitle ?? null,
-      meta_description: product.metaDescription ?? null,
-      seo_slug: product.seoSlug ?? product.id,
-      image_alt: product.imageAlt ?? null,
-      rating: 5,
-      reviews: 0,
-    }).select("*, product_variants(*)").single();
+    const insertRow = buildProductInsertRow(
+      { ...product, seoSlug: product.seoSlug ?? product.id },
+      variantNames
+    );
+    const { data, error } = await insertProductRow(insertRow);
 
     if (error || !data) return { error: error?.message ?? "Création échouée" };
 

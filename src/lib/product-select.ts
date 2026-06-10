@@ -14,5 +14,17 @@ export const PRODUCT_SELECT_LEGACY = PRODUCT_SELECT_BASE;
 
 export function isMissingColumnError(message: string, column: string): boolean {
   const m = message.toLowerCase();
-  return m.includes(column.toLowerCase()) && (m.includes("column") || m.includes("does not exist"));
+  const col = column.toLowerCase();
+  return (
+    m.includes(col) &&
+    (m.includes("column") ||
+      m.includes("does not exist") ||
+      m.includes("schema cache"))
+  );
+}
+
+/** Retire benefits d'un payload DB si la colonne n'est pas encore migrée */
+export function omitBenefitsFromRow<T extends { benefits?: unknown }>(row: T): Omit<T, "benefits"> {
+  const { benefits: _omit, ...rest } = row;
+  return rest;
 }
