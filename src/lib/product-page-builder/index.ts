@@ -4,3 +4,4 @@ export * from "./defaults";
 export * from "./normalize";
 export * from "./hooks";
 export * from "./block-meta";
+export * from "./merchant-labels";

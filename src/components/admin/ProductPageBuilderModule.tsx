@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
-import { ProductPageBuilderSettingsPanel } from "@/components/admin/ProductPageBuilderSettingsPanel";
-import { ProductPageBuilderPreview } from "@/components/admin/ProductPageBuilderPreview";
+import { ProductPageBlockEditor } from "@/components/admin/ProductPageBlockEditor";
 import {
   ADDABLE_BLOCK_TYPES,
+  ADDABLE_MERCHANT_ORDER,
   PRODUCT_PAGE_BLOCK_REGISTRY,
-  blockVisualMeta,
+  merchantBlockLabel,
   newCustomBlock,
+  productBlockMeta,
   reindexBlocks,
   createBlockOfType,
   useProductPageLayoutAdmin,
@@ -20,184 +21,224 @@ import {
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
-    <label className="ppb-toggle" onClick={(e) => e.stopPropagation()}>
+    <label className="ab-toggle" onClick={(e) => e.stopPropagation()}>
       <input type="checkbox" checked={checked} onChange={onChange} />
-      <div className="ppb-toggle-track" />
-      <div className="ppb-toggle-thumb" />
+      <div className="ab-toggle-track" />
+      <div className="ab-toggle-thumb" />
     </label>
   );
 }
 
-function SectionCard({
-  block,
-  selected,
-  dragOver,
-  dragging,
-  onSelect,
-  onToggle,
-  onDelete,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  onDragEnd,
-}: {
-  block: ProductPageBlock;
-  selected: boolean;
-  dragOver: boolean;
-  dragging: boolean;
-  onSelect: () => void;
-  onToggle: () => void;
-  onDelete: () => void;
-  onDragStart: () => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: () => void;
-  onDragEnd: () => void;
-}) {
-  const schema = PRODUCT_PAGE_BLOCK_REGISTRY[block.type];
-  const meta = blockVisualMeta(block.type);
-  const locked = schema.locked;
+function DragHandle() {
+  return (
+    <div className="ab-drag" title="Glisser pour réordonner">
+      <span /><span /><span /><span /><span /><span />
+    </div>
+  );
+}
+
+function PhonePreview({ blocks }: { blocks: ProductPageBlock[] }) {
+  const enabled = useMemo(() => {
+    const main = blocks
+      .filter((b) => b.zone === "main" && b.enabled)
+      .sort((a, b) => a.position - b.position);
+    const sticky = blocks
+      .filter((b) => b.zone === "sticky" && b.enabled)
+      .sort((a, b) => a.position - b.position);
+    return [...main, ...sticky];
+  }, [blocks]);
 
   return (
-    <div
-      className={`ppb-sec-card${selected ? " is-active" : ""}${!block.enabled ? " is-off" : ""}${dragOver ? " is-drag-over" : ""}${dragging ? " is-dragging" : ""}`}
-      draggable
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={(e) => {
-        e.preventDefault();
-        onDrop();
-      }}
-      onDragEnd={onDragEnd}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
-    >
-      <div className="ppb-sec-card-accent" style={{ background: meta.color }} />
-      <div className="ppb-sec-card-drag" title="Glisser pour réordonner">
-        <span /><span /><span />
+    <div className="ab-preview-panel">
+      <div className="ab-preview-head">
+        <div className="ab-preview-title">
+          <span className="ab-preview-live" />
+          Aperçu en direct
+        </div>
+        <button
+          type="button"
+          className="adm-iconbtn"
+          title="Rafraîchir"
+          style={{ width: 30, height: 30, borderRadius: 8 }}
+        >
+          <Icon name="clock" size={15} />
+        </button>
       </div>
-      <div className="ppb-sec-card-icon" style={{ background: meta.bg }}>
-        <Icon name={meta.icon} size={18} color={meta.color} />
-      </div>
-      <div className="ppb-sec-card-body">
-        <div className="ppb-sec-card-title">{block.title}</div>
-        <div className="ppb-sec-card-desc">{schema.description}</div>
-      </div>
-      <div className="ppb-sec-card-actions">
-        <Toggle checked={block.enabled} onChange={onToggle} />
-        {!locked && (
-          <button
-            type="button"
-            className="ppb-iconbtn"
-            title="Supprimer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
+      <div className="ab-phone-frame">
+        <div className="ab-phone-notch" />
+        <div className="ab-phone-screen">
+          <div
+            style={{
+              padding: "12px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              overflowY: "auto",
+              height: "100%",
             }}
           >
-            <Icon name="trash" size={14} color="#E879A8" />
-          </button>
-        )}
+            {enabled.map((block) => {
+              const m = productBlockMeta(block.type);
+              return (
+                <div
+                  key={block.id}
+                  style={{
+                    background: "rgba(255,255,255,.04)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 6,
+                      background: m.bg,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name={m.icon} size={12} color={m.color} />
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#F6F1EA",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {merchantBlockLabel(block.type)}
+                  </span>
+                </div>
+              );
+            })}
+            {enabled.length === 0 && (
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "rgba(255,255,255,.3)",
+                  fontSize: 12,
+                }}
+              >
+                Aucune section active
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="ab-phone-caption">
+        Les changements apparaissent instantanément. <b>Publiez</b> pour les rendre visibles aux clientes.
       </div>
     </div>
   );
 }
 
-function AddBlockPanel({
-  zone,
+function AddSectionModal({
   onClose,
   onAdd,
 }: {
-  zone: ProductPageZone;
   onClose: () => void;
   onAdd: (type: ProductPageBlockType) => void;
 }) {
-  const options = ADDABLE_BLOCK_TYPES.filter(
-    (type) => PRODUCT_PAGE_BLOCK_REGISTRY[type].zone === zone
-  );
+  const options = ADDABLE_MERCHANT_ORDER.filter((t) => ADDABLE_BLOCK_TYPES.includes(t));
 
   return (
-    <div className="ppb-add-panel">
-      <div className="ppb-add-panel-head">
-        <span>Ajouter une section</span>
-        <button type="button" className="ppb-iconbtn" onClick={onClose}>
-          <Icon name="x" size={16} />
-        </button>
-      </div>
-      <div className="ppb-add-grid">
-        {options.map((type) => {
-          const schema = PRODUCT_PAGE_BLOCK_REGISTRY[type];
-          const m = blockVisualMeta(type);
-          return (
-            <button
-              key={type}
-              type="button"
-              className="ppb-add-card"
-              onClick={() => onAdd(type)}
-            >
-              <div className="ppb-add-card-icon" style={{ background: m.bg }}>
-                <Icon name={m.icon} size={18} color={m.color} />
-              </div>
-              <span className="ppb-add-card-label">{schema.label}</span>
-            </button>
-          );
-        })}
+    <div className="ab-modal-overlay" onClick={onClose}>
+      <div
+        className="ab-modal"
+        style={{ maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="ab-modal-head">
+          <div className="ab-modal-title">Ajouter une section</div>
+          <button type="button" className="adm-iconbtn" onClick={onClose}>
+            <Icon name="x" size={17} />
+          </button>
+        </div>
+        <div
+          style={{
+            overflowY: "auto",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            padding: "4px 0 12px",
+          }}
+        >
+          {options.map((type) => {
+            const m = productBlockMeta(type);
+            const label = merchantBlockLabel(type);
+            const schema = PRODUCT_PAGE_BLOCK_REGISTRY[type];
+            return (
+              <button key={type} type="button" className="ab-add-type-row" onClick={() => onAdd(type)}>
+                <div className="ab-sec-icon" style={{ background: m.bg, flexShrink: 0 }}>
+                  <Icon name={m.icon} size={18} color={m.color} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--adm-ink)" }}>{label}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>
+                    {schema.description}
+                  </div>
+                </div>
+                <Icon name="chevR" size={14} color="var(--adm-ink-mute)" />
+              </button>
+            );
+          })}
+        </div>
+        <div className="ab-modal-foot">
+          <button type="button" className="adm-btn ghost" onClick={onClose}>
+            Annuler
+          </button>
+        </div>
       </div>
     </div>
   );
+}
+
+function displayBlocks(blocks: ProductPageBlock[]): ProductPageBlock[] {
+  const main = blocks.filter((b) => b.zone === "main").sort((a, b) => a.position - b.position);
+  const sticky = blocks.filter((b) => b.zone === "sticky").sort((a, b) => a.position - b.position);
+  return [...main, ...sticky];
 }
 
 export function ProductPageBuilderModule() {
   const {
     published,
     draft: dbDraft,
-    meta,
-    versions,
     loading,
     beginDraft,
     saveDraft,
     publishDraft,
     discardDraft,
-    restoreVersion,
   } = useProductPageLayoutAdmin();
 
   const [localDraft, setLocalDraft] = useState<ProductPageBlock[] | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [activeZone, setActiveZone] = useState<ProductPageZone>("main");
-  const [addingZone, setAddingZone] = useState<ProductPageZone | null>(null);
-  const [showVersions, setShowVersions] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<ProductPageBlock | null>(null);
+  const [addingSection, setAddingSection] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [publishNote, setPublishNote] = useState("");
   const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
 
   const dragId = useRef<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (dbDraft !== null && localDraft === null) setLocalDraft(dbDraft);
   }, [dbDraft, localDraft]);
 
   const blocks = localDraft ?? published;
+  const sections = displayBlocks(blocks);
   const hasDraft = localDraft !== null;
-
-  const mainBlocks = useMemo(
-    () => blocks.filter((b) => b.zone === "main").sort((a, b) => a.position - b.position),
-    [blocks]
-  );
-  const stickyBlocks = useMemo(
-    () => blocks.filter((b) => b.zone === "sticky").sort((a, b) => a.position - b.position),
-    [blocks]
-  );
-
-  const zoneBlocks = activeZone === "main" ? mainBlocks : stickyBlocks;
-  const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
 
   function showToast(msg: string, variant: AdminToastVariant = "success") {
     setToast({ msg, variant });
@@ -220,25 +261,33 @@ export function ProductPageBuilderModule() {
     if (error) showToast(`Erreur sauvegarde : ${error}`, "error");
   }
 
-  async function onDrop(targetId: string, zone: ProductPageZone) {
+  function onDragStart(id: string) {
+    dragId.current = id;
+  }
+
+  function onDragOver(e: React.DragEvent, id: string) {
+    e.preventDefault();
+    setDragOverId(id);
+  }
+
+  async function onDrop(targetId: string) {
     const fromId = dragId.current;
     if (!fromId || fromId === targetId) {
       setDragOverId(null);
-      setDraggingId(null);
       return;
     }
     const draft = await ensureDraft();
     const from = draft.find((b) => b.id === fromId);
     const target = draft.find((b) => b.id === targetId);
-    if (!from || !target || from.zone !== zone || target.zone !== zone) {
+    if (!from || !target || from.zone !== target.zone) {
       dragId.current = null;
       setDragOverId(null);
-      setDraggingId(null);
       return;
     }
-    const zoneBlocksList = draft.filter((b) => b.zone === zone);
+    const zone: ProductPageZone = from.zone;
+    const zoneBlocks = draft.filter((b) => b.zone === zone);
     const others = draft.filter((b) => b.zone !== zone);
-    const arr = [...zoneBlocksList];
+    const arr = [...zoneBlocks];
     const fromIdx = arr.findIndex((b) => b.id === fromId);
     const toIdx = arr.findIndex((b) => b.id === targetId);
     const [item] = arr.splice(fromIdx, 1);
@@ -246,7 +295,11 @@ export function ProductPageBuilderModule() {
     await persist([...others, ...arr.map((b, i) => ({ ...b, position: i }))]);
     dragId.current = null;
     setDragOverId(null);
-    setDraggingId(null);
+  }
+
+  function onDragEnd() {
+    dragId.current = null;
+    setDragOverId(null);
   }
 
   async function handleToggle(id: string) {
@@ -254,278 +307,275 @@ export function ProductPageBuilderModule() {
     await persist(draft.map((b) => (b.id === id ? { ...b, enabled: !b.enabled } : b)));
   }
 
-  async function handleSaveEdit(patch: Partial<ProductPageBlock>) {
-    if (!selectedId) return;
-    const draft = await ensureDraft();
-    await persist(draft.map((b) => (b.id === selectedId ? { ...b, ...patch } : b)));
-    showToast("Paramètres appliqués");
+  async function handleEdit(block: ProductPageBlock) {
+    await ensureDraft();
+    setEditingBlock(block);
   }
 
-  async function handleAdd(type: ProductPageBlockType) {
+  async function handleSaveEdit(patch: Partial<ProductPageBlock>) {
+    if (!editingBlock) return;
     const draft = await ensureDraft();
-    const zone = PRODUCT_PAGE_BLOCK_REGISTRY[type].zone;
-    if (type !== "custom" && draft.some((b) => b.type === type && b.zone === zone)) {
-      showToast("Ce type de section existe déjà dans cette zone", "error");
-      setAddingZone(null);
+    await persist(draft.map((b) => (b.id === editingBlock.id ? { ...b, ...patch } : b)));
+    setEditingBlock(null);
+  }
+
+  async function handlePublish() {
+    if (!localDraft) {
+      showToast("Aucune modification à publier");
       return;
     }
-    const zoneCount = draft.filter((b) => b.zone === zone).length;
-    const newBlock =
-      type === "custom" ? newCustomBlock(zoneCount) : createBlockOfType(type, zoneCount);
-    await persist([...draft, newBlock]);
-    setAddingZone(null);
-    setSelectedId(newBlock.id);
-    setActiveZone(zone);
-    showToast("Section ajoutée");
+    const { error } = await publishDraft(localDraft, "");
+    if (error) {
+      showToast(`Échec publication : ${error}`, "error");
+      return;
+    }
+    setLocalDraft(null);
+    showToast("Publié — visible côté cliente");
+  }
+
+  async function handleDiscard() {
+    const { error } = await discardDraft();
+    if (error) showToast(`Erreur : ${error}`, "error");
+    setLocalDraft(null);
+    showToast("Modifications ignorées");
+  }
+
+  async function handleDuplicate(id: string) {
+    const draft = await ensureDraft();
+    const block = draft.find((b) => b.id === id);
+    if (!block || block.type !== "custom") {
+      showToast("Seules les sections « Texte libre » peuvent être dupliquées", "error");
+      return;
+    }
+    const zoneBlocks = draft.filter((b) => b.zone === block.zone).sort((a, b) => a.position - b.position);
+    const idx = zoneBlocks.findIndex((b) => b.id === id);
+    const copy: ProductPageBlock = {
+      ...block,
+      id: `ppb-custom-${Date.now().toString(36)}`,
+      title: `${merchantBlockLabel(block.type)} (copie)`,
+      enabled: false,
+      settings: { ...block.settings },
+    };
+    const others = draft.filter((b) => b.zone !== block.zone);
+    const arr = [...zoneBlocks];
+    arr.splice(idx + 1, 0, copy);
+    await persist([...others, ...arr.map((b, i) => ({ ...b, position: i }))]);
+    showToast("Section dupliquée");
   }
 
   async function handleDelete(id: string) {
     const draft = await ensureDraft();
     const block = draft.find((b) => b.id === id);
     if (block && PRODUCT_PAGE_BLOCK_REGISTRY[block.type].locked) {
-      showToast("Cette section système ne peut pas être supprimée", "error");
+      showToast("Masquez cette section plutôt que de la supprimer", "error");
       setConfirmDeleteId(null);
       return;
     }
     await persist(draft.filter((b) => b.id !== id));
-    if (selectedId === id) setSelectedId(null);
-    setConfirmDeleteId(null);
     showToast("Section supprimée");
+    setConfirmDeleteId(null);
   }
 
-  function selectBlock(id: string) {
-    setSelectedId(id);
-    const block = blocks.find((b) => b.id === id);
-    if (block) setActiveZone(block.zone);
+  async function handleAddSection(type: ProductPageBlockType) {
+    const draft = await ensureDraft();
+    const zone = PRODUCT_PAGE_BLOCK_REGISTRY[type].zone;
+    if (type !== "custom" && draft.some((b) => b.type === type && b.zone === zone)) {
+      showToast("Cette section est déjà sur la page", "error");
+      setAddingSection(false);
+      return;
+    }
+    const zoneCount = draft.filter((b) => b.zone === zone).length;
+    const newBlock =
+      type === "custom" ? newCustomBlock(zoneCount) : createBlockOfType(type, zoneCount);
+    await persist([...draft, { ...newBlock, enabled: false }]);
+    showToast(`Section « ${merchantBlockLabel(type)} » ajoutée`);
+    setAddingSection(false);
   }
+
+  const activeCount = blocks.filter((b) => b.enabled).length;
 
   if (loading) {
     return (
-      <div className="ppb-studio ppb-studio--loading">
-        <div className="ppb-loading">
-          <div className="ppb-loading-spinner" />
-          Chargement du builder…
-        </div>
+      <div className="adm-content">
+        <p className="adm-sub">Chargement…</p>
       </div>
     );
   }
 
   return (
-    <div className="ppb-studio">
-      <header className="ppb-studio-header">
-        <div className="ppb-studio-header-left">
-          <h1>Fiche produit</h1>
-          <p>
-            Layout global · v{meta.publishedVersion} publiée
-            {hasDraft && <span className="ppb-draft-badge">Brouillon</span>}
-          </p>
-        </div>
-        <div className="ppb-studio-header-actions">
-          <button
-            type="button"
-            className="ppb-btn-ghost"
-            onClick={() => setShowVersions((v) => !v)}
-          >
-            <Icon name="clock" size={14} /> Historique
-          </button>
-          {hasDraft && (
-            <>
-              <button
-                type="button"
-                className="ppb-btn-ghost"
-                onClick={() =>
-                  void discardDraft().then(() => {
-                    setLocalDraft(null);
-                    setSelectedId(null);
-                    showToast("Brouillon annulé");
-                  })
-                }
-              >
-                Annuler
+    <>
+      <div className="adm-content">
+        <div className="adm-topbar">
+          <div>
+            <div className="adm-page-eyebrow">
+              <span className="dot" />
+              ÉDITEUR VISUEL · SANS CODE
+            </div>
+            <h1 className="adm-h1">Personnaliser l&apos;app</h1>
+          </div>
+          <div className="ab-publish-bar">
+            {hasDraft && (
+              <button type="button" className="adm-btn ghost sm" onClick={() => void handleDiscard()}>
+                Ignorer
               </button>
-              <button
-                type="button"
-                className="ppb-btn-gold"
-                onClick={() =>
-                  void publishDraft(blocks, publishNote).then(({ error }) => {
-                    if (error) showToast(error, "error");
-                    else {
-                      setLocalDraft(null);
-                      showToast("Layout publié sur toute la boutique");
-                    }
-                  })
-                }
-              >
-                <Icon name="check" size={15} /> Publier
-              </button>
-            </>
-          )}
+            )}
+            <button
+              type="button"
+              className={`adm-btn gold${!hasDraft ? " is-disabled" : ""}`}
+              onClick={() => void handlePublish()}
+              disabled={!hasDraft}
+            >
+              <Icon name="check" size={16} />
+              Publier
+              <Icon name="check" size={16} />
+            </button>
+          </div>
         </div>
-      </header>
 
-      {showVersions && (
-        <div className="ppb-versions-bar">
-          {versions.length === 0 ? (
-            <span className="ppb-versions-empty">Aucune version archivée</span>
-          ) : (
-            versions.map((v) => (
-              <div key={v.id} className="ppb-version-chip">
-                <span>v{v.versionNumber}</span>
-                <span className="ppb-version-date">
-                  {new Date(v.createdAt).toLocaleDateString("fr-FR")}
-                </span>
-                <button
-                  type="button"
-                  className="ppb-btn-ghost sm"
-                  onClick={() =>
-                    void restoreVersion(v).then(({ error }) => {
-                      if (error) showToast(error, "error");
-                      else showToast(`Version v${v.versionNumber} restaurée en brouillon`);
-                    })
-                  }
-                >
-                  Restaurer
+        {hasDraft && (
+          <div
+            style={{
+              background: "rgba(212,175,55,.1)",
+              border: "1px solid rgba(212,175,55,.3)",
+              borderRadius: 10,
+              padding: "10px 16px",
+              fontSize: 13,
+              color: "var(--adm-gold)",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <Icon name="alert" size={16} color="var(--adm-gold)" />
+            Modifications en attente — publiez pour les rendre visibles aux clientes.
+          </div>
+        )}
+
+        <div className="ab-layout">
+          <div>
+            <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
+              <div className="ab-list-head">
+                <div>
+                  <div className="ab-list-title">Sections · Fiche produit</div>
+                  <div className="ab-list-sub">
+                    {activeCount}/{sections.length} actives · glissez pour réordonner
+                  </div>
+                </div>
+                <button type="button" className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
+                  <Icon name="plus" size={15} />
+                  Ajouter
                 </button>
               </div>
-            ))
-          )}
-          <button type="button" className="ppb-iconbtn" onClick={() => setShowVersions(false)}>
-            <Icon name="x" size={14} />
-          </button>
-        </div>
-      )}
 
-      <div className="ppb-studio-body">
-        {/* ── Colonne gauche : sections ── */}
-        <aside className="ppb-col ppb-col--sections">
-          <div className="ppb-col-head">
-            <h2>Sections</h2>
-            <button
-              type="button"
-              className="ppb-btn-ghost sm"
-              onClick={() => setAddingZone(activeZone)}
-            >
-              <Icon name="plus" size={14} /> Ajouter
-            </button>
-          </div>
+              {sections.map((block) => {
+                const m = productBlockMeta(block.type);
+                const label = merchantBlockLabel(block.type);
+                const locked = PRODUCT_PAGE_BLOCK_REGISTRY[block.type].locked;
+                return (
+                  <div
+                    key={block.id}
+                    className={`ab-row${dragOverId === block.id ? " drag-over" : ""}${!block.enabled ? " is-off" : ""}`}
+                    draggable
+                    onDragStart={() => onDragStart(block.id)}
+                    onDragOver={(e) => onDragOver(e, block.id)}
+                    onDrop={() => void onDrop(block.id)}
+                    onDragEnd={onDragEnd}
+                    onClick={() => void handleEdit(block)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        void handleEdit(block);
+                      }
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <DragHandle />
 
-          <div className="ppb-zone-tabs">
-            <button
-              type="button"
-              className={`ppb-zone-tab${activeZone === "main" ? " is-on" : ""}`}
-              onClick={() => setActiveZone("main")}
-            >
-              Page
-              <span className="ppb-zone-count">{mainBlocks.length}</span>
-            </button>
-            <button
-              type="button"
-              className={`ppb-zone-tab${activeZone === "sticky" ? " is-on" : ""}`}
-              onClick={() => setActiveZone("sticky")}
-            >
-              Barre sticky
-              <span className="ppb-zone-count">{stickyBlocks.length}</span>
-            </button>
-          </div>
+                    <div className="ab-sec-icon" style={{ background: m.bg }}>
+                      <Icon name={m.icon} size={18} color={m.color} />
+                    </div>
 
-          <p className="ppb-col-hint">
-            {activeZone === "main"
-              ? "Contenu scrollable de la fiche produit"
-              : "Éléments fixés en bas de l'écran"}
-          </p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="ab-sec-name">{label}</div>
+                      {block.zone === "sticky" && (
+                        <div className="ab-sec-meta">
+                          <span className="ab-sec-tag">Bas de l&apos;écran</span>
+                        </div>
+                      )}
+                    </div>
 
-          <div className="ppb-sec-list">
-            {zoneBlocks.map((block) => (
-              <SectionCard
-                key={block.id}
-                block={block}
-                selected={selectedId === block.id}
-                dragOver={dragOverId === block.id}
-                dragging={draggingId === block.id}
-                onSelect={() => selectBlock(block.id)}
-                onToggle={() => void handleToggle(block.id)}
-                onDelete={() => setConfirmDeleteId(block.id)}
-                onDragStart={() => {
-                  dragId.current = block.id;
-                  setDraggingId(block.id);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOverId(block.id);
-                }}
-                onDrop={() => void onDrop(block.id, activeZone)}
-                onDragEnd={() => {
-                  dragId.current = null;
-                  setDragOverId(null);
-                  setDraggingId(null);
-                }}
-              />
-            ))}
-          </div>
-
-          {addingZone === activeZone && (
-            <AddBlockPanel
-              zone={activeZone}
-              onClose={() => setAddingZone(null)}
-              onAdd={(t) => void handleAdd(t)}
-            />
-          )}
-        </aside>
-
-        {/* ── Colonne centre : paramètres ── */}
-        <main className="ppb-col ppb-col--settings">
-          <div className="ppb-col-head">
-            <h2>Paramètres</h2>
-          </div>
-          <ProductPageBuilderSettingsPanel
-            block={selectedBlock}
-            onSave={(patch) => void handleSaveEdit(patch)}
-          />
-          {hasDraft && (
-            <div className="ppb-publish-note">
-              <label>Note de publication (optionnel)</label>
-              <input
-                className="ppb-input"
-                placeholder="Ex. Ajout FAQ + réorganisation CTA"
-                value={publishNote}
-                onChange={(e) => setPublishNote(e.target.value)}
-              />
+                    <div className="ab-row-actions" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="adm-iconbtn sm"
+                        title="Modifier"
+                        onClick={() => void handleEdit(block)}
+                      >
+                        <Icon name="edit" size={14} />
+                      </button>
+                      {!locked && (
+                        <button
+                          type="button"
+                          className="adm-iconbtn sm"
+                          title="Dupliquer"
+                          onClick={() => void handleDuplicate(block.id)}
+                        >
+                          <Icon name="share" size={14} />
+                        </button>
+                      )}
+                      {!locked &&
+                        (confirmDeleteId === block.id ? (
+                          <button
+                            type="button"
+                            className="adm-iconbtn sm"
+                            title="Confirmer la suppression"
+                            style={{
+                              color: "var(--tone-pink)",
+                              fontWeight: 700,
+                              fontSize: 10,
+                              width: "auto",
+                              padding: "0 6px",
+                            }}
+                            onClick={() => void handleDelete(block.id)}
+                          >
+                            Confirmer
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="adm-iconbtn sm"
+                            title="Supprimer"
+                            style={{ color: "var(--tone-pink)" }}
+                            onClick={() => setConfirmDeleteId(block.id)}
+                          >
+                            <Icon name="trash" size={14} />
+                          </button>
+                        ))}
+                      <Toggle checked={block.enabled} onChange={() => void handleToggle(block.id)} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </main>
+          </div>
 
-        {/* ── Colonne droite : aperçu ── */}
-        <aside className="ppb-col ppb-col--preview">
-          <ProductPageBuilderPreview
-            blocks={blocks}
-            selectedId={selectedId}
-            onSelectBlock={selectBlock}
-          />
-        </aside>
+          <PhonePreview blocks={blocks} />
+        </div>
       </div>
 
-      {confirmDeleteId && (
-        <div className="ppb-modal-overlay" onClick={() => setConfirmDeleteId(null)}>
-          <div className="ppb-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Supprimer cette section ?</h3>
-            <p>Cette action sera effective après publication du layout.</p>
-            <div className="ppb-modal-foot">
-              <button type="button" className="ppb-btn-ghost" onClick={() => setConfirmDeleteId(null)}>
-                Annuler
-              </button>
-              <button
-                type="button"
-                className="ppb-btn-danger"
-                onClick={() => void handleDelete(confirmDeleteId)}
-              >
-                Supprimer
-              </button>
-            </div>
-          </div>
-        </div>
+      {editingBlock && (
+        <ProductPageBlockEditor
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSave={(patch) => void handleSaveEdit(patch)}
+        />
       )}
-
+      {addingSection && (
+        <AddSectionModal onClose={() => setAddingSection(false)} onAdd={(t) => void handleAddSection(t)} />
+      )}
       {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
-    </div>
+    </>
   );
 }

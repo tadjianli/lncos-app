@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
-import type {
-  ProductPageBlock,
-  ProductPageBlockSettings,
-  ProductPageFaqItem,
+import {
+  PRODUCT_PAGE_BLOCK_REGISTRY,
+  merchantBlockLabel,
+  type ProductPageBlock,
+  type ProductPageBlockSettings,
+  type ProductPageFaqItem,
 } from "@/lib/product-page-builder";
-import { PRODUCT_PAGE_BLOCK_REGISTRY } from "@/lib/product-page-builder";
 
 interface ProductPageBlockEditorProps {
   block: ProductPageBlock;
@@ -17,8 +18,9 @@ interface ProductPageBlockEditorProps {
 
 export function ProductPageBlockEditor({ block, onClose, onSave }: ProductPageBlockEditorProps) {
   const schema = PRODUCT_PAGE_BLOCK_REGISTRY[block.type];
-  const [title, setTitle] = useState(block.title);
+  const label = merchantBlockLabel(block.type);
   const [settings, setSettings] = useState<ProductPageBlockSettings>({ ...block.settings });
+  const hasFields = schema.fields.length > 0;
 
   function patchSettings(patch: Partial<ProductPageBlockSettings>) {
     setSettings((prev) => ({ ...prev, ...patch }));
@@ -30,34 +32,25 @@ export function ProductPageBlockEditor({ block, onClose, onSave }: ProductPageBl
     patchSettings({ items });
   }
 
-  function addFaqItem() {
-    patchSettings({
-      items: [...(settings.items ?? []), { question: "", answer: "" }],
-    });
-  }
-
-  function removeFaqItem(index: number) {
-    patchSettings({ items: (settings.items ?? []).filter((_, i) => i !== index) });
+  function handleSave() {
+    onSave({ title: label, settings });
   }
 
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
       <div className="ab-modal ab-modal-scroll" onClick={(e) => e.stopPropagation()}>
         <div className="ab-modal-head">
-          <div className="ab-modal-title">Bloc · {schema.label}</div>
+          <div className="ab-modal-title">Modifier · {label}</div>
           <button type="button" className="adm-iconbtn" onClick={onClose}>
             <Icon name="x" size={17} />
           </button>
         </div>
 
-        <div className="ab-field">
-          <label>Titre admin</label>
-          <input
-            className="ab-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
+        {!hasFields && (
+          <p style={{ fontSize: 13, color: "var(--adm-ink-mute)", lineHeight: 1.55, margin: "0 0 16px" }}>
+            Le texte de cette section se modifie dans <strong>Produits</strong>, fiche par fiche.
+          </p>
+        )}
 
         {schema.fields.map((field) => (
           <div key={String(field.key)} className="ab-field">
@@ -109,12 +102,26 @@ export function ProductPageBlockEditor({ block, onClose, onSave }: ProductPageBl
                       value={item.answer}
                       onChange={(e) => patchFaqItem(i, { answer: e.target.value })}
                     />
-                    <button type="button" className="adm-btn ghost sm" onClick={() => removeFaqItem(i)}>
+                    <button
+                      type="button"
+                      className="adm-btn ghost sm"
+                      onClick={() =>
+                        patchSettings({ items: (settings.items ?? []).filter((_, j) => j !== i) })
+                      }
+                    >
                       Supprimer
                     </button>
                   </div>
                 ))}
-                <button type="button" className="adm-btn ghost sm" onClick={addFaqItem}>
+                <button
+                  type="button"
+                  className="adm-btn ghost sm"
+                  onClick={() =>
+                    patchSettings({
+                      items: [...(settings.items ?? []), { question: "", answer: "" }],
+                    })
+                  }
+                >
                   <Icon name="plus" size={14} /> Ajouter une question
                 </button>
               </div>
@@ -139,11 +146,7 @@ export function ProductPageBlockEditor({ block, onClose, onSave }: ProductPageBl
           <button type="button" className="adm-btn ghost" onClick={onClose}>
             Annuler
           </button>
-          <button
-            type="button"
-            className="adm-btn gold"
-            onClick={() => onSave({ title: title.trim() || schema.label, settings })}
-          >
+          <button type="button" className="adm-btn gold" onClick={handleSave}>
             Enregistrer
           </button>
         </div>
