@@ -46,13 +46,10 @@ function VisaLogo() {
 
 function MastercardLogo() {
   return (
-    <PayLogo label="Mastercard" viewBox="0 0 152 94">
-      <circle cx="56" cy="47" r="38" fill="#EB001B" />
-      <circle cx="96" cy="47" r="38" fill="#F79E1B" />
-      <path
-        fill="#FF5F00"
-        d="M76 20.5a38 38 0 0 0 0 53 38 38 0 0 0 0-53z"
-      />
+    <PayLogo label="Mastercard" viewBox="0 0 36 22">
+      <circle cx="13" cy="11" r="8.5" fill="#EB001B" />
+      <circle cx="23" cy="11" r="8.5" fill="#F79E1B" />
+      <path fill="#FF5F00" d="M18 4.8a8.5 8.5 0 0 0 0 12.4 8.5 8.5 0 0 0 0-12.4z" />
     </PayLogo>
   );
 }
@@ -74,18 +71,14 @@ function ApplePayLogo() {
 
 function PayPalLogo() {
   return (
-    <PayLogo label="PayPal" viewBox="0 0 124 30">
+    <PayLogo label="PayPal" viewBox="0 0 56 14">
       <path
         fill="#009CDE"
-        d="M46.2 6.2H34.8c-.8 0-1.5.5-1.7 1.3L28 23.2c-.1.7.4 1.3 1.1 1.3h5.9l1.3-8.3c.2-.8.9-1.3 1.7-1.3h3.9c8.1 0 12.8-3.9 14-11.7 1-3.4 0-6.1-1.7-7.9-1.8-2.1-5.1-3.1-9.6-3.1zm1.6 11.4c-.7 4.4-4 4.4-7.2 4.4h-1.8l1.3-8.1c.1-.7.7-1.2 1.4-1.2h.8c2.2 0 4.3 0 5.4 1.2.6.8.8 2 .1 3.7z"
+        d="M21.8 2.8h-4.5c-.3 0-.5.2-.6.4l-1.9 11.6c0 .2.1.3.3.3h2.2l.5-3h1.9c2.6 0 4.1-1.3 4.5-3.8.2-1.1 0-1.9-.6-2.6-.6-.7-1.8-1.2-3.3-1.2zm.4 3.7c-.2 1.4-1.3 1.4-2.3 1.4h-1.2l.7-4.2h1.4c.7 0 1.2 0 1.5.3.3.3.4.8.3 1.5z"
       />
       <path
         fill="#003087"
-        d="M72.2 6.2H60.8c-.8 0-1.5.5-1.7 1.3L54 23.2c-.1.7.4 1.3 1.1 1.3h5.6c.6 0 1.2-.5 1.3-1.1l1.4-9c.2-.8.9-1.3 1.7-1.3h3.9c8.1 0 12.8-3.3 14-9.8 1-2.9 0-5.1-1.7-6.6-1.8-1.7-5.1-2.6-9.6-2.6zm1.6 11.4c-.7 4.4-4 4.4-7.2 4.4h-1.8l1.3-8.1c.1-.7.7-1.2 1.4-1.2h.8c2.2 0 4.3 0 5.4 1.2.6.8.8 2 .1 3.7z"
-      />
-      <path
-        fill="#009CDE"
-        d="M97.2 6.2H85.8c-.8 0-1.5.5-1.7 1.3L79 23.2c-.1.7.4 1.3 1.1 1.3h5.9l1.3-8.3c.2-.8.9-1.3 1.7-1.3h3.9c8.1 0 12.8-3.9 14-11.7 1-3.4 0-6.1-1.7-7.9-1.8-2.1-5.1-3.1-9.6-3.1zm1.6 11.4c-.7 4.4-4 4.4-7.2 4.4h-1.8l1.3-8.1c.1-.7.7-1.2 1.4-1.2h.8c2.2 0 4.3 0 5.4 1.2.6.8.8 2 .1 3.7z"
+        d="M31.8 2.8h-4.5c-.3 0-.5.2-.6.4l-1.9 11.6c0 .2.1.3.3.3h2.1c.2 0 .5-.2.6-.4l.5-3.4c0-.3.3-.5.5-.5h1.1c2.6 0 4.1-1 4.5-3.2.2-1 0-1.7-.4-2.2-.6-.6-1.5-1-2.9-1zm.4 3.7c-.2 1.4-1.2 1.4-2.2 1.4h-1.1l.6-4h1.3c.6 0 1.1 0 1.4.3.3.2.4.7.3 1.3z"
       />
     </PayLogo>
   );
@@ -128,7 +121,15 @@ const PAYMENT_LOGOS = [
 
 export function PaymentMethodLogos() {
   return (
-    <section className="payment-methods" aria-label="Moyens de paiement acceptés">
+    <section className="payment-methods" aria-labelledby="payment-methods-title">
+      <div className="payment-methods__header">
+        <span className="payment-methods__rule" aria-hidden />
+        <h3 id="payment-methods-title" className="payment-methods__title">
+          Moyens de paiement
+        </h3>
+        <span className="payment-methods__rule" aria-hidden />
+      </div>
+
       <ul className="payment-methods__list">
         {PAYMENT_LOGOS.map(({ id, Logo }) => (
           <Logo key={id} />

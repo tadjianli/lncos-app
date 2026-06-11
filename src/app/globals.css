@@ -2698,10 +2698,38 @@
 
 .payment-methods {
   --payment-logo-h: clamp(14px, 3.6vw, 20px);
-  --payment-logo-gap: clamp(14px, 4.2vw, 28px);
+  --payment-logo-gap: clamp(16px, 4.5vw, 28px);
   background: transparent;
-  margin-top: 10px;
-  padding: 8px 0 2px;
+  margin-top: 16px;
+  padding: 16px 0 4px;
+}
+
+.payment-methods__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3.5vw, 18px);
+  margin: 0 0 18px;
+  padding: 0 6px;
+}
+
+.payment-methods__rule {
+  flex: 1 1 0;
+  max-width: 88px;
+  height: 1px;
+  background: rgba(212, 175, 55, 0.45);
+}
+
+.payment-methods__title {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: clamp(8.5px, 2.35vw, 10px);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .payment-methods__list {
@@ -2752,8 +2780,12 @@
 
 @media (min-width: 400px) {
   .payment-methods {
-    margin-top: 12px;
-    padding-top: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+
+  .payment-methods__header {
+    margin-bottom: 20px;
   }
 
   .payment-methods__list {
