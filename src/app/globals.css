@@ -2703,23 +2703,6 @@
   max-width: 100%;
 }
 
-/* ─── Moyens de paiement — bannière asset public/assets ─── */
-
-.payment-methods-banner {
-  width: 100%;
-}
-
-.payment-methods-banner img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-}
-
-.bottom-action-bar--product .payment-methods-banner {
-  margin: 14px 0 0;
-}
-
 .bottom-action-bar--product .trust-badges {
   margin-top: 12px;
   padding-top: 0;

@@ -20,7 +20,6 @@ import {
   ProductStockAlert,
 } from "@/components/social-proof/ProductSocialProof";
 import { TrustBadges } from "@/components/commerce/TrustBadges";
-import { PaymentMethodLogos } from "@/components/commerce/PaymentMethodLogos";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -823,7 +822,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
         </div>
       </div>
 
-      {/* ── Sticky CTA + paiement + réassurance ── */}
+      {/* ── Sticky CTA + réassurance ── */}
       <div className="bottom-action-bar bottom-action-bar--product">
         <ProductSalesCounter productId={p.id} />
         <button
@@ -848,7 +847,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </>
           )}
         </button>
-        <PaymentMethodLogos />
         <TrustBadges />
       </div>
     </div>
