@@ -10,7 +10,7 @@ function isStandalonePwa(): boolean {
   return mq || iosStandalone;
 }
 
-/** Hauteur réelle du viewport en PWA iOS (100dvh seul laisse une zone morte sous la nav). */
+/** Hauteur réelle du viewport — pour reels / slides plein écran (pas pour verrouiller le shell). */
 function syncStandaloneViewport() {
   const root = document.documentElement;
 

@@ -137,16 +137,15 @@
   --pd-gallery-top: calc(var(--safe-top) + var(--pd-island-gap));
   --pd-gallery-max-h: 48dvh;
   --app-max-width: 480px;
-  /* Bottom nav iOS — compacte, proche du bord (style Avisflo) */
+  /* Bottom nav iOS — compacte, ancrée au bord (safe-area unique sur le conteneur) */
   --bottom-nav-icon-size: 38px;
   --bottom-nav-label-size: 10px;
-  --bottom-nav-pad-y: 0px;
+  --bottom-nav-pad-y: 4px;
   --bottom-nav-item-gap: 2px;
-  --bottom-nav-touch-min: 48px;
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
   --bottom-nav-bar-h: calc(
     var(--bottom-nav-pad-y) + var(--bottom-nav-icon-size) +
-    var(--bottom-nav-item-gap) + var(--bottom-nav-label-size) + 2px
+    var(--bottom-nav-item-gap) + var(--bottom-nav-label-size)
   );
   --bottom-nav-h: calc(var(--bottom-nav-bar-h) + var(--bottom-nav-safe-bottom));
   /* legacy alias */
@@ -1245,7 +1244,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Bottom navigation — iOS premium, ancrée au bas (safe-area unique) */
+/* Bottom navigation — iOS premium, fond jusqu’au bord physique (safe-area une fois) */
 .bottom-nav {
   position: absolute;
   bottom: 0;
@@ -1258,32 +1257,34 @@
   box-sizing: border-box;
   padding-left: max(6px, var(--safe-left));
   padding-right: max(6px, var(--safe-right));
-  -webkit-tap-highlight-color: transparent;
-}
-.bottom-nav-bar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  padding-top: var(--bottom-nav-pad-y);
   padding-bottom: var(--bottom-nav-safe-bottom);
   background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-top: 0.5px solid rgba(212, 175, 55, 0.16);
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.04);
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: var(--bottom-nav-pad-y);
+  padding-bottom: 0;
+  background: transparent;
 }
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: var(--bottom-nav-item-gap);
   position: relative;
   flex: 1;
   min-width: 0;
   max-width: 76px;
-  min-height: max(var(--bottom-nav-bar-h), var(--bottom-nav-touch-min));
-  padding: 2px 4px 0;
+  min-height: var(--bottom-nav-bar-h);
+  padding: 0 4px;
   text-decoration: none;
   color: var(--ink-mute);
   transition: color 0.2s ease, transform 0.15s ease;
@@ -3068,58 +3069,28 @@
   .pd-gallery-hero-inner, .pd-lightbox-img { animation: none; }
 }
 
-/* ─── PWA iOS standalone — hauteur réelle (innerHeight), pas 100dvh seul ─── */
+/* ─── PWA iOS standalone ─── */
 /*
- * Safari : inset:0 suffit (pas de height explicite).
- * PWA installée : 100dvh > viewport visible sur iOS → zone noire sous la TabBar.
- * StandaloneViewportSync pose --viewport-h + classe .standalone-pwa sur <html>.
+ * Ne pas verrouiller html/body/shell sur innerHeight : ça raccourcit le shell
+ * au-dessus de la zone home indicator et laisse un vide sous la bottom nav.
+ * inset:0 remplit le viewport layout ; --viewport-h (JS) sert aux reels uniquement.
  */
 html.standalone-pwa {
-  --viewport-h: 100dvh;
-  --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --bottom-nav-h: calc(
-    var(--bottom-nav-bar-h) + env(safe-area-inset-bottom, 0px)
-  );
   width: 100%;
-  max-width: 100%;
-  height: var(--viewport-h);
-  min-height: var(--viewport-h);
-  max-height: var(--viewport-h);
   overflow: hidden;
 }
 
 html.standalone-pwa body {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: auto;
+  inset: 0;
   width: 100%;
-  max-width: 100%;
-  height: var(--viewport-h);
-  min-height: var(--viewport-h);
-  max-height: var(--viewport-h);
   overflow: hidden;
 }
 
 html.standalone-pwa .app-shell {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: auto;
-  height: var(--viewport-h);
-  min-height: var(--viewport-h);
-  max-height: var(--viewport-h);
+  inset: 0;
   max-width: min(var(--app-max-width), 100%);
-}
-
-html.standalone-pwa .bottom-nav {
-  position: absolute;
-  bottom: 0;
-}
-html.standalone-pwa .bottom-nav-bar {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 html.standalone-pwa .pd-overlay {
