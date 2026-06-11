@@ -6,13 +6,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Sparkles } from "lucide-react";
 import { Icon } from "@/components/shared/Icon";
 
 const NAV_ITEMS = [
   { href: "/",         id: "home",       icon: "home", label: "Accueil"    },
   { href: "/discover", id: "categories", icon: "grid", label: "Catégories" },
   { href: "/bag",      id: "cart",       icon: "bag",  label: "Panier"     },
-  { href: "/boutique", id: "boutique",   icon: "shop", label: "Boutique"   },
+  { href: "/boutique", id: "boutique",   icon: "sparkles", label: "Boutique" },
   { href: "/profile",  id: "profile",    icon: "user", label: "Profil"     },
 ] as const;
 
@@ -49,13 +50,23 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
               }
             >
               <span className="bottom-nav-icon-wrap">
-                <Icon
-                  name={item.icon}
-                  size={ICON_SIZE}
-                  stroke={active ? 2.1 : 1.75}
-                  color={active ? "var(--gold)" : "var(--ink-mute)"}
-                  fill={showFill ? "rgba(212,175,55,.18)" : "none"}
-                />
+                {item.id === "boutique" ? (
+                  <Sparkles
+                    size={ICON_SIZE}
+                    strokeWidth={active ? 2.1 : 1.75}
+                    color={active ? "var(--gold)" : "var(--ink-mute)"}
+                    fill={showFill ? "rgba(212,175,55,.18)" : "none"}
+                    aria-hidden
+                  />
+                ) : (
+                  <Icon
+                    name={item.icon}
+                    size={ICON_SIZE}
+                    stroke={active ? 2.1 : 1.75}
+                    color={active ? "var(--gold)" : "var(--ink-mute)"}
+                    fill={showFill ? "rgba(212,175,55,.18)" : "none"}
+                  />
+                )}
                 {item.id === "cart" && cartCount > 0 && (
                   <span className="bottom-nav-badge">
                     {cartCount > 99 ? "99+" : cartCount}
