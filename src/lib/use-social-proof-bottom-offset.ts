@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-const GAP_ABOVE_STICKY_PX = 20;
-const GAP_ABOVE_NAV_PX = 20;
+const GAP_ABOVE_NAV_PX = 12;
+const GAP_ABOVE_STICKY_PX = 14;
+const SAFE_MARGIN_PX = 4;
 
 function isVisible(el: HTMLElement): boolean {
   const rect = el.getBoundingClientRect();
@@ -12,9 +13,22 @@ function isVisible(el: HTMLElement): boolean {
   return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
 }
 
-function measureOffset(navVisible: boolean): { offset: number; hasSticky: boolean } {
+function readSafeBottomPx(): number {
+  if (typeof document === "undefined") return 0;
+  const probe = document.createElement("div");
+  probe.style.cssText =
+    "position:fixed;bottom:0;left:0;width:0;height:0;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none;";
+  document.body.appendChild(probe);
+  const px = probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+function measureOffset(navVisible: boolean): number {
   const shell = document.querySelector(".app-shell");
-  if (!shell) return { offset: GAP_ABOVE_NAV_PX, hasSticky: false };
+  if (!shell) {
+    return GAP_ABOVE_NAV_PX + readSafeBottomPx() + SAFE_MARGIN_PX;
+  }
 
   const shellBottom = shell.getBoundingClientRect().bottom;
   let topmost = shellBottom;
@@ -27,23 +41,26 @@ function measureOffset(navVisible: boolean): { offset: number; hasSticky: boolea
   });
 
   if (navVisible) {
-    for (const selector of [".bottom-nav-bar"]) {
-      const node = document.querySelector(selector);
-      if (!(node instanceof HTMLElement) || !isVisible(node)) continue;
-      topmost = Math.min(topmost, node.getBoundingClientRect().top);
+    const navBar = document.querySelector(".bottom-nav-bar");
+    if (navBar instanceof HTMLElement && isVisible(navBar)) {
+      topmost = Math.min(topmost, navBar.getBoundingClientRect().top);
     }
   }
 
+  const safeBottom = readSafeBottomPx();
+
   if (topmost >= shellBottom - 1) {
-    return {
-      offset: navVisible ? GAP_ABOVE_NAV_PX : Math.max(GAP_ABOVE_NAV_PX, 10),
-      hasSticky: false,
-    };
+    const navBar = document.querySelector(".bottom-nav-bar");
+    const navHeight =
+      navVisible && navBar instanceof HTMLElement && isVisible(navBar)
+        ? navBar.getBoundingClientRect().height
+        : 0;
+    return navHeight + GAP_ABOVE_NAV_PX + safeBottom + SAFE_MARGIN_PX;
   }
 
   const obstruction = shellBottom - topmost;
   const gap = hasSticky ? GAP_ABOVE_STICKY_PX : GAP_ABOVE_NAV_PX;
-  return { offset: obstruction + gap, hasSticky };
+  return obstruction + gap + SAFE_MARGIN_PX;
 }
 
 export function useSocialProofBottomOffset(navVisible: boolean): number {
@@ -55,8 +72,7 @@ export function useSocialProofBottomOffset(navVisible: boolean): number {
     const update = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const { offset: next } = measureOffset(navVisible);
-        setOffset(next);
+        setOffset(measureOffset(navVisible));
       });
     };
 
@@ -74,7 +90,9 @@ export function useSocialProofBottomOffset(navVisible: boolean): number {
 
     const scan = () => {
       track(shell);
-      document.querySelectorAll(".bottom-action-bar, .bottom-nav").forEach((el) => track(el));
+      document
+        .querySelectorAll(".bottom-action-bar, .bottom-nav, .bottom-nav-bar")
+        .forEach((el) => track(el));
       update();
     };
 

@@ -1,7 +1,7 @@
 "use client";
 /**
- * LN COS — Bottom nav iOS premium
- * 5 onglets uniformes, icônes 31px.
+ * LN COS — Bottom nav iOS premium (style Avisflo)
+ * 5 onglets uniformes, icônes alignées sur --bottom-nav-icon-size.
  */
 
 import Link from "next/link";
@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { href: "/profile",  id: "profile",    icon: "user", label: "Profil"     },
 ] as const;
 
-const ICON_SIZE = 31;
+const ICON_SIZE = 38;
 
 interface BottomNavProps {
   cartCount?: number;

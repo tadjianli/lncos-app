@@ -1,28 +1,6 @@
 "use client";
 
-import type { SocialProofNotification } from "@/lib/social-proof";
-
-function compactCopy(notification: SocialProofNotification): { line1: string; line2: string } {
-  const { type, customerName, productName, rating } = notification;
-
-  switch (type) {
-    case "purchase":
-      return { line1: "🛒 Achat récent", line2: productName };
-    case "review": {
-      const stars = rating ?? 5;
-      return {
-        line1: `⭐ ${customerName}`,
-        line2: `Avis ${stars}★ • ${productName}`,
-      };
-    }
-    case "favorite":
-      return { line1: `❤️ ${customerName}`, line2: productName };
-    case "cart":
-      return { line1: `🛍️ ${customerName}`, line2: productName };
-    default:
-      return { line1: customerName, line2: productName };
-  }
-}
+import { formatSocialProofCopy, type SocialProofNotification } from "@/lib/social-proof";
 
 export function SocialProofToast({
   notification,
@@ -35,7 +13,7 @@ export function SocialProofToast({
 }) {
   if (!notification) return null;
 
-  const { line1, line2 } = compactCopy(notification);
+  const { line1, line2 } = formatSocialProofCopy(notification);
 
   return (
     <div
@@ -45,8 +23,8 @@ export function SocialProofToast({
       style={{ bottom: `${bottomOffsetPx}px` }}
     >
       <div className="sp-toast__card">
-        <div className="sp-toast__line1">{line1}</div>
-        <div className="sp-toast__line2">{line2}</div>
+        <p className="sp-toast__line1">{line1}</p>
+        {line2 ? <p className="sp-toast__line2">{line2}</p> : null}
       </div>
     </div>
   );

@@ -137,11 +137,12 @@
   --pd-gallery-top: calc(var(--safe-top) + var(--pd-island-gap));
   --pd-gallery-max-h: 48dvh;
   --app-max-width: 480px;
-  /* Bottom nav iOS — barre compacte, 5 onglets uniformes */
-  --bottom-nav-icon-size: 31px;
-  --bottom-nav-label-size: 11px;
-  --bottom-nav-pad-y: 2px;
-  --bottom-nav-item-gap: 1px;
+  /* Bottom nav iOS — compacte, proche du bord (style Avisflo) */
+  --bottom-nav-icon-size: 38px;
+  --bottom-nav-label-size: 10px;
+  --bottom-nav-pad-y: 0px;
+  --bottom-nav-item-gap: 2px;
+  --bottom-nav-touch-min: 48px;
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
   --bottom-nav-bar-h: calc(
     var(--bottom-nav-pad-y) + var(--bottom-nav-icon-size) +
@@ -1265,10 +1266,10 @@
   justify-content: space-around;
   padding-top: var(--bottom-nav-pad-y);
   padding-bottom: var(--bottom-nav-safe-bottom);
-  background: rgba(10, 10, 10, 0.96);
+  background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-top: 0.5px solid rgba(212, 175, 55, 0.18);
+  border-top: 0.5px solid rgba(212, 175, 55, 0.16);
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
 .bottom-nav-item {
@@ -1280,13 +1281,14 @@
   position: relative;
   flex: 1;
   min-width: 0;
-  max-width: 72px;
-  min-height: var(--bottom-nav-bar-h);
-  padding: 0 2px 1px;
+  max-width: 76px;
+  min-height: max(var(--bottom-nav-bar-h), var(--bottom-nav-touch-min));
+  padding: 2px 4px 0;
   text-decoration: none;
   color: var(--ink-mute);
   transition: color 0.2s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .bottom-nav-item:active {
   transform: scale(0.94);
@@ -1346,22 +1348,25 @@
 
 .sp-toast {
   position: absolute;
-  left: max(10px, var(--safe-left));
+  left: max(12px, var(--safe-left));
   z-index: 1;
   pointer-events: none;
-  width: min(320px, 80vw);
-  max-width: min(320px, 80vw);
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 0.68, 0, 1);
+  width: min(280px, calc(100% - 24px));
+  max-width: 280px;
+  transition:
+    opacity 0.38s cubic-bezier(0.22, 0.68, 0, 1),
+    transform 0.38s cubic-bezier(0.22, 0.68, 0, 1);
+  will-change: opacity, transform;
 }
 
 .sp-toast--visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0) translateY(0);
 }
 
 .sp-toast--hidden {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateX(-10px) translateY(6px);
 }
 
 .sp-toast__card {
@@ -1369,31 +1374,35 @@
   flex-direction: column;
   justify-content: center;
   gap: 1px;
-  min-height: 58px;
-  max-height: 76px;
-  padding: 7px 10px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.45);
+  min-height: 38px;
+  max-height: 52px;
+  padding: 6px 11px;
+  border-radius: 14px;
+  background: rgba(16, 16, 16, 0.72);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 24px -10px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .sp-toast__line1 {
-  font-size: 11px;
+  margin: 0;
+  font-size: 10.5px;
   font-weight: 600;
-  color: var(--ink);
-  line-height: 1.2;
+  color: rgba(232, 222, 210, 0.96);
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sp-toast__line2 {
-  font-size: 10px;
+  margin: 0;
+  font-size: 9.5px;
   font-weight: 500;
-  color: var(--ink-soft);
+  color: rgba(232, 222, 210, 0.62);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -2698,7 +2707,6 @@
 
 .payment-methods-banner {
   width: 100%;
-  margin: 24px 0;
 }
 
 .payment-methods-banner img {
@@ -2706,6 +2714,20 @@
   height: auto;
   display: block;
   object-fit: contain;
+}
+
+.bottom-action-bar--product .payment-methods-banner {
+  margin: 14px 0 0;
+}
+
+.bottom-action-bar--product .trust-badges {
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.bottom-action-bar--product .trust-badges__cards {
+  margin-bottom: 0;
 }
 
 /* Dans AppShell au-dessus de la bottom nav — safe area gérée par la nav */

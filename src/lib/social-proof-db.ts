@@ -6,7 +6,7 @@ import {
   DEFAULT_SOCIAL_PROOF_SETTINGS,
   dbToSocialProofSettings,
   eventToNotification,
-  buildSyntheticNotifications,
+  enrichNotificationPool,
   socialProofSettingsToDb,
   syntheticSalesCounts,
   type DbSocialProofSettings,
@@ -84,7 +84,7 @@ export function useSocialProofNotifications(products: { id: string; name: string
     const load = async () => {
       try {
         if (!isSupabaseConfigured()) {
-          setNotifications(buildSyntheticNotifications(products, settings));
+          setNotifications(enrichNotificationPool([], products, settings));
           setLoading(false);
           return;
         }
@@ -103,13 +103,9 @@ export function useSocialProofNotifications(products: { id: string; name: string
           .limit(40);
 
         const fromDb = (data ?? []).map((r) => eventToNotification(dbToEvent(r)));
-        if (fromDb.length > 0) {
-          setNotifications(fromDb);
-        } else {
-          setNotifications(buildSyntheticNotifications(products, settings));
-        }
+        setNotifications(enrichNotificationPool(fromDb, products, settings));
       } catch {
-        setNotifications(buildSyntheticNotifications(products, settings));
+        setNotifications(enrichNotificationPool([], products, settings));
       } finally {
         setLoading(false);
       }

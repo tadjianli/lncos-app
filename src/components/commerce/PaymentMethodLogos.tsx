@@ -4,7 +4,7 @@ export function PaymentMethodLogos() {
   return (
     <div className="payment-methods-banner">
       <img
-        src="/assets/Moyens de paiement.png"
+        src="/assets/payment-methods.png"
         alt="Moyens de paiement acceptés"
       />
     </div>

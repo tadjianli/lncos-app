@@ -1,4 +1,11 @@
-export type SocialProofEventType = "purchase" | "review" | "favorite" | "cart";
+export type SocialProofEventType =
+  | "purchase"
+  | "review"
+  | "favorite"
+  | "cart"
+  | "viewing"
+  | "popular"
+  | "shipped";
 
 export type RotationInterval = 5 | 10 | 15 | 30;
 
@@ -36,11 +43,13 @@ export interface SocialProofEvent {
 export interface SocialProofNotification {
   id: string;
   type: SocialProofEventType;
-  customerName: string;
   productName: string;
   rating?: number;
+  viewerCount?: number;
   timeAgo: string;
 }
+
+export const SOCIAL_PROOF_DISPLAY_MS = 4000;
 
 export const DEFAULT_SOCIAL_PROOF_SETTINGS: SocialProofSettings = {
   purchaseNotifications: true,
@@ -51,7 +60,7 @@ export const DEFAULT_SOCIAL_PROOF_SETTINGS: SocialProofSettings = {
   stockAlertsEnabled: true,
   salesCounterEnabled: true,
   rotationIntervalSec: 10,
-  notificationDurationMs: 3000,
+  notificationDurationMs: SOCIAL_PROOF_DISPLAY_MS,
   viewersMin: 5,
   viewersMax: 50,
   stockLowThreshold: 10,
@@ -60,11 +69,6 @@ export const DEFAULT_SOCIAL_PROOF_SETTINGS: SocialProofSettings = {
   trustVerifiedPurchase: true,
   trustEasyReturns: true,
 };
-
-const FIRST_NAMES = [
-  "Sarah", "Sophie", "Emma", "Laura", "Margaux", "Diane", "Camille", "Léa",
-  "Chloé", "Manon", "Julie", "Inès", "Claire", "Vanessa", "Aurélie",
-];
 
 export function hashString(s: string): number {
   let h = 0;
@@ -109,44 +113,198 @@ export function syntheticSalesCounts(productId: string): { today: number; week: 
   };
 }
 
+export function formatSocialProofCopy(
+  notification: SocialProofNotification
+): { line1: string; line2?: string } {
+  const { type, productName, rating, viewerCount } = notification;
+
+  switch (type) {
+    case "review":
+      return {
+        line1: `⭐ Avis ${rating ?? 5} étoiles reçu récemment`,
+        line2: productName,
+      };
+    case "cart":
+      return {
+        line1: "🛒 Un article a été ajouté au panier",
+        line2: productName,
+      };
+    case "purchase":
+      return {
+        line1: "📦 Une commande vient d'être passée",
+        line2: productName,
+      };
+    case "viewing":
+      return {
+        line1: `👀 ${viewerCount ?? 7} personnes consultent ce produit`,
+        line2: productName,
+      };
+    case "popular":
+      return {
+        line1: "🔥 Produit populaire aujourd'hui",
+        line2: productName,
+      };
+    case "favorite":
+      return {
+        line1: "💖 Ajouté aux favoris récemment",
+        line2: productName,
+      };
+    case "shipped":
+      return {
+        line1: "🚚 Commande expédiée récemment",
+        line2: productName,
+      };
+    default:
+      return { line1: productName };
+  }
+}
+
+const SYNTHETIC_ROTATION_TYPES: SocialProofEventType[] = [
+  "review",
+  "cart",
+  "purchase",
+  "viewing",
+  "popular",
+  "favorite",
+  "shipped",
+];
+
+function isDbEventTypeEnabled(type: SocialProofEventType, settings: SocialProofSettings): boolean {
+  switch (type) {
+    case "purchase":
+      return settings.purchaseNotifications;
+    case "review":
+      return settings.reviewNotifications;
+    case "favorite":
+      return settings.favoriteNotifications;
+    case "cart":
+      return settings.cartNotifications;
+    case "viewing":
+    case "popular":
+    case "shipped":
+      return true;
+    default:
+      return false;
+  }
+}
+
 export function buildSyntheticNotifications(
   products: { id: string; name: string }[],
   settings: SocialProofSettings
 ): SocialProofNotification[] {
   if (products.length === 0) return [];
-  const out: SocialProofNotification[] = [];
-  const types: SocialProofEventType[] = [];
-  if (settings.purchaseNotifications) types.push("purchase");
-  if (settings.reviewNotifications) types.push("review");
-  if (settings.favoriteNotifications) types.push("favorite");
-  if (settings.cartNotifications) types.push("cart");
 
-  types.forEach((type, i) => {
-    const p = products[i % products.length];
-    const name = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${String.fromCharCode(65 + (i % 26))}.`;
-    const mins = [3, 5, 8, 12, 15, 22, 35][i % 7];
-    const created = new Date(Date.now() - mins * 60_000).toISOString();
-    out.push({
-      id: `syn-${type}-${i}`,
+  const enabledTypes = SYNTHETIC_ROTATION_TYPES.filter((type) =>
+    isDbEventTypeEnabled(type, settings)
+  );
+  if (enabledTypes.length === 0) return [];
+
+  const minsOffsets = [2, 4, 6, 9, 14, 18, 27];
+
+  return enabledTypes.map((type, i) => {
+    const product = products[i % products.length];
+    const created = new Date(
+      Date.now() - minsOffsets[i % minsOffsets.length] * 60_000
+    ).toISOString();
+
+    const base: SocialProofNotification = {
+      id: `syn-${type}-${product.id}-${i}`,
       type,
-      customerName: name,
-      productName: p.name,
-      rating: type === "review" ? 5 : undefined,
+      productName: product.name,
       timeAgo: formatTimeAgo(created),
-    });
+    };
+
+    if (type === "review") {
+      return { ...base, rating: 5 };
+    }
+    if (type === "viewing") {
+      return {
+        ...base,
+        viewerCount: computeLiveViewers(
+          product.id,
+          settings.viewersMin,
+          settings.viewersMax
+        ),
+      };
+    }
+    return base;
   });
-  return out;
+}
+
+export function enrichNotificationPool(
+  base: SocialProofNotification[],
+  products: { id: string; name: string }[],
+  settings: SocialProofSettings
+): SocialProofNotification[] {
+  const synthetic = buildSyntheticNotifications(products, settings);
+  const seen = new Set<string>();
+  const merged: SocialProofNotification[] = [];
+
+  for (const item of [...base, ...synthetic]) {
+    const key = `${item.type}:${item.productName}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+
+  return merged.length > 0 ? merged : synthetic;
 }
 
 export function eventToNotification(e: SocialProofEvent): SocialProofNotification {
-  return {
+  const type = e.eventType;
+  const base: SocialProofNotification = {
     id: e.id,
-    type: e.eventType,
-    customerName: e.customerName,
+    type,
     productName: e.productName,
-    rating: e.rating ?? undefined,
     timeAgo: formatTimeAgo(e.createdAt),
   };
+
+  if (type === "review") {
+    return { ...base, rating: e.rating ?? 5 };
+  }
+  if (type === "viewing" && e.productId) {
+    return {
+      ...base,
+      viewerCount: computeLiveViewers(e.productId, 5, 50),
+    };
+  }
+  return base;
+}
+
+export function shuffleNotifications(
+  items: SocialProofNotification[]
+): SocialProofNotification[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+export function pickNextNotificationIndex(
+  queue: SocialProofNotification[],
+  lastType: SocialProofEventType | null,
+  lastIndex: number
+): number {
+  if (queue.length === 0) return 0;
+  if (queue.length === 1) return 0;
+
+  const candidates = queue
+    .map((item, index) => ({ item, index }))
+    .filter(({ item, index }) => item.type !== lastType || index !== lastIndex);
+
+  const pool =
+    candidates.length > 0
+      ? candidates
+      : queue.map((item, index) => ({ item, index }));
+
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  return pick.index;
+}
+
+export function randomPauseMs(minMs = 3500, maxMs = 8500): number {
+  return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
 }
 
 export type DbSocialProofSettings = {
@@ -182,7 +340,10 @@ export function dbToSocialProofSettings(
     stockAlertsEnabled: row.stock_alerts_enabled,
     salesCounterEnabled: row.sales_counter_enabled,
     rotationIntervalSec: row.rotation_interval_sec as RotationInterval,
-    notificationDurationMs: row.notification_duration_ms > 0 ? row.notification_duration_ms : 3000,
+    notificationDurationMs:
+      row.notification_duration_ms > 0
+        ? row.notification_duration_ms
+        : SOCIAL_PROOF_DISPLAY_MS,
     viewersMin: row.viewers_min,
     viewersMax: row.viewers_max,
     stockLowThreshold: row.stock_low_threshold as StockLowThreshold,

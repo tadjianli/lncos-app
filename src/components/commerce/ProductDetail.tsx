@@ -780,9 +780,18 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </div>
           )}
 
+          <ProductBeforeAfterSection productId={p.id} />
+
+          <ProductReviewsSection
+            productId={p.id}
+            fallbackRating={p.rating}
+            fallbackCount={p.reviews}
+            sectionId="product-reviews"
+          />
+
           {/* ── Vous aimerez aussi ── */}
           {related.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
+            <div style={{ marginBottom: 8, marginTop: 24 }}>
               <h3
                 style={{
                   margin: "0 0 14px",
@@ -811,22 +820,10 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </div>
           )}
 
-          <ProductBeforeAfterSection productId={p.id} />
-
-          <TrustBadges />
-          <PaymentMethodLogos />
-
-          <ProductReviewsSection
-            productId={p.id}
-            fallbackRating={p.rating}
-            fallbackCount={p.reviews}
-            sectionId="product-reviews"
-          />
-
         </div>
       </div>
 
-      {/* ── Sticky CTA + réassurance premium ── */}
+      {/* ── Sticky CTA + paiement + réassurance ── */}
       <div className="bottom-action-bar bottom-action-bar--product">
         <ProductSalesCounter productId={p.id} />
         <button
@@ -851,6 +848,8 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </>
           )}
         </button>
+        <PaymentMethodLogos />
+        <TrustBadges />
       </div>
     </div>
   );

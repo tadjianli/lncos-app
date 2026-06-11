@@ -1,24 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePublicProducts } from "@/lib/client-supabase";
 import { useSocialProofNotifications } from "@/lib/social-proof-db";
 import { useSocialProofBottomOffset } from "@/lib/use-social-proof-bottom-offset";
 import { SocialProofToast } from "@/components/social-proof/SocialProofToast";
-import type { SocialProofNotification } from "@/lib/social-proof";
+import {
+  SOCIAL_PROOF_DISPLAY_MS,
+  pickNextNotificationIndex,
+  randomPauseMs,
+  shuffleNotifications,
+  type SocialProofEventType,
+  type SocialProofNotification,
+} from "@/lib/social-proof";
 
 export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
   const { products } = usePublicProducts();
-  const productList = useMemo(() => products.map((p) => ({ id: p.id, name: p.name })), [products]);
+  const productList = useMemo(
+    () => products.map((p) => ({ id: p.id, name: p.name })),
+    [products]
+  );
   const { notifications, settings, loading } = useSocialProofNotifications(productList);
   const bottomOffsetPx = useSocialProofBottomOffset(navVisible);
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(false);
 
-  const queue = notifications;
+  const queue = useMemo(
+    () => shuffleNotifications(notifications),
+    [notifications]
+  );
+
   const current: SocialProofNotification | null =
     queue.length > 0 ? queue[index % queue.length] : null;
+
+  const lastTypeRef = useRef<SocialProofEventType | null>(null);
+  const lastIndexRef = useRef(-1);
 
   const anyEnabled =
     settings.purchaseNotifications ||
@@ -39,18 +56,26 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
       });
 
     void (async () => {
-      await sleep(2000);
-      let i = 0;
-      const displayMs = Math.min(settings.notificationDurationMs || 3000, 3000);
+      await sleep(randomPauseMs(2200, 4200));
+
       while (!cancelled) {
-        setIndex(i % queue.length);
+        const nextIndex = pickNextNotificationIndex(
+          queue,
+          lastTypeRef.current,
+          lastIndexRef.current
+        );
+        const next = queue[nextIndex];
+
+        lastTypeRef.current = next?.type ?? null;
+        lastIndexRef.current = nextIndex;
+        setIndex(nextIndex);
         setVisible(true);
-        await sleep(displayMs);
+
+        await sleep(SOCIAL_PROOF_DISPLAY_MS);
         if (cancelled) break;
+
         setVisible(false);
-        const pause = Math.max(500, settings.rotationIntervalSec * 1000 - displayMs);
-        await sleep(pause);
-        i += 1;
+        await sleep(randomPauseMs());
       }
     })();
 
@@ -59,13 +84,7 @@ export function SocialProofRotator({ navVisible }: { navVisible: boolean }) {
       timers.forEach(clearTimeout);
       setVisible(false);
     };
-  }, [
-    loading,
-    anyEnabled,
-    queue.length,
-    settings.rotationIntervalSec,
-    settings.notificationDurationMs,
-  ]);
+  }, [loading, anyEnabled, queue]);
 
   if (!anyEnabled || queue.length === 0) return null;
 
