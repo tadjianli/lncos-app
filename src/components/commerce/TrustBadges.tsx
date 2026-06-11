@@ -1,9 +1,7 @@
 "use client";
 /**
- * LN COS — Bloc réassurance premium sous le CTA sticky (toutes fiches produit)
+ * LN COS — Bloc réassurance premium (fiches produit)
  */
-
-import { PaymentMethodLogos } from "@/components/commerce/PaymentMethodLogos";
 
 const REASSURANCE_CARDS = [
   { emoji: "🔒", title: "Paiement 100% sécurisé" },
@@ -25,8 +23,6 @@ export function TrustBadges() {
           </div>
         ))}
       </div>
-
-      <PaymentMethodLogos />
     </section>
   );
 }

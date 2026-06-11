@@ -20,6 +20,7 @@ import {
   ProductStockAlert,
 } from "@/components/social-proof/ProductSocialProof";
 import { TrustBadges } from "@/components/commerce/TrustBadges";
+import { PaymentMethodLogos } from "@/components/commerce/PaymentMethodLogos";
 import { VariantSwatches } from "@/components/commerce/VariantSwatches";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -812,6 +813,9 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
 
           <ProductBeforeAfterSection productId={p.id} />
 
+          <TrustBadges />
+          <PaymentMethodLogos />
+
           <ProductReviewsSection
             productId={p.id}
             fallbackRating={p.rating}
@@ -847,7 +851,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
             </>
           )}
         </button>
-        <TrustBadges />
       </div>
     </div>
   );
