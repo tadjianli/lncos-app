@@ -6,7 +6,7 @@
  *   html/body  : inset 0 ; PWA standalone idem (pas de height innerHeight sur le shell)
  *   AppShell   : position fixed, remplit le viewport, max-width 480px
  *   main       : flex:1, safe-top, padding-bottom = hauteur nav si visible
- *   BottomNav  : position absolute, bottom:0, safe-area unique sur .bottom-nav
+ *   BottomNav  : position fixed bottom:0 viewport, safe-area sur .bottom-nav
  *
  * Overlay z-index layers (all position:absolute within AppShell):
  *   70  Toast          — floats above nav

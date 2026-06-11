@@ -41,21 +41,19 @@ function measureOffset(navVisible: boolean): number {
   });
 
   if (navVisible) {
-    const navBar = document.querySelector(".bottom-nav-bar");
-    if (navBar instanceof HTMLElement && isVisible(navBar)) {
-      topmost = Math.min(topmost, navBar.getBoundingClientRect().top);
+    const nav = document.querySelector(".bottom-nav");
+    if (nav instanceof HTMLElement && isVisible(nav)) {
+      topmost = Math.min(topmost, nav.getBoundingClientRect().top);
     }
   }
 
-  const safeBottom = readSafeBottomPx();
-
   if (topmost >= shellBottom - 1) {
-    const navBar = document.querySelector(".bottom-nav-bar");
+    const nav = document.querySelector(".bottom-nav");
     const navHeight =
-      navVisible && navBar instanceof HTMLElement && isVisible(navBar)
-        ? navBar.getBoundingClientRect().height
+      navVisible && nav instanceof HTMLElement && isVisible(nav)
+        ? nav.getBoundingClientRect().height
         : 0;
-    return navHeight + GAP_ABOVE_NAV_PX + safeBottom + SAFE_MARGIN_PX;
+    return navHeight + GAP_ABOVE_NAV_PX + SAFE_MARGIN_PX;
   }
 
   const obstruction = shellBottom - topmost;

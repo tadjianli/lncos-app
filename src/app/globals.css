@@ -1244,16 +1244,16 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Bottom navigation — iOS premium, fond jusqu’au bord physique (safe-area une fois) */
+/* Bottom navigation — fixed viewport (Instagram/TikTok), safe-area une fois */
 .bottom-nav {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 40;
   width: 100%;
   max-width: var(--app-max-width);
-  margin: 0 auto;
+  margin-inline: auto;
   box-sizing: border-box;
   padding-left: max(6px, var(--safe-left));
   padding-right: max(6px, var(--safe-right));
@@ -3075,26 +3075,42 @@
 
 /* ─── PWA iOS standalone ─── */
 /*
- * Ne pas verrouiller html/body/shell sur innerHeight : ça raccourcit le shell
- * au-dessus de la zone home indicator et laisse un vide sous la bottom nav.
- * inset:0 remplit le viewport layout ; --viewport-h (JS) sert aux reels uniquement.
+ * Shell + body ancrés top:0 bottom:0 (pas height: innerHeight) pour remplir
+ * tout le layout viewport. La bottom nav est position:fixed sur le viewport.
  */
 html.standalone-pwa {
   width: 100%;
+  height: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   overflow: hidden;
 }
 
 html.standalone-pwa body {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
 }
 
 html.standalone-pwa .app-shell {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  min-height: 0;
   max-width: min(var(--app-max-width), 100%);
+  margin-inline: auto;
 }
 
 html.standalone-pwa .pd-overlay {
@@ -3120,6 +3136,72 @@ html.standalone-pwa .reel-slide {
   .prodbento {
     max-width: 100%;
   }
+}
+
+/* ─── DEBUG layout bottom nav (?debugNav=1) — retirer après diagnostic ─── */
+/*
+ * Rouge   = body (viewport)
+ * Vert    = .app-shell
+ * Cyan    = .app-shell-main
+ * Magenta = .bottom-nav (fond blur)
+ * Jaune   = zone safe-area-inset-bottom (::after)
+ */
+html[data-lncos-debug-nav] body {
+  outline: 3px solid #ff0040;
+  outline-offset: -3px;
+}
+html[data-lncos-debug-nav] .app-shell {
+  outline: 3px solid #00ff66;
+  outline-offset: -3px;
+}
+html[data-lncos-debug-nav] .app-shell-main {
+  outline: 3px solid #00d4ff;
+  outline-offset: -3px;
+}
+html[data-lncos-debug-nav] .bottom-nav {
+  outline: 3px solid #ff00ff;
+  outline-offset: -3px;
+}
+html[data-lncos-debug-nav] .bottom-nav::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bottom-nav-safe-bottom);
+  background: rgba(255, 220, 0, 0.45);
+  pointer-events: none;
+  z-index: 1;
+}
+html[data-lncos-debug-nav] .bottom-nav-bar {
+  position: relative;
+  z-index: 2;
+}
+html[data-lncos-debug-nav]::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bottom-nav-safe-bottom);
+  background: rgba(255, 120, 0, 0.25);
+  pointer-events: none;
+  z-index: 9998;
+}
+html[data-lncos-debug-nav]::after {
+  content: "debugNav ON — body:rouge shell:vert main:cyan nav:magenta safe:jaune";
+  position: fixed;
+  top: max(6px, var(--safe-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  font: 600 10px/1.2 system-ui, sans-serif;
+  color: #000;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* iPhone Pro Max — galerie et header calibrés sur grands écrans */

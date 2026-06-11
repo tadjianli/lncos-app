@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
 import { getSiteUrl } from "@/lib/site-url";
 import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
+import { NavLayoutDebug } from "@/components/layout/NavLayoutDebug";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -134,6 +135,7 @@ if ('caches' in window) {
       </head>
       <body suppressHydrationWarning>
         <StandaloneViewportSync />
+        <NavLayoutDebug />
         {children}
       </body>
     </html>
