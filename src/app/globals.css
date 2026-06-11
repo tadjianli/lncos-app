@@ -1307,6 +1307,10 @@
   height: var(--bottom-nav-icon-size);
   flex-shrink: 0;
 }
+.bottom-nav-lucide {
+  display: block;
+  flex-shrink: 0;
+}
 .bottom-nav-label {
   font-size: var(--bottom-nav-label-size);
   line-height: 1.05;
