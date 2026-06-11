@@ -1,23 +1,29 @@
 "use client";
 /**
  * LN COS — Bottom nav iOS premium (style Avisflo)
- * 5 onglets uniformes, icônes alignées sur --bottom-nav-icon-size.
+ * 5 onglets uniformes, icônes Lucide alignées sur --bottom-nav-icon-size.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles } from "lucide-react";
-import { Icon } from "@/components/shared/Icon";
-
-const NAV_ITEMS = [
-  { href: "/",         id: "home",       icon: "home", label: "Accueil"    },
-  { href: "/discover", id: "categories", icon: "grid", label: "Catégories" },
-  { href: "/bag",      id: "cart",       icon: "bag",  label: "Panier"     },
-  { href: "/boutique", id: "boutique",   icon: "sparkles", label: "Boutique" },
-  { href: "/profile",  id: "profile",    icon: "user", label: "Profil"     },
-] as const;
+import {
+  Home,
+  LayoutGrid,
+  ShoppingBag,
+  ShoppingCart,
+  User,
+  type LucideIcon,
+} from "lucide-react";
 
 const ICON_SIZE = 38;
+
+const NAV_ITEMS = [
+  { href: "/",         id: "home",       Icon: Home,          label: "Accueil",    filledWhenActive: false },
+  { href: "/discover", id: "categories", Icon: LayoutGrid,    label: "Catégories", filledWhenActive: false },
+  { href: "/bag",      id: "cart",       Icon: ShoppingCart,  label: "Panier",     filledWhenActive: true  },
+  { href: "/boutique", id: "boutique",   Icon: ShoppingBag,   label: "Boutique",   filledWhenActive: true  },
+  { href: "/profile",  id: "profile",    Icon: User,          label: "Profil",     filledWhenActive: false },
+] as const;
 
 interface BottomNavProps {
   cartCount?: number;
@@ -25,6 +31,26 @@ interface BottomNavProps {
 
 function isActive(pathname: string, href: string) {
   return pathname === href || (href !== "/" && pathname.startsWith(href));
+}
+
+function NavIcon({
+  Icon,
+  active,
+  filledWhenActive,
+}: {
+  Icon: LucideIcon;
+  active: boolean;
+  filledWhenActive: boolean;
+}) {
+  return (
+    <Icon
+      size={ICON_SIZE}
+      strokeWidth={active ? 2.1 : 1.75}
+      color={active ? "var(--gold)" : "var(--ink-mute)"}
+      fill={active && filledWhenActive ? "rgba(212,175,55,.18)" : "none"}
+      aria-hidden
+    />
+  );
 }
 
 export function BottomNav({ cartCount = 0 }: BottomNavProps) {
@@ -35,7 +61,6 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
       <div className="bottom-nav-bar">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
-          const showFill = active && (item.id === "boutique" || item.id === "cart");
 
           return (
             <Link
@@ -50,23 +75,11 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
               }
             >
               <span className="bottom-nav-icon-wrap">
-                {item.id === "boutique" ? (
-                  <Sparkles
-                    size={ICON_SIZE}
-                    strokeWidth={active ? 2.1 : 1.75}
-                    color={active ? "var(--gold)" : "var(--ink-mute)"}
-                    fill={showFill ? "rgba(212,175,55,.18)" : "none"}
-                    aria-hidden
-                  />
-                ) : (
-                  <Icon
-                    name={item.icon}
-                    size={ICON_SIZE}
-                    stroke={active ? 2.1 : 1.75}
-                    color={active ? "var(--gold)" : "var(--ink-mute)"}
-                    fill={showFill ? "rgba(212,175,55,.18)" : "none"}
-                  />
-                )}
+                <NavIcon
+                  Icon={item.Icon}
+                  active={active}
+                  filledWhenActive={item.filledWhenActive}
+                />
                 {item.id === "cart" && cartCount > 0 && (
                   <span className="bottom-nav-badge">
                     {cartCount > 99 ? "99+" : cartCount}
