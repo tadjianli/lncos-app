@@ -1193,6 +1193,80 @@ export interface Database {
         Relationships: [];
       };
 
+      product_page_blocks: {
+        Row: {
+          id: string;
+          block_type: string;
+          title: string;
+          settings: Json;
+          enabled: boolean;
+          zone: string;
+          position: number;
+          is_draft: boolean;
+        };
+        Insert: {
+          id: string;
+          block_type: string;
+          title: string;
+          settings?: Json;
+          enabled?: boolean;
+          zone?: string;
+          position?: number;
+          is_draft?: boolean;
+        };
+        Update: {
+          block_type?: string;
+          title?: string;
+          settings?: Json;
+          enabled?: boolean;
+          zone?: string;
+          position?: number;
+          is_draft?: boolean;
+        };
+        Relationships: [];
+      };
+
+      product_page_layout_meta: {
+        Row: {
+          id: string;
+          published_version: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          published_version?: number;
+          updated_at?: string;
+        };
+        Update: {
+          published_version?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      product_page_layout_versions: {
+        Row: {
+          id: string;
+          version_number: number;
+          blocks: Json;
+          change_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          version_number: number;
+          blocks: Json;
+          change_note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          version_number?: number;
+          blocks?: Json;
+          change_note?: string | null;
+        };
+        Relationships: [];
+      };
+
       shipping_methods: {
         Row: {
           id: string;

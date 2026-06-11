@@ -165,6 +165,15 @@ export function ProductContentSectionsEditor({
 
       <div className="adm-section-card">
         <ToggleRow
+          label="Référence produit"
+          hint="Ligne « Réf. … » affichée sous le résumé des avis (SKU variante ou ID produit)"
+          checked={toggles.reference}
+          onChange={(reference) => onTogglesChange({ ...toggles, reference })}
+        />
+      </div>
+
+      <div className="adm-section-card">
+        <ToggleRow
           label="Conseils d'utilisation"
           hint="Étapes numérotées (rituel d'application)"
           checked={toggles.usageTips}

@@ -2542,3 +2542,156 @@
   background: rgba(255,255,255,.35);
   z-index: 2;
 }
+
+/* ─── Product Page Builder (admin) ─── */
+
+.ppb-module .ppb-layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 20px;
+  align-items: start;
+}
+
+.ppb-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ppb-zone-card {
+  margin-bottom: 16px;
+}
+
+.ppb-zone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ppb-zone-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ppb-preview-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.ppb-desktop-frame {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0a0a0a;
+  overflow: hidden;
+}
+
+.ppb-desktop-screen {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ppb-preview-scroll {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.ppb-preview-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  font-weight: 600;
+  color: #f6f1ea;
+}
+
+.ppb-preview-block-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ppb-preview-sticky {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(10, 10, 10, 0.96);
+}
+
+.ppb-preview-sticky-item {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+  text-align: center;
+}
+
+.ppb-preview-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+
+.ppb-versions-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.ppb-versions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ppb-versions-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--adm-ink-mute);
+}
+
+.ppb-faq-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ppb-faq-editor-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--adm-border-2);
+}
+
+@media (max-width: 1100px) {
+  .ppb-module .ppb-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}

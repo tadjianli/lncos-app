@@ -10,6 +10,8 @@ export interface ProductSectionToggles {
   benefits: boolean;
   /** Sélecteur contenance / teinte sur la fiche produit */
   variants: boolean;
+  /** Ligne « Réf. … » sous les avis */
+  reference: boolean;
 }
 
 export interface ProductExtraSection {
@@ -28,6 +30,7 @@ export const DEFAULT_SECTION_TOGGLES: ProductSectionToggles = {
   usageTips: true,
   benefits: true,
   variants: true,
+  reference: true,
 };
 
 export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
@@ -38,6 +41,7 @@ export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
     usageTips: o.usageTips !== false,
     benefits: o.benefits !== false,
     variants: o.variants !== false,
+    reference: o.reference !== false,
   };
 }
 

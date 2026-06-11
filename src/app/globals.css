@@ -2784,6 +2784,56 @@
   box-shadow: none;
 }
 
+.pd-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+.pd-stock-badge--out {
+  background: rgba(194, 85, 122, 0.12);
+  border: 1px solid rgba(194, 85, 122, 0.25);
+  color: var(--pink);
+  font-weight: 700;
+}
+.pd-stock-badge--low {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  color: var(--gold);
+  font-weight: 700;
+}
+.pd-stock-badge--ok {
+  background: rgba(123, 201, 154, 0.08);
+  border: 1px solid rgba(123, 201, 154, 0.2);
+  color: #7bc99a;
+}
+
+.pd-qty-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--charcoal);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: border-color 0.22s, background 0.22s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+.pd-qty-value {
+  min-width: 32px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .pd-benefits {
   display: flex;
   flex-direction: column;
