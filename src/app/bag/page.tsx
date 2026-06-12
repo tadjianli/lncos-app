@@ -324,7 +324,7 @@ function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () =>
         <StepConfirm orderRef={orderRef} />
       </div>
       <div className="bottom-action-bar bottom-action-bar--in-shell">
-        <GoldBtn icon="home" onClick={onHome} compact>Retour à l&apos;accueil</GoldBtn>
+        <GoldBtn icon="home" onClick={onHome}>Retour à l&apos;accueil</GoldBtn>
       </div>
     </div>
   );
@@ -421,7 +421,7 @@ function CartScreen({
             Découvrez nos best-sellers et offrez-vous un moment de beauté.
           </div>
           <Link href="/boutique">
-            <PinkBtn style={{ width: "auto", padding: "14px 34px" }}>Découvrir la boutique</PinkBtn>
+            <PinkBtn inline>Découvrir la boutique</PinkBtn>
           </Link>
         </div>
       </>
@@ -574,7 +574,7 @@ function CartScreen({
       </div>
 
       <div className="bottom-action-bar bottom-action-bar--in-shell">
-        <PinkBtn icon="arrowR" onClick={onCheckout} compact>
+        <PinkBtn icon="arrowR" onClick={onCheckout}>
           Passer la commande · {total.toFixed(2)} €
         </PinkBtn>
       </div>
@@ -747,7 +747,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
       )}
 
       <div className="bottom-action-bar bottom-action-bar--in-shell">
-        <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing} compact>
+        <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
           {placing ? "Initialisation…" : step === 2 ? `Payer ${total.toFixed(2)} €` : "Continuer"}
         </PinkBtn>
       </div>

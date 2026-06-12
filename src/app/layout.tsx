@@ -3,6 +3,7 @@ import { Montserrat, Geist_Mono } from "next/font/google";
 import { getSiteUrl } from "@/lib/site-url";
 import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
 import { NavLayoutDebug } from "@/components/layout/NavLayoutDebug";
+import { PwaUpdateManager } from "@/components/pwa/PwaUpdateManager";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -106,32 +107,9 @@ export default function RootLayout({
             `.trim(),
           }}
         />
-        {/* Disable legacy service workers that cached broken 404 responses */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    return Promise.all(regs.map(function(reg) {
-      var url = (reg.active && reg.active.scriptURL) || '';
-      if (url.indexOf('admin-push-sw') !== -1) return Promise.resolve(false);
-      return reg.unregister();
-    }));
-  }).catch(function() {});
-}
-if ('caches' in window) {
-  caches.keys().then(function(keys) {
-    return Promise.all(
-      keys.filter(function(key) { return key.indexOf('lncos-') === 0; })
-        .map(function(key) { return caches.delete(key); })
-    );
-  }).catch(function() {});
-}
-            `.trim(),
-          }}
-        />
       </head>
       <body suppressHydrationWarning>
+        <PwaUpdateManager />
         <StandaloneViewportSync />
         <NavLayoutDebug />
         {children}

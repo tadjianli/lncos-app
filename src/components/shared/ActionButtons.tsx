@@ -1,7 +1,7 @@
 "use client";
 /**
  * LN COS — Handoff action button primitives
- * PinkBtn, GoldBtn, SubHeader — exact from handoff ui.jsx
+ * PinkBtn, GoldBtn, SubHeader — premium CTA via .lncos-cta (globals.css)
  */
 import { useRouter } from "next/navigation";
 import { Icon } from "./Icon";
@@ -12,72 +12,74 @@ interface BtnProps {
   children: React.ReactNode;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   style?: React.CSSProperties;
+  className?: string;
   icon?: string;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
-  /** Barre d’action fixe — bouton plus compact (Sephora / Shopify) */
+  /** @deprecated Taille premium identique partout — conservé pour compatibilité API */
   compact?: boolean;
+  /** Largeur auto (CTA secondaires : panier vide, favoris…) */
+  inline?: boolean;
 }
 
-export function PinkBtn({ children, onClick, style, icon, disabled, type = "button", compact }: BtnProps) {
+function ctaClass(
+  variant: "pink" | "gold",
+  { disabled, inline, className }: Pick<BtnProps, "disabled" | "inline" | "className">
+) {
+  return [
+    "lncos-cta",
+    variant === "pink" ? "lncos-cta--pink" : "lncos-cta--gold",
+    inline ? "lncos-cta--inline" : "",
+    disabled ? "lncos-cta--disabled" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function PinkBtn({
+  children,
+  onClick,
+  style,
+  className,
+  icon,
+  disabled,
+  type = "button",
+  inline,
+}: BtnProps) {
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
-      style={{
-        width: "100%",
-        padding: compact ? "11px 14px" : "16px",
-        minHeight: compact ? "var(--bottom-action-cta-h, 40px)" : undefined,
-        borderRadius: "var(--r-pill)",
-        background: "var(--pink-grad)",
-        color: "#3a1020",
-        fontWeight: 700,
-        fontSize: compact ? 13 : "var(--fs-lg)",
-        letterSpacing: ".02em",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        boxShadow: compact ? "0 8px 22px -12px rgba(239,169,192,.65)" : "0 12px 30px -12px rgba(239,169,192,.7)",
-        opacity: disabled ? 0.5 : 1,
-        cursor: disabled ? "not-allowed" : "pointer",
-        ...style,
-      }}
+      className={ctaClass("pink", { disabled, inline, className })}
+      style={style}
     >
-      {icon && <Icon name={icon} size={compact ? 17 : 19} stroke={2.2} />}
+      {icon && <Icon name={icon} size={17} stroke={2.2} />}
       {children}
     </button>
   );
 }
 
-export function GoldBtn({ children, onClick, style, icon, disabled, type = "button", compact }: BtnProps) {
+export function GoldBtn({
+  children,
+  onClick,
+  style,
+  className,
+  icon,
+  disabled,
+  type = "button",
+  inline,
+}: BtnProps) {
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
-      style={{
-        width: "100%",
-        padding: compact ? "11px 14px" : "16px",
-        minHeight: compact ? "var(--bottom-action-cta-h, 40px)" : undefined,
-        borderRadius: "var(--r-pill)",
-        background: "var(--gold-grad)",
-        color: "#1a1306",
-        fontWeight: 700,
-        fontSize: compact ? 13 : "var(--fs-lg)",
-        letterSpacing: ".02em",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        boxShadow: compact ? "0 8px 22px -12px rgba(212,175,55,.5)" : "0 12px 30px -12px rgba(212,175,55,.55)",
-        opacity: disabled ? 0.5 : 1,
-        cursor: disabled ? "not-allowed" : "pointer",
-        ...style,
-      }}
+      className={ctaClass("gold", { disabled, inline, className })}
+      style={style}
     >
-      {icon && <Icon name={icon} size={compact ? 17 : 19} stroke={2.2} />}
+      {icon && <Icon name={icon} size={17} stroke={2.2} />}
       {children}
     </button>
   );

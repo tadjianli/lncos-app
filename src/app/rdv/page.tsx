@@ -813,7 +813,6 @@ function BookingWizard({
             (step === 5 && !draft.name.trim())
           }
           icon={step === 5 ? "check" : "arrowR"}
-          compact
         >
           {step === 5
             ? deposit > 0

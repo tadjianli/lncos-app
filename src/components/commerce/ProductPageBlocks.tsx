@@ -487,18 +487,18 @@ export function ProductPageBlockView({
           type="button"
           onClick={ctx.handleAdd}
           disabled={ctx.outOfStock}
-          className={`pd-cta-btn${ctx.outOfStock ? " pd-cta-btn--disabled" : ctx.added ? " pd-cta-btn--success" : " pd-cta-btn--pink"}`}
+          className={`lncos-cta lncos-cta--sticky-cart pd-cta-btn${ctx.outOfStock ? " lncos-cta--disabled pd-cta-btn--disabled" : ctx.added ? " lncos-cta--success pd-cta-btn--success" : " lncos-cta--pink pd-cta-btn--pink"}`}
         >
           {ctx.outOfStock ? (
             "Rupture de stock"
           ) : ctx.added ? (
             <>
-              <Icon name="check" size={15} color="#fff" stroke={2.5} />
+              <Icon name="check" size={17} color="#fff" stroke={2.5} />
               Ajouté au panier !
             </>
           ) : (
             <>
-              <Icon name="bag" size={15} />
+              <Icon name="bag" size={17} />
               {s.ctaLabel?.trim() || "Ajouter au panier"}
               {s.showPrice !== false && (
                 <>

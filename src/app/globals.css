@@ -156,8 +156,13 @@
     var(--bottom-nav-bar-h) + var(--safe-bottom) + 24px
   );
   --product-grid-bottom-clearance: var(--app-scroll-pad-bottom);
-  --bottom-action-cta-h: 36px;
-  --pd-action-bar-pad-y: 4px;
+  --bottom-action-cta-h: 60px;
+  --cta-premium-h: 60px;
+  --cta-premium-radius: 16px;
+  /* Sticky panier / fiche produit — hauteur verrouillée (browser = référence) */
+  --sticky-cart-height: 68px;
+  --sticky-cart-bar-pad-y: 6px;
+  --pd-action-bar-pad-y: var(--sticky-cart-bar-pad-y);
   --sp-10: 40px;
   --sp-12: 48px;
   --sp-16: 64px;
@@ -874,7 +879,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 16px calc(var(--bottom-action-cta-h) + var(--pd-action-bar-pad-y) * 2 + 20px);
+    padding: 4px 16px calc(var(--sticky-cart-height) + var(--sticky-cart-bar-pad-y) * 2 + 20px);
   }
 
   /* Scroll plein écran sans bottom nav (RDV confirmation, etc.) */
@@ -1670,21 +1675,6 @@
 .routine-total-val b { font-size: 22px; font-weight: 700; color: var(--ink); }
 .routine-total-val s { font-size: 13px; color: var(--ink-mute); }
 .routine-total-save { font-size: 10px; font-weight: 700; color: #7BC99A; }
-.routine-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 22px;
-  border-radius: 999px;
-  background: var(--pink-grad);
-  color: #3a1020;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 12px 28px -12px rgba(239,169,192,.7);
-  transition: transform .25s var(--ease-spring), box-shadow .25s;
-}
-.routine-cta:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -14px rgba(239,169,192,.8); }
-.routine-cta:active { transform: scale(.96); }
 
 /* ─── Editorial promo block ──────────────────────────────────── */
 
@@ -3000,19 +2990,23 @@
   position: relative;
   z-index: 42;
   flex-shrink: 0;
-  padding: var(--pd-action-bar-pad-y, 6px) 12px;
-  padding-bottom: max(var(--pd-action-bar-pad-y, 6px), env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  padding: var(--sticky-cart-bar-pad-y, 6px) 12px;
+  /* Safe-area gérée par la bottom nav — pas ici (évite double comptage PWA vs Safari) */
+  padding-bottom: var(--sticky-cart-bar-pad-y, 6px);
   background: rgba(10, 10, 10, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(212, 175, 55, 0.14);
-  box-sizing: border-box;
 }
 
-/* Fiche produit plein écran — CTA + TrustBadges au-dessus de la tab bar */
-.pd-overlay .bottom-action-bar--product {
-  padding-top: 6px;
-  padding-bottom: var(--pd-action-bar-pad-y);
+/* Fiche produit — CTA sticky au-dessus de la tab bar (padding identique browser / PWA) */
+.pd-overlay .bottom-action-bar--product,
+.bottom-action-bar--product {
+  padding-top: var(--sticky-cart-bar-pad-y);
+  padding-bottom: var(--sticky-cart-bar-pad-y);
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 .pd-overlay .bottom-action-bar__meta {
@@ -3085,9 +3079,9 @@
   margin-bottom: 0;
 }
 
-/* Dans AppShell au-dessus de la bottom nav — safe area gérée par la nav */
+/* Dans AppShell au-dessus de la bottom nav — safe area via bottom-nav uniquement */
 .bottom-action-bar--in-shell {
-  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--sticky-cart-bar-pad-y, 6px);
   flex-shrink: 0;
 }
 
@@ -3117,47 +3111,67 @@
   line-height: 1.2;
 }
 
+/* ─── Premium CTA — Shopify-style (panier, fiche produit, checkout) ─── */
+
+.lncos-cta,
 .pd-cta-btn {
   width: 100%;
-  height: var(--bottom-action-cta-h);
-  min-height: var(--bottom-action-cta-h);
-  padding: 0 14px;
-  border-radius: var(--r-pill);
+  height: var(--cta-premium-h, var(--bottom-action-cta-h));
+  min-height: var(--cta-premium-h, var(--bottom-action-cta-h));
+  padding: 0 20px;
+  border-radius: var(--cta-premium-radius, 16px);
   border: none;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  will-change: transform;
   transition:
-    transform var(--dur-base) var(--ease-lux),
-    box-shadow var(--dur-base) var(--ease-lux),
-    background var(--dur-slow) var(--ease-lux);
+    transform 0.3s var(--ease-lux),
+    box-shadow 0.3s var(--ease-lux),
+    background 0.35s var(--ease-lux);
 }
 
-@media (max-width: 767px) {
-  .pd-cta-btn {
-    height: calc(var(--bottom-action-cta-h) + 2px);
-    min-height: calc(var(--bottom-action-cta-h) + 2px);
-  }
+.lncos-cta--inline {
+  width: auto;
+  padding: 0 26px;
 }
 
+.lncos-cta > *,
+.pd-cta-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lncos-cta--pink,
 .pd-cta-btn--pink {
   background: var(--pink-grad);
   color: #3a1020;
   box-shadow:
-    0 8px 22px -12px rgba(239, 169, 192, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 8px 25px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 
+.lncos-cta--gold {
+  background: var(--gold-grad);
+  color: #1a1306;
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.lncos-cta--pink::after,
+.lncos-cta--gold::after,
 .pd-cta-btn--pink::after {
   content: "";
   position: absolute;
@@ -3165,54 +3179,89 @@
   z-index: 0;
   background: linear-gradient(
     105deg,
-    transparent 38%,
-    rgba(255, 255, 255, 0.2) 50%,
-    transparent 62%
+    transparent 36%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 64%
   );
-  transform: translateX(-130%);
-  animation: pd-cta-shine 5s var(--ease-lux) infinite;
+  transform: translate3d(-130%, 0, 0);
+  animation: lncos-cta-shine 5s var(--ease-lux) infinite;
   pointer-events: none;
+  opacity: 0.85;
 }
 
-.pd-cta-btn--pink > * {
-  position: relative;
-  z-index: 1;
+@media (hover: hover) and (pointer: fine) {
+  .lncos-cta--pink:not(:disabled):not(.lncos-cta--disabled):hover,
+  .pd-cta-btn--pink:not(.pd-cta-btn--disabled):hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow:
+      0 12px 35px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
+
+  .lncos-cta--gold:not(:disabled):not(.lncos-cta--disabled):hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow:
+      0 12px 35px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
 }
 
+.lncos-cta--pink:not(:disabled):not(.lncos-cta--disabled):active,
+.lncos-cta--gold:not(:disabled):not(.lncos-cta--disabled):active,
 .pd-cta-btn--pink:not(.pd-cta-btn--disabled):active {
-  transform: scale(0.985);
-  box-shadow:
-    0 4px 14px -10px rgba(239, 169, 192, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: scale(0.98);
+  transition-duration: 0.15s;
 }
 
+.lncos-cta--success,
 .pd-cta-btn--success {
   background: linear-gradient(135deg, #4caf50, #388e3c);
   color: #fff;
-  box-shadow: 0 8px 20px -8px rgba(76, 175, 80, 0.5);
-  animation: pd-cta-success-pop 0.5s var(--ease-spring);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  animation: lncos-cta-success-pop 0.5s var(--ease-spring);
 }
 
+.lncos-cta--success::after,
+.pd-cta-btn--success::after {
+  display: none;
+}
+
+.lncos-cta:disabled,
+.lncos-cta--disabled,
 .pd-cta-btn--disabled {
   background: rgba(255, 255, 255, 0.08);
   color: var(--ink-mute);
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.72;
   box-shadow: none;
 }
 
-@keyframes pd-cta-shine {
+.lncos-cta:disabled::after,
+.lncos-cta--disabled::after,
+.pd-cta-btn--disabled::after {
+  display: none;
+}
+
+@keyframes lncos-cta-shine {
   0%,
-  72%,
+  78%,
   100% {
-    transform: translateX(-130%);
+    transform: translate3d(-130%, 0, 0);
+    opacity: 0;
   }
-  28% {
-    transform: translateX(130%);
+  8% {
+    opacity: 0.85;
+  }
+  22% {
+    transform: translate3d(130%, 0, 0);
+    opacity: 0.85;
+  }
+  32% {
+    opacity: 0;
   }
 }
 
-@keyframes pd-cta-success-pop {
+@keyframes lncos-cta-success-pop {
   0% {
     transform: scale(1);
   }
@@ -3225,21 +3274,75 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lncos-cta,
   .pd-cta-btn {
-    transition: background var(--dur-slow) var(--ease-lux);
+    transition: background 0.35s var(--ease-lux);
   }
 
+  .lncos-cta--pink::after,
+  .lncos-cta--gold::after,
   .pd-cta-btn--pink::after {
     animation: none;
   }
 
+  .lncos-cta--pink:not(:disabled):not(.lncos-cta--disabled):active,
+  .lncos-cta--gold:not(:disabled):not(.lncos-cta--disabled):active,
   .pd-cta-btn--pink:not(.pd-cta-btn--disabled):active {
     transform: none;
   }
 
+  .lncos-cta--success,
   .pd-cta-btn--success {
     animation: none;
   }
+}
+
+/* ─── Sticky cart CTA — hauteur identique Safari navigateur / PWA standalone ─── */
+
+.bottom-action-bar .lncos-cta,
+.bottom-action-bar .pd-cta-btn,
+.lncos-cta--sticky-cart {
+  height: var(--sticky-cart-height);
+  min-height: var(--sticky-cart-height);
+  max-height: var(--sticky-cart-height);
+  flex-shrink: 0;
+  line-height: 1.15;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (display-mode: standalone) {
+  .bottom-action-bar--product,
+  .pd-overlay .bottom-action-bar--product {
+    padding-top: var(--sticky-cart-bar-pad-y);
+    padding-bottom: var(--sticky-cart-bar-pad-y);
+  }
+
+  .bottom-action-bar .lncos-cta,
+  .bottom-action-bar .pd-cta-btn,
+  .lncos-cta--sticky-cart {
+    height: var(--sticky-cart-height);
+    min-height: var(--sticky-cart-height);
+    max-height: var(--sticky-cart-height);
+  }
+}
+
+html.standalone-pwa .bottom-action-bar--product,
+html.standalone-pwa .pd-overlay .bottom-action-bar--product {
+  padding-top: var(--sticky-cart-bar-pad-y);
+  padding-bottom: var(--sticky-cart-bar-pad-y);
+}
+
+html.standalone-pwa .bottom-action-bar .lncos-cta,
+html.standalone-pwa .bottom-action-bar .pd-cta-btn,
+html.standalone-pwa .lncos-cta--sticky-cart {
+  height: var(--sticky-cart-height);
+  min-height: var(--sticky-cart-height);
+  max-height: var(--sticky-cart-height);
+  line-height: 1.15;
 }
 
 .pd-stock-badge {

@@ -241,7 +241,8 @@ function RoutineSection({
             </div>
           </div>
           <button
-            className="routine-cta"
+            type="button"
+            className="lncos-cta lncos-cta--pink lncos-cta--inline"
             onClick={() => products.forEach((p) => onAdd(p))}
           >
             <Icon name="plus" size={16} stroke={2.4} /> Ajouter le rituel

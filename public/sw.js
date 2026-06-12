@@ -1,12 +1,15 @@
 /**
  * LN COS — Service Worker
  * Network-first navigation with cache fallback. Only stores successful responses.
+ * CACHE_VERSION est injecté à chaque build (scripts/generate-sw.mjs + déploiement Vercel).
  */
 
-const CACHE_VERSION = "lncos-v5";
+const CACHE_VERSION = "lncos-development";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-images`;
 const FONT_CACHE = `${CACHE_VERSION}-fonts`;
+
+const ACTIVE_CACHE_NAMES = new Set([SHELL_CACHE, IMG_CACHE, FONT_CACHE]);
 
 const SHELL_URLS = ["/", "/boutique", "/discover", "/bag", "/favorites", "/profile", "/rdv", "/offline"];
 
@@ -35,7 +38,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key.startsWith("lncos-") && !key.startsWith(CACHE_VERSION))
+          .filter((key) => key.startsWith("lncos-") && !ACTIVE_CACHE_NAMES.has(key))
           .map((key) => caches.delete(key))
       )
     )
