@@ -249,9 +249,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const [activeImg, setActiveImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [openSections, setOpenSections] = useState<Set<string>>(
-    () => new Set(["description"])
-  );
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set());
   const [galleryInView, setGalleryInView] = useState(true);
   const galleryRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
