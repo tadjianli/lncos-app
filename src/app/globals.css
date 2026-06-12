@@ -139,7 +139,7 @@
   --app-max-width: 480px;
   /* Bottom nav iOS — compacte, ancrée au bord (safe-area unique sur le conteneur) */
   --bottom-nav-icon-size: 38px;
-  --bottom-nav-label-size: 10px;
+  --bottom-nav-label-size: 13px;
   --bottom-nav-pad-y: 4px;
   --bottom-nav-item-gap: 2px;
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1313,8 +1313,8 @@
 }
 .bottom-nav-label {
   font-size: var(--bottom-nav-label-size);
-  line-height: 1.05;
-  letter-spacing: 0.01em;
+  line-height: 1.08;
+  letter-spacing: 0.015em;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -2384,7 +2384,7 @@
     --prod-card-w: 140px;
   }
   .bottom-nav-item { min-width: 44px; }
-  .bottom-nav-label { font-size: 10px; }
+  .bottom-nav-label { font-size: 12px; }
 }
 
 /* ─── Product detail overlay — safe areas iOS (Dynamic Island / encoche) ─ */
