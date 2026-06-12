@@ -26,6 +26,7 @@ import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
 import { closeProductDetailNavigation } from "@/lib/product-navigation";
 import { useProductOverlayHistory } from "@/lib/use-product-overlay-history";
+import { useOverlayRouteSync } from "@/lib/use-overlay-route-sync";
 
 // Lazy-load overlay screens — keep initial bundle small
 const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
@@ -59,6 +60,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const productReturn = overlay?.type === "product" ? overlay.productReturn : undefined;
 
   useProductOverlayHistory();
+  useOverlayRouteSync();
 
   const handleProductClose = useCallback(() => {
     closeProductDetailNavigation(router, productReturn, closeOverlay, restoreOverlay);

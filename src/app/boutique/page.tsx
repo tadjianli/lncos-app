@@ -9,7 +9,7 @@ export default function BoutiquePage() {
 
   return (
     <AppShell>
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto" }}>
+      <div className="noscroll app-scroll-page">
         <PageSectionsView sections={sections} />
       </div>
     </AppShell>

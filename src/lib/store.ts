@@ -298,7 +298,10 @@ export const useStore = create<AppStore>()(
       // HTML is patched. We manually call rehydrate() in a useEffect (see AppShell).
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
-        if (state) state._storeHydrated = true;
+        if (state) {
+          state._storeHydrated = true;
+          state.cartCount = state.cart.reduce((t, i) => t + i.qty, 0);
+        }
       },
     }
   )

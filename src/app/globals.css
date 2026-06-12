@@ -811,21 +811,41 @@
   .overlay-screen {
     position: absolute;
     inset: 0;
-    z-index: 80;
+    z-index: 110;
     background: var(--noir);
     display: flex;
     flex-direction: column;
     animation: overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both;
   }
 
-  /* Corps scrollable des overlays z-80 (nav visible en dessous) */
+  /* Corps scrollable des overlays z-110 (nav visible en dessous) */
   .overlay-screen-scroll {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: var(--bottom-nav-h);
+    padding-bottom: calc(var(--bottom-nav-h) + 16px);
+  }
+
+  /* Scroll principal des pages avec bottom nav — évite masquage dernier élément */
+  .app-scroll-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(var(--bottom-nav-h) + 16px);
+  }
+
+  /* Panier — marge pour la barre d'action fixe au-dessus de la tab bar */
+  .bag-page-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 16px calc(var(--bottom-action-cta-h) + var(--pd-action-bar-pad-y) * 2 + 20px);
   }
 
   /* Scroll plein écran sans bottom nav (RDV confirmation, etc.) */
@@ -2020,13 +2040,15 @@
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 5;
-  min-height: 180px;
+  min-height: unset;
 }
 
 .prodbento:not(.prodbento--3) .prod-card-info {
-  height: auto;
-  flex: 1 1 auto;
-  min-height: 110px;
+  flex: 0 0 auto;
+  height: 118px;
+  min-height: 118px;
+  max-height: 118px;
+  overflow: hidden;
   padding: 12px 12px 14px;
   display: flex;
   flex-direction: column;
@@ -2034,11 +2056,14 @@
 
 .prodbento:not(.prodbento--3) .prod-card-title {
   font-size: 13px;
-  line-height: 1.35;
-  height: auto;
-  max-height: none;
-  min-height: 2.7em;
+  line-height: 1.3;
+  height: 2.6em;
+  min-height: 2.6em;
+  max-height: 2.6em;
+  overflow: hidden;
+  display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .prodbento:not(.prodbento--3) .prod-card-rating {
@@ -2508,7 +2533,7 @@
   max-width: var(--app-max-width);
   margin-left: auto;
   margin-right: auto;
-  z-index: 80;
+  z-index: 110;
   display: flex;
   flex-direction: column;
   background: var(--noir);
@@ -2849,7 +2874,8 @@
 
 /* Dans AppShell au-dessus de la bottom nav — safe area gérée par la nav */
 .bottom-action-bar--in-shell {
-  padding-bottom: 6px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
 
 .bottom-action-bar__meta {
@@ -3251,10 +3277,18 @@ html.standalone-pwa .reel-slide {
   min-height: var(--viewport-h);
 }
 
+html.standalone-pwa .bottom-nav {
+  bottom: 3px;
+}
+
 @media (display-mode: standalone) {
   :root {
     /* PWA : labels plus bas, sans espace mort sous la barre (navigateur inchangé) */
     --bottom-nav-safe-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 22px));
+  }
+
+  .bottom-nav {
+    bottom: 3px;
   }
 
   .home-section,

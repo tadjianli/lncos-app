@@ -342,6 +342,7 @@ function CartScreen({
   onApplyPromo: (p: Promo) => void;
   onRemovePromo: () => void;
 }) {
+  const hydrated    = useStore((s) => s._storeHydrated);
   const cart        = useStore((s) => s.cart);
   const setQty      = useStore((s) => s.setQty);
   const removeItem  = useStore((s) => s.removeFromCart);
@@ -388,6 +389,23 @@ function CartScreen({
     setPromoError(null);
   }
 
+  if (!hydrated) {
+    return (
+      <>
+        <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
+          <SubHeader title="Mon panier" />
+        </div>
+        <div style={{ flex: "1 1 auto", display: "grid", placeItems: "center" }}>
+          <div
+            className="skeleton"
+            style={{ width: 140, height: 20, borderRadius: 8 }}
+            aria-hidden
+          />
+        </div>
+      </>
+    );
+  }
+
   if (cart.length === 0) {
     return (
       <>
@@ -430,7 +448,7 @@ function CartScreen({
         />
       </div>
 
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 16px 20px" }}>
+      <div className="noscroll bag-page-scroll">
         <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 14 }}>
           {cart.reduce((s, i) => s + i.qty, 0)} article{cart.reduce((s, i) => s + i.qty, 0) > 1 ? "s" : ""}
         </div>

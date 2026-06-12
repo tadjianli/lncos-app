@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useStore } from "@/lib/store";
 import {
   Home,
   LayoutGrid,
@@ -70,6 +71,7 @@ function NavItemIcon({ id, active }: { id: NavItemId; active: boolean }) {
 
 export function BottomNav({ cartCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
+  const closeOverlay = useStore((s) => s.closeOverlay);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -93,6 +95,7 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
                   ? `Panier, ${cartCount} article${cartCount > 1 ? "s" : ""}`
                   : undefined
               }
+              onClick={() => closeOverlay()}
             >
               <span className="bottom-nav-icon-wrap">
                 <NavItemIcon id={item.id} active={active} />

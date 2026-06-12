@@ -33,7 +33,7 @@ export default function DiscoverPage() {
 
   return (
     <AppShell>
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
+      <div className="noscroll app-scroll-page">
 
         <PageSectionsView sections={sections.filter((s) => s.type !== "categories")} />
 

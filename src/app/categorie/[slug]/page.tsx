@@ -67,7 +67,7 @@ export default async function CategoriePage({ params }: Props) {
     <AppShell>
       <JsonLd data={collectionJsonLd} />
       <SeoPageHeader title={category.name} backHref="/discover" />
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "0 18px 32px" }}>
+      <div className="noscroll app-scroll-page" style={{ padding: "0 18px" }}>
         <p style={{ fontSize: 14, color: "var(--ink-mute)", margin: "0 0 20px", lineHeight: 1.5 }}>
           {description}
         </p>
