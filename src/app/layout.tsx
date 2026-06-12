@@ -101,9 +101,7 @@ export default function RootLayout({
     window.matchMedia("(display-mode: standalone)").matches ||
     ("standalone" in navigator && navigator.standalone);
   if (!standalone) return;
-  var h = window.innerHeight;
   document.documentElement.classList.add("standalone-pwa");
-  document.documentElement.style.setProperty("--viewport-h", h + "px");
 })();
             `.trim(),
           }}

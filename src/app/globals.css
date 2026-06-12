@@ -142,9 +142,8 @@
   --bottom-nav-label-size: 13px;
   --bottom-nav-pad-y: 4px;
   --bottom-nav-item-gap: 2px;
-  /* Safe-area appliquée UNE fois (sur .bottom-nav), rognée de 12px pour coller
-     au bord comme les tab bars bancaires — labels à ~22px de la barre home */
-  --bottom-nav-safe-bottom: max(0px, calc(env(safe-area-inset-bottom, 0px) - 12px));
+  /* Safe-area UNE fois sur .bottom-nav — rognage léger navigateur, plus fort en PWA */
+  --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
   --bottom-nav-bar-h: calc(
     var(--bottom-nav-pad-y) + var(--bottom-nav-icon-size) +
     var(--bottom-nav-item-gap) + var(--bottom-nav-label-size)
@@ -3075,12 +3074,13 @@
 
 /* ─── PWA iOS standalone ─── */
 /*
- * Shell + body ancrés top:0 bottom:0 (pas height: innerHeight) pour remplir
- * tout le layout viewport. La bottom nav est position:fixed sur le viewport.
+ * 100lvh = layout viewport complet (viewport-fit=cover), évite le bandeau noir
+ * sous la tab bar. La nav est portée sur body (portal) en position:fixed bottom:0.
  */
 html.standalone-pwa {
   width: 100%;
-  height: 100%;
+  height: 100lvh;
+  min-height: 100lvh;
   overflow: hidden;
 }
 
@@ -3088,19 +3088,19 @@ html.standalone-pwa body {
   position: fixed;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100lvh;
+  min-height: 100lvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
 }
 
-/* Le shell remplit tout l'écran physique (viewport-fit=cover) ; la tab bar
-   position:fixed s'ancre à ce viewport, sans hauteur ni padding artificiels. */
 html.standalone-pwa .app-shell {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
+  min-height: 100lvh;
   max-width: min(var(--app-max-width), 100%);
   margin-inline: auto;
 }
@@ -3119,6 +3119,11 @@ html.standalone-pwa .reel-slide {
 }
 
 @media (display-mode: standalone) {
+  :root {
+    /* PWA : labels plus bas, sans espace mort sous la barre (navigateur inchangé) */
+    --bottom-nav-safe-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 22px));
+  }
+
   .home-section,
   .home-scroll,
   .scroll-row,

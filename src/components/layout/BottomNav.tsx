@@ -1,9 +1,11 @@
 "use client";
 /**
  * LN COS — Bottom nav (composant unique, monté par AppShell uniquement).
- * Icônes Lucide React — même stroke / taille sur iOS, Android et PWA.
+ * Portal vers document.body : iOS PWA standalone ancre mal fixed dans .app-shell.
  */
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -68,8 +70,13 @@ function NavItemIcon({ id, active }: { id: NavItemId; active: boolean }) {
 
 export function BottomNav({ cartCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const nav = (
     <nav className="bottom-nav" aria-label="Navigation principale">
       <div className="bottom-nav-bar">
         {NAV_ITEMS.map((item) => {
@@ -102,4 +109,7 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
       </div>
     </nav>
   );
+
+  if (!mounted) return null;
+  return createPortal(nav, document.body);
 }
