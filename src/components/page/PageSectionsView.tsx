@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
 import { GoldBtn } from "@/components/shared/ActionButtons";
-import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
 import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
@@ -119,7 +118,6 @@ function PageProducts({ section }: { section: HomeSection }) {
 function PageCategories({ section }: { section: HomeSection }) {
   const { categories } = usePublicCategories();
   const openListing = useStore((s) => s.openListing);
-  const isGrid = section.variant !== "list";
 
   return (
     <div style={{ padding: "0 0 24px" }}>
@@ -128,27 +126,24 @@ function PageCategories({ section }: { section: HomeSection }) {
           {section.title}
         </h3>
       )}
-      <HorizontalScrollRow
-        className="home-categories-hsc"
-        trackClassName="home-categories-row"
-      >
+      <div className="category-grid">
         {categories.map((c) => {
           const m = CAT_META[c.id] ?? { icon: "sparkle", grad: "var(--charcoal)", accent: "var(--gold)" };
           return (
             <button
               key={c.id}
               type="button"
-              className={`home-cat-card snap${isGrid ? "" : " home-cat-card--list"}`}
+              className="category-grid__card"
               onClick={() => openListing(c)}
-              style={{ background: m.grad, border: "1px solid rgba(255,255,255,.06)" }}
+              style={{ background: m.grad }}
             >
               <Icon name={m.icon as "sparkle"} size={22} color={m.accent} />
-              <div style={{ marginTop: 10, fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{c.name}</div>
-              <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 4 }}>{c.count} produits</div>
+              <span className="category-grid__name">{c.name}</span>
+              <span className="category-grid__count">{c.count} produits</span>
             </button>
           );
         })}
-      </HorizontalScrollRow>
+      </div>
     </div>
   );
 }
