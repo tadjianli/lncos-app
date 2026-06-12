@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { GoldBtn } from "@/components/shared/ActionButtons";
+import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
 import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
@@ -128,24 +129,36 @@ function PageProducts({ section }: { section: HomeSection }) {
 function PageCategories({ section }: { section: HomeSection }) {
   const { categories } = usePublicCategories();
   const openListing = useStore((s) => s.openListing);
+  const isGrid = section.variant !== "list";
 
   return (
-    <div style={{ padding: "0 18px 24px" }}>
+    <div style={{ padding: "0 0 24px" }}>
       {section.title && (
-        <h3 style={{ margin: "0 0 14px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>{section.title}</h3>
+        <h3 style={{ margin: "0 0 14px", padding: "0 18px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>
+          {section.title}
+        </h3>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
+      <HorizontalScrollRow
+        className="home-categories-hsc"
+        trackClassName="home-categories-row"
+      >
         {categories.map((c) => {
           const m = CAT_META[c.id] ?? { icon: "sparkle", grad: "var(--charcoal)", accent: "var(--gold)" };
           return (
-            <button key={c.id} type="button" onClick={() => openListing(c)} style={{ textAlign: "left", padding: 14, borderRadius: "var(--r-md)", background: m.grad, border: "1px solid rgba(255,255,255,.06)" }}>
+            <button
+              key={c.id}
+              type="button"
+              className={`home-cat-card snap${isGrid ? "" : " home-cat-card--list"}`}
+              onClick={() => openListing(c)}
+              style={{ background: m.grad, border: "1px solid rgba(255,255,255,.06)" }}
+            >
               <Icon name={m.icon as "sparkle"} size={22} color={m.accent} />
               <div style={{ marginTop: 10, fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{c.name}</div>
               <div style={{ fontSize: 11, color: "var(--ink-mute)", marginTop: 4 }}>{c.count} produits</div>
             </button>
           );
         })}
-      </div>
+      </HorizontalScrollRow>
     </div>
   );
 }

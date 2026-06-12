@@ -390,6 +390,14 @@
   50%       { transform: translateX(2px);  opacity: 1;  }
 }
 
+.backRow {
+  display: flex;
+  justify-content: center;
+  padding: 2px 18px 6px;
+  position: relative;
+  z-index: 4;
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .skBox, .hint, .hintIcon { animation: none; }

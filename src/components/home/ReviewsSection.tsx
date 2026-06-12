@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { CarouselBackToStart } from "@/components/carousels/CarouselBackToStart";
 import { usePublicReviews } from "@/lib/client-supabase";
 import type { PublicReview } from "@/lib/reviews";
 import s from "./ReviewsSection.module.css";
@@ -200,6 +201,8 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
 
   const goTo = (absIndex: number) => setActive(absIndex);
   const curMod = ((active % len) + len) % len;
+  const showBackToStart = !loading && len > 1 && curMod >= Math.floor(len * 0.7);
+  const resetToStart = () => setActive(active - curMod);
 
   /* ---- render window ---- */
   const WINDOW = 3;
@@ -308,6 +311,12 @@ export function ReviewsSection({ title = "Avis vérifiés" }: { title?: string }
             : cards}
         </div>
       </div>
+
+      {showBackToStart && (
+        <div className={s.backRow}>
+          <CarouselBackToStart onClick={resetToStart} className="hsc-back--inline" />
+        </div>
+      )}
 
       {/* ── Dot indicators ── */}
       <div className={s.dots}>

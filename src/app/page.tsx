@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TopBar } from "@/components/layout/TopBar";
 import { Icon } from "@/components/shared/Icon";
 import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
+import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
@@ -416,9 +417,9 @@ function ReelsSection() {
   return (
     <div className="home-reels">
       <SectionHead title="LN COS Beauté" action="Tout voir" onAction={openReels} />
-      <div className="home-reels-row noscroll">
+      <HorizontalScrollRow className="home-reels-hsc" trackClassName="home-reels-row">
         {feed.map((v, i) => (
-          <button key={v.id} type="button" className="reel-card reel-card--fill" onClick={openReels}>
+          <button key={v.id} type="button" className="reel-card reel-card--fill snap" onClick={openReels}>
             <div className="reel-bg">
               <div
                 className="ph"
@@ -461,7 +462,7 @@ function ReelsSection() {
             </div>
           </button>
         ))}
-      </div>
+      </HorizontalScrollRow>
     </div>
   );
 }

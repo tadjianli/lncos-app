@@ -422,6 +422,79 @@
     .hpc__fade { opacity: 0.5; }
   }
 
+  /* ── Carrousels horizontaux génériques (UGC, catégories) ── */
+  .hsc {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hsc__track {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    box-sizing: border-box;
+  }
+
+  .hsc__track::-webkit-scrollbar { display: none; }
+
+  .hsc__track > .snap {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Bouton retour — carrousels produits, UGC, catégories, avis */
+  .hpc .hsc-back,
+  .hsc .hsc-back {
+    position: absolute;
+    right: max(10px, var(--safe-right));
+    bottom: 6px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--gold);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    animation: hscBackIn 0.28s ease both;
+  }
+
+  .hpc .hsc-back:active,
+  .hsc .hsc-back:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+
+  .hsc-back--inline {
+    position: static;
+    right: auto;
+    bottom: auto;
+    margin: 0;
+  }
+
+  @keyframes hscBackIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   /* n cartes remplissent 100% de la largeur utile : (100% − gaps) ÷ n */
   .hpc--fill-2 {
     --hpc-visible: 2;
@@ -1716,6 +1789,10 @@
   gap: 12px;
 }
 
+.home-reels-hsc {
+  padding: 0 max(18px, var(--safe-right)) 2px max(18px, var(--safe-left));
+}
+
 .home-reels-row {
   display: flex;
   gap: 10px;
@@ -1723,9 +1800,14 @@
   padding-bottom: 4px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 .home-reels-row::-webkit-scrollbar { display: none; }
+.home-reels-row > .reel-card {
+  scroll-snap-align: start;
+}
 
 .reel-card {
   flex: 0 0 142px;
@@ -1743,6 +1825,38 @@
   min-width: 0;
   width: auto;
   height: 220px;
+}
+
+.home-reels-row > .reel-card.reel-card--fill {
+  flex: 0 0 min(42vw, 158px);
+  width: min(42vw, 158px);
+  min-width: min(42vw, 158px);
+}
+
+.home-categories-hsc {
+  padding: 0 max(18px, var(--safe-right)) 2px max(18px, var(--safe-left));
+}
+
+.home-categories-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding-bottom: 4px;
+}
+
+.home-cat-card {
+  flex: 0 0 min(72vw, 280px);
+  width: min(72vw, 280px);
+  min-width: min(72vw, 280px);
+  text-align: left;
+  padding: 14px;
+  border-radius: var(--r-md);
+}
+
+.home-cat-card--list {
+  flex-basis: min(64vw, 240px);
+  width: min(64vw, 240px);
+  min-width: min(64vw, 240px);
 }
 
 .reel-card:hover { transform: translateY(-5px); border-color: rgba(212,175,55,.32); }
@@ -2389,6 +2503,7 @@
 .pd-overlay {
   position: fixed;
   inset: 0;
+  bottom: 0;
   width: 100%;
   max-width: var(--app-max-width);
   margin-left: auto;
@@ -2403,6 +2518,11 @@
   overflow: hidden;
   animation: sheetIn 0.42s cubic-bezier(0.22, 0.68, 0, 1) both;
   will-change: transform;
+}
+
+/* Fiche produit avec tab bar — overlay au-dessus de la nav, pas par-dessus */
+.app-shell--with-nav .pd-overlay {
+  bottom: var(--bottom-nav-h);
 }
 
 .pd-overlay__handle {
@@ -2639,14 +2759,14 @@
   box-sizing: border-box;
 }
 
-/* Fiche produit plein écran — CTA + TrustBadges, safe-bottom sur le bloc */
+/* Fiche produit plein écran — CTA + TrustBadges au-dessus de la tab bar */
 .pd-overlay .bottom-action-bar--product {
-  padding-top: var(--pd-action-bar-pad-y);
-  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  padding-top: 6px;
+  padding-bottom: var(--pd-action-bar-pad-y);
 }
 
 .pd-overlay .bottom-action-bar__meta {
-  margin-bottom: 2px;
+  margin-bottom: 6px;
   font-size: 11px;
   line-height: 1.15;
 }
@@ -3105,7 +3225,10 @@ html.standalone-pwa .app-shell {
 
 html.standalone-pwa .pd-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--bottom-nav-h);
   height: auto;
   min-height: 0;
   max-height: none;

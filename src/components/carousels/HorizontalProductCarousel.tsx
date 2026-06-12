@@ -1,6 +1,8 @@
 "use client";
 
 import { memo, type CSSProperties, type ReactNode } from "react";
+import { CarouselBackToStart } from "@/components/carousels/CarouselBackToStart";
+import { useHorizontalCarousel } from "@/lib/use-horizontal-carousel";
 
 export interface HorizontalProductCarouselProps {
   children: ReactNode;
@@ -12,6 +14,8 @@ export interface HorizontalProductCarouselProps {
   premium?: boolean;
   /** @deprecated Préférer fillColumns={2} */
   visibleCards?: number;
+  /** Boucle fin → début + bouton « Retour au début » après 70 % */
+  enhanceScroll?: boolean;
   className?: string;
   style?: CSSProperties;
 }
@@ -25,6 +29,7 @@ export const HorizontalProductCarousel = memo(function HorizontalProductCarousel
   fillColumns,
   premium = false,
   visibleCards,
+  enhanceScroll = true,
   className = "",
   style,
 }: HorizontalProductCarouselProps) {
@@ -32,16 +37,21 @@ export const HorizontalProductCarousel = memo(function HorizontalProductCarousel
   const fillClass = cols ? ` hpc--fill-${cols}` : "";
   const premiumClass = !cols && premium ? " hpc--premium" : "";
 
+  const { trackRef, showBack, scrollToStart } = useHorizontalCarousel({
+    enabled: enhanceScroll,
+  });
+
   return (
     <div
       className={`hpc${bleed ? " hpc--bleed" : ""}${premiumClass}${fillClass}${className ? ` ${className}` : ""}`}
       style={cols ? ({ "--hpc-visible": cols } as CSSProperties) : undefined}
     >
       <div className="hpc__fade hpc__fade--left" aria-hidden />
-      <div className="hpc__track noscroll" style={style}>
+      <div ref={trackRef} className="hpc__track noscroll" style={style}>
         {children}
         <span className="hpc__end" aria-hidden />
       </div>
+      {showBack && <CarouselBackToStart onClick={scrollToStart} />}
       <div className="hpc__fade hpc__fade--right" aria-hidden />
     </div>
   );
