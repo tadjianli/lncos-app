@@ -83,8 +83,8 @@ export function useOverlayRouter() {
     if (overlay.type === "product" && overlay.product) params.id  = overlay.product.id;
     if (overlay.type === "listing" && overlay.category) params.cat = (overlay.category as { id?: string }).id;
     const hash = buildOverlayHash(params);
-    // Use replaceState so back button closes the overlay, not the page
-    window.history.replaceState(null, "", hash);
+    // pushState : le bouton retour ferme l'overlay sans perdre la page source
+    window.history.pushState({ lncosOverlay: true, ...params }, "", hash);
   }, [overlay]);
 
   /** URL hash → overlay state (read direction, on mount + popstate) */

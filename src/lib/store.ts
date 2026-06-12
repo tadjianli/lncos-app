@@ -8,6 +8,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product } from "./data";
 import { effectivePrice, findVariantByName } from "./product-catalog";
+import type { ProductNavSource } from "./product-navigation";
+import {
+  buildReturnContext,
+  logProductNav,
+  pushProductOverlayHistory,
+} from "./product-navigation";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -43,6 +49,8 @@ export interface OverlayState {
   serviceId?: string | null;
   resumeFlag?: boolean;
   category?: Category | null;
+  /** Contexte de retour lorsque type === "product" */
+  productReturn?: import("./product-navigation").ProductReturnContext;
 }
 
 export interface ToastState {
@@ -76,7 +84,7 @@ interface AppStore {
 
   /* Overlay / modal stack */
   overlay: OverlayState | null;
-  openProduct: (product: Product) => void;
+  openProduct: (product: Product, opts?: { source?: ProductNavSource; fromRecommendations?: boolean }) => void;
   openSearch: () => void;
   openSideMenu: () => void;
   openListing: (category: Category | null) => void;
@@ -89,6 +97,7 @@ interface AppStore {
   openAuth: () => void;
   openSettings: () => void;
   closeOverlay: () => void;
+  restoreOverlay: (overlay: OverlayState) => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -168,8 +177,35 @@ export const useStore = create<AppStore>()(
       /* ── Overlay ─────────────────────────────── */
       overlay: null,
 
-      openProduct(product) {
-        set({ overlay: { type: "product", product } });
+      openProduct(product, opts) {
+        const current = get().overlay;
+        const productReturn = buildReturnContext(current, opts);
+
+        logProductNav("open", {
+          routeSource: productReturn.pathname + productReturn.search,
+          routeDestination: product.id,
+          source: productReturn.source,
+          previousOverlay: productReturn.previousOverlay?.type ?? null,
+          historyBefore: typeof window !== "undefined" ? window.history.length : null,
+          replacesProduct: current?.type === "product",
+        });
+
+        if (current?.type === "product") {
+          set({ overlay: { type: "product", product, productReturn } });
+          logProductNav("open-after-replace", {
+            historyAfter: typeof window !== "undefined" ? window.history.length : null,
+          });
+          return;
+        }
+
+        if (typeof window !== "undefined") {
+          pushProductOverlayHistory(product.id);
+          logProductNav("open-after", {
+            historyAfter: window.history.length,
+          });
+        }
+
+        set({ overlay: { type: "product", product, productReturn } });
       },
       openSearch() {
         set({ overlay: { type: "search" } });
@@ -206,6 +242,48 @@ export const useStore = create<AppStore>()(
       },
       closeOverlay() {
         set({ overlay: null });
+      },
+
+      restoreOverlay(overlay: OverlayState) {
+        switch (overlay.type) {
+          case "product":
+            if (overlay.product) {
+              set({ overlay: { type: "product", product: overlay.product, productReturn: overlay.productReturn } });
+            }
+            break;
+          case "search":
+            set({ overlay: { type: "search" } });
+            break;
+          case "listing":
+            set({ overlay: { type: "listing", category: overlay.category ?? null } });
+            break;
+          case "side-menu":
+            set({ overlay: { type: "side-menu" } });
+            break;
+          case "loyalty":
+            set({ overlay: { type: "loyalty" } });
+            break;
+          case "notifications":
+            set({ overlay: { type: "notifications" } });
+            break;
+          case "orders":
+            set({ overlay: { type: "orders" } });
+            break;
+          case "appointments":
+            set({ overlay: { type: "appointments" } });
+            break;
+          case "reels":
+            set({ overlay: { type: "reels" } });
+            break;
+          case "auth":
+            set({ overlay: { type: "auth" } });
+            break;
+          case "settings":
+            set({ overlay: { type: "settings" } });
+            break;
+          default:
+            break;
+        }
       },
     }),
     {

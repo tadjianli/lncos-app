@@ -2744,6 +2744,18 @@
   transform: translateY(-6px);
 }
 
+.pd-float-actions {
+  transition: opacity .32s ease, transform .32s ease, visibility .32s;
+  will-change: opacity, transform;
+}
+
+.pd-float-actions.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+}
+
 /* ─── Bottom action bars (Sephora / Amazon / Shopify mobile) ─── */
 
 .bottom-action-bar {

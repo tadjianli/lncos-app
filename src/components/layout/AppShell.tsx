@@ -16,13 +16,16 @@
  *       → cover entire AppShell including nav
  */
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { BottomNav } from "./BottomNav";
 import { SideMenu } from "./SideMenu";
 import { Toast } from "./Toast";
 import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/store";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
+import { closeProductDetailNavigation } from "@/lib/product-navigation";
+import { useProductOverlayHistory } from "@/lib/use-product-overlay-history";
 
 // Lazy-load overlay screens — keep initial bundle small
 const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
@@ -47,10 +50,19 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, bottomNav = true }: AppShellProps) {
+  const router       = useRouter();
   const toast        = useStore(selectToast);
   const cartCount    = useStore(selectCartCount);
   const overlay      = useStore(selectOverlay);
   const closeOverlay = useStore(s => s.closeOverlay);
+  const restoreOverlay = useStore(s => s.restoreOverlay);
+  const productReturn = overlay?.type === "product" ? overlay.productReturn : undefined;
+
+  useProductOverlayHistory();
+
+  const handleProductClose = useCallback(() => {
+    closeProductDetailNavigation(router, productReturn, closeOverlay, restoreOverlay);
+  }, [router, productReturn, closeOverlay, restoreOverlay]);
 
   // Trigger Zustand persist rehydration after React has finished hydrating.
   // We use skipHydration:true in store.ts so localStorage is NOT read during
@@ -98,7 +110,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
         {/* ── z:80 content overlays ─────────────────────────── */}
         <Suspense fallback={null}>
           {overlay?.type === "product" && overlay.product && (
-            <ProductDetail product={overlay.product} onClose={closeOverlay} />
+            <ProductDetail product={overlay.product} onClose={handleProductClose} />
           )}
           {overlay?.type === "listing" && (
             <ListingScreen category={overlay.category ?? null} onClose={closeOverlay} />

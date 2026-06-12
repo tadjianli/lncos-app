@@ -11,7 +11,7 @@ export function ProductPageClient({ product }: { product: Product }) {
   const openProduct = useStore((s) => s.openProduct);
 
   useEffect(() => {
-    openProduct(product);
+    openProduct(product, { source: "direct" });
   }, [product, openProduct]);
 
   return (

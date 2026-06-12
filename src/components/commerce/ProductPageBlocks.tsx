@@ -17,6 +17,7 @@ import { Icon } from "@/components/shared/Icon";
 import type { Product } from "@/lib/data";
 import type { ProductExtraSection } from "@/lib/product-sections";
 import type { ProductPageBlock, ProductPageFaqItem } from "@/lib/product-page-builder";
+import type { ProductNavSource } from "@/lib/product-navigation";
 
 export interface ProductPageRenderCtx {
   product: Product;
@@ -50,7 +51,7 @@ export interface ProductPageRenderCtx {
   routine: Product[];
   related: Product[];
   favs: string[];
-  openProduct: (p: Product) => void;
+  openProduct: (p: Product, opts?: { source?: ProductNavSource; fromRecommendations?: boolean }) => void;
   toggleFav: (id: string) => void;
   addToCart: (p: Product, qty: number, variant?: string) => void;
   showToast: (msg: string) => void;
@@ -463,7 +464,7 @@ export function ProductPageBlockView({
               <ProductCard
                 key={r.id}
                 p={r}
-                onOpen={ctx.openProduct}
+                onOpen={(pr) => ctx.openProduct(pr, { fromRecommendations: true })}
                 onFav={ctx.toggleFav}
                 isFav={ctx.favs.includes(r.id)}
                 onAdd={(pr) => {

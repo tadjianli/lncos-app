@@ -9,6 +9,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
+import { canNavigateProductBack } from "@/lib/product-navigation";
 import { usePublicProducts } from "@/lib/client-supabase";
 import {
   buildProductGallery,
@@ -258,6 +259,10 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   const toggleFav = useStore((s) => s.toggleFav);
   const favs = useStore((s) => s.favs);
   const openProduct = useStore((s) => s.openProduct);
+  const productReturn = useStore((s) =>
+    s.overlay?.type === "product" ? s.overlay.productReturn : undefined
+  );
+  const showBackButton = canNavigateProductBack(productReturn);
   const showToast = useStore((s) => s.showToast);
 
   const { blocks: layoutBlocks } = useProductPageLayoutPublic();
@@ -400,13 +405,16 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
     <div className="pd-overlay">
       <div className="pd-overlay__handle" aria-hidden />
 
-      {/* ── Header produit — sous la barre système iOS ── */}
-      <div
-        className={`pd-overlay__header pd-float-controls${galleryInView ? "" : " is-hidden"}`}
-      >
-        <MobileBackButton onClick={onClose} floating />
+      {/* ── Header produit — retour toujours visible ; actions droite au scroll ── */}
+      <div className="pd-overlay__header pd-float-controls">
+        {showBackButton && (
+          <MobileBackButton onClick={onClose} floating aria-label="Retour" />
+        )}
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div
+          className={`pd-float-actions${galleryInView ? "" : " is-hidden"}`}
+          style={{ display: "flex", gap: 10, marginLeft: "auto" }}
+        >
           {/* Floating favourite button */}
           <button
             type="button"
@@ -437,8 +445,6 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
           </button>
         </div>
       </div>
-
-      {/* ── Scrollable body (Product Page Builder) ── */}
       <div ref={scrollRef} className="pd-overlay__scroll noscroll">
         {galleryBlocks.map((block) => (
           <ProductPageBlockView key={block.id} block={block} ctx={renderCtx} padded={false} />
