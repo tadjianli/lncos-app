@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-const GAP_ABOVE_NAV_PX = 12;
-const GAP_ABOVE_STICKY_PX = 14;
-const SAFE_MARGIN_PX = 4;
+const GAP_ABOVE_NAV_PX = 24;
+const GAP_ABOVE_STICKY_PX = 24;
+const SAFE_MARGIN_PX = 0;
 
 function isVisible(el: HTMLElement): boolean {
   const rect = el.getBoundingClientRect();
