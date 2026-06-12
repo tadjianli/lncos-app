@@ -3134,19 +3134,63 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: background 0.3s cubic-bezier(0.22, 0.68, 0, 1);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--dur-base) var(--ease-lux),
+    box-shadow var(--dur-base) var(--ease-lux),
+    background var(--dur-slow) var(--ease-lux);
+}
+
+@media (max-width: 767px) {
+  .pd-cta-btn {
+    height: calc(var(--bottom-action-cta-h) + 2px);
+    min-height: calc(var(--bottom-action-cta-h) + 2px);
+  }
 }
 
 .pd-cta-btn--pink {
   background: var(--pink-grad);
   color: #3a1020;
-  box-shadow: 0 8px 22px -12px rgba(239, 169, 192, 0.65);
+  box-shadow:
+    0 8px 22px -12px rgba(239, 169, 192, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.pd-cta-btn--pink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+  animation: pd-cta-shine 5s var(--ease-lux) infinite;
+  pointer-events: none;
+}
+
+.pd-cta-btn--pink > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pd-cta-btn--pink:not(.pd-cta-btn--disabled):active {
+  transform: scale(0.985);
+  box-shadow:
+    0 4px 14px -10px rgba(239, 169, 192, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .pd-cta-btn--success {
   background: linear-gradient(135deg, #4caf50, #388e3c);
   color: #fff;
   box-shadow: 0 8px 20px -8px rgba(76, 175, 80, 0.5);
+  animation: pd-cta-success-pop 0.5s var(--ease-spring);
 }
 
 .pd-cta-btn--disabled {
@@ -3155,6 +3199,47 @@
   cursor: not-allowed;
   opacity: 0.7;
   box-shadow: none;
+}
+
+@keyframes pd-cta-shine {
+  0%,
+  72%,
+  100% {
+    transform: translateX(-130%);
+  }
+  28% {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes pd-cta-success-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.018);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-cta-btn {
+    transition: background var(--dur-slow) var(--ease-lux);
+  }
+
+  .pd-cta-btn--pink::after {
+    animation: none;
+  }
+
+  .pd-cta-btn--pink:not(.pd-cta-btn--disabled):active {
+    transform: none;
+  }
+
+  .pd-cta-btn--success {
+    animation: none;
+  }
 }
 
 .pd-stock-badge {
