@@ -3,7 +3,7 @@
  * Network-first navigation with cache fallback. Only stores successful responses.
  */
 
-const CACHE_VERSION = "lncos-v3";
+const CACHE_VERSION = "lncos-v4";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const IMG_CACHE = `${CACHE_VERSION}-images`;
 const FONT_CACHE = `${CACHE_VERSION}-fonts`;

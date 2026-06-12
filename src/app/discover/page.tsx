@@ -130,44 +130,6 @@ export default function DiscoverPage() {
 
         <PageSectionsView sections={sections.filter((s) => s.type === "categories")} />
 
-        {/* ── Brand promise strip ──────────────────────────────── */}
-        <div style={{ padding: "28px 18px 32px" }}>
-          <div
-            style={{
-              padding: "20px 20px",
-              borderRadius: "var(--r-lg)",
-              background: "linear-gradient(135deg, rgba(212,175,55,.06) 0%, rgba(212,175,55,.02) 100%)",
-              border: "1px solid rgba(212,175,55,.14)",
-              display: "flex",
-              gap: 0,
-            }}
-          >
-            {[
-              { icon: "sparkle", l: "100% Vegan" },
-              { icon: "heart",   l: "Sans cruauté" },
-              { icon: "star",    l: "Made in France" },
-            ].map((b, i) => (
-              <div
-                key={b.l}
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 7,
-                  borderRight: i < 2 ? "1px solid rgba(255,255,255,.07)" : "none",
-                  padding: "0 6px",
-                }}
-              >
-                <Icon name={b.icon} size={18} color="var(--gold)" fill="rgba(212,175,55,.3)" />
-                <span style={{ fontSize: 10.5, fontWeight: 600, color: "var(--ink-soft)", textAlign: "center", lineHeight: 1.3 }}>
-                  {b.l}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
     </AppShell>
   );

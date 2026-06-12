@@ -3079,34 +3079,26 @@
 html.standalone-pwa {
   width: 100%;
   height: 100%;
-  min-height: 100%;
-  min-height: -webkit-fill-available;
   overflow: hidden;
 }
 
 html.standalone-pwa body {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: auto;
-  min-height: 0;
+  height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
 }
 
+/* Le shell remplit tout l'écran physique (viewport-fit=cover) ; la tab bar
+   position:fixed s'ancre à ce viewport, sans hauteur ni padding artificiels. */
 html.standalone-pwa .app-shell {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: auto;
-  min-height: 0;
+  height: 100%;
   max-width: min(var(--app-max-width), 100%);
   margin-inline: auto;
 }
