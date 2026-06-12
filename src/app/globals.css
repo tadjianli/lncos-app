@@ -138,9 +138,9 @@
   --pd-gallery-max-h: 48dvh;
   --app-max-width: 480px;
   /* Bottom nav iOS — compacte, ancrée au bord (safe-area unique sur le conteneur) */
-  --bottom-nav-icon-size: 38px;
-  --bottom-nav-label-size: 13px;
-  --bottom-nav-pad-y: 4px;
+  --bottom-nav-icon-size: 30px;
+  --bottom-nav-label-size: 12px;
+  --bottom-nav-pad-y: 3px;
   --bottom-nav-item-gap: 2px;
   /* Safe-area UNE fois sur .bottom-nav — rognage léger navigateur, plus fort en PWA */
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1283,9 +1283,8 @@
   position: relative;
   flex: 1;
   min-width: 0;
-  max-width: 76px;
   min-height: var(--bottom-nav-bar-h);
-  padding: 0 4px;
+  padding: 0 2px;
   text-decoration: none;
   color: var(--ink-mute);
   transition: color 0.2s ease, transform 0.15s ease;
@@ -1314,12 +1313,11 @@
 }
 .bottom-nav-label {
   font-size: var(--bottom-nav-label-size);
-  line-height: 1.08;
-  letter-spacing: 0.015em;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
   font-weight: 500;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
   max-width: 100%;
 }
 .bottom-nav-item--active .bottom-nav-label {

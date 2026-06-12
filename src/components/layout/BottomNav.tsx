@@ -17,7 +17,7 @@ import {
   type LucideProps,
 } from "lucide-react";
 
-const ICON_SIZE = 38;
+const ICON_SIZE = 30;
 
 const NAV_ITEMS = [
   { href: "/",         id: "home",       label: "Accueil"    },
