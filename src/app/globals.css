@@ -142,7 +142,9 @@
   --bottom-nav-label-size: 13px;
   --bottom-nav-pad-y: 4px;
   --bottom-nav-item-gap: 2px;
-  --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Safe-area appliquée UNE fois (sur .bottom-nav), rognée de 12px pour coller
+     au bord comme les tab bars bancaires — labels à ~22px de la barre home */
+  --bottom-nav-safe-bottom: max(0px, calc(env(safe-area-inset-bottom, 0px) - 12px));
   --bottom-nav-bar-h: calc(
     var(--bottom-nav-pad-y) + var(--bottom-nav-icon-size) +
     var(--bottom-nav-item-gap) + var(--bottom-nav-label-size)
