@@ -12,6 +12,7 @@ export interface BeforeAfterResult {
   reviewId: string | null;
   beforeImageUrl: string;
   afterImageUrl: string;
+  title: string | null;
   description: string;
   resultDuration: ResultDuration;
   resultDurationCustom: string | null;
@@ -29,6 +30,7 @@ export interface PublicBeforeAfterResult {
   productId: string;
   beforeImageUrl: string;
   afterImageUrl: string;
+  title: string | null;
   description: string;
   durationLabel: string;
   featured: boolean;
@@ -77,6 +79,7 @@ export function toPublicBeforeAfter(
     productId: r.productId,
     beforeImageUrl: r.beforeImageUrl,
     afterImageUrl: r.afterImageUrl,
+    title: r.title ?? null,
     description: r.description,
     durationLabel: formatResultDuration(r.resultDuration, r.resultDurationCustom),
     featured: r.featured,

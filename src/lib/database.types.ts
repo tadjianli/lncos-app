@@ -1066,6 +1066,7 @@ export interface Database {
           review_id: string | null;
           before_image_url: string;
           after_image_url: string;
+          title: string | null;
           description: string;
           result_duration: string;
           result_duration_custom: string | null;
@@ -1080,6 +1081,7 @@ export interface Database {
           review_id?: string | null;
           before_image_url: string;
           after_image_url: string;
+          title?: string | null;
           description?: string;
           result_duration?: string;
           result_duration_custom?: string | null;
@@ -1093,6 +1095,7 @@ export interface Database {
           review_id?: string | null;
           before_image_url?: string;
           after_image_url?: string;
+          title?: string | null;
           description?: string;
           result_duration?: string;
           result_duration_custom?: string | null;

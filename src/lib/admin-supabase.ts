@@ -1411,6 +1411,7 @@ function dbToBeforeAfter(
     reviewId: r.review_id,
     beforeImageUrl: r.before_image_url,
     afterImageUrl: r.after_image_url,
+    title: r.title ?? null,
     description: r.description,
     resultDuration: r.result_duration as ResultDuration,
     resultDurationCustom: r.result_duration_custom,
@@ -1432,6 +1433,7 @@ function beforeAfterToDb(
   if (r.reviewId !== undefined) db.review_id = r.reviewId;
   if (r.beforeImageUrl !== undefined) db.before_image_url = r.beforeImageUrl;
   if (r.afterImageUrl !== undefined) db.after_image_url = r.afterImageUrl;
+  if (r.title !== undefined) db.title = r.title;
   if (r.description !== undefined) db.description = r.description;
   if (r.resultDuration !== undefined) db.result_duration = r.resultDuration;
   if (r.resultDurationCustom !== undefined) db.result_duration_custom = r.resultDurationCustom;
@@ -1483,6 +1485,7 @@ export function useBeforeAfterResultsAdmin() {
         review_id: input.reviewId ?? null,
         before_image_url: input.beforeImageUrl!,
         after_image_url: input.afterImageUrl!,
+        title: input.title ?? null,
         description: input.description ?? "",
         result_duration: input.resultDuration ?? "2_weeks",
         result_duration_custom: input.resultDurationCustom ?? null,

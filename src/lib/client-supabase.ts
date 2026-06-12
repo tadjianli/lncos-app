@@ -530,6 +530,7 @@ type DbBeforeAfter = {
   review_id: string | null;
   before_image_url: string;
   after_image_url: string;
+  title: string | null;
   description: string;
   result_duration: string;
   result_duration_custom: string | null;
@@ -560,6 +561,7 @@ async function enrichPublicBeforeAfter(rows: DbBeforeAfter[]): Promise<BeforeAft
       reviewId: r.review_id,
       beforeImageUrl: r.before_image_url,
       afterImageUrl: r.after_image_url,
+      title: r.title ?? null,
       description: r.description,
       resultDuration: r.result_duration as ResultDuration,
       resultDurationCustom: r.result_duration_custom,

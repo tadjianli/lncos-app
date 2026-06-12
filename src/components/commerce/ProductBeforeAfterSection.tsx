@@ -19,8 +19,13 @@ function ResultCard({ item }: { item: PublicBeforeAfterResult }) {
       <BeforeAfterCompare beforeUrl={item.beforeImageUrl} afterUrl={item.afterImageUrl} />
       <div style={{ marginTop: 14 }}>
         <BeforeAfterBadges verified={item.verified} />
+        {item.title && (
+          <p style={{ margin: "10px 0 6px", fontSize: 15, fontWeight: 700, color: "var(--ink)", lineHeight: 1.35 }}>
+            {item.title}
+          </p>
+        )}
         {item.description && (
-          <p style={{ margin: "10px 0 6px", fontSize: 14, fontWeight: 600, color: "var(--ink)", lineHeight: 1.4 }}>
+          <p style={{ margin: item.title ? "0 0 6px" : "10px 0 6px", fontSize: 14, fontWeight: item.title ? 500 : 600, color: item.title ? "var(--ink-soft)" : "var(--ink)", lineHeight: 1.4 }}>
             {item.description}
           </p>
         )}
@@ -45,7 +50,13 @@ function ResultCard({ item }: { item: PublicBeforeAfterResult }) {
   );
 }
 
-export function ProductBeforeAfterSection({ productId }: { productId: string }) {
+export function ProductBeforeAfterSection({
+  productId,
+  sectionTitle,
+}: {
+  productId: string;
+  sectionTitle?: string;
+}) {
   const { results, loading } = useProductBeforeAfter(productId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -68,7 +79,7 @@ export function ProductBeforeAfterSection({ productId }: { productId: string }) 
           Preuve sociale
         </div>
         <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>
-          Résultats réels
+          {sectionTitle?.trim() || "Résultats réels"}
         </h3>
         <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--ink-mute)" }}>
           Glissez pour comparer Avant · Après

@@ -34,6 +34,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Sélecteur contenance / teinte",
     icon: "grid",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Variantes",
     fields: [],
   },
   quantity: {
@@ -50,6 +52,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Ligne Réf. sous les avis",
     icon: "info",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Variantes (SKU)",
     fields: [],
   },
   live_viewers: {
@@ -58,6 +62,7 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Social proof — personnes qui consultent",
     icon: "eye",
     zone: "main",
+    productManaged: true,
     fields: [],
   },
   stock_alert: {
@@ -66,6 +71,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Message stock faible (social proof)",
     icon: "bell",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Stock global",
     fields: [],
   },
   reviews_summary: {
@@ -74,6 +81,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Note moyenne et lien vers avis",
     icon: "star",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Avis clients",
     fields: [],
   },
   benefits: {
@@ -82,6 +91,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Liste à puces (contenu par produit)",
     icon: "check",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Contenu fiche produit → Bénéfices",
     fields: [],
   },
   description: {
@@ -90,6 +101,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Accordéon description (contenu par produit)",
     icon: "info",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Contenu fiche produit → Description",
     fields: [],
   },
   usage_tips: {
@@ -98,6 +111,8 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Étapes d'application (contenu par produit)",
     icon: "heart",
     zone: "main",
+    productManaged: true,
+    productAdminHint: "Admin → Produits → Contenu fiche produit → Conseils",
     fields: [],
   },
   video: {
@@ -146,10 +161,21 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
   before_after: {
     type: "before_after",
     label: "Avant / Après",
-    description: "Résultats clients",
+    description: "Comparaison photos avant / après",
     icon: "camera",
     zone: "main",
-    fields: [],
+    productManaged: true,
+    productAdminHint:
+      "Les images se configurent dans Admin → Produits → ouvrir le produit → section « Photos avant / après ».",
+    fields: [
+      {
+        key: "title",
+        label: "Titre de section (optionnel)",
+        type: "text",
+        placeholder: "Résultats réels",
+        helpText: "Remplace le titre par défaut affiché au-dessus du comparateur.",
+      },
+    ],
   },
   reviews: {
     type: "reviews",
@@ -184,6 +210,7 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Social proof ventes récentes",
     icon: "bolt",
     zone: "sticky",
+    productManaged: true,
     fields: [],
   },
   add_to_cart: {
@@ -204,6 +231,7 @@ export const PRODUCT_PAGE_BLOCK_REGISTRY: Record<
     description: "Badges livraison, paiement, retours…",
     icon: "check",
     zone: "sticky",
+    productManaged: true,
     fields: [],
   },
 };

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
-import { ProductPageBlockEditor } from "@/components/admin/ProductPageBlockEditor";
+import { ProductPageBlockEditor, blockHasBuilderEditor } from "@/components/admin/ProductPageBlockEditor";
 import {
   ADDABLE_BLOCK_TYPES,
   ADDABLE_MERCHANT_ORDER,
@@ -308,6 +308,13 @@ export function ProductPageBuilderModule() {
   }
 
   async function handleEdit(block: ProductPageBlock) {
+    const schema = PRODUCT_PAGE_BLOCK_REGISTRY[block.type];
+    if (!blockHasBuilderEditor(block.type)) {
+      showToast(
+        schema.productAdminHint ?? "Configurez cette section dans Admin → Produits."
+      );
+      return;
+    }
     await ensureDraft();
     setEditingBlock(block);
   }
@@ -480,16 +487,18 @@ export function ProductPageBuilderModule() {
                     onDragOver={(e) => onDragOver(e, block.id)}
                     onDrop={() => void onDrop(block.id)}
                     onDragEnd={onDragEnd}
-                    onClick={() => void handleEdit(block)}
+                    onClick={() => {
+                      if (blockHasBuilderEditor(block.type)) void handleEdit(block);
+                    }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        void handleEdit(block);
+                        if (blockHasBuilderEditor(block.type)) void handleEdit(block);
                       }
                     }}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: blockHasBuilderEditor(block.type) ? "pointer" : "default" }}
                   >
                     <DragHandle />
 
@@ -507,6 +516,7 @@ export function ProductPageBuilderModule() {
                     </div>
 
                     <div className="ab-row-actions" onClick={(e) => e.stopPropagation()}>
+                      {blockHasBuilderEditor(block.type) && (
                       <button
                         type="button"
                         className="adm-iconbtn sm"
@@ -515,6 +525,7 @@ export function ProductPageBuilderModule() {
                       >
                         <Icon name="edit" size={14} />
                       </button>
+                      )}
                       {!locked && (
                         <button
                           type="button"

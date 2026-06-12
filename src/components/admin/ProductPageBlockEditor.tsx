@@ -7,8 +7,14 @@ import {
   merchantBlockLabel,
   type ProductPageBlock,
   type ProductPageBlockSettings,
+  type ProductPageBlockType,
   type ProductPageFaqItem,
 } from "@/lib/product-page-builder";
+
+export function blockHasBuilderEditor(type: ProductPageBlockType): boolean {
+  const schema = PRODUCT_PAGE_BLOCK_REGISTRY[type];
+  return schema.fields.length > 0;
+}
 
 interface ProductPageBlockEditorProps {
   block: ProductPageBlock;
@@ -46,9 +52,32 @@ export function ProductPageBlockEditor({ block, onClose, onSave }: ProductPageBl
           </button>
         </div>
 
-        {!hasFields && (
+        {schema.productManaged && schema.productAdminHint && (
+          <p
+            style={{
+              fontSize: 13,
+              color: "var(--adm-ink-mute)",
+              lineHeight: 1.55,
+              margin: "0 0 16px",
+              padding: "10px 12px",
+              borderRadius: 8,
+              background: "var(--adm-surface-2)",
+              border: "1px solid var(--adm-border-2)",
+            }}
+          >
+            {schema.productAdminHint}
+          </p>
+        )}
+
+        {!hasFields && !schema.productManaged && (
           <p style={{ fontSize: 13, color: "var(--adm-ink-mute)", lineHeight: 1.55, margin: "0 0 16px" }}>
             Le texte de cette section se modifie dans <strong>Produits</strong>, fiche par fiche.
+          </p>
+        )}
+
+        {!hasFields && schema.productManaged && !schema.productAdminHint && (
+          <p style={{ fontSize: 13, color: "var(--adm-ink-mute)", lineHeight: 1.55, margin: "0 0 16px" }}>
+            Cette section se configure dans <strong>Produits</strong>, fiche par fiche.
           </p>
         )}
 

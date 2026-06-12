@@ -99,6 +99,9 @@ export interface ProductPageBlockSchema {
   zone: ProductPageZone;
   /** Blocs système non supprimables (galerie, CTA…) */
   locked?: boolean;
+  /** Contenu géré fiche par fiche dans Admin → Produits */
+  productManaged?: boolean;
+  productAdminHint?: string;
   fields: ProductPageBlockFieldSchema[];
 }
 

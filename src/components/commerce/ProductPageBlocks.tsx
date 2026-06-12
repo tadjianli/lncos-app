@@ -438,7 +438,7 @@ export function ProductPageBlockView({
       );
 
     case "before_after":
-      return wrap(<ProductBeforeAfterSection productId={p.id} />);
+      return wrap(<ProductBeforeAfterSection productId={p.id} sectionTitle={s.title} />);
 
     case "reviews":
       return wrap(

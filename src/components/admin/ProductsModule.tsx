@@ -12,7 +12,7 @@ import { ProductContentSectionsEditor } from "@/components/admin/ProductContentS
 import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
-import { ProductBeforeAfterPanel } from "@/components/admin/ProductBeforeAfterPanel";
+import { ProductBeforeAfterEditor } from "@/components/admin/ProductBeforeAfterEditor";
 import { DEFAULT_HOME_VISIBILITY } from "@/lib/product-home-visibility";
 import {
   getProductViewActionLabel,
@@ -265,7 +265,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           />
 
           {!isNew && <ProductReviewsPanel product={{ ...form, id: productId, productVariants: variants }} />}
-          {!isNew && <ProductBeforeAfterPanel product={{ ...form, id: productId, productVariants: variants }} />}
+          {!isNew && <ProductBeforeAfterEditor product={{ ...form, id: productId, productVariants: variants }} />}
           </>
           )}
         </div>
