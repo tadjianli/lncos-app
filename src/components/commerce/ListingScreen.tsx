@@ -6,8 +6,8 @@
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
-import { ProductCard } from "@/components/shared/ProductCard";
-import { useStore } from "@/lib/store";
+import { ProductGrid } from "@/components/commerce/ProductGrid";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { Category } from "@/lib/store";
 
@@ -24,10 +24,6 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
   const [showFilter, setShowFilter] = useState(false);
 
   const { products } = usePublicProducts();
-  const openProduct = useStore((s) => s.openProduct);
-  const addToCart   = useStore((s) => s.addToCart);
-  const toggleFav   = useStore((s) => s.toggleFav);
-  const favs        = useStore((s) => s.favs);
 
   const list = category
     ? products.filter((p) => p.cat === category.id)
@@ -112,25 +108,17 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
       </div>
 
       {/* Grid */}
-      <div className="noscroll overlay-screen-scroll" style={{ padding: "4px 16px 16px" }}>
+      <ScrollRegion variant="overlay" insetX={16} className="scroll-region--y4" padBottom={false}>
         <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
           {list.length} produit{list.length > 1 ? "s" : ""}
         </div>
-        <div className="prodbento prodbento--2">
-          {list.map((p, i) => (
-            <div key={p.id + i} className="prodbento-cell" style={{ animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both` }}>
-              <ProductCard
-                p={p}
-                layout="grid-2"
-                onOpen={openProduct}
-                onFav={toggleFav}
-                isFav={favs.includes(p.id)}
-                onAdd={addToCart}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+        <ProductGrid
+          products={list}
+          getCellStyle={(i) => ({
+            animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both`,
+          })}
+        />
+      </ScrollRegion>
     </div>
   );
 }

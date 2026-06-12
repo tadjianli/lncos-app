@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
-import { ProductCard } from "@/components/shared/ProductCard";
+import { ProductGrid } from "@/components/commerce/ProductGrid";
 import { GoldBtn } from "@/components/shared/ActionButtons";
 import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { useStore } from "@/lib/store";
@@ -77,10 +77,6 @@ function PageCta({ section, onClick }: { section: HomeSection; onClick?: () => v
 
 function PageProducts({ section }: { section: HomeSection }) {
   const { products } = usePublicProducts();
-  const openProduct = useStore((s) => s.openProduct);
-  const addToCart   = useStore((s) => s.addToCart);
-  const toggleFav   = useStore((s) => s.toggleFav);
-  const favs        = useStore((s) => s.favs);
   const [cat, setCat] = useState("all");
 
   let list = products;
@@ -103,7 +99,7 @@ function PageProducts({ section }: { section: HomeSection }) {
   const { categories } = usePublicCategories();
 
   return (
-    <div style={{ padding: "0 max(18px, var(--safe-right)) 28px max(18px, var(--safe-left))" }}>
+    <div style={{ padding: "0 max(18px, var(--safe-right)) 0 max(18px, var(--safe-left))" }}>
       {section.title && (
         <h3 style={{ margin: "0 0 12px", padding: "0 2px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>{section.title}</h3>
       )}
@@ -115,13 +111,7 @@ function PageProducts({ section }: { section: HomeSection }) {
           ))}
         </div>
       )}
-      <div className="prodbento prodbento--2">
-        {list.map((p, i) => (
-          <div key={p.id} className="prodbento-cell">
-            <ProductCard p={p} layout="grid-2" priority={i < 4} isFav={favs.includes(p.id)} onFav={toggleFav} onAdd={addToCart} onOpen={openProduct} />
-          </div>
-        ))}
-      </div>
+      <ProductGrid products={list} bottomClearance={false} />
     </div>
   );
 }

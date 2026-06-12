@@ -9,6 +9,7 @@ import { Icon } from "@/components/shared/Icon";
 import { HorizontalProductCarousel } from "@/components/carousels/HorizontalProductCarousel";
 import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { ProductCard } from "@/components/shared/ProductCard";
+import { ProductGrid } from "@/components/commerce/ProductGrid";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicHomeSections } from "@/lib/client-supabase";
@@ -611,20 +612,7 @@ export default function HomePage() {
               ) : isGrid ? (
                 <Reveal>
                   <SectionHead title={section.title} />
-                  <div className="prodbento prodbento--2">
-                    {prods.map((p, pi) => (
-                      <div key={p.id + "-" + source + "-" + pi} className="prodbento-cell">
-                        <ProductCard
-                          p={p}
-                          layout="grid-2"
-                          onOpen={handleOpen}
-                          onFav={handleFav}
-                          isFav={favs.includes(p.id)}
-                          onAdd={handleAdd}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <ProductGrid products={prods} bottomClearance={false} />
                 </Reveal>
               ) : (
                 <Reveal>

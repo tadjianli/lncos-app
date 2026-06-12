@@ -6,7 +6,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
-import { ProductCard } from "@/components/shared/ProductCard";
+import { ProductGrid, productGridClassName } from "@/components/commerce/ProductGrid";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { Product } from "@/lib/data";
@@ -72,11 +73,6 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
   const { products } = usePublicProducts();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const openProduct = useStore((s) => s.openProduct);
-  const addToCart   = useStore((s) => s.addToCart);
-  const toggleFav   = useStore((s) => s.toggleFav);
-  const favs        = useStore((s) => s.favs);
 
   /* Load recents + auto-focus */
   useEffect(() => {
@@ -247,7 +243,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
       </div>
 
       {/* ── Scrollable body ── */}
-      <div className="noscroll overlay-screen-scroll" style={{ padding: "4px 16px 16px" }}>
+      <ScrollRegion variant="overlay" insetX={16} className="scroll-region--y4" padBottom={false}>
         {/* ── No query: discovery view ── */}
         {!hasQuery && (
           <>
@@ -461,20 +457,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
             >
               Suggestions
             </div>
-            <div className="prodbento prodbento--2">
-              {products.slice(0, 4).map((p) => (
-                <div key={p.id} className="prodbento-cell">
-                <ProductCard
-                  p={p}
-                  layout="grid-2"
-                  onOpen={openProduct}
-                  onFav={toggleFav}
-                  isFav={favs.includes(p.id)}
-                  onAdd={addToCart}
-                />
-                </div>
-              ))}
-            </div>
+            <ProductGrid products={products.slice(0, 4)} />
           </>
         )}
 
@@ -506,7 +489,10 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
 
             {/* Loading skeletons */}
             {isSearching && (
-              <div className="prodbento prodbento--2" style={{ animation: "pulse 1.2s ease-in-out infinite" }}>
+              <div
+                className={productGridClassName()}
+                style={{ animation: "pulse 1.2s ease-in-out infinite" }}
+              >
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="prodbento-cell">
                     <SkeletonProductCard />
@@ -515,22 +501,8 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
               </div>
             )}
 
-            {/* Results grid */}
             {!isSearching && results.length > 0 && (
-              <div className="prodbento prodbento--2">
-                {results.map((p) => (
-                  <div key={p.id} className="prodbento-cell">
-                    <ProductCard
-                      p={p}
-                      layout="grid-2"
-                      onOpen={openProduct}
-                      onFav={toggleFav}
-                      isFav={favs.includes(p.id)}
-                      onAdd={addToCart}
-                    />
-                  </div>
-                ))}
-              </div>
+              <ProductGrid products={results} />
             )}
 
             {/* Empty state */}
@@ -597,7 +569,7 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
             )}
           </>
         )}
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

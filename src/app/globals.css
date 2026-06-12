@@ -151,6 +151,11 @@
   --bottom-nav-h: calc(var(--bottom-nav-bar-h) + var(--bottom-nav-safe-bottom));
   /* legacy alias */
   --bottom-nav-content-h: var(--bottom-nav-bar-h);
+  /* Marge scroll sous contenu : barre nav + safe-area iOS + 24px mini */
+  --app-scroll-pad-bottom: calc(
+    var(--bottom-nav-bar-h) + var(--safe-bottom) + 24px
+  );
+  --product-grid-bottom-clearance: var(--app-scroll-pad-bottom);
   --bottom-action-cta-h: 36px;
   --pd-action-bar-pad-y: 4px;
   --sp-10: 40px;
@@ -825,7 +830,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(var(--bottom-nav-h) + 16px);
+    padding-bottom: var(--app-scroll-pad-bottom);
   }
 
   /* Scroll principal des pages avec bottom nav — évite masquage dernier élément */
@@ -835,7 +840,31 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(var(--bottom-nav-h) + 16px);
+    padding-bottom: var(--app-scroll-pad-bottom);
+  }
+
+  .app-scroll-page--x18 {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  /* Padding horizontal sans écraser padding-bottom scroll */
+  .scroll-region--x16 {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .scroll-region--x18 {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .scroll-region--y4 {
+    padding-top: 4px;
+  }
+
+  .scroll-region--no-pad-bottom {
+    padding-bottom: 0;
   }
 
   /* Panier — marge pour la barre d'action fixe au-dessus de la tab bar */
@@ -2019,6 +2048,13 @@
 
 .prodbento-cell.lead { grid-column: span 2; }
 
+/* ─── ProductGrid — clearance bottom nav / safe-area / CTA sticky ─── */
+
+.product-grid--clear-bottom {
+  padding-bottom: var(--product-grid-bottom-clearance);
+  box-sizing: border-box;
+}
+
 /* Alias explicite boutique / favoris / recherche */
 .prodbento--2 {
   /* hérite de .prodbento */
@@ -2216,6 +2252,139 @@
 .prodbento--3 .prod-card-add svg {
   width: 14px;
   height: 14px;
+}
+
+/* ─── Page catégorie — grille 2 col verrouillée (PWA / Safari / Android) ─── */
+
+.prodbento.prodbento--cat-lock {
+  --prodbento-gap: 14px;
+  --prodbento-cols: 2;
+  --prodbento-slot: calc((100% - var(--prodbento-gap)) / 2);
+  --cat-card-info-h: 118px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--prodbento-gap);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+.prodbento.prodbento--cat-lock .prodbento-cell {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.prodbento.prodbento--cat-lock .prodbento-cell > .prod-card {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  --prod-card-w: 100%;
+  --prod-card-img-h: auto;
+  scroll-snap-align: unset;
+  display: flex;
+  flex-direction: column;
+}
+
+.prodbento.prodbento--cat-lock .prod-imgwrap {
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: 4 / 5;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-info {
+  flex: 0 0 var(--cat-card-info-h);
+  height: var(--cat-card-info-h);
+  min-height: var(--cat-card-info-h);
+  max-height: var(--cat-card-info-h);
+  box-sizing: border-box;
+  padding: 12px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-title {
+  flex: 0 0 2.6em;
+  height: 2.6em;
+  min-height: 2.6em;
+  max-height: 2.6em;
+  font-size: 13px;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-rating {
+  flex: 0 0 auto;
+  min-height: 16px;
+  margin: 5px 0 8px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-rating svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-price-row {
+  flex: 0 0 36px;
+  height: 36px;
+  min-height: 36px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-price {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-price-old {
+  font-size: 11px;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-add {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  flex: 0 0 36px;
+}
+
+.prodbento.prodbento--cat-lock .prod-card-add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.prodbento.prodbento--cat-lock .prod-fav-btn {
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+}
+
+.prodbento.prodbento--cat-lock .prod-tag {
+  top: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  font-size: 8.5px;
 }
 
 /* ─── Keyframes ──────────────────────────────────────────────── */
@@ -3285,6 +3454,10 @@ html.standalone-pwa .bottom-nav {
   :root {
     /* PWA : labels plus bas, sans espace mort sous la barre (navigateur inchangé) */
     --bottom-nav-safe-bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 22px));
+    /* Nav remontée de 3px — inclure dans la marge scroll */
+    --app-scroll-pad-bottom: calc(
+      var(--bottom-nav-bar-h) + var(--safe-bottom) + 24px + 3px
+    );
   }
 
   .bottom-nav {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { SeoPageHeader } from "@/components/layout/SeoPageHeader";
 import { CategoryProductGrid } from "@/components/commerce/CategoryProductGrid";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -67,7 +68,7 @@ export default async function CategoriePage({ params }: Props) {
     <AppShell>
       <JsonLd data={collectionJsonLd} />
       <SeoPageHeader title={category.name} backHref="/discover" />
-      <div className="noscroll app-scroll-page" style={{ padding: "0 18px" }}>
+      <ScrollRegion variant="page" insetX={18} padBottom={false}>
         <p style={{ fontSize: 14, color: "var(--ink-mute)", margin: "0 0 20px", lineHeight: 1.5 }}>
           {description}
         </p>
@@ -75,7 +76,7 @@ export default async function CategoriePage({ params }: Props) {
         {products.length === 0 && (
           <p style={{ color: "var(--ink-mute)", fontSize: 14 }}>Aucun produit dans cette catégorie.</p>
         )}
-      </div>
+      </ScrollRegion>
     </AppShell>
   );
 }
