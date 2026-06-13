@@ -1,95 +1,43 @@
 "use client";
 
-import { Fragment, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { getSupabase } from "@/lib/supabase";
-
-type OrderStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
-type PaymentStatus = "pending" | "paid" | "refunded";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  variant: string | null;
-}
-
-interface Order {
-  id: string;
-  user_id: string | null;
-  status: OrderStatus;
-  payment_status: PaymentStatus;
-  subtotal: number;
-  shipping_cost: number;
-  discount: number;
-  promo_code: string | null;
-  total: number;
-  tracking_number: string | null;
-  shipping_address: ShippingAddressRow | null;
-  created_at: string;
-  order_items: OrderItem[];
-}
-
-interface ShippingAddressRow {
-  firstName?: string;
-  lastName?: string;
-  address?: string;
-  zip?: string;
-  city?: string;
-  phone?: string;
-}
-
-function formatShippingAddress(addr: ShippingAddressRow | null): string | null {
-  if (!addr) return null;
-  const name = [addr.firstName, addr.lastName].filter(Boolean).join(" ");
-  const line = [addr.address, [addr.zip, addr.city].filter(Boolean).join(" "), addr.phone]
-    .filter(Boolean)
-    .join(" · ");
-  return [name, line].filter(Boolean).join(" — ");
-}
-
-const STATUS_META: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-  preparing:  { label: "En préparation", color: "var(--tone-blue)",   bg: "rgba(59,125,216,.1)" },
-  shipped:    { label: "Expédié",         color: "var(--tone-orange)", bg: "rgba(199,122,51,.1)" },
-  in_transit: { label: "En transit",      color: "var(--tone-orange)", bg: "rgba(199,122,51,.1)" },
-  delivered:  { label: "Livré",           color: "var(--tone-green)",  bg: "rgba(47,158,104,.1)" },
-  cancelled:  { label: "Annulé",          color: "var(--tone-pink)",   bg: "rgba(194,85,122,.1)" },
-};
-
-const PAY_META: Record<PaymentStatus, { label: string; color: string; bg: string }> = {
-  paid:     { label: "Payé",     color: "var(--tone-green)",  bg: "rgba(47,158,104,.1)" },
-  pending:  { label: "En attente", color: "var(--tone-orange)", bg: "rgba(199,122,51,.1)" },
-  refunded: { label: "Remboursé", color: "var(--tone-pink)",   bg: "rgba(194,85,122,.1)" },
-};
+import {
+  OrderDetailModal,
+  type AdminOrder,
+  type OrderStatus,
+  STATUS_META,
+  PAY_META,
+  STATUS_OPTIONS,
+  orderRef,
+} from "@/components/admin/OrderDetailModal";
 
 function fmt(date: string) {
   return new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-const STATUS_OPTIONS: OrderStatus[] = ["preparing", "shipped", "in_transit", "delivered", "cancelled"];
-
 export function OrdersModule() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [updating, setUpdating] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [selected, setSelected] = useState<AdminOrder | null>(null);
 
   const load = useCallback(async () => {
     const sb = getSupabase();
     const { data: orderRows } = await sb
       .from("orders")
       .select(
-        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,shipping_address,created_at",
+        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,shipping_address,stripe_session_id,payment_provider,confirmation_email_sent_at,shipped_email_sent_at,estimated_delivery,delivered_at,created_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
 
     const rows = orderRows ?? [];
     const orderIds = rows.map((o) => o.id);
-    let itemsByOrder = new Map<string, OrderItem[]>();
+    let itemsByOrder = new Map<string, AdminOrder["order_items"]>();
 
     if (orderIds.length > 0) {
       const { data: itemRows } = await sb
@@ -108,15 +56,16 @@ export function OrdersModule() {
         });
         map.set(it.order_id, list);
         return map;
-      }, new Map<string, OrderItem[]>());
+      }, new Map<string, AdminOrder["order_items"]>());
     }
 
-    setOrders(
-      rows.map((o) => ({
-        ...(o as Omit<Order, "order_items">),
-        order_items: itemsByOrder.get(o.id) ?? [],
-      })),
-    );
+    const nextOrders = rows.map((o) => ({
+      ...(o as Omit<AdminOrder, "order_items">),
+      order_items: itemsByOrder.get(o.id) ?? [],
+    }));
+
+    setOrders(nextOrders);
+    setSelected((prev) => (prev ? nextOrders.find((o) => o.id === prev.id) ?? null : null));
     setLoading(false);
   }, []);
 
@@ -129,17 +78,46 @@ export function OrdersModule() {
     return () => { getSupabase().removeChannel(channel); };
   }, [load]);
 
-  const updateStatus = async (id: string, status: OrderStatus) => {
+  const updateStatus = async (
+    id: string,
+    status: OrderStatus,
+    trackingNumber?: string | null,
+  ) => {
     setUpdating(id);
     try {
+      const body: { status: OrderStatus; tracking_number?: string | null } = { status };
+      if (trackingNumber !== undefined) {
+        body.tracking_number = trackingNumber;
+      }
+
       const res = await fetch(`/api/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Mise à jour échouée");
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === id
+            ? {
+                ...o,
+                status,
+                ...(trackingNumber !== undefined ? { tracking_number: trackingNumber } : {}),
+              }
+            : o,
+        ),
+      );
+      setSelected((prev) =>
+        prev?.id === id
+          ? {
+              ...prev,
+              status,
+              ...(trackingNumber !== undefined ? { tracking_number: trackingNumber } : {}),
+            }
+          : prev,
+      );
     } catch (err) {
       console.error("[OrdersModule] status update:", err);
     } finally {
@@ -148,7 +126,11 @@ export function OrdersModule() {
   };
 
   const filtered = orders.filter((o) => {
-    const matchSearch = search === "" || o.id.toLowerCase().includes(search.toLowerCase());
+    const ref = orderRef(o.id).toLowerCase();
+    const matchSearch =
+      search === "" ||
+      o.id.toLowerCase().includes(search.toLowerCase()) ||
+      ref.includes(search.toLowerCase());
     const matchFilter = filter === "all" || o.status === filter;
     return matchSearch && matchFilter;
   });
@@ -235,97 +217,79 @@ export function OrdersModule() {
               {filtered.map((o) => {
                 const sm = STATUS_META[o.status];
                 const pm = PAY_META[o.payment_status];
-                const ref = "LN-" + o.id.slice(0, 6).toUpperCase();
+                const ref = orderRef(o.id);
                 const items = o.order_items ?? [];
-                const isOpen = expanded === o.id;
                 return (
-                  <Fragment key={o.id}>
-                    <tr key={o.id}>
-                      <td>
-                        <div style={{ fontWeight: 700, color: "var(--adm-ink)", fontSize: 13 }}>{ref}</div>
-                        <div className="mono">{o.id.slice(0, 8)}…</div>
-                        {o.promo_code && (
-                          <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
-                            Promo {o.promo_code}
-                          </div>
-                        )}
-                      </td>
-                      <td>{fmt(o.created_at)}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="adm-tab"
-                          style={{ fontSize: 11, padding: "4px 8px" }}
-                          onClick={() => setExpanded(isOpen ? null : o.id)}
-                        >
-                          {items.length} article{items.length !== 1 ? "s" : ""}
-                          {items.length === 0 ? " ⚠" : ""}
-                        </button>
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 700, color: "var(--adm-ink)" }}>{Number(o.total).toFixed(2)} €</div>
-                        {Number(o.shipping_cost) > 0 && (
-                          <div style={{ fontSize: 11, color: "var(--adm-ink-mute)" }}>
-                            Livraison {Number(o.shipping_cost).toFixed(2)} €
-                          </div>
-                        )}
-                        {Number(o.discount) > 0 && (
-                          <div style={{ fontSize: 11, color: "var(--tone-green)" }}>
-                            −{Number(o.discount).toFixed(2)} €
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span className="adm-badge" style={{ color: pm.color, background: pm.bg }}>{pm.label}</span>
-                      </td>
-                      <td>
-                        <span className="adm-badge" style={{ color: sm.color, background: sm.bg }}>{sm.label}</span>
-                      </td>
-                      <td>
-                        <select
-                          className="adm-select"
-                          value={o.status}
-                          disabled={updating === o.id}
-                          onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)}
-                        >
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>{STATUS_META[s].label}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                    {isOpen && (
-                      <tr key={`${o.id}-items`}>
-                        <td colSpan={7} style={{ background: "var(--adm-surface-2)", padding: "12px 16px" }}>
-                          {items.length === 0 ? (
-                            <span style={{ color: "var(--tone-orange)", fontSize: 13 }}>
-                              Aucun article enregistré — vérifier la commande Stripe
-                            </span>
-                          ) : (
-                            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-                              {formatShippingAddress(o.shipping_address) && (
-                                <li style={{ fontSize: 12.5, color: "var(--adm-ink-soft)", marginBottom: 4 }}>
-                                  Livraison : {formatShippingAddress(o.shipping_address)}
-                                </li>
-                              )}
-                              {items.map((it) => (
-                                <li key={it.id} style={{ fontSize: 13, color: "var(--adm-ink)" }}>
-                                  {it.qty}× {it.name}
-                                  {it.variant ? ` (${it.variant})` : ""} — {(Number(it.price) * it.qty).toFixed(2)} €
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
+                  <tr
+                    key={o.id}
+                    className="adm-table-row-clickable"
+                    onClick={() => setSelected(o)}
+                  >
+                    <td>
+                      <div style={{ fontWeight: 700, color: "var(--adm-ink)", fontSize: 13 }}>{ref}</div>
+                      <div className="mono">{o.id.slice(0, 8)}…</div>
+                      {o.promo_code && (
+                        <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
+                          Promo {o.promo_code}
+                        </div>
+                      )}
+                    </td>
+                    <td>{fmt(o.created_at)}</td>
+                    <td>
+                      <span style={{ fontSize: 13, color: "var(--adm-ink-soft)" }}>
+                        {items.length} article{items.length !== 1 ? "s" : ""}
+                        {items.length === 0 ? " ⚠" : ""}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: "var(--adm-ink)" }}>{Number(o.total).toFixed(2)} €</div>
+                      {Number(o.shipping_cost) > 0 && (
+                        <div style={{ fontSize: 11, color: "var(--adm-ink-mute)" }}>
+                          Livraison {Number(o.shipping_cost).toFixed(2)} €
+                        </div>
+                      )}
+                      {Number(o.discount) > 0 && (
+                        <div style={{ fontSize: 11, color: "var(--tone-green)" }}>
+                          −{Number(o.discount).toFixed(2)} €
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <span className="adm-badge" style={{ color: pm.color, background: pm.bg }}>{pm.label}</span>
+                    </td>
+                    <td>
+                      <span className="adm-badge" style={{ color: sm.color, background: sm.bg }}>{sm.label}</span>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <select
+                        className="adm-select"
+                        value={o.status}
+                        disabled={updating === o.id}
+                        onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)}
+                      >
+                        {STATUS_OPTIONS.map((s) => (
+                          <option key={s} value={s}>{STATUS_META[s].label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
                 );
               })}
             </tbody>
           </table>
         )}
       </div>
+
+      {selected && (
+        <OrderDetailModal
+          order={selected}
+          saving={updating === selected.id}
+          onClose={() => setSelected(null)}
+          onSave={(status, trackingNumber) => {
+            void updateStatus(selected.id, status, trackingNumber);
+          }}
+        />
+      )}
     </div>
   );
 }
