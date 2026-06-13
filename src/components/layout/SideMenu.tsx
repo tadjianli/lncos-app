@@ -8,16 +8,32 @@ import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 
-const LINKS = [
+type MenuLink = {
+  i: string;
+  t: string;
+  href?: string;
+  overlay?: "orders";
+};
+
+const MAIN_LINKS: MenuLink[] = [
   { i: "home",     t: "Accueil",             href: "/" },
   { i: "calendar", t: "Prendre rendez-vous", href: "/rdv" },
   { i: "grid",     t: "Catégories",          href: "/discover" },
   { i: "flame",    t: "Ventes Flash",         href: "/" },
   { i: "play",     t: "LN COS Beauté",       href: "/" },
-  { i: "crown",    t: "Programme VIP",        overlay: "loyalty" as const },
-  { i: "bag",      t: "Mes commandes",        overlay: "orders" as const },
+  { i: "bag",      t: "Mes commandes",        overlay: "orders" },
   { i: "heart",    t: "Mes favoris",          href: "/favorites" },
   { i: "user",     t: "Mon profil",           href: "/profile" },
+];
+
+const INFO_LINKS: MenuLink[] = [
+  { i: "info",   t: "FAQ",                          href: "/faq" },
+  { i: "mail",   t: "Contact",                      href: "/contact" },
+  { i: "truck",  t: "Livraison",                    href: "/livraison" },
+  { i: "bag",    t: "Retours & Remboursements",     href: "/retours" },
+  { i: "tag",    t: "Conditions Générales de Vente", href: "/cgv" },
+  { i: "lock",   t: "Politique de Confidentialité", href: "/confidentialite" },
+  { i: "shop",   t: "Mentions Légales",             href: "/mentions-legales" },
 ];
 
 interface SideMenuProps {
@@ -25,14 +41,53 @@ interface SideMenuProps {
 }
 
 export function SideMenu({ onClose }: SideMenuProps) {
-  const openLoyalty = useStore((s) => s.openLoyalty);
-  const openOrders  = useStore((s) => s.openOrders);
+  const openOrders   = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
 
-  function handleNav(item: typeof LINKS[0]) {
+  function handleNav(item: MenuLink) {
     closeOverlay();
-    if (item.overlay === "loyalty") { setTimeout(openLoyalty, 50); }
-    if (item.overlay === "orders")  { setTimeout(openOrders, 50); }
+    if (item.overlay === "orders") {
+      setTimeout(openOrders, 50);
+    }
+  }
+
+  function renderLink(l: MenuLink, index: number, baseDelay: number) {
+    const anim = `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${baseDelay + index * 0.035}s both`;
+    const rowStyle = {
+      width: "100%" as const,
+      display: "flex" as const,
+      alignItems: "center" as const,
+      gap: 15,
+      padding: "14px 14px",
+      borderRadius: "var(--r-sm)",
+      animation: anim,
+    };
+
+    if (l.href) {
+      return (
+        <Link
+          key={l.t}
+          href={l.href}
+          onClick={onClose}
+          style={{ ...rowStyle, textDecoration: "none", color: "var(--ink-soft)" }}
+        >
+          <Icon name={l.i} size={21} color="var(--gold)" />
+          <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        key={l.t}
+        type="button"
+        onClick={() => handleNav(l)}
+        style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none" }}
+      >
+        <Icon name={l.i} size={21} color="var(--gold)" />
+        <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
+      </button>
+    );
   }
 
   return (
@@ -69,9 +124,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
           display: "flex",
           flexDirection: "column",
           padding: "calc(var(--safe-top) + 12px) 0 var(--safe-bottom) 0",
-          /* Lux ease drawer — slightly longer for premium feel */
           animation: "drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both",
-          /* Soft elevation shadow */
           boxShadow: "8px 0 48px rgba(0,0,0,.7)",
         }}
       >
@@ -93,48 +146,30 @@ export function SideMenu({ onClose }: SideMenuProps) {
 
         {/* Links */}
         <div className="noscroll" style={{ flex: 1, overflowY: "auto", padding: "16px 14px" }}>
-          {LINKS.map((l, i) =>
-            l.href ? (
-              <Link
-                key={l.t}
-                href={l.href}
-                onClick={onClose}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 15,
-                  padding: "14px 14px",
-                  borderRadius: "var(--r-sm)",
-                  textDecoration: "none",
-                  color: "var(--ink-soft)",
-                  animation: `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${0.08 + i * 0.035}s both`,
-                }}
-              >
-                <Icon name={l.i} size={21} color="var(--gold)" />
-                <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
-              </Link>
-            ) : (
-              <button
-                key={l.t}
-                onClick={() => handleNav(l)}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 15,
-                  padding: "14px 14px",
-                  borderRadius: "var(--r-sm)",
-                  textAlign: "left",
-                  color: "var(--ink-soft)",
-                  animation: `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${0.08 + i * 0.035}s both`,
-                }}
-              >
-                <Icon name={l.i} size={21} color="var(--gold)" />
-                <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
-              </button>
-            )
-          )}
+          {MAIN_LINKS.map((l, i) => renderLink(l, i, 0.08))}
+
+          <div
+            style={{
+              margin: "18px 14px 10px",
+              paddingTop: 16,
+              borderTop: "1px solid rgba(255,255,255,.06)",
+              animation: "fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) 0.32s both",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                letterSpacing: ".16em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+              }}
+            >
+              Informations
+            </span>
+          </div>
+
+          {INFO_LINKS.map((l, i) => renderLink(l, i, 0.36))}
         </div>
 
         {/* Footer */}

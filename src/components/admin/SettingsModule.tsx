@@ -8,6 +8,7 @@ import {
   RdvDepositSettingsPanel,
   RdvPageSettingsPanel,
 } from "@/components/admin/RdvSettingsSection";
+import { LegalSettingsPanel } from "@/components/admin/LegalSettingsPanel";
 
 interface SettingValues {
   storeName: string;
@@ -193,6 +194,10 @@ export function SettingsModule() {
               </div>
             </div>
           ),
+        },
+        {
+          icon: "info", label: "Pages légales", sub: "Hébergement — mentions légales",
+          content: <LegalSettingsPanel onSaved={showToast} />,
         },
       ],
     },

@@ -422,6 +422,25 @@ export interface Database {
         Relationships: [];
       };
 
+      legal_settings: {
+        Row: {
+          id: string;
+          hosting_info: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          hosting_info?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          hosting_info?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       rdv_settings: {
         Row: {
           id: string;
