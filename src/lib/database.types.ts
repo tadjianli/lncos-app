@@ -605,6 +605,7 @@ export interface Database {
           image_url: string | null;
           image_alt: string;
           title: string;
+          title_accent: string;
           subtitle: string;
           button_text: string;
           button_link: string;
@@ -617,6 +618,7 @@ export interface Database {
           image_url?: string | null;
           image_alt?: string;
           title?: string;
+          title_accent?: string;
           subtitle?: string;
           button_text?: string;
           button_link?: string;
@@ -629,6 +631,7 @@ export interface Database {
           image_url?: string | null;
           image_alt?: string;
           title?: string;
+          title_accent?: string;
           subtitle?: string;
           button_text?: string;
           button_link?: string;
@@ -716,6 +719,7 @@ export interface Database {
           layout: string;
           eyebrow: string;
           title: string;
+          title_accent: string;
           subtitle: string;
           code: string;
           cta_label: string;

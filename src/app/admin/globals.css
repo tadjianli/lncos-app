@@ -3953,3 +3953,31 @@
   color: var(--adm-ink-mute);
 }
 
+.hero-carousel-admin-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.hero-carousel-admin-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hero-slide-row {
+  cursor: pointer;
+}
+
+.hero-slide-row-selected {
+  border-color: rgba(212, 175, 55, 0.45) !important;
+  background: rgba(212, 175, 55, 0.06);
+}
+
+@media (max-width: 960px) {
+  .hero-carousel-admin-layout {
+    grid-template-columns: 1fr;
+  }
+}
+

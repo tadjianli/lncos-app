@@ -63,7 +63,17 @@ function SlideContent({ slide, isActive, priority, preview, onCta }: SlideConten
           <p className="hero-carousel-eyebrow">{slide.subtitle}</p>
         ) : null}
         {slide.title ? (
-          <h2 className="hero-carousel-title">{slide.title}</h2>
+          <h2 className="hero-carousel-title">
+            {slide.title}
+            {slide.titleAccent ? (
+              <>
+                {" "}
+                <span className="gold-text" style={{ fontStyle: "italic" }}>
+                  {slide.titleAccent}
+                </span>
+              </>
+            ) : null}
+          </h2>
         ) : null}
         {slide.buttonText ? (
           <button
@@ -156,9 +166,7 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
 
   if (count === 0) return null;
 
-  const showControls = isCarousel;
-  const showArrows = showControls && settings.showArrows;
-  const showIndicators = showControls && settings.showIndicators;
+  const showIndicators = isCarousel && settings.showIndicators;
 
   return (
     <div className="home-z hero-carousel-wrap" style={{ padding: "16px 18px 0" }}>
@@ -180,27 +188,6 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
             onCta={() => handleCta(slide)}
           />
         ))}
-
-        {showArrows && (
-          <>
-            <button
-              type="button"
-              className="hero-carousel-arrow hero-carousel-arrow-prev"
-              aria-label="Slide précédente"
-              onClick={goPrev}
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              className="hero-carousel-arrow hero-carousel-arrow-next"
-              aria-label="Slide suivante"
-              onClick={goNext}
-            >
-              ›
-            </button>
-          </>
-        )}
 
         {showIndicators && (
           <div className="hero-carousel-indicators" role="tablist" aria-label="Slides">

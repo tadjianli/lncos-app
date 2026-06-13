@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useSupabasePageSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
@@ -9,7 +10,6 @@ import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
 import { HeroLivePreview } from "@/components/admin/HeroLivePreview";
-import { HeroCarouselPanel } from "@/components/admin/HeroCarouselPanel";
 
 /* ── icon + color per section type ─────────────────────────────────── */
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
@@ -237,6 +237,7 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 const HOME_PAGE: PageSlug = "home";
 
 export function AppBuilder() {
+  const router = useRouter();
   const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(HOME_PAGE);
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
@@ -312,6 +313,10 @@ export function AppBuilder() {
   }
 
   async function handleEdit(sec: HomeSection) {
+    if (sec.type === "hero") {
+      router.push("/admin/hero-carousel");
+      return;
+    }
     await ensureDraft();
     setEditingSection(sec);
   }
@@ -444,7 +449,14 @@ export function AppBuilder() {
           </div>
         )}
 
-        <HeroCarouselPanel />
+        <div className="adm-card" style={{ padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(212,175,55,.08)", border: "1px solid rgba(212,175,55,.25)" }}>
+          <div style={{ fontSize: 13, color: "var(--adm-gold)" }}>
+            Le hero accueil est un <strong>carousel</strong> (jusqu&apos;à 3 slides) — géré séparément de cette liste.
+          </div>
+          <a href="/admin/hero-carousel" className="adm-btn ghost sm" style={{ textDecoration: "none", flexShrink: 0 }}>
+            Ouvrir Hero Carousel
+          </a>
+        </div>
 
         {/* Body */}
         <div className="ab-layout">

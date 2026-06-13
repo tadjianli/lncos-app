@@ -721,7 +721,10 @@ export function useAdminHeroCarousel() {
       for (const slide of nextSlides) {
         const { error: slideErr } = await supabase
           .from("hero_carousel_slides")
-          .update(heroSlideToDb(slide))
+          .update({
+            ...heroSlideToDb(slide),
+            position: slide.position,
+          })
           .eq("id", slide.id);
 
         if (slideErr) {

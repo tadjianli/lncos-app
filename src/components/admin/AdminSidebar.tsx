@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "service-categories", href: "/admin/service-categories", icon: "grid", label: "Catég. prestations", live: true },
   { id: "popups",      href: "/admin/popups",        icon: "gift",     label: "Popups Marketing",    live: true },
   { id: "appbuilder",  href: "/admin/app-builder",   icon: "grid",     label: "Personnaliser l'app", live: true },
+  { id: "hero-carousel", href: "/admin/hero-carousel", icon: "sparkle", label: "Hero Carousel", live: true },
   { id: "orders",      href: "/admin/orders",        icon: "bag",      label: "Commandes",           badgeKey: "orders" },
   { id: "products",    href: "/admin/products",      icon: "tag",      label: "Produits" },
   { id: "product-page-builder", href: "/admin/product-page-builder", icon: "grid", label: "Fiche produit", live: true },

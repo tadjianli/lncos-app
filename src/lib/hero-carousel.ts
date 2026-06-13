@@ -19,6 +19,7 @@ export interface HeroCarouselSlide {
   imageUrl: string | null;
   imageAlt: string;
   title: string;
+  titleAccent: string;
   subtitle: string;
   buttonText: string;
   buttonLink: string;
@@ -30,7 +31,7 @@ export const DEFAULT_HERO_CAROUSEL_SETTINGS: HeroCarouselSettings = {
   autoplay: true,
   intervalSeconds: 5,
   showIndicators: true,
-  showArrows: true,
+  showArrows: false,
 };
 
 export function dbToHeroSettings(row: DbHeroCarouselSettings): HeroCarouselSettings {
@@ -62,6 +63,7 @@ export function dbToHeroSlide(row: DbHeroCarouselSlide): HeroCarouselSlide {
     imageUrl: row.image_url,
     imageAlt: row.image_alt,
     title: row.title,
+    titleAccent: row.title_accent ?? "",
     subtitle: row.subtitle,
     buttonText: row.button_text,
     buttonLink: row.button_link,
@@ -76,11 +78,44 @@ export function heroSlideToDb(
     image_url: slide.imageUrl,
     image_alt: slide.imageAlt,
     title: slide.title,
+    title_accent: slide.titleAccent,
     subtitle: slide.subtitle,
     button_text: slide.buttonText,
     button_link: slide.buttonLink,
     active: slide.active,
   };
+}
+
+export const MAX_HERO_SLIDES = 3;
+
+export function emptyHeroSlide(slide: HeroCarouselSlide): HeroCarouselSlide {
+  return {
+    ...slide,
+    imageUrl: null,
+    imageAlt: "",
+    title: "",
+    titleAccent: "",
+    subtitle: "",
+    buttonText: "",
+    buttonLink: "",
+    active: false,
+  };
+}
+
+export function reindexHeroSlides(slides: HeroCarouselSlide[]): HeroCarouselSlide[] {
+  return slides
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((s, i) => ({ ...s, position: i + 1 }));
+}
+
+export function isSlideEmpty(slide: HeroCarouselSlide): boolean {
+  return (
+    !slide.imageUrl?.trim() &&
+    !slide.title.trim() &&
+    !slide.titleAccent.trim() &&
+    !slide.subtitle.trim()
+  );
 }
 
 /** Slides prêtes à l'affichage (actives, avec image). */
