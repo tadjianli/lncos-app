@@ -160,8 +160,9 @@
   --cta-premium-h: 60px;
   --cta-premium-radius: 16px;
   /* Sticky panier / fiche produit — hauteur verrouillée (browser = référence) */
-  --sticky-cart-height: 68px;
+  --sticky-cart-height: 66px;
   --sticky-cart-bar-pad-y: 6px;
+  --sticky-cart-nav-gap: 10px;
   --pd-action-bar-pad-y: var(--sticky-cart-bar-pad-y);
   --sp-10: 40px;
   --sp-12: 48px;
@@ -3001,12 +3002,16 @@
 }
 
 /* Fiche produit — CTA sticky au-dessus de la tab bar (padding identique browser / PWA) */
-.pd-overlay .bottom-action-bar--product,
 .bottom-action-bar--product {
   padding-top: var(--sticky-cart-bar-pad-y);
   padding-bottom: var(--sticky-cart-bar-pad-y);
   padding-left: 12px;
   padding-right: 12px;
+}
+
+/* Espace de respiration entre le CTA et la bottom nav (fiche produit overlay) */
+.pd-overlay .bottom-action-bar--product {
+  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
 }
 
 .pd-overlay .bottom-action-bar__meta {
@@ -3318,7 +3323,10 @@
   .bottom-action-bar--product,
   .pd-overlay .bottom-action-bar--product {
     padding-top: var(--sticky-cart-bar-pad-y);
-    padding-bottom: var(--sticky-cart-bar-pad-y);
+  }
+
+  .pd-overlay .bottom-action-bar--product {
+    padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
   }
 
   .bottom-action-bar .lncos-cta,
@@ -3333,7 +3341,10 @@
 html.standalone-pwa .bottom-action-bar--product,
 html.standalone-pwa .pd-overlay .bottom-action-bar--product {
   padding-top: var(--sticky-cart-bar-pad-y);
-  padding-bottom: var(--sticky-cart-bar-pad-y);
+}
+
+html.standalone-pwa .pd-overlay .bottom-action-bar--product {
+  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
 }
 
 html.standalone-pwa .bottom-action-bar .lncos-cta,
