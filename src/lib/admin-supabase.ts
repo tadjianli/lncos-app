@@ -23,6 +23,15 @@ import {
 } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
 import { isMissingColumnError, omitBenefitsFromRow } from "./product-select";
+import {
+  dbToHeroSettings,
+  dbToHeroSlide,
+  heroSettingsToDb,
+  heroSlideToDb,
+  DEFAULT_HERO_CAROUSEL_SETTINGS,
+  type HeroCarouselSettings,
+  type HeroCarouselSlide,
+} from "./hero-carousel";
 
 type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];
 type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
@@ -659,6 +668,77 @@ export function useSupabasePageSections(pageSlug: PageSlug) {
 /** @deprecated use useSupabasePageSections("home") */
 export function useSupabaseHomeSections() {
   return useSupabasePageSections("home");
+}
+
+/* ─── useAdminHeroCarousel ─────────────────────────────────────────────────── */
+
+export function useAdminHeroCarousel() {
+  const [settings, setSettings] = useState<HeroCarouselSettings>(DEFAULT_HERO_CAROUSEL_SETTINGS);
+  const [slides, setSlides] = useState<HeroCarouselSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const supabase = getSupabase();
+    const [settingsRes, slidesRes] = await Promise.all([
+      supabase.from("hero_carousel_settings").select("*").eq("id", "home").maybeSingle(),
+      supabase.from("hero_carousel_slides").select("*").order("position"),
+    ]);
+
+    if (settingsRes.data) {
+      setSettings(dbToHeroSettings(settingsRes.data));
+    }
+    if (slidesRes.data?.length) {
+      setSlides(slidesRes.data.map(dbToHeroSlide));
+    } else {
+      setSlides([]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const saveAll = useCallback(
+    async (
+      nextSettings: HeroCarouselSettings,
+      nextSlides: HeroCarouselSlide[]
+    ): Promise<{ error: string | null }> => {
+      setSaving(true);
+      const supabase = getSupabase();
+
+      const { error: settingsErr } = await supabase
+        .from("hero_carousel_settings")
+        .update(heroSettingsToDb(nextSettings))
+        .eq("id", "home");
+
+      if (settingsErr) {
+        setSaving(false);
+        return { error: settingsErr.message };
+      }
+
+      for (const slide of nextSlides) {
+        const { error: slideErr } = await supabase
+          .from("hero_carousel_slides")
+          .update(heroSlideToDb(slide))
+          .eq("id", slide.id);
+
+        if (slideErr) {
+          setSaving(false);
+          return { error: slideErr.message };
+        }
+      }
+
+      setSettings(nextSettings);
+      setSlides(nextSlides);
+      setSaving(false);
+      return { error: null };
+    },
+    []
+  );
+
+  return { settings, slides, loading, saving, reload: load, saveAll };
 }
 
 /* ─── useAdminCategories ──────────────────────────────────────────────────── */

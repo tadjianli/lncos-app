@@ -3823,3 +3823,133 @@
   }
 }
 
+/* ── Hero carousel admin ───────────────────────────────────── */
+.hero-admin-card {
+  margin-bottom: 16px;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.hero-admin-card-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hero-admin-body {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-admin-global {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--adm-border-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-admin-global-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-ink-soft);
+  margin-bottom: 4px;
+}
+
+.ab-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--adm-ink);
+}
+
+.hero-admin-slide {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border-2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.hero-admin-slide-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.hero-admin-slide-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--adm-gold);
+  flex: 1;
+}
+
+.hero-admin-slide-status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--adm-ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hero-admin-slide-status.on {
+  color: #2f9e68;
+}
+
+.ab-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .ab-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-admin-preview {
+  border-top: 1px solid var(--adm-border-2);
+  padding-top: 16px;
+}
+
+.hero-admin-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--adm-ink-mute);
+  margin-bottom: 10px;
+}
+
+.hero-admin-preview .hero-carousel-wrap {
+  padding: 0 !important;
+}
+
+.hero-admin-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.hero-admin-loading {
+  padding: 20px;
+  font-size: 13px;
+  color: var(--adm-ink-mute);
+}
+

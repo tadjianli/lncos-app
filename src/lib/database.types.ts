@@ -567,6 +567,77 @@ export interface Database {
         Relationships: [];
       };
 
+      hero_carousel_settings: {
+        Row: {
+          id: string;
+          enabled: boolean;
+          autoplay: boolean;
+          interval_seconds: number;
+          show_indicators: boolean;
+          show_arrows: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          enabled?: boolean;
+          autoplay?: boolean;
+          interval_seconds?: number;
+          show_indicators?: boolean;
+          show_arrows?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          enabled?: boolean;
+          autoplay?: boolean;
+          interval_seconds?: number;
+          show_indicators?: boolean;
+          show_arrows?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      hero_carousel_slides: {
+        Row: {
+          id: string;
+          position: number;
+          image_url: string | null;
+          image_alt: string;
+          title: string;
+          subtitle: string;
+          button_text: string;
+          button_link: string;
+          active: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          position: number;
+          image_url?: string | null;
+          image_alt?: string;
+          title?: string;
+          subtitle?: string;
+          button_text?: string;
+          button_link?: string;
+          active?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          position?: number;
+          image_url?: string | null;
+          image_alt?: string;
+          title?: string;
+          subtitle?: string;
+          button_text?: string;
+          button_link?: string;
+          active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       home_sections: {
         Row: {
           page_slug: string;

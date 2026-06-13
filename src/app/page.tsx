@@ -28,6 +28,12 @@ import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { HomeHeroBanner } from "@/components/home/HomeHeroBanner";
+import {
+  HomeHeroCarousel,
+  HomeHeroSingleSlide,
+} from "@/components/home/HomeHeroCarousel";
+import { usePublicHeroCarousel } from "@/lib/client-supabase";
+import { resolveHeroDisplay } from "@/lib/hero-carousel";
 import { isImageUrl } from "@/lib/admin-media";
 
 /* ─── Ambient depth (orbs + particles) ─────────────────────── */
@@ -527,6 +533,8 @@ export default function HomePage() {
   /* ── Section config — Supabase published (realtime) ─────── */
   const { getVisible } = usePublicHomeSections();
   const activeSections = getVisible({ isMobile: true });
+  const { settings: heroSettings, slides: heroSlides } = usePublicHeroCarousel();
+  const heroDisplay = resolveHeroDisplay(heroSettings, heroSlides);
 
   /* ── Stable callbacks ─────────────────────────────────────── */
   const handleAdd  = useCallback((p: Product) => addToCart(p), [addToCart]);
@@ -565,6 +573,26 @@ export default function HomePage() {
 
       switch (section.type) {
         case "hero":
+          if (heroDisplay.mode === "carousel") {
+            return (
+              <div key={section.id}>
+                <HomeHeroCarousel
+                  slides={heroDisplay.slides}
+                  settings={heroSettings}
+                />
+              </div>
+            );
+          }
+          if (heroDisplay.mode === "single") {
+            return (
+              <div key={section.id}>
+                <HomeHeroSingleSlide
+                  slides={heroDisplay.slides}
+                  slide={heroDisplay.slides[0]}
+                />
+              </div>
+            );
+          }
           return (
             <div key={section.id} className="home-z">
               <HomeHeroBanner section={section} onDiscover={() => router.push("/boutique")} />
@@ -738,7 +766,7 @@ export default function HomePage() {
       }
     },
      
-    [handleAdd, handleFav, handleOpen, favs, router, products, productsBySource, selfCareProducts, universeGrouped]
+    [handleAdd, handleFav, handleOpen, favs, router, products, productsBySource, selfCareProducts, universeGrouped, heroDisplay, heroSettings]
   );
 
   return (

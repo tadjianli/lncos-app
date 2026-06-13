@@ -28,6 +28,13 @@ import {
   reviewDisplayDate,
   type PublicReview,
 } from "./reviews";
+import {
+  dbToHeroSettings,
+  dbToHeroSlide,
+  DEFAULT_HERO_CAROUSEL_SETTINGS,
+  type HeroCarouselSettings,
+  type HeroCarouselSlide,
+} from "./hero-carousel";
 import type { BeforeAfterResult, PublicBeforeAfterResult, ResultDuration } from "./before-after";
 import { sortBeforeAfterResults, toPublicBeforeAfter } from "./before-after";
 import { PRODUCT_SELECT, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
@@ -313,6 +320,75 @@ export function usePublicPageSections(pageSlug: PageSlug = "home") {
 /** @deprecated use usePublicPageSections("home") */
 export function usePublicHomeSections() {
   return usePublicPageSections("home");
+}
+
+/* ── Hero carousel (accueil) ─────────────────────────────────── */
+
+export function usePublicHeroCarousel() {
+  const [settings, setSettings] = useState<HeroCarouselSettings>(DEFAULT_HERO_CAROUSEL_SETTINGS);
+  const [slides, setSlides] = useState<HeroCarouselSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const supabase = getSupabase();
+        const [settingsRes, slidesRes] = await Promise.all([
+          supabase.from("hero_carousel_settings").select("*").eq("id", "home").maybeSingle(),
+          supabase.from("hero_carousel_slides").select("*").order("position"),
+        ]);
+
+        if (settingsRes.data) {
+          setSettings(dbToHeroSettings(settingsRes.data));
+        }
+        if (slidesRes.data?.length) {
+          setSlides(slidesRes.data.map(dbToHeroSlide));
+        }
+      } catch {
+        // fallback defaults
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+
+    let channel: ReturnType<ReturnType<typeof getSupabase>["channel"]> | null = null;
+    try {
+      channel = getSupabase()
+        .channel("hero-carousel-public")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "hero_carousel_settings" },
+          () => { void load(); }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "hero_carousel_slides" },
+          () => { void load(); }
+        )
+        .subscribe();
+    } catch {
+      // Realtime indisponible
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          getSupabase().removeChannel(channel);
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
+
+  return { settings, slides, loading };
 }
 
 /* ── Product reviews ─────────────────────────────────────────── */

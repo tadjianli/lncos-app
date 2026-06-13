@@ -9,6 +9,7 @@ import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
 import { HeroLivePreview } from "@/components/admin/HeroLivePreview";
+import { HeroCarouselPanel } from "@/components/admin/HeroCarouselPanel";
 
 /* ── icon + color per section type ─────────────────────────────────── */
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
@@ -442,6 +443,8 @@ export function AppBuilder() {
             Modifications en attente — publiez pour les rendre visibles aux clientes.
           </div>
         )}
+
+        <HeroCarouselPanel />
 
         {/* Body */}
         <div className="ab-layout">
