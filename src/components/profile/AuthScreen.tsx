@@ -94,12 +94,11 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    padding: "13px 16px",
+    padding: "12px 16px",
     borderRadius: "var(--r-sm)",
     background: "var(--charcoal)",
     border: "1px solid rgba(255,255,255,.08)",
     color: "var(--ink)",
-    fontSize: 14,
     outline: "none",
     fontFamily: "inherit",
     boxSizing: "border-box",
@@ -185,6 +184,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
             <div>
               <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 7, fontWeight: 500 }}>Prénom</div>
               <input
+                className="lncos-form-control lncos-form-control--field"
                 style={inputStyle}
                 type="text"
                 placeholder="Sophie"
@@ -199,6 +199,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
             <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 7, fontWeight: 500 }}>Email</div>
             <input
               ref={emailRef}
+              className="lncos-form-control lncos-form-control--field"
               style={inputStyle}
               type="email"
               placeholder="email@exemple.com"
@@ -212,6 +213,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
           <div>
             <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 7, fontWeight: 500 }}>Mot de passe</div>
             <input
+              className="lncos-form-control lncos-form-control--field"
               style={inputStyle}
               type="password"
               placeholder={tab === "signup" ? "Au moins 6 caractères" : "••••••••"}

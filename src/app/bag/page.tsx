@@ -159,17 +159,7 @@ function StepAddress({
               required
               aria-invalid={invalid}
               aria-describedby={invalid ? `${key}-error` : undefined}
-              style={{
-                padding: "13px 16px",
-                borderRadius: "var(--r-sm)",
-                background: "var(--charcoal)",
-                border: invalid ? "1px solid rgba(194,85,122,.55)" : "1px solid rgba(255,255,255,.07)",
-                color: "var(--ink)",
-                fontSize: 13.5,
-                width: "100%",
-                boxSizing: "border-box",
-                outline: "none",
-              }}
+              className="lncos-form-control lncos-form-control--field"
               placeholder={label}
             />
             {invalid && (
@@ -524,7 +514,7 @@ function CartScreen({
         />
       </div>
 
-      <div className="noscroll bag-page-scroll">
+      <div className="noscroll bag-page-scroll checkout-flow">
         <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 14 }}>
           {cart.reduce((s, i) => s + i.qty, 0)} article{cart.reduce((s, i) => s + i.qty, 0) > 1 ? "s" : ""}
         </div>
@@ -586,7 +576,8 @@ function CartScreen({
               onKeyDown={(e) => e.key === "Enter" && !appliedPromo && handleApplyPromo()}
               placeholder="Code promo"
               disabled={!!appliedPromo}
-              style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--ink)", fontSize: 13, opacity: appliedPromo ? 0.7 : 1 }}
+              className="lncos-form-control lncos-form-control--inline"
+              style={{ opacity: appliedPromo ? 0.7 : 1 }}
             />
           </div>
           {appliedPromo ? (
@@ -835,7 +826,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
         ))}
       </div>
 
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
+      <div className="noscroll checkout-flow" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
         {step === 0 && (
           <StepAddress
             value={address}

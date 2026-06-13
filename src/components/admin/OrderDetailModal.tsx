@@ -141,7 +141,7 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
       <div
-        className="ab-modal ab-modal-wide ab-modal-scroll adm-order-modal"
+        className="ab-modal ab-modal-wide adm-order-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -161,12 +161,11 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
           </button>
         </div>
 
+        <div className="adm-order-modal__body">
         <div className="adm-order-detail-meta">
           <span className="adm-badge" style={{ color: pm.color, background: pm.bg }}>{pm.label}</span>
           <span className="adm-badge" style={{ color: sm.color, background: sm.bg }}>{sm.label}</span>
-          <span style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginLeft: "auto" }}>
-            {fmtDate(order.created_at)}
-          </span>
+          <span className="adm-order-detail-date">{fmtDate(order.created_at)}</span>
         </div>
 
         <div className="adm-order-detail-grid">
@@ -295,6 +294,7 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
           >
             {saving ? "Enregistrement…" : "Enregistrer"}
           </button>
+        </div>
         </div>
       </div>
     </div>
