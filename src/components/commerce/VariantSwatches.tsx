@@ -51,7 +51,8 @@ export function VariantSwatches({ product, selectedName, onSelect }: VariantSwat
                 aria-selected={selected}
                 aria-disabled={out}
                 className={`pd-swatch${selected ? " is-selected" : ""}${out ? " is-out" : ""}`}
-                onClick={() => onSelect(v.name)}
+                onClick={() => !out && onSelect(v.name)}
+                disabled={out}
                 title={out ? `${v.name} — rupture` : v.name}
               >
                 <span className="pd-swatch-ring">
@@ -86,7 +87,8 @@ export function VariantSwatches({ product, selectedName, onSelect }: VariantSwat
                 key={name}
                 type="button"
                 className={`pd-variant-pill${selectedName === name ? " is-selected" : ""}${out ? " is-out" : ""}`}
-                onClick={() => onSelect(name)}
+                onClick={() => !out && onSelect(name)}
+                disabled={out}
               >
                 {name}
               </button>

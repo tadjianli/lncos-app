@@ -2683,7 +2683,7 @@
   display: flex;
   gap: 13px;
   padding: 15px;
-  borderRadius: var(--r-md);
+  border-radius: var(--r-md);
   border-radius: var(--r-md);
   transition: background .2s;
 }

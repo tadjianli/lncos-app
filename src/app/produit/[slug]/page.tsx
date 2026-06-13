@@ -142,7 +142,6 @@ export default async function ProduitPage({ params, searchParams }: Props) {
         <Suspense fallback={null}>
           <ProductPageClient product={product} />
         </Suspense>
-        <link rel="canonical" href={canonical} />
         <meta itemProp="url" content={absoluteUrl(path)} />
       </article>
     </AppShell>

@@ -192,40 +192,43 @@ function StepDelivery({
 }
 
 function StepPayment({ total }: { total: number }) {
-  const [pay, setPay] = useState("card");
-  const methods = [
-    { id: "card",   t: "Carte bancaire", s: "paiement sécurisé Stripe",  i: "card"    },
-    { id: "apple",  t: "Apple Pay",      s: "paiement express",           i: "sparkle" },
-    { id: "paypal", t: "PayPal",         s: "payer via PayPal",           i: "card"    },
-  ];
   return (
     <div style={{ animation: "fadeUp .4s ease both" }}>
       <h3 style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)", margin: "0 0 16px" }}>
         Paiement
       </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
-        {methods.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => setPay(m.id)}
-            style={{
-              display: "flex", alignItems: "center", gap: 14, padding: "15px 16px",
-              borderRadius: "var(--r-md)", textAlign: "left",
-              background: pay === m.id ? "rgba(212,175,55,.08)" : "var(--charcoal)",
-              border: pay === m.id ? "1.5px solid var(--gold)" : "1px solid rgba(255,255,255,.07)",
-              width: "100%",
-            }}
-          >
-            <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(212,175,55,.1)", display: "grid", placeItems: "center", flex: "0 0 auto" }}>
-              <Icon name={m.i} size={20} color="var(--gold)" />
-            </span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>{m.t}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>{m.s}</div>
-            </div>
-            {pay === m.id && <Icon name="check" size={18} color="var(--gold)" stroke={2.5} />}
-          </button>
-        ))}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          padding: "15px 16px",
+          borderRadius: "var(--r-md)",
+          background: "rgba(212,175,55,.08)",
+          border: "1.5px solid var(--gold)",
+          marginBottom: 20,
+        }}
+      >
+        <span
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: "rgba(212,175,55,.1)",
+            display: "grid",
+            placeItems: "center",
+            flex: "0 0 auto",
+          }}
+        >
+          <Icon name="card" size={20} color="var(--gold)" />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>Carte bancaire</div>
+          <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginTop: 2 }}>
+            Paiement sécurisé via Stripe Checkout
+          </div>
+        </div>
+        <Icon name="check" size={18} color="var(--gold)" stroke={2.5} />
       </div>
       <div style={{ padding: 16, borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(212,175,55,.2)" }}>
         <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 9, display: "flex", alignItems: "center", gap: 7 }}>

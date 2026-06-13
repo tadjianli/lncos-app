@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Fragment, useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { getSupabase } from "@/lib/supabase";
 
 type OrderStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
 type PaymentStatus = "pending" | "paid" | "refunded";
+
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+  variant: string | null;
+}
 
 interface Order {
   id: string;
@@ -14,9 +22,12 @@ interface Order {
   payment_status: PaymentStatus;
   subtotal: number;
   shipping_cost: number;
+  discount: number;
+  promo_code: string | null;
   total: number;
   tracking_number: string | null;
   created_at: string;
+  order_items: OrderItem[];
 }
 
 const STATUS_META: Record<OrderStatus, { label: string; color: string; bg: string }> = {
@@ -45,14 +56,48 @@ export function OrdersModule() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await getSupabase()
+    const sb = getSupabase();
+    const { data: orderRows } = await sb
       .from("orders")
-      .select("id,user_id,status,payment_status,subtotal,shipping_cost,total,tracking_number,created_at")
+      .select(
+        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(200);
-    setOrders((data ?? []) as Order[]);
+
+    const rows = orderRows ?? [];
+    const orderIds = rows.map((o) => o.id);
+    let itemsByOrder = new Map<string, OrderItem[]>();
+
+    if (orderIds.length > 0) {
+      const { data: itemRows } = await sb
+        .from("order_items")
+        .select("id, order_id, name, price, qty, variant")
+        .in("order_id", orderIds);
+
+      itemsByOrder = (itemRows ?? []).reduce((map, it) => {
+        const list = map.get(it.order_id) ?? [];
+        list.push({
+          id: it.id,
+          name: it.name,
+          price: Number(it.price),
+          qty: it.qty,
+          variant: it.variant,
+        });
+        map.set(it.order_id, list);
+        return map;
+      }, new Map<string, OrderItem[]>());
+    }
+
+    setOrders(
+      rows.map((o) => ({
+        ...(o as Omit<Order, "order_items">),
+        order_items: itemsByOrder.get(o.id) ?? [],
+      })),
+    );
     setLoading(false);
   }, []);
 
@@ -83,7 +128,6 @@ export function OrdersModule() {
 
   return (
     <div className="adm-content">
-      {/* Header */}
       <div className="adm-topbar">
         <div>
           <h1 className="adm-h1">Commandes</h1>
@@ -91,7 +135,6 @@ export function OrdersModule() {
         </div>
       </div>
 
-      {/* KPI strip */}
       <div className="adm-grid-3">
         {[
           { label: "Total commandes", value: orders.length, icon: "bag", bg: "rgba(59,125,216,.12)", color: "var(--tone-blue)" },
@@ -110,7 +153,6 @@ export function OrdersModule() {
         ))}
       </div>
 
-      {/* Table */}
       <div className="adm-card adm-card-scroll">
         <div className="adm-table-toolbar">
           <div className="adm-searchbox wide">
@@ -152,6 +194,7 @@ export function OrdersModule() {
               <tr>
                 <th>Commande</th>
                 <th>Date</th>
+                <th>Articles</th>
                 <th>Montant</th>
                 <th>Paiement</th>
                 <th>Statut</th>
@@ -163,33 +206,85 @@ export function OrdersModule() {
                 const sm = STATUS_META[o.status];
                 const pm = PAY_META[o.payment_status];
                 const ref = "LN-" + o.id.slice(0, 6).toUpperCase();
+                const items = o.order_items ?? [];
+                const isOpen = expanded === o.id;
                 return (
-                  <tr key={o.id}>
-                    <td>
-                      <div style={{ fontWeight: 700, color: "var(--adm-ink)", fontSize: 13 }}>{ref}</div>
-                      <div className="mono">{o.id.slice(0, 8)}…</div>
-                    </td>
-                    <td>{fmt(o.created_at)}</td>
-                    <td style={{ fontWeight: 700, color: "var(--adm-ink)" }}>{Number(o.total).toFixed(2)} €</td>
-                    <td>
-                      <span className="adm-badge" style={{ color: pm.color, background: pm.bg }}>{pm.label}</span>
-                    </td>
-                    <td>
-                      <span className="adm-badge" style={{ color: sm.color, background: sm.bg }}>{sm.label}</span>
-                    </td>
-                    <td>
-                      <select
-                        className="adm-select"
-                        value={o.status}
-                        disabled={updating === o.id}
-                        onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)}
-                      >
-                        {STATUS_OPTIONS.map((s) => (
-                          <option key={s} value={s}>{STATUS_META[s].label}</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
+                  <Fragment key={o.id}>
+                    <tr key={o.id}>
+                      <td>
+                        <div style={{ fontWeight: 700, color: "var(--adm-ink)", fontSize: 13 }}>{ref}</div>
+                        <div className="mono">{o.id.slice(0, 8)}…</div>
+                        {o.promo_code && (
+                          <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
+                            Promo {o.promo_code}
+                          </div>
+                        )}
+                      </td>
+                      <td>{fmt(o.created_at)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="adm-tab"
+                          style={{ fontSize: 11, padding: "4px 8px" }}
+                          onClick={() => setExpanded(isOpen ? null : o.id)}
+                        >
+                          {items.length} article{items.length !== 1 ? "s" : ""}
+                          {items.length === 0 ? " ⚠" : ""}
+                        </button>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700, color: "var(--adm-ink)" }}>{Number(o.total).toFixed(2)} €</div>
+                        {Number(o.shipping_cost) > 0 && (
+                          <div style={{ fontSize: 11, color: "var(--adm-ink-mute)" }}>
+                            Livraison {Number(o.shipping_cost).toFixed(2)} €
+                          </div>
+                        )}
+                        {Number(o.discount) > 0 && (
+                          <div style={{ fontSize: 11, color: "var(--tone-green)" }}>
+                            −{Number(o.discount).toFixed(2)} €
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <span className="adm-badge" style={{ color: pm.color, background: pm.bg }}>{pm.label}</span>
+                      </td>
+                      <td>
+                        <span className="adm-badge" style={{ color: sm.color, background: sm.bg }}>{sm.label}</span>
+                      </td>
+                      <td>
+                        <select
+                          className="adm-select"
+                          value={o.status}
+                          disabled={updating === o.id}
+                          onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)}
+                        >
+                          {STATUS_OPTIONS.map((s) => (
+                            <option key={s} value={s}>{STATUS_META[s].label}</option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr key={`${o.id}-items`}>
+                        <td colSpan={7} style={{ background: "var(--adm-surface-2)", padding: "12px 16px" }}>
+                          {items.length === 0 ? (
+                            <span style={{ color: "var(--tone-orange)", fontSize: 13 }}>
+                              Aucun article enregistré — vérifier la commande Stripe
+                            </span>
+                          ) : (
+                            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+                              {items.map((it) => (
+                                <li key={it.id} style={{ fontSize: 13, color: "var(--adm-ink)" }}>
+                                  {it.qty}× {it.name}
+                                  {it.variant ? ` (${it.variant})` : ""} — {(Number(it.price) * it.qty).toFixed(2)} €
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>

@@ -335,6 +335,7 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     { url: absoluteUrl("/") },
     { url: absoluteUrl("/boutique") },
     { url: absoluteUrl("/discover") },
+    { url: absoluteUrl("/rdv") },
   ];
 
   const { data: products } = await supabase

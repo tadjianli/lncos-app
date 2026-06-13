@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { calcDeposit, dbToRdvSettings } from "@/lib/rdv-settings";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-05-27.dahlia",
@@ -25,8 +26,12 @@ export async function POST(req: Request) {
     if (session.payment_status !== "paid") {
       return NextResponse.json(
         { error: `Paiement non finalisé (${session.payment_status})` },
-        { status: 402 }
+        { status: 402 },
       );
+    }
+
+    if (session.metadata?.type !== "rdv_deposit") {
+      return NextResponse.json({ error: "Session invalide pour un rendez-vous" }, { status: 400 });
     }
 
     const appointmentId = session.metadata?.appointment_id;
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Réservation introuvable dans la session" }, { status: 400 });
     }
 
-    const supabase = await createSupabaseServiceClient();
+    const supabase = createServiceClient();
 
     const { data: appt, error: fetchErr } = await supabase
       .from("appointments")
@@ -46,6 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Rendez-vous introuvable" }, { status: 404 });
     }
 
+    if (appt.stripe_session_id && appt.stripe_session_id !== session_id) {
+      return NextResponse.json({ error: "Session de paiement non associée à ce rendez-vous" }, { status: 403 });
+    }
+
     if (appt.payment_status === "deposit" || appt.payment_status === "paid") {
       return NextResponse.json({
         ok: true,
@@ -54,7 +63,14 @@ export async function POST(req: Request) {
       });
     }
 
-    const verifiedDeposit = session.amount_total ? session.amount_total / 100 : Number(appt.deposit);
+    const { data: settingsRow } = await supabase.from("rdv_settings").select("*").eq("id", "default").maybeSingle();
+    const settings = dbToRdvSettings(settingsRow);
+    const expectedDeposit = calcDeposit(Number(appt.price), settings);
+    const verifiedDeposit = session.amount_total ? session.amount_total / 100 : expectedDeposit;
+
+    if (expectedDeposit > 0 && verifiedDeposit + 0.02 < expectedDeposit) {
+      return NextResponse.json({ error: "Montant d'acompte insuffisant" }, { status: 402 });
+    }
 
     const { data: updated, error: updateErr } = await supabase
       .from("appointments")

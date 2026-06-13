@@ -56,6 +56,7 @@ export const metadata: Metadata = {
     siteName: "LN COS",
     title: "LN COS — Beauté & Cosmétique",
     description: "Cosmétiques premium. Formulés en France.",
+    images: [{ url: "/assets/icon-512.png", width: 512, height: 512, alt: "LN COS" }],
   },
 
   /* ── Twitter card ── */
@@ -63,16 +64,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "LN COS",
     description: "Cosmétiques premium. Formulés en France.",
+    images: ["/assets/icon-512.png"],
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#0A0A0A",
-  /* viewport-fit=cover so safe-area-inset works on notched devices */
   viewportFit: "cover",
   colorScheme: "dark",
 };
@@ -111,7 +110,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <PwaUpdateManager />
         <StandaloneViewportSync />
-        <NavLayoutDebug />
+        {process.env.NODE_ENV === "development" ? <NavLayoutDebug /> : null}
         {children}
       </body>
     </html>

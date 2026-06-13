@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import Stripe from "stripe";
-import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { calcDeposit, dbToRdvSettings } from "@/lib/rdv-settings";
 
 interface RdvCheckoutBody {
   appointment_id: string;
@@ -16,28 +16,28 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 /**
  * POST /api/stripe/rdv-checkout
- * Creates a Stripe Checkout Session for an RDV deposit.
+ * Creates a Stripe Checkout Session for an RDV deposit (amount validated server-side).
  */
 export async function POST(req: Request) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Paiement non configuré — contactez l'administrateur" },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
     const body: RdvCheckoutBody = await req.json();
-    const { appointment_id, deposit_amount, service_name, returnUrl: clientReturnUrl } = body;
+    const { appointment_id, service_name, returnUrl: clientReturnUrl } = body;
 
-    if (!appointment_id || deposit_amount <= 0) {
+    if (!appointment_id) {
       return NextResponse.json({ error: "Données de réservation invalides" }, { status: 400 });
     }
 
-    const supabase = await createSupabaseServiceClient();
+    const supabase = createServiceClient();
     const { data: appt, error: apptErr } = await supabase
       .from("appointments")
-      .select("id, status, deposit, stripe_session_id")
+      .select("id, status, price, deposit, payment_status, stripe_session_id")
       .eq("id", appointment_id)
       .maybeSingle();
 
@@ -45,17 +45,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Rendez-vous introuvable" }, { status: 404 });
     }
 
+    if (appt.payment_status === "deposit" || appt.payment_status === "paid") {
+      return NextResponse.json({ error: "Ce rendez-vous est déjà payé" }, { status: 400 });
+    }
+
+    if (appt.status === "cancelled") {
+      return NextResponse.json({ error: "Ce rendez-vous a été annulé" }, { status: 400 });
+    }
+
+    const { data: settingsRow } = await supabase.from("rdv_settings").select("*").eq("id", "default").maybeSingle();
+    const settings = dbToRdvSettings(settingsRow);
+    const expectedDeposit = calcDeposit(Number(appt.price), settings);
+
+    if (expectedDeposit <= 0) {
+      return NextResponse.json({ error: "Aucun acompte requis pour ce rendez-vous" }, { status: 400 });
+    }
+
+    if (Math.abs(Number(appt.deposit) - expectedDeposit) > 0.02) {
+      await supabase.from("appointments").update({ deposit: expectedDeposit }).eq("id", appointment_id);
+    }
+
+    if (body.deposit_amount != null && Math.abs(body.deposit_amount - expectedDeposit) > 0.02) {
+      console.warn(
+        `[stripe/rdv-checkout] deposit mismatch client=${body.deposit_amount} server=${expectedDeposit}`,
+      );
+    }
+
     if (appt.stripe_session_id) {
-      const existing = await stripe.checkout.sessions.retrieve(appt.stripe_session_id);
-      if (existing.url && existing.payment_status !== "paid") {
-        return NextResponse.json({ url: existing.url, session_id: existing.id });
+      try {
+        const existing = await stripe.checkout.sessions.retrieve(appt.stripe_session_id);
+        if (existing.url && existing.payment_status !== "paid") {
+          return NextResponse.json({ url: existing.url, session_id: existing.id });
+        }
+      } catch {
+        /* session expired — create a new one */
       }
     }
 
     let origin = clientReturnUrl?.startsWith("http") ? new URL(clientReturnUrl).origin : null;
     if (!origin) {
-      const h = await headers();
-      const host = h.get("host") ?? "localhost:3000";
+      const host = req.headers.get("host") ?? "localhost:3000";
       const proto = host.includes("localhost") ? "http" : "https";
       origin = `${proto}://${host}`;
     }
@@ -74,7 +103,7 @@ export async function POST(req: Request) {
               name: `Acompte — ${service_name}`,
               description: "Réservation institut LN COS",
             },
-            unit_amount: Math.round(deposit_amount * 100),
+            unit_amount: Math.round(expectedDeposit * 100),
           },
           quantity: 1,
         },
@@ -89,7 +118,7 @@ export async function POST(req: Request) {
 
     await supabase
       .from("appointments")
-      .update({ stripe_session_id: session.id })
+      .update({ stripe_session_id: session.id, deposit: expectedDeposit })
       .eq("id", appointment_id);
 
     return NextResponse.json({ url: session.url, session_id: session.id });
