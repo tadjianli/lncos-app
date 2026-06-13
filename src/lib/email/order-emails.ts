@@ -1,5 +1,6 @@
 import type { OrderLineItem } from "@/lib/stripe/order-fulfillment";
 import type { ShippingAddress } from "@/lib/stripe/shipping-address";
+import { formatOrderRef } from "@/lib/order-ref";
 import { absoluteUrl } from "@/lib/site-url";
 import { getEmailFrom, getResendClient, isEmailConfigured } from "./resend-client";
 
@@ -35,16 +36,16 @@ export async function sendOrderConfirmationEmail(input: {
   if (!resend) return false;
 
   const { to, orderRef, total, items, shippingAddress } = input;
-  const shortRef = orderRef.slice(0, 8).toUpperCase();
+  const ref = formatOrderRef(orderRef);
 
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
     to,
-    subject: `Confirmation de commande #${shortRef} — LN COS`,
+    subject: `Confirmation de commande #${ref} — LN COS`,
     text: [
       "Merci pour votre commande chez LN COS !",
       "",
-      `Référence : #${shortRef}`,
+      `Référence : #${ref}`,
       `Total payé : ${total.toFixed(2)} €`,
       "",
       "Articles :",
@@ -82,16 +83,16 @@ export async function sendOrderShippedEmail(input: {
   if (!resend) return false;
 
   const { to, orderRef, trackingNumber } = input;
-  const shortRef = orderRef.slice(0, 8).toUpperCase();
+  const ref = formatOrderRef(orderRef);
 
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
     to,
-    subject: `Votre commande #${shortRef} est expédiée — LN COS`,
+    subject: `Votre commande #${ref} est expédiée — LN COS`,
     text: [
       "Bonne nouvelle — votre commande LN COS a été expédiée !",
       "",
-      `Référence : #${shortRef}`,
+      `Référence : #${ref}`,
       trackingNumber ? `Numéro de suivi : ${trackingNumber}` : "Numéro de suivi : communiqué prochainement",
       "",
       `Suivez votre commande : ${absoluteUrl("/profile")}`,

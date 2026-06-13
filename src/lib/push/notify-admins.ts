@@ -1,4 +1,5 @@
 import webpush from "web-push";
+import { formatOrderRef } from "@/lib/order-ref";
 import { createServiceClient } from "@/lib/supabase/server";
 
 interface PushPayload {
@@ -26,7 +27,7 @@ export async function notifyAdminsNewOrder(orderId: string, total: number) {
     return;
   }
 
-  const ref = orderId.slice(0, 8).toUpperCase();
+  const ref = formatOrderRef(orderId);
   const payload: PushPayload = {
     title: "LN COS — Nouvelle commande",
     body: `${total.toFixed(2)} € · Réf. ${ref}`,

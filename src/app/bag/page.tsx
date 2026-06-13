@@ -14,6 +14,7 @@ import { useStore } from "@/lib/store";
 import { findVariantByName, resolveProductImage } from "@/lib/product-catalog";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
+import { formatOrderRef } from "@/lib/order-ref";
 import { getBrowserUser, isSupabaseConfigured } from "@/lib/supabase";
 import {
   useActiveShippingMethods,
@@ -910,9 +911,12 @@ export default function BagPage() {
       clearCart();
 
       const pts = Math.floor((pending?.total ?? 0) * 2);
-      if (pts > 0) earnPoints(pts, `Commande #${data.ref ?? data.id}`, data.id);
+      if (pts > 0) {
+        const ref = formatOrderRef(data.ref ?? data.id);
+        earnPoints(pts, `Commande #${ref}`, data.id);
+      }
 
-      setConfirmedRef(data.ref ?? data.id ?? "LN-??????");
+      setConfirmedRef(formatOrderRef(data.ref ?? data.id));
       setScreen("confirmed");
     } catch (err) {
       setCompleteError(err instanceof Error ? err.message : "Erreur de vérification du paiement");

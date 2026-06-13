@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { isAdminUser } from "@/lib/supabase/middleware";
 import { sendOrderShippedEmail } from "@/lib/email/order-emails";
 
@@ -38,11 +38,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
 
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: "Configuration serveur incomplète" }, { status: 503 });
-    }
-
-    const supabase = createServiceClient();
+    // Session admin authentifiée — RLS is_admin() autorise la mise à jour des commandes.
+    const supabase = authClient;
     const { data: order, error: fetchErr } = await supabase
       .from("orders")
       .select("id, status, tracking_number, shipped_email_sent_at, stripe_session_id")

@@ -9,6 +9,7 @@ import { fetchUserReviewKeys, usePublicProducts } from "@/lib/client-supabase";
 import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
 import { useStore } from "@/lib/store";
+import { formatOrderRef } from "@/lib/order-ref";
 
 /* ─── Types ───────────────────────────────────────────────────────────── */
 
@@ -295,7 +296,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
 
     setOrders(orderRows.map((o) => ({
       id: o.id,
-      ref: "LN-" + o.id.slice(0, 6).toUpperCase(),
+      ref: formatOrderRef(o.id),
       date: o.created_at,
       status: o.status as OrderStatus,
       total: Number(o.total),

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { formatOrderRef } from "@/lib/order-ref";
 
 export type OrderStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "refunded";
@@ -61,12 +62,6 @@ export const PAY_META: Record<PaymentStatus, { label: string; color: string; bg:
 };
 
 export const STATUS_OPTIONS: OrderStatus[] = ["preparing", "shipped", "in_transit", "delivered", "cancelled"];
-
-export function orderRef(id: string): string {
-  const upper = id.toUpperCase();
-  if (upper.startsWith("LN-")) return upper.slice(0, 10);
-  return `LN-${id.slice(0, 6).toUpperCase()}`;
-}
 
 export function formatShippingAddress(addr: ShippingAddressRow | null): string | null {
   if (!addr) return null;
@@ -133,7 +128,7 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
 
   const sm = STATUS_META[order.status];
   const pm = PAY_META[order.payment_status];
-  const ref = orderRef(order.id);
+  const ref = formatOrderRef(order.id);
   const items = order.order_items ?? [];
   const shippingLine = formatShippingAddress(order.shipping_address);
   const addr = order.shipping_address;

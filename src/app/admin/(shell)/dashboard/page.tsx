@@ -2,6 +2,7 @@
 
 import { useDashboardKPIs } from "@/lib/admin-supabase";
 import { Icon } from "@/components/shared/Icon";
+import { formatOrderRef } from "@/lib/order-ref";
 
 function fmtPrice(n: number) {
   return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
@@ -68,7 +69,7 @@ export default function DashboardPage() {
               <tbody>
                 {kpis.recentOrders.map((o) => (
                   <tr key={o.id}>
-                    <td style={{ fontFamily: "monospace", fontSize: 12 }}>{o.id.slice(0, 8)}</td>
+                    <td style={{ fontFamily: "monospace", fontSize: 12 }}>{formatOrderRef(o.id)}</td>
                     <td><span className="adm-badge">{STATUS_LABELS[o.status] ?? o.status}</span></td>
                     <td style={{ fontWeight: 700 }}>{fmtPrice(o.total)}</td>
                   </tr>

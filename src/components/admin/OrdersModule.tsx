@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
 import {
   OrderDetailModal,
@@ -10,8 +11,8 @@ import {
   STATUS_META,
   PAY_META,
   STATUS_OPTIONS,
-  orderRef,
 } from "@/components/admin/OrderDetailModal";
+import { formatOrderRef } from "@/lib/order-ref";
 
 function fmt(date: string) {
   return new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
@@ -24,6 +25,12 @@ export function OrdersModule() {
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [updating, setUpdating] = useState<string | null>(null);
   const [selected, setSelected] = useState<AdminOrder | null>(null);
+  const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
+
+  function showToast(msg: string, variant: AdminToastVariant = "success") {
+    setToast({ msg, variant });
+    window.setTimeout(() => setToast(null), 2800);
+  }
 
   const load = useCallback(async () => {
     const sb = getSupabase();
@@ -118,15 +125,18 @@ export function OrdersModule() {
             }
           : prev,
       );
+      showToast("Commande mise à jour");
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Mise à jour échouée";
       console.error("[OrdersModule] status update:", err);
+      showToast(message, "error");
     } finally {
       setUpdating(null);
     }
   };
 
   const filtered = orders.filter((o) => {
-    const ref = orderRef(o.id).toLowerCase();
+    const ref = formatOrderRef(o.id).toLowerCase();
     const matchSearch =
       search === "" ||
       o.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -217,7 +227,7 @@ export function OrdersModule() {
               {filtered.map((o) => {
                 const sm = STATUS_META[o.status];
                 const pm = PAY_META[o.payment_status];
-                const ref = orderRef(o.id);
+                const ref = formatOrderRef(o.id);
                 const items = o.order_items ?? [];
                 return (
                   <tr
@@ -227,7 +237,6 @@ export function OrdersModule() {
                   >
                     <td>
                       <div style={{ fontWeight: 700, color: "var(--adm-ink)", fontSize: 13 }}>{ref}</div>
-                      <div className="mono">{o.id.slice(0, 8)}…</div>
                       {o.promo_code && (
                         <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
                           Promo {o.promo_code}
@@ -290,6 +299,8 @@ export function OrdersModule() {
           }}
         />
       )}
+
+      {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </div>
   );
 }

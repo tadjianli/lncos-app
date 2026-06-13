@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { sendOrderConfirmationEmail } from "@/lib/email/order-emails";
+import { formatOrderRef } from "@/lib/order-ref";
 import { notifyAdminsNewOrder } from "@/lib/push/notify-admins";
 import {
   decodeShippingAddress,
@@ -408,7 +409,7 @@ export async function fulfillStripeOrder(input: FulfillOrderInput): Promise<Fulf
         Boolean(existing.stock_adjusted),
         false,
       );
-      return { id: existing.id, ref: existing.id, already_created: true, items_saved: items.length };
+      return { id: existing.id, ref: formatOrderRef(existing.id), already_created: true, items_saved: items.length };
     }
 
     if (items?.length && !existing.stock_adjusted) {
@@ -428,7 +429,7 @@ export async function fulfillStripeOrder(input: FulfillOrderInput): Promise<Fulf
 
     await applyPromoOnce(supabase, existing.id, promoCode, Boolean(existing.promo_uses_applied));
 
-    return { id: existing.id, ref: existing.id, already_created: true, items_saved: existingCount || (items?.length ?? 0) };
+    return { id: existing.id, ref: formatOrderRef(existing.id), already_created: true, items_saved: existingCount || (items?.length ?? 0) };
   }
 
   let stockReserved = false;
@@ -495,7 +496,7 @@ export async function fulfillStripeOrder(input: FulfillOrderInput): Promise<Fulf
 
     await applyPromoOnce(supabase, order.id, promoCode, false);
 
-    return { id: order.id, ref: order.id, already_created: false, items_saved: itemsSaved };
+    return { id: order.id, ref: formatOrderRef(order.id), already_created: false, items_saved: itemsSaved };
   } catch (err) {
     if (stockReserved && items?.length) {
       await applyStockIncrementRollback(supabase, items);
