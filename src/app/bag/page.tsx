@@ -53,33 +53,63 @@ function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?
   );
 }
 
+/* ─── Checkout address ────────────────────────────────────────────── */
+interface CheckoutAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  zip: string;
+  city: string;
+  phone: string;
+}
+
+const EMPTY_CHECKOUT_ADDRESS: CheckoutAddress = {
+  firstName: "",
+  lastName: "",
+  address: "",
+  zip: "",
+  city: "",
+  phone: "",
+};
+
+type AddressFieldKey = keyof CheckoutAddress;
+
+function validateCheckoutAddress(addr: CheckoutAddress): Partial<Record<AddressFieldKey, string>> {
+  const errors: Partial<Record<AddressFieldKey, string>> = {};
+  if (!addr.firstName.trim()) errors.firstName = "Le prénom est requis";
+  if (!addr.lastName.trim()) errors.lastName = "Le nom est requis";
+  if (!addr.address.trim()) errors.address = "L'adresse est requise";
+  if (!addr.zip.trim()) errors.zip = "Le code postal est requis";
+  if (!addr.city.trim()) errors.city = "La ville est requise";
+  if (!addr.phone.trim()) errors.phone = "Le téléphone est requis";
+  return errors;
+}
+
 /* ─── Checkout steps ──────────────────────────────────────────────── */
-function StepAddress() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName,  setLastName]  = useState("");
-  const [address,   setAddress]   = useState("");
-  const [zip,       setZip]       = useState("");
-  const [city,      setCity]      = useState("");
-  const [phone,     setPhone]     = useState("");
-
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    void getBrowserUser().then((user) => {
-      if (!user) return;
-      const full = user.user_metadata?.full_name ?? "";
-      const parts = full.trim().split(" ");
-      setFirstName(parts[0] ?? "");
-      setLastName(parts.slice(1).join(" ") ?? "");
-    });
-  }, []);
-
-  const fields: [string, string, React.Dispatch<React.SetStateAction<string>>, boolean][] = [
-    ["Prénom", firstName, setFirstName, true],
-    ["Nom", lastName, setLastName, true],
-    ["Adresse", address, setAddress, false],
-    ["Code postal", zip, setZip, true],
-    ["Ville", city, setCity, true],
-    ["Téléphone", phone, setPhone, false],
+function StepAddress({
+  value,
+  onChange,
+  errors,
+  showErrors,
+}: {
+  value: CheckoutAddress;
+  onChange: (patch: Partial<CheckoutAddress>) => void;
+  errors: Partial<Record<AddressFieldKey, string>>;
+  showErrors: boolean;
+}) {
+  const fields: {
+    key: AddressFieldKey;
+    label: string;
+    half: boolean;
+    type?: string;
+    autoComplete?: string;
+  }[] = [
+    { key: "firstName", label: "Prénom", half: true, autoComplete: "given-name" },
+    { key: "lastName", label: "Nom", half: true, autoComplete: "family-name" },
+    { key: "address", label: "Adresse", half: false, autoComplete: "street-address" },
+    { key: "zip", label: "Code postal", half: true, autoComplete: "postal-code" },
+    { key: "city", label: "Ville", half: true, autoComplete: "address-level2" },
+    { key: "phone", label: "Téléphone", half: false, type: "tel", autoComplete: "tel" },
   ];
 
   return (
@@ -87,26 +117,68 @@ function StepAddress() {
       <h3 style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)", margin: "0 0 16px" }}>
         Adresse de livraison
       </h3>
-      {fields.map(([label, value, setter, half]) => (
+      {showErrors && Object.keys(errors).length > 0 && (
         <div
-          key={label}
           style={{
-            flex: half ? "1 1 0" : "1 1 100%",
             marginBottom: 14,
-            display: "inline-block",
-            width: half ? "calc(50% - 6px)" : "100%",
-            marginRight: half ? "12px" : 0,
+            padding: "12px 14px",
+            borderRadius: "var(--r-sm)",
+            background: "rgba(194,85,122,.1)",
+            border: "1px solid rgba(194,85,122,.25)",
+            fontSize: 12.5,
+            color: "var(--pink)",
+            lineHeight: 1.45,
           }}
         >
-          <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 500 }}>{label}</div>
-          <input
-            value={value}
-            onChange={(e) => setter(e.target.value)}
-            style={{ padding: "13px 16px", borderRadius: "var(--r-sm)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.07)", color: "var(--ink)", fontSize: 13.5, width: "100%", boxSizing: "border-box", outline: "none" }}
-            placeholder={label}
-          />
+          Veuillez remplir tous les champs obligatoires pour continuer.
         </div>
-      ))}
+      )}
+      {fields.map(({ key, label, half, type, autoComplete }) => {
+        const invalid = showErrors && !!errors[key];
+        return (
+          <div
+            key={key}
+            style={{
+              flex: half ? "1 1 0" : "1 1 100%",
+              marginBottom: 14,
+              display: "inline-block",
+              width: half ? "calc(50% - 6px)" : "100%",
+              marginRight: half ? "12px" : 0,
+            }}
+          >
+            <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 500 }}>
+              {label}
+              <span style={{ color: "var(--pink)", marginLeft: 3 }}>*</span>
+            </div>
+            <input
+              value={value[key]}
+              onChange={(e) => onChange({ [key]: e.target.value })}
+              type={type ?? "text"}
+              autoComplete={autoComplete}
+              required
+              aria-invalid={invalid}
+              aria-describedby={invalid ? `${key}-error` : undefined}
+              style={{
+                padding: "13px 16px",
+                borderRadius: "var(--r-sm)",
+                background: "var(--charcoal)",
+                border: invalid ? "1px solid rgba(194,85,122,.55)" : "1px solid rgba(255,255,255,.07)",
+                color: "var(--ink)",
+                fontSize: 13.5,
+                width: "100%",
+                boxSizing: "border-box",
+                outline: "none",
+              }}
+              placeholder={label}
+            />
+            {invalid && (
+              <div id={`${key}-error`} style={{ fontSize: 11, color: "var(--pink)", marginTop: 5 }}>
+                {errors[key]}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -591,6 +663,27 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const [placing, setPlacing]   = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
+  const [address, setAddress] = useState<CheckoutAddress>(EMPTY_CHECKOUT_ADDRESS);
+  const [addressErrors, setAddressErrors] = useState<Partial<Record<AddressFieldKey, string>>>({});
+  const [addressSubmitted, setAddressSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    void getBrowserUser().then((user) => {
+      if (!user) return;
+      const full = user.user_metadata?.full_name ?? "";
+      const parts = full.trim().split(" ");
+      setAddress((prev) => ({
+        ...prev,
+        firstName: prev.firstName || (parts[0] ?? ""),
+        lastName: prev.lastName || (parts.slice(1).join(" ") ?? ""),
+      }));
+    });
+  }, []);
+
+  const patchAddress = (patch: Partial<CheckoutAddress>) => {
+    setAddress((prev) => ({ ...prev, ...patch }));
+  };
 
   const { methods: shippingMethodsRaw, loading: shippingLoading } = useActiveShippingMethods();
   const shippingMethods = shippingMethodsRaw ?? [];
@@ -623,6 +716,19 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const steps = ["Adresse", "Livraison", "Paiement", "Confirmation"];
 
   const next = async () => {
+    if (step === 0) {
+      const errors = validateCheckoutAddress(address);
+      if (Object.keys(errors).length > 0) {
+        setAddressErrors(errors);
+        setAddressSubmitted(true);
+        return;
+      }
+      setAddressErrors({});
+      setAddressSubmitted(false);
+      setStep(1);
+      return;
+    }
+
     if (step === 2) {
       // ── Initiate Stripe hosted checkout ────────────────────────────
       setPlacing(true);
@@ -727,7 +833,14 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
       </div>
 
       <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
-        {step === 0 && <StepAddress />}
+        {step === 0 && (
+          <StepAddress
+            value={address}
+            onChange={patchAddress}
+            errors={addressErrors}
+            showErrors={addressSubmitted}
+          />
+        )}
         {step === 1 && (
           <StepDelivery
             methods={eligibleShipping}
