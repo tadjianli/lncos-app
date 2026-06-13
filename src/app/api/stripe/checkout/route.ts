@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-import { dbToShipping } from "@/lib/admin-supabase";
+import { dbToShipping } from "@/lib/shipping/method";
 import { computePromoDiscount, promoGrantsFreeShipping } from "@/lib/promotions";
 import { computeShippingCost, isShippingMethodEligible } from "@/lib/shipping-rules";
 import {
@@ -10,12 +10,14 @@ import {
   OrderValidationError,
   type OrderLineItem,
 } from "@/lib/stripe/order-fulfillment";
+import { encodeShippingAddress, type ShippingAddress } from "@/lib/stripe/shipping-address";
 
 interface CheckoutBody {
   items: OrderLineItem[];
   subtotal: number;
   shipping_cost: number;
   shipping_method_name?: string;
+  shipping_address?: ShippingAddress;
   discount: number;
   promo_code?: string;
   total: number;
@@ -42,6 +44,7 @@ export async function POST(req: Request) {
       items,
       shipping_cost,
       shipping_method_name,
+      shipping_address,
       discount,
       promo_code,
       total,
@@ -50,6 +53,17 @@ export async function POST(req: Request) {
 
     if (!items?.length || total <= 0) {
       return NextResponse.json({ error: "Données de commande invalides" }, { status: 400 });
+    }
+
+    if (
+      !shipping_address?.firstName?.trim() ||
+      !shipping_address?.lastName?.trim() ||
+      !shipping_address?.address?.trim() ||
+      !shipping_address?.zip?.trim() ||
+      !shipping_address?.city?.trim() ||
+      !shipping_address?.phone?.trim()
+    ) {
+      return NextResponse.json({ error: "Adresse de livraison incomplète" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -196,6 +210,7 @@ export async function POST(req: Request) {
     }
 
     const itemsMeta = encodeItemsSnapshot(items);
+    const shipMeta = encodeShippingAddress(shipping_address);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -212,6 +227,7 @@ export async function POST(req: Request) {
         shipping_cost: verifiedShipping.toFixed(2),
         discount: verifiedDiscount.toFixed(2),
         ...itemsMeta,
+        ...shipMeta,
       },
     });
 

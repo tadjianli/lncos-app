@@ -2,7 +2,7 @@
  * LN COS — Règles de livraison (calcul, éligibilité, validation, libellés)
  */
 
-import type { ShippingMethod } from "@/lib/admin-supabase";
+import type { ShippingMethod } from "@/lib/shipping/method";
 
 export type ShippingMethodInput = Omit<ShippingMethod, "id" | "createdAt">;
 

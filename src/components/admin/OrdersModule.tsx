@@ -26,8 +26,27 @@ interface Order {
   promo_code: string | null;
   total: number;
   tracking_number: string | null;
+  shipping_address: ShippingAddressRow | null;
   created_at: string;
   order_items: OrderItem[];
+}
+
+interface ShippingAddressRow {
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  zip?: string;
+  city?: string;
+  phone?: string;
+}
+
+function formatShippingAddress(addr: ShippingAddressRow | null): string | null {
+  if (!addr) return null;
+  const name = [addr.firstName, addr.lastName].filter(Boolean).join(" ");
+  const line = [addr.address, [addr.zip, addr.city].filter(Boolean).join(" "), addr.phone]
+    .filter(Boolean)
+    .join(" · ");
+  return [name, line].filter(Boolean).join(" — ");
 }
 
 const STATUS_META: Record<OrderStatus, { label: string; color: string; bg: string }> = {
@@ -63,7 +82,7 @@ export function OrdersModule() {
     const { data: orderRows } = await sb
       .from("orders")
       .select(
-        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,created_at",
+        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,shipping_address,created_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -112,9 +131,20 @@ export function OrdersModule() {
 
   const updateStatus = async (id: string, status: OrderStatus) => {
     setUpdating(id);
-    await getSupabase().from("orders").update({ status }).eq("id", id);
-    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
-    setUpdating(null);
+    try {
+      const res = await fetch(`/api/admin/orders/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Mise à jour échouée");
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    } catch (err) {
+      console.error("[OrdersModule] status update:", err);
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const filtered = orders.filter((o) => {
@@ -273,6 +303,11 @@ export function OrdersModule() {
                             </span>
                           ) : (
                             <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+                              {formatShippingAddress(o.shipping_address) && (
+                                <li style={{ fontSize: 12.5, color: "var(--adm-ink-soft)", marginBottom: 4 }}>
+                                  Livraison : {formatShippingAddress(o.shipping_address)}
+                                </li>
+                              )}
                               {items.map((it) => (
                                 <li key={it.id} style={{ fontSize: 13, color: "var(--adm-ink)" }}>
                                   {it.qty}× {it.name}

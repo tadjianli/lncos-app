@@ -24,7 +24,7 @@ function getClientSiteUrl(): string {
   const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   if (env) return env;
   if (typeof window !== "undefined") return window.location.origin;
-  return "https://lncos.re";
+  return "https://www.lncos.fr";
 }
 
 interface ProductSeoTabProps {

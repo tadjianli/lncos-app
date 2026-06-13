@@ -24,7 +24,7 @@ export function GooglePreview({ preview }: GooglePreviewProps) {
         {preview.title || "Titre SEO du produit"}
       </div>
       <div style={{ fontSize: 13, color: "#006621", marginBottom: 4, wordBreak: "break-all" }}>
-        {preview.url || "https://lncos.re/produit/exemple"}
+        {preview.url || "https://www.lncos.fr/produit/exemple"}
       </div>
       <div style={{ fontSize: 14, color: "#4d5156", lineHeight: 1.58, wordBreak: "break-word" }}>
         {preview.description || "Meta description du produit…"}

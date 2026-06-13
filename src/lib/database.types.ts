@@ -280,6 +280,10 @@ export interface Database {
           sumup_checkout_id: string | null;
           stripe_session_id: string | null;
           payment_provider: string;
+          stock_adjusted: boolean;
+          confirmation_email_sent_at: string | null;
+          shipped_email_sent_at: string | null;
+          promo_uses_applied: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -300,6 +304,10 @@ export interface Database {
           sumup_checkout_id?: string | null;
           stripe_session_id?: string | null;
           payment_provider?: string;
+          stock_adjusted?: boolean;
+          confirmation_email_sent_at?: string | null;
+          shipped_email_sent_at?: string | null;
+          promo_uses_applied?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -309,9 +317,14 @@ export interface Database {
           tracking_number?: string | null;
           estimated_delivery?: string | null;
           delivered_at?: string | null;
+          shipping_address?: Json | null;
           sumup_checkout_id?: string | null;
           stripe_session_id?: string | null;
           payment_provider?: string;
+          stock_adjusted?: boolean;
+          confirmation_email_sent_at?: string | null;
+          shipped_email_sent_at?: string | null;
+          promo_uses_applied?: boolean;
           updated_at?: string;
         };
         Relationships: [];
@@ -1331,6 +1344,14 @@ export interface Database {
     Functions: {
       increment_promo_uses: {
         Args: { promo_code_arg: string };
+        Returns: undefined;
+      };
+      decrement_order_items_stock: {
+        Args: { items: Json };
+        Returns: undefined;
+      };
+      increment_order_items_stock: {
+        Args: { items: Json };
         Returns: undefined;
       };
       get_product_sales_stats: {

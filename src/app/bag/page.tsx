@@ -39,6 +39,7 @@ interface PendingCheckout {
   discount: number;
   promo_code?: string;
   total: number;
+  shipping_address?: CheckoutAddress;
 }
 
 /* ─── Row helper ─────────────────────────────────────────────────── */
@@ -751,6 +752,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
             subtotal,
             shipping_cost: shippingCost,
             shipping_method_name: selectedShipping?.name,
+            shipping_address: address,
             discount,
             ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
             total,
@@ -772,6 +774,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           discount,
           ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
           total,
+          shipping_address: address,
         };
         sessionStorage.setItem("lncos-pending-checkout", JSON.stringify(snapshot));
 
