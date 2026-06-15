@@ -951,18 +951,11 @@
     padding-bottom: 0;
   }
 
-  /* ── PageLayout — header fixe + scroll (Panier, Info, Catégories…) ── */
-  .page-layout {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-  }
-
+  /* ── PageLayout — header fixe + scroll (frères flex dans main) ── */
   .page-layout__header {
     flex: 0 0 auto;
     z-index: 10;
+    width: 100%;
     padding:
       var(--page-header-pad-top)
       max(var(--page-padding-x), var(--safe-right))

@@ -28,7 +28,7 @@ export interface PageLayoutProps {
 
 /**
  * Layout mobile unifié LN COS — aligné Accueil / Boutique / Panier / Profil.
- * Safe area iOS via AppShell, header SubHeader fixe, scroll avec clearance bottom nav.
+ * Header fixe + scroll en frères directs dans main (flex), clearance bottom nav.
  */
 export function PageLayout({
   children,
@@ -49,45 +49,47 @@ export function PageLayout({
 
   return (
     <AppShell bottomNav={bottomNav}>
-      <div className={cn("page-layout", isInfo && "page-layout--info", className)}>
-        {title ? (
-          <header className="page-layout__header">
-            {showBack ? (
-              <SubHeader
-                title={title}
-                onBack={onBack}
-                backHref={backHref}
-                right={headerRight}
-                className="page-layout__subheader"
-              />
-            ) : (
-              <div className="mobile-screen-header page-layout__subheader">
-                <div className="mobile-screen-header__slot" aria-hidden />
-                <h2 className="mobile-screen-header__title">{title}</h2>
-                <div className="mobile-screen-header__slot">{headerRight}</div>
-              </div>
-            )}
-          </header>
-        ) : null}
+      {title ? (
+        <header className="page-layout__header">
+          {showBack ? (
+            <SubHeader
+              title={title}
+              onBack={onBack}
+              backHref={backHref}
+              right={headerRight}
+              className="page-layout__subheader"
+            />
+          ) : (
+            <div className="mobile-screen-header page-layout__subheader">
+              <div className="mobile-screen-header__slot" aria-hidden />
+              <h2 className="mobile-screen-header__title">{title}</h2>
+              <div className="mobile-screen-header__slot">{headerRight}</div>
+            </div>
+          )}
+        </header>
+      ) : null}
 
-        <ScrollRegion
-          variant="page"
-          insetX={insetX}
-          padBottom={padBottom}
-          className="page-layout__scroll"
+      <ScrollRegion
+        variant="page"
+        insetX={insetX}
+        padBottom={padBottom}
+        className={cn(
+          "page-layout__scroll",
+          isInfo && "page-layout--info",
+          className
+        )}
+      >
+        <div
+          className={cn(
+            "page-layout__content",
+            isInfo && "info-page",
+            contentClassName
+          )}
         >
-          <div
-            className={cn(
-              "page-layout__content",
-              isInfo && "info-page",
-              contentClassName
-            )}
-          >
-            {eyebrow ? <p className="page-layout__eyebrow">{eyebrow}</p> : null}
-            {children}
-          </div>
-        </ScrollRegion>
-      </div>
+          {eyebrow ? <p className="page-layout__eyebrow">{eyebrow}</p> : null}
+          {children}
+        </div>
+      </ScrollRegion>
     </AppShell>
   );
 }
