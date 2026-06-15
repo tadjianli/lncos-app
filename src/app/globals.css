@@ -2724,6 +2724,31 @@
 .side-menu-row--active {
   background: rgba(212, 175, 55, 0.08);
 }
+.side-menu-row--toggle .side-menu-row__chevron {
+  transition: transform 0.25s var(--ease-lux);
+}
+.side-menu-row--toggle.side-menu-row--expanded .side-menu-row__chevron {
+  transform: rotate(90deg);
+}
+.side-menu-legal-panel {
+  display: none;
+  padding: 2px 0 4px;
+}
+.side-menu-legal-panel--open {
+  display: block;
+}
+.side-menu-row--sub {
+  padding: 9px 12px 9px 14px;
+  gap: 11px;
+}
+.side-menu-row--sub .side-menu-row__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.side-menu-row--sub.side-menu-row--active .side-menu-row__label {
+  color: var(--ink);
+}
 .side-menu-row:active {
   background: rgba(255, 255, 255, 0.04);
 }

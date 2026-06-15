@@ -410,7 +410,6 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     { url: absoluteUrl("/social") },
     { url: absoluteUrl("/flash-sales") },
     { url: absoluteUrl("/promotions") },
-    { url: absoluteUrl("/informations") },
     { url: absoluteUrl("/faq") },
     { url: absoluteUrl("/contact") },
     { url: absoluteUrl("/livraison") },

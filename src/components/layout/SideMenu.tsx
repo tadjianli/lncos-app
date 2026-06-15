@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
@@ -50,22 +51,17 @@ const MENU_SECTIONS: MenuSection[] = [
   },
 ];
 
-const LEGAL_HUB: MenuLink = {
-  i: "info",
-  t: "Informations légales",
-  href: "/informations",
-};
+const LEGAL_LINKS: MenuLink[] = [
+  { i: "info", t: "FAQ", href: "/faq" },
+  { i: "mail", t: "Contact", href: "/contact" },
+  { i: "truck", t: "Livraison", href: "/livraison" },
+  { i: "bag", t: "Retours", href: "/retours" },
+  { i: "tag", t: "CGV", href: "/cgv" },
+  { i: "lock", t: "Confidentialité", href: "/confidentialite" },
+  { i: "shop", t: "Mentions légales", href: "/mentions-legales" },
+];
 
-const LEGAL_PATHS = new Set([
-  "/informations",
-  "/faq",
-  "/contact",
-  "/livraison",
-  "/retours",
-  "/cgv",
-  "/confidentialite",
-  "/mentions-legales",
-]);
+const LEGAL_PATHS = new Set(LEGAL_LINKS.map((l) => l.href!));
 
 interface SideMenuProps {
   onClose: () => void;
@@ -76,6 +72,11 @@ export function SideMenu({ onClose }: SideMenuProps) {
   const router = useRouter();
   const openOrders = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
+  const [legalOpen, setLegalOpen] = useState(() => LEGAL_PATHS.has(pathname));
+
+  useEffect(() => {
+    if (LEGAL_PATHS.has(pathname)) setLegalOpen(true);
+  }, [pathname]);
 
   function closeMenuOnly() {
     closeOverlay();
@@ -102,21 +103,23 @@ export function SideMenu({ onClose }: SideMenuProps) {
     setTimeout(openOrders, 50);
   }
 
-  function renderLink(l: MenuLink, index: number, baseDelay: number) {
+  function renderLink(l: MenuLink, index: number, baseDelay: number, sub = false) {
     const anim = `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${baseDelay + index * 0.03}s both`;
 
     if (l.href) {
       const active = pathname === l.href;
       return (
         <Link
-          key={l.t}
+          key={l.href}
           href={l.href}
           onClick={(e) => handleMenuLinkClick(e, l.href!)}
-          className={`side-menu-link side-menu-row${active ? " side-menu-row--active" : ""}`}
+          className={`side-menu-link side-menu-row${sub ? " side-menu-row--sub" : ""}${
+            active ? " side-menu-row--active" : ""
+          }`}
           style={{ animation: anim }}
           aria-current={active ? "page" : undefined}
         >
-          <Icon name={l.i} size={20} color="var(--gold)" />
+          <Icon name={l.i} size={sub ? 18 : 20} color="var(--gold)" />
           <span className="side-menu-row__label">{l.t}</span>
         </Link>
       );
@@ -174,20 +177,30 @@ export function SideMenu({ onClose }: SideMenuProps) {
           ))}
 
           <div className="side-menu-section side-menu-section--legal">
-            <Link
-              href={LEGAL_HUB.href!}
-              onClick={(e) => handleMenuLinkClick(e, LEGAL_HUB.href!)}
-              className={`side-menu-link side-menu-row side-menu-row--legal${
-                LEGAL_PATHS.has(pathname) ? " side-menu-row--active" : ""
+            <button
+              type="button"
+              className={`side-menu-link side-menu-row side-menu-row--legal side-menu-row--toggle${
+                legalOpen ? " side-menu-row--expanded" : ""
               }`}
               style={{ animation: "fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) 0.34s both" }}
+              aria-expanded={legalOpen}
+              aria-controls="side-menu-legal-panel"
+              onClick={() => setLegalOpen((open) => !open)}
             >
-              <Icon name={LEGAL_HUB.i} size={20} color="var(--gold)" />
-              <span className="side-menu-row__label">{LEGAL_HUB.t}</span>
+              <Icon name="info" size={20} color="var(--gold)" />
+              <span className="side-menu-row__label">Informations légales</span>
               <span className="side-menu-row__chevron" aria-hidden>
                 <Icon name="chevR" size={16} color="var(--ink-mute)" />
               </span>
-            </Link>
+            </button>
+
+            <div
+              id="side-menu-legal-panel"
+              className={`side-menu-legal-panel${legalOpen ? " side-menu-legal-panel--open" : ""}`}
+              hidden={!legalOpen}
+            >
+              {LEGAL_LINKS.map((l, i) => renderLink(l, i, 0.36, true))}
+            </div>
           </div>
         </div>
 
