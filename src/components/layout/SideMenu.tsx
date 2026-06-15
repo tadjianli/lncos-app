@@ -28,7 +28,6 @@ const MENU_SECTIONS: MenuSection[] = [
     label: "Boutique",
     links: [
       { i: "home", t: "Accueil", href: "/" },
-      { i: "grid", t: "Catégories", href: "/discover" },
       { i: "sparkle", t: "Promotions", href: "/promotions" },
       { i: "flame", t: "Ventes Flash", href: "/flash-sales" },
     ],
