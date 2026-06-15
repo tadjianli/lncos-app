@@ -5504,3 +5504,304 @@ html[data-lncos-debug-nav]::after {
     transform: translateY(0);
   }
 }
+
+/* ─── Vidéos Beauté (hub / pages) ─────────────────────────────── */
+
+.beauty-video-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.beauty-video-card__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 35%, rgba(0, 0, 0, 0.72));
+  pointer-events: none;
+}
+
+.beauty-video-card__featured {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+}
+
+.beauty-videos-hero {
+  position: relative;
+  padding: 28px 0 22px;
+  margin-bottom: 8px;
+}
+
+.beauty-videos-hero__glow {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 120px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.beauty-videos-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.beauty-videos-hero__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.55rem, 5vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.beauty-videos-hero__sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 36em;
+}
+
+.beauty-videos-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 16px;
+  margin-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.beauty-videos-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.beauty-videos-pill {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.beauty-videos-pill--active {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--gold);
+}
+
+.beauty-videos-grid-hsc {
+  padding-bottom: 24px;
+}
+
+.beauty-videos-grid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.beauty-videos-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.beauty-videos-grid__card {
+  flex: 0 0 min(46vw, 168px);
+  width: min(46vw, 168px);
+  min-width: min(46vw, 168px);
+  height: 248px;
+}
+
+.beauty-videos-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--ink-soft);
+}
+
+.beauty-videos-empty__link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--gold);
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.beauty-video-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 16px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.beauty-video-detail {
+  padding-bottom: 40px;
+}
+
+.beauty-video-player {
+  width: 100%;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+}
+
+.beauty-video-player__hosted {
+  display: block;
+  width: 100%;
+  max-height: min(72vh, 520px);
+  background: #000;
+}
+
+.beauty-video-player--embed {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  max-height: min(78vh, 640px);
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 420px;
+}
+
+.beauty-video-player__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.beauty-video-player--empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.beauty-video-detail__head {
+  margin-bottom: 14px;
+}
+
+.beauty-video-detail__category {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.beauty-video-detail__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.beauty-video-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.beauty-video-detail__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.beauty-video-detail__desc {
+  margin: 0 0 18px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.beauty-video-share {
+  margin-bottom: 24px;
+}
+
+.beauty-video-products {
+  margin-top: 8px;
+}
+
+.beauty-video-products__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: var(--fs-h3);
+  font-weight: 600;
+}
+
+.beauty-video-products__hsc {
+  margin: 0 calc(-1 * max(18px, var(--safe-left)));
+  padding: 0 max(18px, var(--safe-left));
+}
+
+.beauty-video-products__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.beauty-video-products__track::-webkit-scrollbar {
+  display: none;
+}
+
+.beauty-video-products__track .blog-reco-card {
+  flex: 0 0 min(78vw, 280px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 768px) {
+  .beauty-videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+    gap: 14px;
+    overflow: visible;
+  }
+
+  .beauty-videos-grid__card {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+    height: 260px;
+  }
+}

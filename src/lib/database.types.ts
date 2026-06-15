@@ -432,16 +432,28 @@ export interface Database {
         Row: {
           id: string;
           hosting_info: string;
+          delivery_reunion: boolean;
+          delivery_france: boolean;
+          delivery_europe: boolean;
+          delivery_international: boolean;
           updated_at: string;
         };
         Insert: {
           id?: string;
           hosting_info?: string;
+          delivery_reunion?: boolean;
+          delivery_france?: boolean;
+          delivery_europe?: boolean;
+          delivery_international?: boolean;
           updated_at?: string;
         };
         Update: {
           id?: string;
           hosting_info?: string;
+          delivery_reunion?: boolean;
+          delivery_france?: boolean;
+          delivery_europe?: boolean;
+          delivery_international?: boolean;
           updated_at?: string;
         };
         Relationships: [];
@@ -549,6 +561,67 @@ export interface Database {
           icon?: string;
           position?: number;
           enabled?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      beauty_videos: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          thumbnail_url: string | null;
+          video_type: string;
+          video_url: string;
+          category: string;
+          published: boolean;
+          featured: boolean;
+          views: number;
+          likes: number;
+          related_product_ids: string[];
+          published_at: string;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          slug: string;
+          title: string;
+          description?: string;
+          thumbnail_url?: string | null;
+          video_type?: string;
+          video_url?: string;
+          category?: string;
+          published?: boolean;
+          featured?: boolean;
+          views?: number;
+          likes?: number;
+          related_product_ids?: string[];
+          published_at?: string;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          description?: string;
+          thumbnail_url?: string | null;
+          video_type?: string;
+          video_url?: string;
+          category?: string;
+          published?: boolean;
+          featured?: boolean;
+          views?: number;
+          likes?: number;
+          related_product_ids?: string[];
+          published_at?: string;
+          position?: number;
+          created_at?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -1706,6 +1779,10 @@ export interface Database {
       get_product_sales_stats: {
         Args: { p_product_id: string };
         Returns: Json;
+      };
+      increment_beauty_video_views: {
+        Args: { p_id: string };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

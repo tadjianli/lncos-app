@@ -26,6 +26,7 @@ const MAIN_LINKS: MenuLink[] = [
   { i: "calendar", t: "Prendre rendez-vous", href: "/rdv" },
   { i: "grid",     t: "Catégories",          href: "/discover" },
   { i: "flame",    t: "Ventes Flash",         href: "/flash-sales" },
+  { i: "play",     t: "Vidéos Beauté",        href: "/videos" },
   { i: "edit",     t: "Blog LN COS",          href: "/blog" },
   { i: "share",    t: "Réseaux sociaux",      href: "/social" },
   { i: "bag",      t: "Mes commandes",        overlay: "orders" },

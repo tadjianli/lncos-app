@@ -14,10 +14,10 @@ import { FlashSaleHead } from "@/components/commerce/FlashSaleHead";
 import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicHomeSections } from "@/lib/client-supabase";
-import { feed } from "@/lib/data";
-import type { Product } from "@/lib/data";
 import { usePublicProducts } from "@/lib/client-supabase";
+import { HomeBeautyVideosSection } from "@/components/home/HomeBeautyVideosSection";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
+import type { Product } from "@/lib/data";
 import {
   filterProductsByHomeKey,
   groupProductsByUniverse,
@@ -367,70 +367,6 @@ function QuoteSection() {
   );
 }
 
-/* ─── Reels section ─────────────────────────────────────────── */
-
-function ReelsSection() {
-  const openReels = useStore((s) => s.openReels);
-  const tags = ["Routine", "Teint frais", "Unboxing"];
-  const stats = [
-    ["12.4k", "2.1k"],
-    ["8.9k",  "1.4k"],
-    ["21.7k", "5.3k"],
-  ];
-
-  return (
-    <div className="home-reels">
-      <SectionHead title="LN COS Beauté" action="Tout voir" onAction={openReels} />
-      <HorizontalScrollRow className="home-reels-hsc" trackClassName="home-reels-row">
-        {feed.map((v, i) => (
-          <button key={v.id} type="button" className="reel-card reel-card--fill snap" onClick={openReels}>
-            <div className="reel-bg">
-              <div
-                className="ph"
-                data-label={v.label}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "radial-gradient(120% 90% at 50% 35%, #2a1f24 0%, #100b0d 75%)",
-                }}
-              />
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(180deg, rgba(0,0,0,.25), transparent 30%)",
-              }}
-            />
-            <span className="reel-progress">
-              <i style={{ animationDelay: -i * 1.5 + "s" }} />
-            </span>
-            <span className="reel-tag">#{tags[i % tags.length]}</span>
-            <span className="reel-play">
-              <Icon name="play" size={15} color="#fff" fill="#fff" />
-            </span>
-            <div className="reel-meta">
-              <div className="reel-title">{v.title}</div>
-              <div className="reel-stats">
-                <span className="reel-stat">
-                  <Icon name="heart" size={11} color="var(--pink)" fill="var(--pink)" />
-                  {stats[i % stats.length][0]}
-                </span>
-                <span className="reel-stat">
-                  <Icon name="bag" size={11} color="#fff" />
-                  {stats[i % stats.length][1]}
-                </span>
-              </div>
-            </div>
-          </button>
-        ))}
-      </HorizontalScrollRow>
-    </div>
-  );
-}
-
 /* ─── Newsletter ────────────────────────────────────────────── */
 
 function NewsletterBlock() {
@@ -703,7 +639,11 @@ export default function HomePage() {
           return (
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
-                <ReelsSection />
+                <HomeBeautyVideosSection
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  cta={section.cta ?? "Tout voir"}
+                />
               </Reveal>
             </div>
           );

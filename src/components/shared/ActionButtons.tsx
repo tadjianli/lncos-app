@@ -176,31 +176,39 @@ export function SubHeader({
 
 interface SectionHeadProps {
   title: string;
+  subtitle?: string;
   action?: string;
   onAction?: () => void;
 }
 
-export function SectionHead({ title, action, onAction }: SectionHeadProps) {
+export function SectionHead({ title, subtitle, action, onAction }: SectionHeadProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "baseline",
-        justifyContent: "space-between",
-        margin: "0 0 14px",
-      }}
-    >
-      <h3 style={{ margin: 0, fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>
-        {title}
-      </h3>
-      {action && (
-        <button
-          onClick={onAction}
-          style={{ color: "var(--gold)", fontSize: 12.5, fontWeight: 600, letterSpacing: ".04em" }}
-        >
-          {action}
-        </button>
-      )}
+    <div style={{ margin: "0 0 14px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+        }}
+      >
+        <h3 style={{ margin: 0, fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>
+          {title}
+        </h3>
+        {action && (
+          <button
+            type="button"
+            onClick={onAction}
+            style={{ color: "var(--gold)", fontSize: 12.5, fontWeight: 600, letterSpacing: ".04em" }}
+          >
+            {action}
+          </button>
+        )}
+      </div>
+      {subtitle ? (
+        <p style={{ margin: "6px 0 0", fontSize: 13, lineHeight: 1.45, color: "var(--ink-soft)" }}>
+          {subtitle}
+        </p>
+      ) : null}
     </div>
   );
 }
