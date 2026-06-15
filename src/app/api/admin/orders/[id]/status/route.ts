@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminUser } from "@/lib/supabase/middleware";
 import { sendOrderShippedEmail } from "@/lib/email/order-emails";
+import { resolveOrderTrackingUrl } from "@/lib/order-tracking";
 
 type OrderStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
 
 interface Body {
   status: OrderStatus;
   tracking_number?: string | null;
+  carrier?: string | null;
+  tracking_url?: string | null;
 }
 
 /**
@@ -18,7 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const body = (await req.json()) as Body;
-    const { status, tracking_number } = body;
+    const { status, tracking_number, carrier, tracking_url } = body;
 
     if (!status) {
       return NextResponse.json({ error: "status requis" }, { status: 400 });
@@ -38,11 +41,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
 
-    // Session admin authentifiée — RLS is_admin() autorise la mise à jour des commandes.
     const supabase = authClient;
     const { data: order, error: fetchErr } = await supabase
       .from("orders")
-      .select("id, status, tracking_number, shipped_email_sent_at, stripe_session_id")
+      .select("id, status, tracking_number, carrier, tracking_url, shipped_email_sent_at, stripe_session_id")
       .eq("id", id)
       .maybeSingle();
 
@@ -53,17 +55,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const updates: {
       status: OrderStatus;
       tracking_number?: string | null;
+      carrier?: string | null;
+      tracking_url?: string | null;
     } = { status };
 
-    if (tracking_number !== undefined) {
-      updates.tracking_number = tracking_number;
-    }
+    if (tracking_number !== undefined) updates.tracking_number = tracking_number;
+    if (carrier !== undefined) updates.carrier = carrier;
+    if (tracking_url !== undefined) updates.tracking_url = tracking_url;
 
     const { error: updateErr } = await supabase.from("orders").update(updates).eq("id", id);
     if (updateErr) {
       console.error("[admin/orders/status]", updateErr);
       return NextResponse.json({ error: "Mise à jour échouée" }, { status: 500 });
     }
+
+    const effectiveTracking =
+      tracking_number !== undefined ? tracking_number : order.tracking_number;
+    const effectiveCarrier = carrier !== undefined ? carrier : order.carrier;
+    const effectiveTrackingUrl =
+      tracking_url !== undefined ? tracking_url : order.tracking_url;
 
     if (status === "shipped" && order.status !== "shipped" && !order.shipped_email_sent_at) {
       let customerEmail: string | null = null;
@@ -83,7 +93,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const sent = await sendOrderShippedEmail({
           to: customerEmail,
           orderRef: id,
-          trackingNumber: tracking_number ?? order.tracking_number,
+          trackingNumber: effectiveTracking,
+          carrier: effectiveCarrier,
+          trackingUrl: resolveOrderTrackingUrl({
+            trackingUrl: effectiveTrackingUrl,
+            carrier: effectiveCarrier,
+            trackingNumber: effectiveTracking,
+          }),
         });
         if (sent) {
           await supabase

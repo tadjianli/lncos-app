@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { formatOrderRef } from "@/lib/order-ref";
+import {
+  ORDER_CARRIERS,
+  buildCarrierTrackingUrl,
+  resolveOrderTrackingUrl,
+} from "@/lib/order-tracking";
 
 export type OrderStatus = "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "refunded";
@@ -36,6 +41,8 @@ export interface AdminOrder {
   promo_code: string | null;
   total: number;
   tracking_number: string | null;
+  carrier: string | null;
+  tracking_url: string | null;
   shipping_address: ShippingAddressRow | null;
   stripe_session_id: string | null;
   payment_provider: string;
@@ -102,20 +109,44 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
+export interface OrderSavePayload {
+  status: OrderStatus;
+  trackingNumber: string | null;
+  carrier: string | null;
+  trackingUrl: string | null;
+}
+
 interface OrderDetailModalProps {
   order: AdminOrder;
   saving: boolean;
   onClose: () => void;
-  onSave: (status: OrderStatus, trackingNumber: string | null) => void;
+  onSave: (payload: OrderSavePayload) => void;
+}
+
+function resolveCarrierSelectValue(carrier: string | null): { select: string; custom: string } {
+  if (!carrier?.trim()) return { select: "", custom: "" };
+  const preset = ORDER_CARRIERS.find((c) => c.id === carrier);
+  if (preset && preset.id !== "other") return { select: preset.id, custom: "" };
+  const byLabel = ORDER_CARRIERS.find((c) => c.label.toLowerCase() === carrier.toLowerCase());
+  if (byLabel && byLabel.id !== "other") return { select: byLabel.id, custom: "" };
+  return { select: "other", custom: carrier };
 }
 
 export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetailModalProps) {
+  const initialCarrier = resolveCarrierSelectValue(order.carrier);
   const [status, setStatus] = useState(order.status);
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
+  const [carrierSelect, setCarrierSelect] = useState(initialCarrier.select);
+  const [carrierCustom, setCarrierCustom] = useState(initialCarrier.custom);
+  const [trackingUrl, setTrackingUrl] = useState(order.tracking_url ?? "");
 
   useEffect(() => {
+    const next = resolveCarrierSelectValue(order.carrier);
     setStatus(order.status);
     setTracking(order.tracking_number ?? "");
+    setCarrierSelect(next.select);
+    setCarrierCustom(next.custom);
+    setTrackingUrl(order.tracking_url ?? "");
   }, [order]);
 
   useEffect(() => {
@@ -132,6 +163,31 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
   const items = order.order_items ?? [];
   const shippingLine = formatShippingAddress(order.shipping_address);
   const addr = order.shipping_address;
+
+  function handleSave() {
+    const trackingNumber = tracking.trim() || null;
+    const carrier =
+      carrierSelect === "other"
+        ? carrierCustom.trim() || null
+        : carrierSelect.trim() || null;
+    const resolvedUrl =
+      trackingUrl.trim() ||
+      buildCarrierTrackingUrl(carrier, trackingNumber) ||
+      null;
+
+    onSave({
+      status,
+      trackingNumber,
+      carrier,
+      trackingUrl: resolvedUrl,
+    });
+  }
+
+  const previewUrl = resolveOrderTrackingUrl({
+    trackingUrl,
+    carrier: carrierSelect === "other" ? carrierCustom : carrierSelect,
+    trackingNumber: tracking,
+  });
 
   return (
     <div className="ab-modal-overlay" onClick={onClose}>
@@ -239,15 +295,59 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
                 ))}
               </select>
             </div>
-            <div className="ab-field" style={{ marginBottom: 0 }}>
+            <div className="ab-field" style={{ marginBottom: 10 }}>
+              <label>Transporteur</label>
+              <select
+                className="adm-select"
+                value={carrierSelect}
+                disabled={saving}
+                onChange={(e) => setCarrierSelect(e.target.value)}
+              >
+                <option value="">— Sélectionner —</option>
+                {ORDER_CARRIERS.map((c) => (
+                  <option key={c.id} value={c.id}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            {carrierSelect === "other" && (
+              <div className="ab-field" style={{ marginBottom: 10 }}>
+                <label>Nom du transporteur</label>
+                <input
+                  className="ab-input"
+                  value={carrierCustom}
+                  disabled={saving}
+                  onChange={(e) => setCarrierCustom(e.target.value)}
+                  placeholder="Nom du transporteur"
+                />
+              </div>
+            )}
+            <div className="ab-field" style={{ marginBottom: 10 }}>
               <label>N° de suivi</label>
               <input
                 className="ab-input"
                 value={tracking}
                 disabled={saving}
                 onChange={(e) => setTracking(e.target.value)}
-                placeholder="Colissimo, Chronopost…"
+                placeholder="Ex. 8R12345678901"
               />
+            </div>
+            <div className="ab-field" style={{ marginBottom: 0 }}>
+              <label>URL de suivi (optionnel)</label>
+              <input
+                className="ab-input"
+                value={trackingUrl}
+                disabled={saving}
+                onChange={(e) => setTrackingUrl(e.target.value)}
+                placeholder="https://…"
+              />
+              {previewUrl && (
+                <p className="adm-order-detail-muted" style={{ marginTop: 8, fontSize: 11 }}>
+                  Lien client :{" "}
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--adm-gold)" }}>
+                    Voir le suivi
+                  </a>
+                </p>
+              )}
             </div>
           </section>
 
@@ -285,7 +385,7 @@ export function OrderDetailModal({ order, saving, onClose, onSave }: OrderDetail
             type="button"
             className="adm-btn gold"
             disabled={saving}
-            onClick={() => onSave(status, tracking.trim() || null)}
+            onClick={handleSave}
           >
             {saving ? "Enregistrement…" : "Enregistrer"}
           </button>

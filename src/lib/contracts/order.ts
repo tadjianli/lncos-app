@@ -55,6 +55,8 @@ export interface OrderContract {
   shippingCost: number;
   total: number;
   trackingNumber?: string;
+  carrier?: string;
+  trackingUrl?: string;
   estimatedDelivery?: string; // human-readable, e.g. "Livraison prévue demain"
   deliveredAt?: string;       // ISO date
   shippingAddress?: ShippingAddress;

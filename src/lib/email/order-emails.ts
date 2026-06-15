@@ -1,6 +1,7 @@
 import type { OrderLineItem } from "@/lib/stripe/order-fulfillment";
 import type { ShippingAddress } from "@/lib/stripe/shipping-address";
 import { formatOrderRef } from "@/lib/order-ref";
+import { carrierLabel, resolveOrderTrackingUrl } from "@/lib/order-tracking";
 import { absoluteUrl } from "@/lib/site-url";
 import { getEmailFrom, getResendClient, isEmailConfigured } from "./resend-client";
 
@@ -73,6 +74,8 @@ export async function sendOrderShippedEmail(input: {
   to: string;
   orderRef: string;
   trackingNumber?: string | null;
+  carrier?: string | null;
+  trackingUrl?: string | null;
 }): Promise<boolean> {
   if (!isEmailConfigured()) {
     console.warn("[email] RESEND_API_KEY not set — skipping shipped email");
@@ -82,8 +85,14 @@ export async function sendOrderShippedEmail(input: {
   const resend = getResendClient();
   if (!resend) return false;
 
-  const { to, orderRef, trackingNumber } = input;
+  const { to, orderRef, trackingNumber, carrier, trackingUrl } = input;
   const ref = formatOrderRef(orderRef);
+  const carrierName = carrierLabel(carrier);
+  const trackingLine = trackingNumber?.trim()
+    ? `Numéro de suivi : ${trackingNumber.trim()}`
+    : "Numéro de suivi : communiqué prochainement";
+  const carrierLine = carrierName ? `Transporteur : ${carrierName}` : null;
+  const linkLine = trackingUrl?.trim() ? `Suivi complet : ${trackingUrl.trim()}` : null;
 
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
@@ -93,13 +102,17 @@ export async function sendOrderShippedEmail(input: {
       "Bonne nouvelle — votre commande LN COS a été expédiée !",
       "",
       `Référence : #${ref}`,
-      trackingNumber ? `Numéro de suivi : ${trackingNumber}` : "Numéro de suivi : communiqué prochainement",
+      carrierLine,
+      trackingLine,
+      linkLine,
       "",
-      `Suivez votre commande : ${absoluteUrl("/profile")}`,
+      `Suivre dans l'app : ${absoluteUrl(`/profile/orders/${encodeURIComponent(ref)}/tracking`)}`,
       "",
       "Merci de votre confiance,",
       "L'équipe LN COS",
-    ].join("\n"),
+    ]
+      .filter(Boolean)
+      .join("\n"),
   });
 
   if (error) {

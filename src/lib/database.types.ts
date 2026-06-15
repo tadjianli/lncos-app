@@ -274,6 +274,8 @@ export interface Database {
           promo_code: string | null;
           total: number;
           tracking_number: string | null;
+          carrier: string | null;
+          tracking_url: string | null;
           estimated_delivery: string | null;
           delivered_at: string | null;
           shipping_address: Json | null;
@@ -298,6 +300,8 @@ export interface Database {
           promo_code?: string | null;
           total: number;
           tracking_number?: string | null;
+          carrier?: string | null;
+          tracking_url?: string | null;
           estimated_delivery?: string | null;
           delivered_at?: string | null;
           shipping_address?: Json | null;
@@ -315,6 +319,8 @@ export interface Database {
           status?: "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
           payment_status?: "pending" | "paid" | "refunded";
           tracking_number?: string | null;
+          carrier?: string | null;
+          tracking_url?: string | null;
           estimated_delivery?: string | null;
           delivered_at?: string | null;
           shipping_address?: Json | null;

@@ -8,6 +8,7 @@ import {
   OrderDetailModal,
   type AdminOrder,
   type OrderStatus,
+  type OrderSavePayload,
   STATUS_META,
   PAY_META,
   STATUS_OPTIONS,
@@ -37,7 +38,7 @@ export function OrdersModule() {
     const { data: orderRows } = await sb
       .from("orders")
       .select(
-        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,shipping_address,stripe_session_id,payment_provider,confirmation_email_sent_at,shipped_email_sent_at,estimated_delivery,delivered_at,created_at",
+        "id,user_id,status,payment_status,subtotal,shipping_cost,discount,promo_code,total,tracking_number,carrier,tracking_url,shipping_address,stripe_session_id,payment_provider,confirmation_email_sent_at,shipped_email_sent_at,estimated_delivery,delivered_at,created_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -85,22 +86,18 @@ export function OrdersModule() {
     return () => { getSupabase().removeChannel(channel); };
   }, [load]);
 
-  const updateStatus = async (
-    id: string,
-    status: OrderStatus,
-    trackingNumber?: string | null,
-  ) => {
+  const updateStatus = async (id: string, payload: OrderSavePayload) => {
     setUpdating(id);
     try {
-      const body: { status: OrderStatus; tracking_number?: string | null } = { status };
-      if (trackingNumber !== undefined) {
-        body.tracking_number = trackingNumber;
-      }
-
       const res = await fetch(`/api/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          status: payload.status,
+          tracking_number: payload.trackingNumber,
+          carrier: payload.carrier,
+          tracking_url: payload.trackingUrl,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Mise à jour échouée");
@@ -110,8 +107,10 @@ export function OrdersModule() {
           o.id === id
             ? {
                 ...o,
-                status,
-                ...(trackingNumber !== undefined ? { tracking_number: trackingNumber } : {}),
+                status: payload.status,
+                tracking_number: payload.trackingNumber,
+                carrier: payload.carrier,
+                tracking_url: payload.trackingUrl,
               }
             : o,
         ),
@@ -120,8 +119,10 @@ export function OrdersModule() {
         prev?.id === id
           ? {
               ...prev,
-              status,
-              ...(trackingNumber !== undefined ? { tracking_number: trackingNumber } : {}),
+              status: payload.status,
+              tracking_number: payload.trackingNumber,
+              carrier: payload.carrier,
+              tracking_url: payload.trackingUrl,
             }
           : prev,
       );
@@ -274,7 +275,14 @@ export function OrdersModule() {
                         className="adm-select"
                         value={o.status}
                         disabled={updating === o.id}
-                        onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)}
+                        onChange={(e) =>
+                          updateStatus(o.id, {
+                            status: e.target.value as OrderStatus,
+                            trackingNumber: o.tracking_number,
+                            carrier: o.carrier,
+                            trackingUrl: o.tracking_url,
+                          })
+                        }
                       >
                         {STATUS_OPTIONS.map((s) => (
                           <option key={s} value={s}>{STATUS_META[s].label}</option>
@@ -294,8 +302,8 @@ export function OrdersModule() {
           order={selected}
           saving={updating === selected.id}
           onClose={() => setSelected(null)}
-          onSave={(status, trackingNumber) => {
-            void updateStatus(selected.id, status, trackingNumber);
+          onSave={(payload) => {
+            void updateStatus(selected.id, payload);
           }}
         />
       )}

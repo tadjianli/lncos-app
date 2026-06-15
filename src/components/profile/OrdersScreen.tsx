@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
@@ -10,6 +11,7 @@ import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewSubmitModal } from "@/components/profile/ReviewSubmitModal";
 import { useStore } from "@/lib/store";
 import { formatOrderRef } from "@/lib/order-ref";
+import { isTrackableStatus } from "@/lib/order-tracking";
 
 /* ─── Types ───────────────────────────────────────────────────────────── */
 
@@ -31,6 +33,8 @@ interface Order {
   total: number;
   items: OrderItem[];
   tracking: string | null;
+  carrier: string | null;
+  trackingUrl: string | null;
 }
 
 type Tab = "en-cours" | "livrees" | "annulees";
@@ -218,10 +222,25 @@ function OrderCard({
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 2, gap: 10 }}>
         <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", flexShrink: 0 }}>{order.total.toFixed(2)} €</span>
-        {order.tracking && (
-          <button style={{ padding: "8px 16px", borderRadius: "var(--r-pill)", border: "1px solid rgba(212,175,55,.45)", color: "var(--gold)", fontSize: 13, fontWeight: 600, background: "transparent", display: "flex", alignItems: "center", gap: 5 }}>
+        {isTrackableStatus(order.status) && (
+          <Link
+            href={`/profile/orders/${encodeURIComponent(order.id)}/tracking`}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "var(--r-pill)",
+              border: "1px solid rgba(212,175,55,.45)",
+              color: "var(--gold)",
+              fontSize: 13,
+              fontWeight: 600,
+              background: "transparent",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              textDecoration: "none",
+            }}
+          >
             <Icon name="truck" size={14} color="#D4AF37" /> Suivre
-          </button>
+          </Link>
         )}
       </div>
     </div>
@@ -269,7 +288,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
 
     const { data: orderRows } = await getSupabase()
       .from("orders")
-      .select("id, status, total, tracking_number, created_at")
+      .select("id, status, total, tracking_number, carrier, tracking_url, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(100);
@@ -302,6 +321,8 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
       total: Number(o.total),
       items: itemsByOrder[o.id] ?? [],
       tracking: o.tracking_number,
+      carrier: o.carrier,
+      trackingUrl: o.tracking_url,
     })));
     setLoading(false);
   }, []);
