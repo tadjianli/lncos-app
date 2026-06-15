@@ -9,7 +9,12 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
-import { canNavigateProductBack } from "@/lib/product-navigation";
+import { canNavigateProductBack, PRODUCT_OVERLAY_HISTORY_KEY } from "@/lib/product-navigation";
+import {
+  productExitDurationMs,
+  registerProductExitAnimator,
+  unregisterProductExitAnimator,
+} from "@/lib/product-exit-animation";
 import { usePublicProducts } from "@/lib/client-supabase";
 import {
   buildProductGallery,
@@ -255,10 +260,12 @@ export function ProductDetail({
   const [activeImg, setActiveImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const [openSections, setOpenSections] = useState<Set<string>>(() => new Set());
   const [galleryInView, setGalleryInView] = useState(true);
   const galleryRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addToCart = useStore((s) => s.addToCart);
   const toggleFav = useStore((s) => s.toggleFav);
   const favs = useStore((s) => s.favs);
@@ -293,6 +300,51 @@ export function ProductDetail({
     setActiveImg(0);
     setQty(1);
   }, [selectedVariant?.id, p.id]);
+
+  useEffect(() => {
+    registerProductExitAnimator((complete) => {
+      const duration = productExitDurationMs();
+      if (duration <= 0) {
+        complete();
+        return;
+      }
+      setIsExiting(true);
+      exitTimerRef.current = setTimeout(() => {
+        exitTimerRef.current = null;
+        complete();
+      }, duration);
+    });
+    return () => {
+      unregisterProductExitAnimator();
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    };
+  }, []);
+
+  const handleBack = useCallback(() => {
+    if (isExiting) return;
+
+    const hasProductHistory =
+      typeof window !== "undefined" &&
+      window.history.state?.[PRODUCT_OVERLAY_HISTORY_KEY] === true &&
+      window.history.length > 1;
+
+    if (hasProductHistory) {
+      onClose();
+      return;
+    }
+
+    const duration = productExitDurationMs();
+    if (duration <= 0) {
+      onClose();
+      return;
+    }
+
+    setIsExiting(true);
+    exitTimerRef.current = setTimeout(() => {
+      exitTimerRef.current = null;
+      onClose();
+    }, duration);
+  }, [isExiting, onClose]);
 
   useEffect(() => {
     const gallery = galleryRef.current;
@@ -406,13 +458,15 @@ export function ProductDetail({
   ]);
 
   return (
-    <div className={`pd-overlay${enterFromListing ? " pd-overlay--from-listing" : ""}`}>
+    <div
+      className={`pd-overlay${enterFromListing ? " pd-overlay--from-listing" : ""}${isExiting ? " pd-overlay--exit" : ""}`}
+    >
       <div className="pd-overlay__handle" aria-hidden />
 
       {/* ── Header produit — retour toujours visible ; actions droite au scroll ── */}
       <div className="pd-overlay__header pd-float-controls">
         {showBackButton && (
-          <MobileBackButton onClick={onClose} floating aria-label="Retour" />
+          <MobileBackButton onClick={handleBack} floating aria-label="Retour" />
         )}
 
         <div

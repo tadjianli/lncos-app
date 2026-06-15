@@ -2993,6 +2993,45 @@
   }
 }
 
+.pd-overlay--exit {
+  animation: pdOverlayExit 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+  pointer-events: none;
+}
+
+.pd-overlay--from-listing.pd-overlay--exit {
+  animation: pdOverlayExitSoft 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes pdOverlayExit {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes pdOverlayExitSoft {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-overlay--exit,
+  .pd-overlay--from-listing.pd-overlay--exit {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Fiche produit avec tab bar — overlay au-dessus de la nav, pas par-dessus */
 .app-shell--with-nav .pd-overlay {
   bottom: var(--bottom-nav-h);
