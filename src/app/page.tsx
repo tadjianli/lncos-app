@@ -15,7 +15,6 @@ import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicHomeSections } from "@/lib/client-supabase";
 import { usePublicProducts } from "@/lib/client-supabase";
-import { HomeBeautyVideosSection } from "@/components/home/HomeBeautyVideosSection";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
 import type { Product } from "@/lib/data";
 import {
@@ -631,19 +630,6 @@ export default function HomePage() {
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <TransformationsSection title={section.title} />
-              </Reveal>
-            </div>
-          );
-
-        case "reels":
-          return (
-            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
-              <Reveal>
-                <HomeBeautyVideosSection
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  cta={section.cta ?? "Tout voir"}
-                />
               </Reveal>
             </div>
           );

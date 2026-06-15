@@ -10,6 +10,7 @@ import { dbToSection } from "./home-sections-db";
 import {
   DEFAULT_HOME_SECTIONS,
   visibleSections,
+  withoutDeprecatedSections,
   type HomeSection,
   type PageSlug,
 } from "./home-sections";
@@ -72,7 +73,8 @@ export {
 
 /* ── usePublicPageSections ───────────────────────────────────── */
 function pageFallback(slug: PageSlug): HomeSection[] {
-  return slug === "home" ? DEFAULT_HOME_SECTIONS : (DEFAULT_SECTIONS_BY_PAGE[slug] ?? []);
+  const base = slug === "home" ? DEFAULT_HOME_SECTIONS : (DEFAULT_SECTIONS_BY_PAGE[slug] ?? []);
+  return withoutDeprecatedSections(base);
 }
 
 export function usePublicPageSections(pageSlug: PageSlug = "home") {
@@ -103,7 +105,7 @@ export function usePublicPageSections(pageSlug: PageSlug = "home") {
           .order("position");
 
         if (!error && data && data.length > 0) {
-          const mapped = data.map(dbToSection);
+          const mapped = withoutDeprecatedSections(data.map(dbToSection));
           setSections(mapped);
           if (!preview && pageSlug === "home") {
             useHomeSectionsStore.getState().hydratePublished(mapped);

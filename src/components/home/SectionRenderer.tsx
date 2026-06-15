@@ -55,7 +55,6 @@ export interface SectionRendererProps extends SectionCallbacks {
   renderPromo:       () => React.ReactNode;
   renderBento:       () => React.ReactNode;
   renderQuote:       () => React.ReactNode;
-  renderReels:       () => React.ReactNode;
   renderNewsletter:  () => React.ReactNode;
 }
 
@@ -76,7 +75,6 @@ export function SectionRenderer({
   renderPromo,
   renderBento,
   renderQuote,
-  renderReels,
   renderNewsletter,
 }: SectionRendererProps): React.ReactNode {
   if (!section.enabled) return null;
@@ -100,8 +98,6 @@ export function SectionRenderer({
       return renderBento();
     case "quote":
       return renderQuote();
-    case "reels":
-      return renderReels();
     case "newsletter":
       return renderNewsletter();
     default:

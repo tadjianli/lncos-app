@@ -17,6 +17,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import {
   DEFAULT_HOME_SECTIONS,
   visibleSections,
+  withoutDeprecatedSections,
   type HomeSection,
   type SectionType,
 } from "@/lib/home-sections";
@@ -160,7 +161,7 @@ export const useHomeSectionsStore = create<HomeSectionsState>()(
       },
 
       hydratePublished(sections) {
-        set({ published: sections, draft: null, previewMode: false });
+        set({ published: withoutDeprecatedSections(sections), draft: null, previewMode: false });
       },
     }),
     {

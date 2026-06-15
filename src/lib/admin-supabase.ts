@@ -11,6 +11,7 @@ import { getSupabase } from "./supabase";
 import type { Database, Json } from "./database.types";
 import type { Popup, Appointment, Notification } from "./rdv-store";
 import type { HomeSection } from "./home-sections";
+import { withoutDeprecatedSections } from "./home-sections";
 import { dbToSection, sectionToDb } from "./home-sections-db";
 import type { Category, Product } from "./data";
 import type { ProductReview, ReviewStatus } from "./reviews";
@@ -555,10 +556,10 @@ export function useSupabasePageSections(pageSlug: PageSlug) {
       .eq("page_slug", pageSlug)
       .order("position");
     if (!data) return;
-    const pub = data.filter((r) => !r.is_draft).map(dbToSection);
-    setPublished(pub.length > 0 ? pub : DEFAULT_SECTIONS_BY_PAGE[pageSlug] ?? []);
+    const pub = withoutDeprecatedSections(data.filter((r) => !r.is_draft).map(dbToSection));
+    setPublished(pub.length > 0 ? pub : withoutDeprecatedSections(DEFAULT_SECTIONS_BY_PAGE[pageSlug] ?? []));
     const draftRows = data.filter((r) => r.is_draft);
-    setDraft(draftRows.length > 0 ? draftRows.map(dbToSection) : null);
+    setDraft(draftRows.length > 0 ? withoutDeprecatedSections(draftRows.map(dbToSection)) : null);
     setLoading(false);
   }, [pageSlug]);
 

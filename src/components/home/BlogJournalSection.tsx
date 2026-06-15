@@ -6,6 +6,8 @@ import { Icon } from "@/components/shared/Icon";
 import { BlogArticleCard } from "@/components/blog/BlogArticleCard";
 import { usePublicBlogContent } from "@/lib/content-pages-hooks";
 
+const HOME_JOURNAL_ARTICLE_LIMIT = 2;
+
 interface BlogJournalSectionProps {
   title?: string;
   subtitle?: string;
@@ -21,7 +23,10 @@ export function BlogJournalSection({
 }: BlogJournalSectionProps) {
   const { articles, categories, loading } = usePublicBlogContent();
 
-  const latest = useMemo(() => articles.slice(0, 3), [articles]);
+  const latest = useMemo(
+    () => articles.slice(0, HOME_JOURNAL_ARTICLE_LIMIT),
+    [articles]
+  );
 
   if (!loading && latest.length === 0) return null;
 

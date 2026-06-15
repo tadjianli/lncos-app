@@ -12,7 +12,6 @@ export type SectionType =
   | "products"
   | "routine"
   | "promo"
-  | "reels"
   | "bento"
   | "quote"
   | "reviews"
@@ -217,19 +216,6 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     schedule: { enabled: false, start: "", end: "" },
   },
   {
-    id: "reels-1",
-    type: "reels",
-    name: "Reels beauté",
-    enabled: true,
-    variant: "vertical",
-    title: "🎥 Vidéos Beauté",
-    subtitle: "Découvrez nos conseils, démonstrations, nouveautés, routines et astuces beauté en vidéo.",
-    cta: "Tout voir",
-    device: "all",
-    audience: "all",
-    schedule: { enabled: false, start: "", end: "" },
-  },
-  {
     id: "newsletter-1",
     type: "newsletter",
     name: "Newsletter",
@@ -244,6 +230,13 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     schedule: { enabled: false, start: "", end: "" },
   },
 ];
+
+/** Section types retirées de l'accueil (données legacy Supabase / localStorage). */
+const DEPRECATED_SECTION_TYPES = new Set<string>(["reels"]);
+
+export function withoutDeprecatedSections(sections: HomeSection[]): HomeSection[] {
+  return sections.filter((sec) => !DEPRECATED_SECTION_TYPES.has(sec.type));
+}
 
 /** Filter sections visible for a given render context */
 export function visibleSections(
@@ -264,5 +257,5 @@ export function visibleSections(
     return true;
   });
 
-  return filterSectionsForVipProgram(visible);
+  return filterSectionsForVipProgram(withoutDeprecatedSections(visible));
 }

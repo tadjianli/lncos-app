@@ -62,7 +62,7 @@ export const DEFAULT_SECTIONS_BY_PAGE: Record<PageSlug, HomeSection[]> = {
 
 /** Section types allowed per page in App Builder */
 export const ALLOWED_TYPES_BY_PAGE: Record<PageSlug, SectionType[]> = {
-  home: ["hero", "trust", "products", "routine", "promo", "reels", "bento", "quote", "reviews", "transformations", "newsletter"],
+  home: ["hero", "trust", "products", "routine", "promo", "bento", "quote", "reviews", "transformations", "newsletter"],
   boutique: ["hero", "products", "trust", "promo", "newsletter", "quote"],
   discover: ["hero", "categories", "products", "promo", "trust"],
   rdv: ["hero", "trust", "cta", "promo", "quote"],

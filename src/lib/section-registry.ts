@@ -163,17 +163,6 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
       { key: "title", label: "Titre de section", type: "text" },
     ],
   },
-  reels: {
-    type: "reels",
-    label: "Reels beauté",
-    icon: "play",
-    description: "Carousel de vidéos courtes / reels.",
-    allowMultiple: false,
-    fields: [
-      { key: "title",   label: "Titre",           type: "text" },
-      { key: "variant", label: "Disposition",     type: "select", options: ["vertical", "horizontal"] },
-    ],
-  },
   newsletter: {
     type: "newsletter",
     label: "Newsletter / Club",
