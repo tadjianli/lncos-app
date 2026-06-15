@@ -21,14 +21,20 @@ export function useLegalSettings() {
       return;
     }
     setLoading(true);
-    const { data, error } = await getSupabase()
-      .from("legal_settings")
-      .select("hosting_info, delivery_reunion, delivery_france, delivery_europe, delivery_international")
-      .eq("id", "default")
-      .maybeSingle();
-    if (error) console.warn("[legal-settings] load:", error.message);
-    setSettings(dbToLegalSettings(data));
-    setLoading(false);
+    try {
+      const { data, error } = await getSupabase()
+        .from("legal_settings")
+        .select("hosting_info, delivery_reunion, delivery_france, delivery_europe, delivery_international")
+        .eq("id", "default")
+        .maybeSingle();
+      if (error) console.warn("[legal-settings] load:", error.message);
+      setSettings(dbToLegalSettings(data));
+    } catch (err) {
+      console.warn("[legal-settings] load failed:", err);
+      setSettings(DEFAULT_LEGAL_SETTINGS);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

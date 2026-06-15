@@ -1,6 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function OfflinePage() {
+  useEffect(() => {
+    if (!navigator.onLine) return;
+    const timer = window.setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    const onOnline = () => window.location.reload();
+    window.addEventListener("online", onOnline);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("online", onOnline);
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -27,9 +43,10 @@ export default function OfflinePage() {
       >
         LN COS
       </p>
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Vous êtes hors ligne</h1>
+      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Connexion instable</h1>
       <p style={{ margin: 0, maxWidth: 280, lineHeight: 1.5, color: "#a3a3a3" }}>
-        Vérifiez votre connexion internet, puis rechargez la page.
+        Impossible de charger la page pour le moment. Nouvelle tentative automatique si la connexion
+        revient…
       </p>
       <Link
         href="/"

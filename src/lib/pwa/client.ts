@@ -64,7 +64,7 @@ async function applyVersionUpdate(
   nextVersion: string
 ): Promise<void> {
   updateActivationPending = true;
-  await clearLncosCaches();
+  // Ne pas vider le cache shell actif — le handler activate du SW purge les anciennes versions.
   await registration.update();
   await activateWaitingWorker(registration);
   setStoredVersion(nextVersion);
@@ -96,7 +96,6 @@ export async function checkForAppUpdate(
     await applyVersionUpdate(registration, remoteVersion);
   } else {
     updateActivationPending = true;
-    await clearLncosCaches();
     setStoredVersion(remoteVersion);
     scheduleReload();
   }

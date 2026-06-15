@@ -4,6 +4,8 @@ import { getSiteUrl } from "@/lib/site-url";
 import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
 import { NavLayoutDebug } from "@/components/layout/NavLayoutDebug";
 import { PwaUpdateManager } from "@/components/pwa/PwaUpdateManager";
+import { PwaOfflineRecovery } from "@/components/pwa/PwaOfflineRecovery";
+import { PwaNavDiagnostics } from "@/components/pwa/PwaNavDiagnostics";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -109,6 +111,8 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <PwaUpdateManager />
+        <PwaOfflineRecovery />
+        <PwaNavDiagnostics />
         <StandaloneViewportSync />
         {process.env.NODE_ENV === "development" ? <NavLayoutDebug /> : null}
         {children}
