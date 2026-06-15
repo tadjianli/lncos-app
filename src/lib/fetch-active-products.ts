@@ -3,6 +3,7 @@ import type { Product } from "./data";
 import type { ProductVariant } from "./product-catalog";
 import { normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
+import { deriveIsFlashSale } from "./flash-sales";
 import { PRODUCT_SELECT, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
 
 type DbVariantRow = {
@@ -61,6 +62,8 @@ export function mapProduct(row: {
       position: v.position,
     }));
 
+  const homeVisibility = normalizeHomeVisibility(row.home_visibility, row.tag);
+
   return {
     id: row.id,
     name: row.name,
@@ -85,7 +88,8 @@ export function mapProduct(row: {
     videoUrl: row.video_url ?? null,
     imageUrl: row.image_url ?? null,
     productVariants: richVariants,
-    homeVisibility: normalizeHomeVisibility(row.home_visibility, row.tag),
+    homeVisibility,
+    isFlashSale: deriveIsFlashSale({ homeVisibility, tag: row.tag }),
     active: row.active ?? true,
     seoKeyword: row.seo_keyword ?? null,
     seoTitle: row.seo_title ?? null,

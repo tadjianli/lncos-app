@@ -5,15 +5,18 @@ import { getSupabase, isSupabaseConfigured } from "./supabase";
 import type { Product, Category } from "./data";
 import { products as STATIC_PRODUCTS, categories as STATIC_CATEGORIES } from "./data";
 import { normalizeHomeVisibility } from "./product-home-visibility";
+import { withFlashSaleFlag } from "./flash-sales";
 import { fetchActiveProductsFromDb } from "./fetch-active-products";
 import { applyCategoryProductCounts } from "./category-product-counts";
 
 type Listener = () => void;
 
-const initialProducts: Product[] = [...STATIC_PRODUCTS].reverse().map((p) => ({
-  ...p,
-  homeVisibility: normalizeHomeVisibility(p.homeVisibility, p.tag),
-}));
+const initialProducts: Product[] = [...STATIC_PRODUCTS].reverse().map((p) =>
+  withFlashSaleFlag({
+    ...p,
+    homeVisibility: normalizeHomeVisibility(p.homeVisibility, p.tag),
+  })
+);
 
 type CatalogState = {
   products: Product[];

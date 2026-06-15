@@ -7,6 +7,7 @@ import { ProductImagePlaceholder } from "./ProductImagePlaceholder";
 import type { Product } from "@/lib/data";
 import { hasProductImage, resolveProductImage } from "@/lib/product-catalog";
 import { preloadImage } from "@/lib/image-session-cache";
+import { isFlashSaleProduct } from "@/lib/flash-sales";
 
 interface ProductCardProps {
   p: Product;
@@ -44,6 +45,8 @@ export const ProductCard = memo(function ProductCard({
 
   const imgSrc = resolveProductImage(p);
   const showImage = hasProductImage(p) && imgSrc != null;
+  const flashBadge = isFlashSaleProduct(p);
+  const displayTag = flashBadge ? "Flash" : p.tag;
 
   const handleOpen = useCallback(() => {
     if (imgSrc) void preloadImage(imgSrc);
@@ -85,9 +88,9 @@ export const ProductCard = memo(function ProductCard({
           <ProductImagePlaceholder label={p.name} />
         )}
 
-        {p.tag && (
-          <span className={`prod-tag${p.tag === "Flash" ? " prod-tag--flash" : ""}`}>
-            {p.tag}
+        {displayTag && (
+          <span className={`prod-tag${flashBadge || p.tag === "Flash" ? " prod-tag--flash" : ""}`}>
+            {displayTag}
           </span>
         )}
 

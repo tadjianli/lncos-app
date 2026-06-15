@@ -47,6 +47,8 @@ export interface Product {
   productVariants?: ProductVariant[];
   /** Sections accueil cochées en admin (home_visibility) */
   homeVisibility?: ProductHomeVisibility;
+  /** Vente flash active — prêt pour futur champ DB dédié */
+  isFlashSale?: boolean;
   /** Publié côté boutique (products.active) */
   active?: boolean;
   /** SEO — mot-clé principal */

@@ -15,3 +15,4 @@ export * from "./notification";
 export * from "./appointment";
 export * from "./loyalty";
 export * from "./feed";
+export * from "./blog";
