@@ -2,7 +2,8 @@
  * LN COS — Accès serveur ai_settings + logs
  */
 
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/supabase/env";
 import { decryptApiKey, encryptApiKey } from "@/lib/ai-crypto";
 import {
   aiSettingsToDb,
@@ -13,14 +14,26 @@ import {
   type AiUsageStats,
   type DbAiSettings,
 } from "@/lib/ai-settings";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
 const SETTINGS_ID = "default";
+
+type AiSupabase = SupabaseClient<Database>;
+
+/** Service role si disponible, sinon session admin (RLS is_admin). */
+async function createAiSupabaseClient(): Promise<AiSupabase> {
+  if (isSupabaseConfigured() && SUPABASE_SERVICE_ROLE_KEY) {
+    return createServiceClient();
+  }
+  return createClient();
+}
 
 export async function loadAiSettingsServer(): Promise<{
   settings: AiSettings;
   apiKey: string | null;
 }> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   const { data, error } = await supabase
     .from("ai_settings")
     .select("*")
@@ -47,7 +60,7 @@ export async function saveAiSettingsServer(
   input: AiSettingsInput,
   apiKeyPlain?: string
 ): Promise<AiSettings> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   const { data: existing } = await supabase
     .from("ai_settings")
     .select("api_key_encrypted")
@@ -77,7 +90,7 @@ export async function saveAiSettingsServer(
 }
 
 export async function markAiTestResult(ok: boolean): Promise<void> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   await supabase
     .from("ai_settings")
     .update({
@@ -97,7 +110,7 @@ export async function logAiUsage(opts: {
   tokensOutput: number;
   costEur: number;
 }): Promise<void> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   await supabase.from("ai_usage_logs").insert({
     user_id: opts.userId,
     user_email: opts.userEmail ?? null,
@@ -111,7 +124,7 @@ export async function logAiUsage(opts: {
 }
 
 export async function fetchAiUsageLogs(limit = 50): Promise<AiUsageLogRow[]> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   const { data, error } = await supabase
     .from("ai_usage_logs")
     .select("id,user_email,action,provider,model,tokens_input,tokens_output,cost_eur,created_at")
@@ -123,7 +136,7 @@ export async function fetchAiUsageLogs(limit = 50): Promise<AiUsageLogRow[]> {
 }
 
 export async function fetchAiUsageStats(): Promise<AiUsageStats> {
-  const supabase = createServiceClient();
+  const supabase = await createAiSupabaseClient();
   const { data, error } = await supabase
     .from("ai_usage_logs")
     .select("cost_eur, created_at");

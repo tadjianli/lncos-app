@@ -25,7 +25,13 @@ export async function GET() {
       encryptionConfigured: isEncryptionConfigured(),
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Erreur serveur";
+    const raw = e instanceof Error ? e.message : "Erreur serveur";
+    const msg =
+      raw.includes("SUPABASE_SERVICE_ROLE_KEY") || raw.includes("AI_ENCRYPTION_KEY")
+        ? "Chiffrement indisponible : ajoutez AI_ENCRYPTION_KEY ou SUPABASE_SERVICE_ROLE_KEY dans .env.local"
+        : raw.includes("ai_settings") || raw.includes("does not exist")
+          ? "Table ai_settings absente — appliquez la migration Supabase 20260713_ai_settings.sql"
+          : raw;
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
@@ -51,7 +57,13 @@ export async function POST(req: Request) {
       },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Erreur serveur";
+    const raw = e instanceof Error ? e.message : "Erreur serveur";
+    const msg =
+      raw.includes("SUPABASE_SERVICE_ROLE_KEY") || raw.includes("AI_ENCRYPTION_KEY")
+        ? "Chiffrement indisponible : ajoutez AI_ENCRYPTION_KEY ou SUPABASE_SERVICE_ROLE_KEY dans .env.local"
+        : raw.includes("ai_settings") || raw.includes("does not exist")
+          ? "Table ai_settings absente — appliquez la migration Supabase 20260713_ai_settings.sql"
+          : raw;
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

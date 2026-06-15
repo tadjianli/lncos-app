@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
@@ -148,6 +148,11 @@ export function SettingsModule() {
     setToast({ msg, variant });
     setTimeout(() => setToast(null), 2500);
   }
+
+  const notifyAi = useCallback((msg: string, error?: boolean) => {
+    setToast({ msg, variant: error ? "error" : "success" });
+    setTimeout(() => setToast(null), 2500);
+  }, []);
 
   function save() {
     localStorage.setItem("lncos-admin-settings", JSON.stringify(values));
@@ -365,9 +370,7 @@ export function SettingsModule() {
           label: "Intelligence Artificielle",
           sub: "Fournisseurs IA, SEO, blog, historique et coûts",
           content: (
-            <AiSettingsPanel
-              onNotify={(msg, error) => showToast(msg, error ? "error" : "success")}
-            />
+            <AiSettingsPanel onNotify={notifyAi} />
           ),
         },
       ],

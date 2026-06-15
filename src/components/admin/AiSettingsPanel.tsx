@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import {
@@ -129,9 +129,13 @@ export function AiSettingsPanel({
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [openCard, setOpenCard] = useState<string | null>("Fournisseur IA");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const onNotifyRef = useRef(onNotify);
+  onNotifyRef.current = onNotify;
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const res = await fetch("/api/admin/ai/settings");
       const data = await res.json();
@@ -140,14 +144,15 @@ export function AiSettingsPanel({
       if (data.logs) setLogs(data.logs);
       if (data.stats) setStats(data.stats);
     } catch (e) {
-      onNotify(e instanceof Error ? e.message : "Erreur de chargement", true);
+      const msg = e instanceof Error ? e.message : "Erreur de chargement";
+      setLoadError(msg);
     } finally {
       setLoading(false);
     }
-  }, [onNotify]);
+  }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   function patch(partial: Partial<AiSettings>) {
@@ -183,9 +188,9 @@ export function AiSettingsPanel({
       setApiKeyInput("");
       setShowApiKey(false);
       await load();
-      onNotify("Paramètres IA enregistrés");
+      onNotifyRef.current("Paramètres IA enregistrés");
     } catch (e) {
-      onNotify(e instanceof Error ? e.message : "Erreur", true);
+      onNotifyRef.current(e instanceof Error ? e.message : "Erreur", true);
     } finally {
       setSaving(false);
     }
@@ -209,10 +214,10 @@ export function AiSettingsPanel({
       }
       patch({ lastTestOk: true, lastTestAt: new Date().toISOString() });
       await load();
-      onNotify(data.message ?? "Connexion réussie");
+      onNotifyRef.current(data.message ?? "Connexion réussie");
     } catch (e) {
       patch({ lastTestOk: false });
-      onNotify(e instanceof Error ? e.message : "Test échoué", true);
+      onNotifyRef.current(e instanceof Error ? e.message : "Test échoué", true);
     } finally {
       setTesting(false);
     }
@@ -231,6 +236,29 @@ export function AiSettingsPanel({
 
   return (
     <>
+      {loadError && (
+        <div
+          role="alert"
+          style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: 10,
+            background: "rgba(194,85,122,.08)",
+            border: "1px solid rgba(194,85,122,.25)",
+            fontSize: 12.5,
+            color: "var(--tone-pink)",
+            lineHeight: 1.55,
+          }}
+        >
+          {loadError}
+          {loadError.includes("ai_settings") || loadError.includes("does not exist") ? (
+            <div style={{ marginTop: 6, color: "var(--adm-ink-soft)" }}>
+              Appliquez la migration Supabase{" "}
+              <code style={{ fontSize: 11 }}>20260713_ai_settings.sql</code>.
+            </div>
+          ) : null}
+        </div>
+      )}
       <AdminAccordionStack className="adm-settings-accordion-stack">
         <AdminAccordion
           title="Fournisseur IA"
