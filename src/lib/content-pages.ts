@@ -3,12 +3,11 @@
  * Types, valeurs par défaut et mappers Supabase.
  */
 
-import type { BlogArticle, BlogCategory } from "./contracts/blog";
+import type { BlogArticle, BlogCategory, BlogFaqItem } from "./contracts/blog";
+import { parseBlogBody } from "./blog-blocks";
+import type { Json } from "./database.types";
 import type { SocialNetworkLink } from "./social-links";
-import {
-  BLOG_ARTICLES as STATIC_BLOG_ARTICLES,
-  BLOG_CATEGORIES as STATIC_BLOG_CATEGORIES,
-} from "./blog-content";
+import { BLOG_CATEGORIES as STATIC_BLOG_CATEGORIES } from "./blog-content";
 import { SOCIAL_NETWORK_LINKS as STATIC_SOCIAL_LINKS } from "./social-links";
 
 /* ── Flash sales settings ─────────────────────────────────────────────────── */
@@ -173,6 +172,14 @@ export interface DbBlogArticle {
   cover_url: string | null;
   published: boolean;
   position: number;
+  body?: unknown;
+  author_name?: string;
+  seo_title?: string | null;
+  meta_description?: string | null;
+  seo_keyword?: string | null;
+  canonical_url?: string | null;
+  faq?: unknown;
+  related_product_ids?: string[] | null;
 }
 
 export function dbToBlogCategory(row: DbBlogCategory): AdminBlogCategory {
@@ -197,6 +204,18 @@ export function blogCategoryToDb(c: Partial<AdminBlogCategory> & { id: string })
   };
 }
 
+function parseBlogFaq(raw: unknown): BlogFaqItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((item): item is BlogFaqItem => {
+      if (!item || typeof item !== "object") return false;
+      const row = item as { question?: unknown; answer?: unknown };
+      return typeof row.question === "string" && typeof row.answer === "string";
+    })
+    .map((item) => ({ question: item.question.trim(), answer: item.answer.trim() }))
+    .filter((item) => item.question && item.answer);
+}
+
 export function dbToBlogArticle(row: DbBlogArticle): BlogArticle {
   return {
     id: row.id,
@@ -209,6 +228,14 @@ export function dbToBlogArticle(row: DbBlogArticle): BlogArticle {
     featured: row.featured,
     coverUrl: row.cover_url,
     published: row.published,
+    authorName: row.author_name ?? "Équipe LN COS",
+    body: parseBlogBody(row.body),
+    seoTitle: row.seo_title ?? null,
+    metaDescription: row.meta_description ?? null,
+    seoKeyword: row.seo_keyword ?? null,
+    canonicalUrl: row.canonical_url ?? null,
+    faq: parseBlogFaq(row.faq),
+    relatedProductIds: row.related_product_ids ?? [],
   };
 }
 
@@ -225,6 +252,14 @@ export function blogArticleToDb(a: Partial<BlogArticle> & { id: string; slug: st
     cover_url: a.coverUrl ?? null,
     published: a.published ?? false,
     position: 0,
+    body: (a.body ?? []) as unknown as Json,
+    author_name: a.authorName ?? "Équipe LN COS",
+    seo_title: a.seoTitle ?? null,
+    meta_description: a.metaDescription ?? null,
+    seo_keyword: a.seoKeyword ?? null,
+    canonical_url: a.canonicalUrl ?? null,
+    faq: (a.faq ?? []) as unknown as Json,
+    related_product_ids: a.relatedProductIds ?? [],
   };
 }
 
@@ -237,7 +272,7 @@ export function staticBlogCategories(): AdminBlogCategory[] {
 }
 
 export function staticBlogArticles(): BlogArticle[] {
-  return [...STATIC_BLOG_ARTICLES];
+  return [];
 }
 
 /* ── Social page settings ─────────────────────────────────────────────────── */

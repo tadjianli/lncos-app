@@ -5,6 +5,8 @@ import { AppBuilder } from "@/components/admin/AppBuilder";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { Icon } from "@/components/shared/Icon";
 import type { BlogArticle } from "@/lib/contracts/blog";
+import { emptyBlogArticle } from "@/lib/contracts/blog";
+import { BlogArticleEditor } from "@/components/admin/BlogArticleEditor";
 import {
   useAdminBlogContent,
   useAdminFlashSalesSettings,
@@ -142,56 +144,13 @@ function CategoryEditor({
   );
 }
 
-function ArticleEditor({
-  article,
-  categories,
-  onClose,
-  onSave,
-}: {
+function ArticleEditor(props: {
   article: BlogArticle;
   categories: AdminBlogCategory[];
   onClose: () => void;
   onSave: (a: BlogArticle) => void;
 }) {
-  const [form, setForm] = useState({ ...article });
-  return (
-    <div className="pop-editor-modal" onClick={onClose}>
-      <div className="pop-editor pop-editor-wide" onClick={(e) => e.stopPropagation()}>
-        <div className="pop-editor-head">
-          <div style={{ fontSize: 18, fontWeight: 700 }}>{article.id.startsWith("__new") ? "Nouvel article" : "Modifier article"}</div>
-          <button className="adm-iconbtn" onClick={onClose}><Icon name="x" size={17} /></button>
-        </div>
-        <div className="pop-editor-form" style={{ padding: 20 }}>
-          <FieldRow label="Titre" value={form.title} onChange={(v) => setForm({ ...form, title: v, slug: form.slug || slugifyTitle(v) })} />
-          <FieldRow label="Slug URL" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} />
-          <FieldRow label="Extrait" value={form.excerpt} onChange={(v) => setForm({ ...form, excerpt: v })} multiline />
-          <div className="pop-field-row">
-            <label className="pop-field-label">Catégorie</label>
-            <select className="pop-input pop-select" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-              {categories.filter((c) => c.enabled).map((c) => (
-                <option key={c.id} value={c.id}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-          <FieldRow label="Date publication" value={form.publishedAt} onChange={(v) => setForm({ ...form, publishedAt: v })} />
-          <FieldRow label="Minutes de lecture" value={String(form.readMinutes)} onChange={(v) => setForm({ ...form, readMinutes: Number(v) || 5 })} />
-          <FieldRow label="Image cover (URL)" value={form.coverUrl ?? ""} onChange={(v) => setForm({ ...form, coverUrl: v || null })} />
-          <div className="pop-toggle-row">
-            <span className="pop-toggle-label">Publié</span>
-            <Toggle checked={form.published} onChange={() => setForm({ ...form, published: !form.published })} />
-          </div>
-          <div className="pop-toggle-row">
-            <span className="pop-toggle-label">À la une</span>
-            <Toggle checked={!!form.featured} onChange={() => setForm({ ...form, featured: !form.featured })} />
-          </div>
-        </div>
-        <div className="pop-editor-foot">
-          <button className="adm-btn ghost" onClick={onClose}>Annuler</button>
-          <button className="adm-btn gold" onClick={() => onSave(form)}>Enregistrer</button>
-        </div>
-      </div>
-    </div>
-  );
+  return <BlogArticleEditor {...props} />;
 }
 
 function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant) => void }) {
@@ -280,17 +239,14 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
             type="button"
             className="adm-btn ghost sm"
             onClick={() =>
-              setEditArt({
-                id: `__new-${Date.now()}`,
-                slug: "",
-                title: "",
-                excerpt: "",
-                categoryId: categories.find((c) => c.enabled)?.id ?? "conseils",
-                publishedAt: new Date().toISOString().slice(0, 10),
-                readMinutes: 5,
-                published: false,
-                featured: false,
-              })
+              setEditArt(
+                emptyBlogArticle({
+                  id: `__new-${Date.now()}`,
+                  slug: "",
+                  title: "",
+                  categoryId: categories.find((c) => c.enabled)?.id ?? "conseils",
+                })
+              )
             }
           >
             <Icon name="plus" size={14} /> Ajouter

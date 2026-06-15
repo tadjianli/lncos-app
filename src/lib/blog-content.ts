@@ -1,5 +1,5 @@
 /**
- * LN COS — Contenu blog (statique → futur CMS / Supabase)
+ * LN COS — Contenu blog : catégories et helpers (articles = Supabase uniquement)
  */
 
 import type { BlogArticle, BlogCategory, BlogCategoryId } from "./contracts/blog";
@@ -37,82 +37,11 @@ export const BLOG_CATEGORIES: BlogCategory[] = [
   },
 ];
 
-/** Articles de démonstration — remplacés par l'admin à terme */
-export const BLOG_ARTICLES: BlogArticle[] = [
-  {
-    id: "blog-1",
-    slug: "rituel-eclat-matin",
-    title: "Le rituel éclat du matin en 5 minutes",
-    excerpt: "Réveillez votre peau avec des gestes simples et des textures LN COS pensées pour un glow naturel.",
-    categoryId: "conseils",
-    publishedAt: "2026-06-01",
-    readMinutes: 4,
-    featured: true,
-    published: true,
-  },
-  {
-    id: "blog-2",
-    slug: "erreurs-skincare-eviter",
-    title: "5 erreurs skincare à éviter absolument",
-    excerpt: "Sur-nettoyage, sur-exfoliation… Les pièges qui sabotent votre routine et comment les corriger.",
-    categoryId: "skincare",
-    publishedAt: "2026-05-28",
-    readMinutes: 6,
-    featured: true,
-    published: true,
-  },
-  {
-    id: "blog-3",
-    slug: "manucure-french-parfaite",
-    title: "Tutoriel : la French manucure parfaite",
-    excerpt: "De la préparation de l'ongle au fini ultra net — la technique institut à reproduire chez vous.",
-    categoryId: "tutoriels",
-    publishedAt: "2026-05-25",
-    readMinutes: 8,
-    published: true,
-  },
-  {
-    id: "blog-4",
-    slug: "tendance-glow-skin",
-    title: "Tendance 2026 : le glow skin minimaliste",
-    excerpt: "Peau lumineuse, maquillage léger — la direction beauté que LN COS adopte cette année.",
-    categoryId: "tendances",
-    publishedAt: "2026-05-20",
-    readMinutes: 5,
-    published: true,
-  },
-  {
-    id: "blog-5",
-    slug: "lancement-serum-or",
-    title: "Nouveau : Sérum Or 24K — édition limitée",
-    excerpt: "Découvrez notre dernière innovation anti-âge, enrichie en particules d'or et actifs botaniques.",
-    categoryId: "nouveautes",
-    publishedAt: "2026-06-08",
-    readMinutes: 3,
-    featured: true,
-    published: true,
-  },
-  {
-    id: "blog-6",
-    slug: "hydratation-peaux-seches",
-    title: "Astuce : booster l'hydratation des peaux sèches",
-    excerpt: "Layering, textures et moment d'application — nos recommandations expertes.",
-    categoryId: "skincare",
-    publishedAt: "2026-05-15",
-    readMinutes: 5,
-    published: true,
-  },
-];
-
-export function getBlogCategory(id: BlogCategoryId): BlogCategory | undefined {
-  return BLOG_CATEGORIES.find((c) => c.id === id);
-}
-
-/** Articles publiés, triés du plus récent au plus ancien */
-export function getPublishedBlogArticles(): BlogArticle[] {
-  return BLOG_ARTICLES.filter((a) => a.published).sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  );
+export function getBlogCategory(
+  id: BlogCategoryId,
+  categories: BlogCategory[] = BLOG_CATEGORIES
+): BlogCategory | undefined {
+  return categories.find((c) => c.id === id);
 }
 
 export function filterBlogArticlesByCategory(
@@ -128,5 +57,24 @@ export function formatBlogDate(iso: string): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+  });
+}
+
+export function searchBlogArticles(articles: BlogArticle[], query: string): BlogArticle[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return articles;
+
+  return articles.filter((article) => {
+    const haystack = [
+      article.title,
+      article.excerpt,
+      article.seoKeyword ?? "",
+      article.body
+        .map((b) => ("text" in b ? b.text : "items" in b ? b.items.join(" ") : ""))
+        .join(" "),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
   });
 }

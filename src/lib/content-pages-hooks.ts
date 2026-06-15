@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import type { BlogArticle } from "./contracts/blog";
+import { emptyBlogArticle } from "./contracts/blog";
 import {
   blogArticleToDb,
   blogCategoryToDb,
@@ -155,7 +156,7 @@ export function useAdminBlogContent() {
     async (partial: Omit<BlogArticle, "id" | "slug"> & { slug?: string }) => {
       const id = `blog-${Date.now()}`;
       const slug = partial.slug ?? slugifyTitle(partial.title);
-      const article: BlogArticle = { ...partial, id, slug };
+      const article: BlogArticle = emptyBlogArticle({ ...partial, id, slug });
       return upsertArticle(article);
     },
     [upsertArticle]
@@ -287,7 +288,7 @@ export function usePublicFlashSalesSettings() {
 export function usePublicBlogContent() {
   const [pageSettings, setPageSettings] = useState<BlogPageSettings>(DEFAULT_BLOG_PAGE_SETTINGS);
   const [categories, setCategories] = useState<AdminBlogCategory[]>(staticBlogCategories());
-  const [articles, setArticles] = useState<BlogArticle[]>(staticBlogArticles().filter((a) => a.published));
+  const [articles, setArticles] = useState<BlogArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

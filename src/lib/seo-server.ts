@@ -11,6 +11,7 @@ import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
 import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
 import { applyCategoryProductCounts } from "@/lib/category-product-counts";
+import { fetchBlogSitemapEntries } from "@/lib/blog-server";
 import {
   PRODUCT_SELECT,
   PRODUCT_SELECT_LEGACY,
@@ -340,6 +341,7 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     { url: absoluteUrl("/boutique") },
     { url: absoluteUrl("/discover") },
     { url: absoluteUrl("/rdv") },
+    { url: absoluteUrl("/blog") },
   ];
 
   const { data: products } = await supabase
@@ -367,6 +369,12 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     entries.push({
       url: absoluteUrl(getCategorySeoPath({ id: c.id, seoSlug: c.seo_slug })),
     });
+  }
+
+  const blogEntries = await fetchBlogSitemapEntries();
+  for (const entry of blogEntries) {
+    if (entry.url.endsWith("/blog")) continue;
+    entries.push(entry);
   }
 
   return entries;

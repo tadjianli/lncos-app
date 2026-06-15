@@ -210,6 +210,19 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
       { key: "cta",      label: "Texte du bouton", type: "text", required: true },
     ],
   },
+  journal: {
+    type: "journal",
+    label: "Journal beauté",
+    icon: "edit",
+    description: "Les 3 derniers articles du blog LN COS avec lien vers /blog.",
+    allowMultiple: false,
+    fields: [
+      { key: "eyebrow",  label: "Eyebrow",      type: "text" },
+      { key: "title",    label: "Titre",         type: "text", required: true },
+      { key: "subtitle", label: "Sous-titre",    type: "textarea" },
+      { key: "cta",      label: "Texte bouton",  type: "text" },
+    ],
+  },
 };
 
 /* ─── Utility ───────────────────────────────────────────────────────── */

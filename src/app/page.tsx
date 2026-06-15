@@ -27,6 +27,7 @@ import {
 } from "@/lib/product-home-visibility";
 import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
+import { BlogJournalSection } from "@/components/home/BlogJournalSection";
 import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { HomeHeroBanner } from "@/components/home/HomeHeroBanner";
 import {
@@ -712,6 +713,20 @@ export default function HomePage() {
             <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
               <Reveal>
                 <NewsletterBlock />
+              </Reveal>
+            </div>
+          );
+
+        case "journal":
+          return (
+            <div key={section.id} className="home-z home-section home-section-pad" style={{ marginTop: mt }}>
+              <Reveal>
+                <BlogJournalSection
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  eyebrow={section.eyebrow}
+                  cta={section.cta}
+                />
               </Reveal>
             </div>
           );

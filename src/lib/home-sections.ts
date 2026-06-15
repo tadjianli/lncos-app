@@ -19,7 +19,8 @@ export type SectionType =
   | "transformations"
   | "newsletter"
   | "categories"
-  | "cta";
+  | "cta"
+  | "journal";
 
 export type SectionVariant = string;
 export type ProductSource = "flash" | "best" | "reco" | "new" | "all";
@@ -162,6 +163,20 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     variant: "grid",
     title: "Nouveautés",
     source: "new",
+    device: "all",
+    audience: "all",
+    schedule: { enabled: false, start: "", end: "" },
+  },
+  {
+    id: "journal-1",
+    type: "journal",
+    name: "Journal beauté LN COS",
+    enabled: true,
+    variant: "default",
+    title: "LE JOURNAL BEAUTÉ LN COS",
+    subtitle: "Conseils, tutoriels et tendances curated by LN COS.",
+    eyebrow: "Magazine",
+    cta: "Voir tous les articles",
     device: "all",
     audience: "all",
     schedule: { enabled: false, start: "", end: "" },
