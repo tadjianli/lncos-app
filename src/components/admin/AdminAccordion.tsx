@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { Children, cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from "react";
 
 export interface AdminAccordionProps {
   title: string;
@@ -47,7 +47,7 @@ export function AdminAccordion({
         </span>
         <span className="adm-accordion__title">{title}</span>
       </button>
-      <div id={panelId} className="adm-accordion__panel" hidden={!open}>
+      <div id={panelId} className="adm-accordion__panel">
         <div className="adm-accordion__body">{children}</div>
       </div>
     </section>
@@ -57,11 +57,29 @@ export function AdminAccordion({
 export function AdminAccordionStack({
   children,
   className = "",
+  defaultOpenFirst = true,
 }: {
   children: ReactNode;
   className?: string;
+  /** Ouvre le premier accordéon par défaut (contenu accessible sans clic préalable) */
+  defaultOpenFirst?: boolean;
 }) {
+  const items = Children.toArray(children);
   return (
-    <div className={`adm-accordion-stack${className ? ` ${className}` : ""}`}>{children}</div>
+    <div className={`adm-accordion-stack${className ? ` ${className}` : ""}`}>
+      {items.map((child, index) => {
+        if (
+          defaultOpenFirst &&
+          index === 0 &&
+          isValidElement(child) &&
+          (child as ReactElement<AdminAccordionProps>).props.open === undefined
+        ) {
+          return cloneElement(child as ReactElement<AdminAccordionProps>, {
+            defaultOpen: (child as ReactElement<AdminAccordionProps>).props.defaultOpen ?? true,
+          });
+        }
+        return child;
+      })}
+    </div>
   );
 }

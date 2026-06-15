@@ -75,7 +75,7 @@ function loadSettings(): SettingValues {
 function SaveRow({ onSave }: { onSave: () => void }) {
   return (
     <div style={{ padding: "12px 0 4px", display: "flex", justifyContent: "flex-end" }}>
-      <button className="adm-btn gold sm" onClick={onSave}>
+      <button type="button" className="adm-btn gold sm" onClick={onSave}>
         <Icon name="check" size={14} /> Enregistrer
       </button>
     </div>
@@ -442,7 +442,7 @@ export function SettingsModule() {
             <div className="adm-settings-head">
               <div className="adm-settings-grouptitle">{group.title}</div>
             </div>
-            <AdminAccordionStack className="adm-settings-accordion-stack">
+            <AdminAccordionStack className="adm-settings-accordion-stack" defaultOpenFirst={false}>
               {group.items.map((item) => {
                 const key = item.label;
                 const isOpen = active === key;

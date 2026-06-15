@@ -26,6 +26,15 @@ export function AdminShell({ children }: AdminShellProps) {
   const closeNav = useCallback(() => setMobileNav(false), []);
 
   useEffect(() => {
+    document.documentElement.classList.add("adm-app");
+    document.body.classList.add("adm-app");
+    return () => {
+      document.documentElement.classList.remove("adm-app");
+      document.body.classList.remove("adm-app");
+    };
+  }, []);
+
+  useEffect(() => {
     document.body.style.overflow = mobileNav ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";

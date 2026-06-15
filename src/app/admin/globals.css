@@ -45,6 +45,21 @@
   color: var(--adm-ink);
   font-family: var(--font-montserrat, Montserrat, sans-serif);
   font-size: 14px;
+  position: relative;
+  z-index: 0;
+}
+
+/* Admin : libérer le body client (position:fixed) pour restaurer les clics */
+html.adm-app,
+body.adm-app {
+  position: static !important;
+  inset: auto !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100dvh;
+  background: var(--adm-bg) !important;
+  color: var(--adm-ink) !important;
 }
 
 /* ─── Sidebar ────────────────────────────────────────────────────────── */
@@ -545,12 +560,24 @@
   transition: background .18s, box-shadow .18s, transform .15s;
   border: none;
   white-space: nowrap;
+  /* Évite type=submit implicite et mismatch d'hydratation */
+  appearance: none;
 }
 .adm-btn:active { transform: scale(.97); }
 .adm-btn.gold { background: linear-gradient(135deg, #F0D98C, #D4AF37 42%, #B8902B); color: #1a1306; box-shadow: 0 4px 14px rgba(212,175,55,.35); }
 .adm-btn.gold:hover { box-shadow: 0 6px 20px rgba(212,175,55,.5); }
 .adm-btn.ghost { background: var(--adm-surface); border: 1px solid var(--adm-border); color: var(--adm-ink-soft); }
 .adm-btn.ghost:hover { border-color: var(--adm-ink-mute); }
+.adm-shell .adm-btn,
+.adm-shell .adm-accordion__trigger,
+.adm-shell .adm-nav-group__trigger,
+.adm-shell .adm-iconbtn,
+.adm-shell .adm-mobile-toggle,
+.adm-shell .adm-sidebar-close,
+.adm-shell .adm-act {
+  pointer-events: auto;
+}
+
 .adm-btn.is-disabled { opacity: .5; pointer-events: none; }
 .adm-btn.sm { padding: 6px 12px; font-size: 12px; }
 
@@ -2341,14 +2368,27 @@
 @media (max-width: 1024px) {
   .adm-mobile-toggle { display: grid; }
 
+  /*
+   * Drawer fermé : ne pas couvrir tout l'écran (sinon les clics sur le contenu
+   * principal sont bloqués sur Safari / iOS malgré pointer-events: none).
+   */
   .adm-sidebar-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 200;
+    position: static;
+    width: 0;
+    height: 0;
+    overflow: visible;
     pointer-events: none;
+    flex: 0 0 0;
   }
 
-  .adm-sidebar-wrap.open { pointer-events: all; }
+  .adm-sidebar-wrap.open {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    z-index: 200;
+    pointer-events: auto;
+  }
 
   .adm-sidebar-scrim {
     position: absolute;
@@ -2361,7 +2401,7 @@
   .adm-sidebar-wrap.open .adm-sidebar-scrim { opacity: 1; }
 
   .adm-sidebar {
-    position: absolute;
+    position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
@@ -2370,7 +2410,8 @@
     transform: translateX(-105%);
     transition: transform .28s cubic-bezier(.22,.68,0,1);
     box-shadow: 8px 0 40px rgba(0,0,0,.35);
-    z-index: 1;
+    z-index: 201;
+    pointer-events: auto;
   }
 
   .adm-sidebar-wrap.open .adm-sidebar { transform: none; }
@@ -2379,7 +2420,11 @@
 
   .adm-logo { padding-right: 52px; }
 
-  .adm-main { width: 100%; }
+  .adm-main {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
 
   .adm-content {
     padding: 68px 20px 36px;

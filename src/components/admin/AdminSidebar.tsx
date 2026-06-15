@@ -59,7 +59,7 @@ function NavGroupSection({
         </span>
         <span className="adm-nav-group__label">{group.label}</span>
       </button>
-      <div id={panelId} className="adm-nav-group__panel" hidden={!open}>
+      <div id={panelId} className="adm-nav-group__panel">
         {group.items.map((item) => {
           const active = isNavItemActive(item, pathname, search);
           const badge =
@@ -91,7 +91,10 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
   const search = useMemo(() => new URLSearchParams(searchKey), [searchKey]);
   const orderBadge = useAdminOrderBadge();
 
-  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+    const activeGroup = findNavGroupForPath(pathname, searchKey ? `?${searchKey}` : "");
+    return activeGroup ? new Set([activeGroup]) : new Set();
+  });
 
   useEffect(() => {
     const activeGroup = findNavGroupForPath(pathname, searchKey ? `?${searchKey}` : "");
@@ -149,6 +152,7 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
       <div className="adm-side-foot">
         {onLogout && (
           <button
+            type="button"
             className="adm-navitem adm-navitem-logout"
             onClick={onLogout}
             disabled={loggingOut}
