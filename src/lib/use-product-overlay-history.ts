@@ -3,39 +3,41 @@
 import { useEffect } from "react";
 import { useStore } from "@/lib/store";
 import {
-  logProductNav,
-  PRODUCT_OVERLAY_HISTORY_KEY,
-} from "@/lib/product-navigation";
+  isOverlayHistoryState,
+  isProductHistoryState,
+} from "@/lib/overlay-history";
 
 /**
- * Ferme la fiche produit sur retour navigateur (back iOS / Android / desktop).
+ * Ferme les overlays sur retour navigateur (swipe-back iOS, bouton retour, popstate).
  */
-export function useProductOverlayHistory() {
+export function useOverlayHistory() {
   useEffect(() => {
     const onPopState = () => {
       const { overlay, closeOverlay, restoreOverlay } = useStore.getState();
-      if (overlay?.type !== "product") return;
+      if (!overlay) return;
 
-      const stillOnProductEntry =
-        window.history.state?.[PRODUCT_OVERLAY_HISTORY_KEY] === true;
+      const state = window.history.state;
 
-      if (stillOnProductEntry) return;
+      if (overlay.type === "product") {
+        if (isProductHistoryState(state)) return;
 
-      const ret = overlay.productReturn;
-      closeOverlay();
-
-      logProductNav("popstate", {
-        routeSource: ret?.pathname + (ret?.search ?? ""),
-        previousOverlay: ret?.previousOverlay?.type ?? null,
-        historyAfter: window.history.length,
-      });
-
-      if (ret?.previousOverlay) {
-        restoreOverlay(ret.previousOverlay);
+        const ret = overlay.productReturn;
+        closeOverlay();
+        if (ret?.previousOverlay) {
+          restoreOverlay(ret.previousOverlay);
+        }
+        return;
       }
+
+      if (isOverlayHistoryState(state)) return;
+
+      closeOverlay();
     };
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 }
+
+/** @deprecated Utiliser useOverlayHistory */
+export const useProductOverlayHistory = useOverlayHistory;

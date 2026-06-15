@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
+import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { Category } from "@/lib/store";
@@ -52,13 +53,12 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
         />
 
         {/* Sub-category chips */}
-        <div
-          className="noscroll"
-          style={{ display: "flex", gap: 8, overflowX: "auto", padding: "0 16px 12px" }}
-        >
+        <HorizontalScrollRow enhanceScroll={false} style={{ padding: "0 16px 12px", gap: 8 }}>
           {SUBS.map((s) => (
             <button
               key={s}
+              type="button"
+              className="snap"
               onClick={() => setSub(s)}
               style={{
                 flex: "0 0 auto",
@@ -74,7 +74,7 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
               {s}
             </button>
           ))}
-        </div>
+        </HorizontalScrollRow>
 
         {/* Filter chips */}
         {showFilter && (

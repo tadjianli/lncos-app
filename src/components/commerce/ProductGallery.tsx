@@ -47,6 +47,7 @@ export function ProductGallery({
   const [zoomOpen, setZoomOpen] = useState(false);
   const [zoomThumb, setZoomThumb] = useState<number | null>(null);
   const touchStartX = useRef(0);
+  const suppressClickRef = useRef(false);
   const heroSrc = images[activeIndex] ?? images[0];
 
   useEffect(() => {
@@ -90,8 +91,17 @@ export function ProductGallery({
     const endX = e.changedTouches[0]?.clientX ?? 0;
     const dx = endX - touchStartX.current;
     if (Math.abs(dx) < 44) return;
+    suppressClickRef.current = true;
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 400);
     if (dx < 0) goNext();
     else goPrev();
+  }
+
+  function handleHeroClick() {
+    if (suppressClickRef.current) return;
+    setZoomOpen(true);
   }
 
   function handleLightboxKey(e: React.KeyboardEvent) {
@@ -132,7 +142,7 @@ export function ProductGallery({
         <button
           type="button"
           className="pd-gallery-hero"
-          onClick={() => setZoomOpen(true)}
+          onClick={handleHeroClick}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           aria-label="Agrandir l'image"

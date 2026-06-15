@@ -103,6 +103,7 @@ export function ProductBeforeAfterSection({
               display: "flex",
               gap: 16,
               overflowX: "auto",
+              overscrollBehaviorX: "contain",
               scrollSnapType: "x mandatory",
               marginLeft: -18,
               marginRight: -18,

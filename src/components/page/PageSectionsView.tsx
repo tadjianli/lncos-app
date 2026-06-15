@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
 import { GoldBtn } from "@/components/shared/ActionButtons";
+import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
 import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
@@ -103,12 +104,12 @@ function PageProducts({ section }: { section: HomeSection }) {
         <h3 style={{ margin: "0 0 12px", padding: "0 2px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>{section.title}</h3>
       )}
       {section.source === "all" && (
-        <div className="noscroll" style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, padding: "0 2px" }}>
-          <button type="button" onClick={() => setCat("all")} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: cat === "all" ? "var(--gold-grad)" : "var(--charcoal)", color: cat === "all" ? "#1a1306" : "var(--ink-soft)", border: cat === "all" ? "none" : "1px solid rgba(255,255,255,.07)" }}>Tous</button>
+        <HorizontalScrollRow enhanceScroll={false} style={{ marginBottom: 14, padding: "0 2px", gap: 8 }}>
+          <button type="button" className="snap" onClick={() => setCat("all")} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: cat === "all" ? "var(--gold-grad)" : "var(--charcoal)", color: cat === "all" ? "#1a1306" : "var(--ink-soft)", border: cat === "all" ? "none" : "1px solid rgba(255,255,255,.07)" }}>Tous</button>
           {categories.map((c) => (
-            <button key={c.id} type="button" onClick={() => setCat(c.id)} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: cat === c.id ? "var(--gold-grad)" : "var(--charcoal)", color: cat === c.id ? "#1a1306" : "var(--ink-soft)", border: cat === c.id ? "none" : "1px solid rgba(255,255,255,.07)" }}>{c.name}</button>
+            <button key={c.id} type="button" className="snap" onClick={() => setCat(c.id)} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: cat === c.id ? "var(--gold-grad)" : "var(--charcoal)", color: cat === c.id ? "#1a1306" : "var(--ink-soft)", border: cat === c.id ? "none" : "1px solid rgba(255,255,255,.07)" }}>{c.name}</button>
           ))}
-        </div>
+        </HorizontalScrollRow>
       )}
       <ProductGrid products={list} bottomClearance={false} />
     </div>

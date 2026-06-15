@@ -14,6 +14,7 @@ import {
   logProductNav,
   pushProductOverlayHistory,
 } from "./product-navigation";
+import { pushOverlayHistory, shouldPushOverlayHistory } from "./overlay-history";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -56,6 +57,14 @@ export interface OverlayState {
 export interface ToastState {
   msg: string;
   icon?: string;
+}
+
+function stackOverlayHistory(current: OverlayState | null, nextType: OverlayType) {
+  if (typeof window === "undefined") return;
+  if (current?.type === nextType) return;
+  if (shouldPushOverlayHistory(nextType)) {
+    pushOverlayHistory(nextType);
+  }
 }
 
 /* ─── Store ──────────────────────────────────────────────────────────── */
@@ -208,36 +217,60 @@ export const useStore = create<AppStore>()(
         set({ overlay: { type: "product", product, productReturn } });
       },
       openSearch() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "search");
         set({ overlay: { type: "search" } });
       },
       openSideMenu() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "side-menu");
         set({ overlay: { type: "side-menu" } });
       },
       openListing(category) {
+        const current = get().overlay;
+        if (current?.type === "listing") {
+          set({ overlay: { type: "listing", category } });
+          return;
+        }
+        stackOverlayHistory(current, "listing");
         set({ overlay: { type: "listing", category } });
       },
       openBooking(serviceId = null, resume = false) {
         set({ overlay: { type: "booking", serviceId, resumeFlag: resume } });
       },
       openLoyalty() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "loyalty");
         set({ overlay: { type: "loyalty" } });
       },
       openNotifications() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "notifications");
         set({ overlay: { type: "notifications" } });
       },
       openOrders() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "orders");
         set({ overlay: { type: "orders" } });
       },
       openAppointments() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "appointments");
         set({ overlay: { type: "appointments" } });
       },
       openReels() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "reels");
         set({ overlay: { type: "reels" } });
       },
       openAuth() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "auth");
         set({ overlay: { type: "auth" } });
       },
       openSettings() {
+        const current = get().overlay;
+        stackOverlayHistory(current, "settings");
         set({ overlay: { type: "settings" } });
       },
       closeOverlay() {

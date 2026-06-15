@@ -22,7 +22,7 @@ function isAtEnd(el: HTMLElement, slack = 6): boolean {
 }
 
 export function useHorizontalCarousel({
-  loop = true,
+  loop = false,
   backThreshold = 0.7,
   enabled = true,
 }: UseHorizontalCarouselOptions = {}) {

@@ -25,7 +25,8 @@ import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/sto
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
 import { closeProductDetailNavigation } from "@/lib/product-navigation";
-import { useProductOverlayHistory } from "@/lib/use-product-overlay-history";
+import { closeOverlayWithHistory } from "@/lib/overlay-history";
+import { useOverlayHistory } from "@/lib/use-product-overlay-history";
 import { useOverlayRouteSync } from "@/lib/use-overlay-route-sync";
 
 // Lazy-load overlay screens — keep initial bundle small
@@ -59,8 +60,12 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const restoreOverlay = useStore(s => s.restoreOverlay);
   const productReturn = overlay?.type === "product" ? overlay.productReturn : undefined;
 
-  useProductOverlayHistory();
+  useOverlayHistory();
   useOverlayRouteSync();
+
+  const handleOverlayClose = useCallback(() => {
+    closeOverlayWithHistory(closeOverlay);
+  }, [closeOverlay]);
 
   const handleProductClose = useCallback(() => {
     closeProductDetailNavigation(router, productReturn, closeOverlay, restoreOverlay);
@@ -115,22 +120,22 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
             <ProductDetail product={overlay.product} onClose={handleProductClose} />
           )}
           {overlay?.type === "listing" && (
-            <ListingScreen category={overlay.category ?? null} onClose={closeOverlay} />
+            <ListingScreen category={overlay.category ?? null} onClose={handleOverlayClose} />
           )}
           {overlay?.type === "search" && (
-            <SearchScreen onClose={closeOverlay} />
+            <SearchScreen onClose={handleOverlayClose} />
           )}
           {overlay?.type === "loyalty" && (
-            <LoyaltyScreen onClose={closeOverlay} />
+            <LoyaltyScreen onClose={handleOverlayClose} />
           )}
           {overlay?.type === "notifications" && (
-            <NotificationsScreen onClose={closeOverlay} />
+            <NotificationsScreen onClose={handleOverlayClose} />
           )}
           {overlay?.type === "orders" && (
-            <OrdersScreen onClose={closeOverlay} />
+            <OrdersScreen onClose={handleOverlayClose} />
           )}
           {overlay?.type === "settings" && (
-            <SettingsScreen onClose={closeOverlay} />
+            <SettingsScreen onClose={handleOverlayClose} />
           )}
         </Suspense>
       </main>
@@ -140,14 +145,14 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
 
       {/* ── z:90 shell modals — cover main + nav ──────────── */}
       {overlay?.type === "side-menu" && (
-        <SideMenu onClose={closeOverlay} />
+        <SideMenu onClose={handleOverlayClose} />
       )}
       <Suspense fallback={null}>
         {overlay?.type === "reels" && (
-          <ReelsScreen onClose={closeOverlay} />
+          <ReelsScreen onClose={handleOverlayClose} />
         )}
         {overlay?.type === "auth" && (
-          <AuthScreen onClose={closeOverlay} />
+          <AuthScreen onClose={handleOverlayClose} />
         )}
       </Suspense>
 
