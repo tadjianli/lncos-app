@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
-import { AdminToast } from "@/components/admin/AdminToast";
+import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import {
   RdvCatalogLinkPanel,
@@ -11,6 +11,7 @@ import {
   RdvPageSettingsPanel,
 } from "@/components/admin/RdvSettingsSection";
 import { LegalSettingsPanel } from "@/components/admin/LegalSettingsPanel";
+import { AiSettingsPanel } from "@/components/admin/AiSettingsPanel";
 import { DeliveryZonesSettingsPanel } from "@/components/admin/DeliveryZonesSettingsPanel";
 
 interface SettingValues {
@@ -124,7 +125,7 @@ export function SettingsModule() {
   const searchParams = useSearchParams();
   const [values, setValues] = useState<SettingValues>(DEFAULT_SETTINGS);
   const [active, setActive] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
 
   useEffect(() => {
     setValues(loadSettings());
@@ -134,6 +135,8 @@ export function SettingsModule() {
     const section = searchParams.get("section");
     if (section === "legal") {
       setActive("Pages légales");
+    } else if (section === "ai") {
+      setActive("Intelligence Artificielle");
     }
   }, [searchParams]);
 
@@ -141,8 +144,8 @@ export function SettingsModule() {
     setValues((p) => ({ ...p, [key]: val }));
   }
 
-  function showToast(msg: string) {
-    setToast(msg);
+  function showToast(msg: string, variant: AdminToastVariant = "success") {
+    setToast({ msg, variant });
     setTimeout(() => setToast(null), 2500);
   }
 
@@ -355,6 +358,21 @@ export function SettingsModule() {
       ],
     },
     {
+      title: "Intelligence Artificielle",
+      items: [
+        {
+          icon: "sparkle",
+          label: "Intelligence Artificielle",
+          sub: "Fournisseurs IA, SEO, blog, historique et coûts",
+          content: (
+            <AiSettingsPanel
+              onNotify={(msg, error) => showToast(msg, error ? "error" : "success")}
+            />
+          ),
+        },
+      ],
+    },
+    {
       title: "Administration",
       items: [
         {
@@ -454,7 +472,7 @@ export function SettingsModule() {
         </div>
       </div>
 
-      {toast && <AdminToast msg={toast} />}
+      {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </>
   );
 }

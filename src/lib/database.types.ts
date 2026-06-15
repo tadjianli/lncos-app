@@ -367,6 +367,118 @@ export interface Database {
         Relationships: [];
       };
 
+      ai_settings: {
+        Row: {
+          id: string;
+          provider: "anthropic" | "openai" | "gemini" | "mistral";
+          api_key_encrypted: string | null;
+          model: string;
+          language: "fr" | "en" | "es" | "de";
+          tone: "professional" | "luxe" | "beauty" | "cosmetic" | "marketing" | "ecommerce";
+          description_length: "short" | "medium" | "long";
+          seo_enabled: boolean;
+          seo_auto_title: boolean;
+          seo_auto_meta: boolean;
+          seo_auto_slug: boolean;
+          seo_auto_alt: boolean;
+          seo_auto_keywords: boolean;
+          blog_enabled: boolean;
+          blog_word_count: number;
+          blog_include_faq: boolean;
+          blog_include_schema: boolean;
+          blog_image_suggestions: boolean;
+          last_test_ok: boolean;
+          last_test_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          provider?: "anthropic" | "openai" | "gemini" | "mistral";
+          api_key_encrypted?: string | null;
+          model?: string;
+          language?: "fr" | "en" | "es" | "de";
+          tone?: "professional" | "luxe" | "beauty" | "cosmetic" | "marketing" | "ecommerce";
+          description_length?: "short" | "medium" | "long";
+          seo_enabled?: boolean;
+          seo_auto_title?: boolean;
+          seo_auto_meta?: boolean;
+          seo_auto_slug?: boolean;
+          seo_auto_alt?: boolean;
+          seo_auto_keywords?: boolean;
+          blog_enabled?: boolean;
+          blog_word_count?: number;
+          blog_include_faq?: boolean;
+          blog_include_schema?: boolean;
+          blog_image_suggestions?: boolean;
+          last_test_ok?: boolean;
+          last_test_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          provider?: "anthropic" | "openai" | "gemini" | "mistral";
+          api_key_encrypted?: string | null;
+          model?: string;
+          language?: "fr" | "en" | "es" | "de";
+          tone?: "professional" | "luxe" | "beauty" | "cosmetic" | "marketing" | "ecommerce";
+          description_length?: "short" | "medium" | "long";
+          seo_enabled?: boolean;
+          seo_auto_title?: boolean;
+          seo_auto_meta?: boolean;
+          seo_auto_slug?: boolean;
+          seo_auto_alt?: boolean;
+          seo_auto_keywords?: boolean;
+          blog_enabled?: boolean;
+          blog_word_count?: number;
+          blog_include_faq?: boolean;
+          blog_include_schema?: boolean;
+          blog_image_suggestions?: boolean;
+          last_test_ok?: boolean;
+          last_test_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      ai_usage_logs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          user_email: string | null;
+          action: string;
+          provider: string;
+          model: string;
+          tokens_input: number;
+          tokens_output: number;
+          cost_eur: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          user_email?: string | null;
+          action: string;
+          provider: string;
+          model: string;
+          tokens_input?: number;
+          tokens_output?: number;
+          cost_eur?: number;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string | null;
+          user_email?: string | null;
+          action?: string;
+          provider?: string;
+          model?: string;
+          tokens_input?: number;
+          tokens_output?: number;
+          cost_eur?: number;
+        };
+        Relationships: [];
+      };
+
       appointments: {
         Row: {
           id: string;
