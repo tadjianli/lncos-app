@@ -4,12 +4,15 @@
  */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
-import { hasOverlayHistoryState } from "@/lib/overlay-history";
+import {
+  hasOverlayHistoryState,
+  navigateAfterOverlayDismiss,
+} from "@/lib/overlay-history";
 
 type MenuLink = {
   i: string;
@@ -46,6 +49,7 @@ interface SideMenuProps {
 
 export function SideMenu({ onClose }: SideMenuProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const openOrders   = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
 
@@ -56,9 +60,23 @@ export function SideMenu({ onClose }: SideMenuProps) {
     if (isInfoRoute) setInfoOpen(true);
   }, [isInfoRoute]);
 
-  /** Ferme le menu sans history.back — la navigation est gérée par Link / openOrders */
+  /** Ferme le menu dans le store uniquement (sans retirer l'entrée historique). */
   function closeMenuOnly() {
     closeOverlay();
+  }
+
+  /** Navigation depuis le menu : retire l'entrée overlay avant de changer de route. */
+  function navigateFromMenu(href: string) {
+    if (pathname === href) {
+      onClose();
+      return;
+    }
+    navigateAfterOverlayDismiss(closeMenuOnly, () => router.push(href));
+  }
+
+  function handleMenuLinkClick(e: React.MouseEvent, href: string) {
+    e.preventDefault();
+    navigateFromMenu(href);
   }
 
   function handleOrders() {
@@ -86,7 +104,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
         <Link
           key={l.t}
           href={l.href}
-          onClick={closeMenuOnly}
+          onClick={(e) => handleMenuLinkClick(e, l.href!)}
           className="side-menu-link"
           style={{ ...rowStyle, textDecoration: "none", color: "var(--ink-soft)" }}
         >
@@ -116,7 +134,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
       <Link
         key={l.t}
         href={l.href!}
-        onClick={closeMenuOnly}
+        onClick={(e) => handleMenuLinkClick(e, l.href!)}
         className={`side-menu-link side-menu-info-link${active ? " side-menu-info-link--active" : ""}`}
         aria-current={active ? "page" : undefined}
       >
@@ -199,7 +217,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
         <div style={{ padding: "16px 24px 0", borderTop: "1px solid rgba(255,255,255,.06)" }}>
           <Link
             href="/admin"
-            onClick={closeMenuOnly}
+            onClick={(e) => handleMenuLinkClick(e, "/admin")}
             className="side-menu-link side-menu-link--footer"
             style={{
               width: "100%",

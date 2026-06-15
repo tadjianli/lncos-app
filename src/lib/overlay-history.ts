@@ -48,6 +48,23 @@ export function closeOverlayWithHistory(closeOverlay: () => void) {
   closeOverlay();
 }
 
+/**
+ * Ferme l'overlay puis navigue sans laisser d'entrée historique fantôme
+ * (ex. menu ouvert sur / puis lien vers /blog — évite retour forcé à l'accueil).
+ */
+export function navigateAfterOverlayDismiss(
+  closeOverlay: () => void,
+  navigate: () => void,
+) {
+  closeOverlay();
+  if (typeof window !== "undefined" && hasOverlayHistoryState()) {
+    window.history.back();
+    setTimeout(navigate, 50);
+    return;
+  }
+  navigate();
+}
+
 export function isProductHistoryState(state: unknown): boolean {
   return (
     typeof state === "object" &&
