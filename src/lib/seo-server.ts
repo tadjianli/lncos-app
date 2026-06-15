@@ -12,7 +12,6 @@ import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
 import { applyCategoryProductCounts } from "@/lib/category-product-counts";
 import { fetchBlogSitemapEntries } from "@/lib/blog-server";
-import { fetchBeautyVideoSitemapEntries } from "@/lib/beauty-videos-server";
 import {
   PRODUCT_SELECT,
   PRODUCT_SELECT_NO_AI,
@@ -406,7 +405,6 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     { url: absoluteUrl("/discover") },
     { url: absoluteUrl("/rdv") },
     { url: absoluteUrl("/blog") },
-    { url: absoluteUrl("/videos") },
     { url: absoluteUrl("/social") },
     { url: absoluteUrl("/flash-sales") },
     { url: absoluteUrl("/promotions") },
@@ -449,12 +447,6 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
   const blogEntries = await fetchBlogSitemapEntries();
   for (const entry of blogEntries) {
     if (entry.url.endsWith("/blog")) continue;
-    entries.push(entry);
-  }
-
-  const videoEntries = await fetchBeautyVideoSitemapEntries();
-  for (const entry of videoEntries) {
-    if (entry.url.endsWith("/videos")) continue;
     entries.push(entry);
   }
 

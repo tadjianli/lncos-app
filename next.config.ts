@@ -11,6 +11,35 @@ const appVersion =
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/videos",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/videos/:slug*",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/beaute/videos",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/beaute/videos/:slug*",
+        destination: "/blog",
+        permanent: true,
+      },
+      {
+        source: "/admin/beauty-videos",
+        destination: "/admin/content-pages",
+        permanent: false,
+      },
+    ];
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_ENABLE_VIP_PROGRAM:

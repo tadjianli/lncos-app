@@ -13,7 +13,6 @@ const OVERLAY_BACK_TYPES: OverlayType[] = [
   "orders",
   "appointments",
   "settings",
-  "reels",
   "auth",
   "side-menu",
 ];
@@ -58,9 +57,11 @@ export function navigateAfterOverlayDismiss(
 ) {
   closeOverlay();
   if (typeof window !== "undefined" && hasOverlayHistoryState()) {
-    window.history.back();
-    setTimeout(navigate, 50);
-    return;
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + window.location.search + window.location.hash,
+    );
   }
   navigate();
 }

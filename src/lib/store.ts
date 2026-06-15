@@ -41,7 +41,6 @@ export type OverlayType =
   | "notifications"
   | "orders"
   | "appointments"
-  | "reels"
   | "auth"
   | "settings";
 
@@ -109,7 +108,6 @@ interface AppStore {
   openNotifications: () => void;
   openOrders: () => void;
   openAppointments: () => void;
-  openReels: () => void;
   openAuth: () => void;
   openSettings: () => void;
   closeOverlay: () => void;
@@ -277,11 +275,6 @@ export const useStore = create<AppStore>()(
         stackOverlayHistory(current, "appointments");
         set({ overlay: { type: "appointments" } });
       },
-      openReels() {
-        const current = get().overlay;
-        stackOverlayHistory(current, "reels");
-        set({ overlay: { type: "reels" } });
-      },
       openAuth() {
         const current = get().overlay;
         stackOverlayHistory(current, "auth");
@@ -328,9 +321,6 @@ export const useStore = create<AppStore>()(
             break;
           case "appointments":
             set({ overlay: { type: "appointments" } });
-            break;
-          case "reels":
-            set({ overlay: { type: "reels" } });
             break;
           case "auth":
             set({ overlay: { type: "auth" } });

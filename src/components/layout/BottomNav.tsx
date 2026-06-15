@@ -13,7 +13,7 @@ import {
   Home,
   LayoutGrid,
   ShoppingBag,
-  ShoppingCart,
+  BookOpen,
   User,
   type LucideProps,
 } from "lucide-react";
@@ -21,11 +21,11 @@ import {
 const ICON_SIZE = 30;
 
 const NAV_ITEMS = [
-  { href: "/",         id: "home",       label: "Accueil"    },
-  { href: "/discover", id: "categories", label: "Catégories" },
-  { href: "/bag",      id: "cart",       label: "Panier"     },
-  { href: "/boutique", id: "boutique",   label: "Boutique"   },
-  { href: "/profile",  id: "profile",    label: "Profil"     },
+  { href: "/",         id: "home",       label: "Accueil"     },
+  { href: "/discover", id: "categories", label: "Catégories"  },
+  { href: "/boutique", id: "boutique",   label: "Boutique"    },
+  { href: "/blog",     id: "blog",       label: "Blog LN COS" },
+  { href: "/profile",  id: "profile",    label: "Profil"      },
 ] as const;
 
 type NavItemId = (typeof NAV_ITEMS)[number]["id"];
@@ -59,17 +59,16 @@ function NavItemIcon({ id, active }: { id: NavItemId; active: boolean }) {
       return <Home {...props} />;
     case "categories":
       return <LayoutGrid {...props} />;
-    case "cart":
-      return <ShoppingCart {...navIconProps(active, true)} />;
     case "boutique":
-      /* Sac shopping explicite — distinct du panier (ShoppingCart) et des anciennes icônes shop/sparkle */
       return <ShoppingBag {...props} data-lncos-nav-icon="shopping-bag" />;
+    case "blog":
+      return <BookOpen {...navIconProps(active, true)} />;
     case "profile":
       return <User {...props} />;
   }
 }
 
-export function BottomNav({ cartCount = 0 }: BottomNavProps) {
+export function BottomNav({ cartCount: _cartCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
   const closeOverlay = useStore((s) => s.closeOverlay);
   const [mounted, setMounted] = useState(false);
@@ -90,20 +89,10 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
               href={item.href}
               className={`bottom-nav-item${active ? " bottom-nav-item--active" : ""}`}
               aria-current={active ? "page" : undefined}
-              aria-label={
-                item.id === "cart" && cartCount > 0
-                  ? `Panier, ${cartCount} article${cartCount > 1 ? "s" : ""}`
-                  : undefined
-              }
               onClick={() => closeOverlay()}
             >
               <span className="bottom-nav-icon-wrap">
                 <NavItemIcon id={item.id} active={active} />
-                {item.id === "cart" && cartCount > 0 && (
-                  <span className="bottom-nav-badge">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
               </span>
               <span className="bottom-nav-label">{item.label}</span>
             </Link>

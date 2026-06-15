@@ -10,6 +10,7 @@ import {
   hasOverlayHistoryState,
   navigateAfterOverlayDismiss,
 } from "@/lib/overlay-history";
+import { pwaNavLog } from "@/lib/pwa/nav-diagnostics";
 
 type MenuLink = {
   i: string;
@@ -18,36 +19,12 @@ type MenuLink = {
   overlay?: "orders";
 };
 
-type MenuSection = {
-  label: string;
-  links: MenuLink[];
-};
-
-const MENU_SECTIONS: MenuSection[] = [
-  {
-    label: "Boutique",
-    links: [
-      { i: "home", t: "Accueil", href: "/" },
-      { i: "sparkle", t: "Promotions", href: "/promotions" },
-      { i: "flame", t: "Ventes Flash", href: "/flash-sales" },
-    ],
-  },
-  {
-    label: "Découvrir",
-    links: [
-      { i: "play", t: "Vidéos Beauté", href: "/videos" },
-      { i: "edit", t: "Blog LN COS", href: "/blog" },
-      { i: "share", t: "Réseaux sociaux", href: "/social" },
-    ],
-  },
-  {
-    label: "Mon compte",
-    links: [
-      { i: "bag", t: "Mes commandes", overlay: "orders" },
-      { i: "heart", t: "Favoris", href: "/favorites" },
-      { i: "user", t: "Profil", href: "/profile" },
-    ],
-  },
+const MENU_LINKS: MenuLink[] = [
+  { i: "edit", t: "Blog LN COS", href: "/blog" },
+  { i: "share", t: "Réseaux sociaux", href: "/social" },
+  { i: "bag", t: "Mes commandes", overlay: "orders" },
+  { i: "heart", t: "Favoris", href: "/favorites" },
+  { i: "user", t: "Mon profil", href: "/profile" },
 ];
 
 const LEGAL_LINKS: MenuLink[] = [
@@ -82,6 +59,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
   }
 
   function navigateFromMenu(href: string) {
+    pwaNavLog("menu-navigate", { href, from: pathname, online: navigator.onLine });
     if (pathname === href) {
       onClose();
       return;
@@ -138,8 +116,6 @@ export function SideMenu({ onClose }: SideMenuProps) {
     );
   }
 
-  let linkIndex = 0;
-
   return (
     <div className="side-menu-root">
       <div className="side-menu-scrim" onClick={onClose} aria-hidden />
@@ -159,21 +135,9 @@ export function SideMenu({ onClose }: SideMenuProps) {
         </div>
 
         <div className="side-menu-drawer__scroll noscroll">
-          {MENU_SECTIONS.map((section, si) => (
-            <div key={section.label} className="side-menu-section">
-              <p
-                className="side-menu-section__label"
-                style={{ animation: `fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) ${0.06 + si * 0.04}s both` }}
-              >
-                {section.label}
-              </p>
-              {section.links.map((l) => {
-                const node = renderLink(l, linkIndex, 0.08 + si * 0.05);
-                linkIndex += 1;
-                return node;
-              })}
-            </div>
-          ))}
+          <div className="side-menu-section">
+            {MENU_LINKS.map((l, i) => renderLink(l, i, 0.08))}
+          </div>
 
           <div className="side-menu-section side-menu-section--legal">
             <button
