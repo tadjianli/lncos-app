@@ -22,6 +22,7 @@ import { BottomNav } from "./BottomNav";
 import { SideMenu } from "./SideMenu";
 import { Toast } from "./Toast";
 import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/store";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
 import { closeProductDetailNavigation } from "@/lib/product-navigation";
@@ -139,7 +140,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
           {overlay?.type === "search" && (
             <SearchScreen onClose={handleOverlayClose} />
           )}
-          {overlay?.type === "loyalty" && (
+          {overlay?.type === "loyalty" && isVipProgramEnabled() && (
             <LoyaltyScreen onClose={handleOverlayClose} />
           )}
           {overlay?.type === "notifications" && (

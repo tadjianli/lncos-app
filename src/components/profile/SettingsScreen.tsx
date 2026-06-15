@@ -7,6 +7,7 @@ import { SubHeader } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getBrowserUser, getSupabase, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 /* --- Toggle --- */
 
@@ -135,6 +136,7 @@ interface SettingsScreenProps {
 }
 
 export function SettingsScreen({ onClose }: SettingsScreenProps) {
+  const vipEnabled = isVipProgramEnabled();
   const showToast = useStore((s) => s.showToast);
   const clearCart = useStore((s) => s.clearCart);
   const openAuth = useStore((s) => s.openAuth);
@@ -372,7 +374,9 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
             { key: "notifPromos" as const, label: "Promotions & offres", sub: "Ventes flash, codes promo", value: notifPromos },
             { key: "notifOrders" as const, label: "Commandes", sub: "Suivi livraison et statut", value: notifOrders },
             { key: "notifRdv" as const, label: "Rendez-vous", sub: "Rappels et confirmations RDV", value: notifRdv },
-            { key: "notifNewsletter" as const, label: "Club beauté", sub: "Conseils et nouveautés LN COS", value: notifNewsletter },
+            ...(vipEnabled
+              ? [{ key: "notifNewsletter" as const, label: "Club beauté", sub: "Conseils et nouveautés LN COS", value: notifNewsletter }]
+              : []),
             { key: "marketingEmails" as const, label: "Emails marketing", sub: "Offres par email", value: marketingEmails },
           ].map((row, i) => (
             <div

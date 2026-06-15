@@ -8,6 +8,7 @@ import { useState, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 type Tab = "login" | "signup";
 
@@ -25,6 +26,7 @@ function translateError(msg: string): string {
 }
 
 export function AuthScreen({ onClose }: AuthScreenProps) {
+  const vipEnabled = isVipProgramEnabled();
   const [tab, setTab]         = useState<Tab>("login");
   const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
@@ -136,13 +138,17 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
         {/* Headline */}
         <div style={{ marginBottom: 28, textAlign: "center" }}>
           <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--gold-grad)", display: "grid", placeItems: "center", margin: "0 auto 16px" }}>
-            <Icon name="crown" size={26} color="#1a1306" />
+            <Icon name={vipEnabled ? "crown" : "user"} size={26} color="#1a1306" />
           </div>
           <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--ink)", margin: "0 0 8px", letterSpacing: "-.02em" }}>
             {tab === "login" ? "Bienvenue" : "Créer un compte"}
           </h2>
           <p style={{ fontSize: 13.5, color: "var(--ink-mute)", margin: 0, lineHeight: 1.5 }}>
-            {tab === "login" ? "Connectez-vous pour accéder à votre espace" : "Rejoignez le programme VIP LN COS"}
+            {tab === "login"
+              ? "Connectez-vous pour accéder à votre espace"
+              : vipEnabled
+                ? "Rejoignez le programme VIP LN COS"
+                : "Créez votre compte LN COS en quelques secondes"}
           </p>
         </div>
 

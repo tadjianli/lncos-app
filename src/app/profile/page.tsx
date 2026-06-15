@@ -9,6 +9,7 @@ import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { getBrowserUser, getSupabase, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
 import { usePublicPageSections } from "@/lib/client-supabase";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 interface UserData {
   id: string;
@@ -82,6 +83,8 @@ export default function ProfilePage() {
     setLoggingOut(false);
   }
 
+  const vipEnabled = isVipProgramEnabled();
+
   const TIER_LABELS: Record<string, string> = {
     bronze: "BRONZE", argent: "ARGENT", or: "OR", platine: "PLATINE",
   };
@@ -90,7 +93,9 @@ export default function ProfilePage() {
     { i: "calendar", t: "Mes rendez-vous",   s: "Prendre ou gérer un RDV", href: "/rdv",       gold: true  },
     { i: "bag",      t: "Mes commandes",      s: orderCount > 0 ? `${orderCount} commande${orderCount > 1 ? "s" : ""}` : "Historique d'achats", overlay: "orders",  gold: false },
     { i: "heart",    t: "Mes favoris",        s: "",                         href: "/favorites", gold: false },
-    { i: "crown",    t: "Programme VIP",      s: `Niveau ${TIER_LABELS[loyaltyTier] ?? "OR"} · ${loyaltyPoints.toLocaleString("fr-FR")} pts`, overlay: "loyalty", gold: true  },
+    ...(vipEnabled
+      ? [{ i: "crown", t: "Programme VIP", s: `Niveau ${TIER_LABELS[loyaltyTier] ?? "OR"} · ${loyaltyPoints.toLocaleString("fr-FR")} pts`, overlay: "loyalty", gold: true } as const]
+      : []),
     { i: "bell",     t: "Notifications",      s: "",                         overlay: "notifications", gold: false },
     { i: "sliders",  t: "Paramètres",         s: "Compte, notifications, sécurité", overlay: "settings", gold: false },
   ] as const;
@@ -136,7 +141,7 @@ export default function ProfilePage() {
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)" }}>{authLoading ? "Chargement…" : userName}</div>
               <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 2 }}>{userEmail || (isLoggedIn ? "" : "Non connecté")}</div>
-              {isLoggedIn && (
+              {isLoggedIn && vipEnabled && (
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, padding: "4px 11px", borderRadius: "var(--r-pill)", background: "rgba(212,175,55,.15)", border: "1px solid rgba(212,175,55,.3)" }}>
                   <Icon name="crown" size={13} color="var(--gold)" fill="rgba(212,175,55,.4)" />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", letterSpacing: ".04em" }}>
@@ -166,7 +171,9 @@ export default function ProfilePage() {
               </span>
               <div style={{ flex: 1, position: "relative" }}>
                 <div style={{ fontWeight: 700, fontSize: 17, color: "#3a1020" }}>Se connecter</div>
-                <div style={{ fontSize: 12, color: "rgba(58,16,32,.7)", marginTop: 2 }}>Accédez à vos commandes et au programme VIP</div>
+                <div style={{ fontSize: 12, color: "rgba(58,16,32,.7)", marginTop: 2 }}>
+                  {vipEnabled ? "Accédez à vos commandes et au programme VIP" : "Accédez à vos commandes et favoris"}
+                </div>
               </div>
               <Icon name="arrowR" size={20} color="#3a1020" stroke={2.2} />
             </button>
@@ -192,7 +199,9 @@ export default function ProfilePage() {
         <div style={{ display: "flex", gap: 10, padding: "16px 18px 4px" }}>
           {[
             { n: orderCount > 0 ? String(orderCount) : "—", l: "Commandes" },
-            { n: loyaltyPoints > 0 ? loyaltyPoints.toLocaleString("fr-FR") : "—", l: "Points" },
+            ...(vipEnabled
+              ? [{ n: loyaltyPoints > 0 ? loyaltyPoints.toLocaleString("fr-FR") : "—", l: "Points" }]
+              : []),
             { n: String(favs.length), l: "Favoris" },
           ].map((s, i) => (
             <div key={i} style={{ flex: 1, padding: "14px 8px", borderRadius: "var(--r-md)", background: "var(--charcoal)", textAlign: "center", border: "1px solid rgba(255,255,255,.05)" }}>
@@ -248,7 +257,9 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <PageSectionsView sections={profileSections.filter((s) => s.type === "newsletter")} />
+        {vipEnabled && (
+          <PageSectionsView sections={profileSections.filter((s) => s.type === "newsletter")} />
+        )}
       </div>
     </AppShell>
   );

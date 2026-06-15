@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
+    NEXT_PUBLIC_ENABLE_VIP_PROGRAM:
+      process.env.NEXT_PUBLIC_ENABLE_VIP_PROGRAM ??
+      process.env.ENABLE_VIP_PROGRAM ??
+      "false",
+    ENABLE_VIP_PROGRAM:
+      process.env.ENABLE_VIP_PROGRAM ??
+      process.env.NEXT_PUBLIC_ENABLE_VIP_PROGRAM ??
+      "false",
   },
   async headers() {
     const securityHeaders = [

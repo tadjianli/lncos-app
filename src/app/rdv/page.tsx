@@ -22,6 +22,7 @@ import { calcDeposit, type RdvSettings } from "@/lib/rdv-settings";
 import { useRdvSettings } from "@/lib/rdv-settings-db";
 import { usePublicPageSections } from "@/lib/client-supabase";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 const DAYS    = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
 const MONTHS  = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -882,6 +883,7 @@ function apptToDraft(appt: {
 
 /* ─── RDV Home ────────────────────────────────────────────────── */
 export default function RdvPage() {
+  const vipEnabled = isVipProgramEnabled();
   const { settings } = useRdvSettings();
   const { services, filters, loading: catalogLoading } = usePublicRdvCatalog();
   const { getVisible: getPageSections } = usePublicPageSections("rdv");
@@ -1052,7 +1054,7 @@ export default function RdvPage() {
                   {[
                     { i: settings.trust1Icon, t: settings.trust1Text },
                     { i: settings.trust2Icon, t: settings.trust2Text },
-                    { i: settings.trust3Icon, t: settings.trust3Text },
+                    ...(vipEnabled ? [{ i: settings.trust3Icon, t: settings.trust3Text }] : []),
                   ].map((x) => (
                     <div key={x.t} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: "var(--r-md)", background: "var(--charcoal)", border: "1px solid rgba(255,255,255,.05)", textAlign: "center" }}>
                       <Icon name={x.i} size={19} color="var(--gold)" />

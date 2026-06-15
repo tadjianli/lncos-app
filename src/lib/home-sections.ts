@@ -4,6 +4,8 @@
  * These are controlled by the AppBuilder in the admin panel.
  */
 
+import { filterSectionsForVipProgram } from "./feature-flags";
+
 export type SectionType =
   | "hero"
   | "trust"
@@ -224,7 +226,7 @@ export function visibleSections(
   opts: { isMobile?: boolean; isVip?: boolean; isLoggedIn?: boolean; now?: Date } = {}
 ): HomeSection[] {
   const now = opts.now ?? new Date();
-  return sections.filter((sec) => {
+  const visible = sections.filter((sec) => {
     if (!sec.enabled) return false;
     if (sec.device === "mobile" && !opts.isMobile) return false;
     if (sec.device === "desktop" && opts.isMobile) return false;
@@ -236,4 +238,6 @@ export function visibleSections(
     }
     return true;
   });
+
+  return filterSectionsForVipProgram(visible);
 }

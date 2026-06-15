@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 /* ─── Types ────────────────────────────────────────────────────────────── */
 
@@ -451,6 +452,14 @@ interface NotificationsScreenProps {
 
 export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
   const [allRead, setAllRead] = useState(false);
+  const vipEnabled = isVipProgramEnabled();
+
+  const filterNotifs = (items: Notif[]) =>
+    vipEnabled ? items : items.filter((n) => n.type !== "points");
+
+  const todayNotifs = filterNotifs(TODAY);
+  const yesterdayNotifs = filterNotifs(YESTERDAY);
+  const weekNotifs = filterNotifs(THIS_WEEK);
 
   return (
     <div className="overlay-screen">
@@ -481,20 +490,32 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
 
       {/* Scroll container */}
       <div className="noscroll overlay-screen-scroll" style={{ padding: "0 18px 16px" }}>
-        <GroupLabel label="Aujourd'hui" first />
-        {TODAY.map((n, i) => (
-          <NotifCard key={`today-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
-        ))}
+        {todayNotifs.length > 0 && (
+          <>
+            <GroupLabel label="Aujourd'hui" first />
+            {todayNotifs.map((n, i) => (
+              <NotifCard key={`today-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
+            ))}
+          </>
+        )}
 
-        <GroupLabel label="Hier" />
-        {YESTERDAY.map((n, i) => (
-          <NotifCard key={`yesterday-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
-        ))}
+        {yesterdayNotifs.length > 0 && (
+          <>
+            <GroupLabel label="Hier" first={todayNotifs.length === 0} />
+            {yesterdayNotifs.map((n, i) => (
+              <NotifCard key={`yesterday-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
+            ))}
+          </>
+        )}
 
-        <GroupLabel label="Cette semaine" />
-        {THIS_WEEK.map((n, i) => (
-          <NotifCard key={`week-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
-        ))}
+        {weekNotifs.length > 0 && (
+          <>
+            <GroupLabel label="Cette semaine" first={todayNotifs.length === 0 && yesterdayNotifs.length === 0} />
+            {weekNotifs.map((n, i) => (
+              <NotifCard key={`week-${i}`} n={n} allRead={allRead} delay={i * 0.05} />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

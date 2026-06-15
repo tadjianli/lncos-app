@@ -20,6 +20,7 @@
 
 import { useEffect, useCallback } from "react";
 import { useStore } from "@/lib/store";
+import { isVipProgramEnabled } from "@/lib/feature-flags";
 import type { OverlayType } from "@/lib/store";
 import { products, byId } from "@/lib/data";
 
@@ -102,7 +103,10 @@ export function useOverlayRouter() {
           break;
         }
         case "search":        openSearch();        break;
-        case "loyalty":       openLoyalty();       break;
+        case "loyalty":
+          if (isVipProgramEnabled()) openLoyalty();
+          else closeOverlay();
+          break;
         case "notifications": openNotifications(); break;
         case "orders":        openOrders();        break;
         case "appointments":  openAppointments();  break;

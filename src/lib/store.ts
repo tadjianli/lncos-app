@@ -21,6 +21,7 @@ import {
   pushListingOverlayHistory,
   replaceListingUrl,
 } from "./listing-route-sync";
+import { isVipProgramEnabled } from "./feature-flags";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -256,6 +257,7 @@ export const useStore = create<AppStore>()(
         set({ overlay: { type: "booking", serviceId, resumeFlag: resume } });
       },
       openLoyalty() {
+        if (!isVipProgramEnabled()) return;
         const current = get().overlay;
         stackOverlayHistory(current, "loyalty");
         set({ overlay: { type: "loyalty" } });
@@ -314,7 +316,9 @@ export const useStore = create<AppStore>()(
             set({ overlay: { type: "side-menu" } });
             break;
           case "loyalty":
-            set({ overlay: { type: "loyalty" } });
+            if (isVipProgramEnabled()) {
+              set({ overlay: { type: "loyalty" } });
+            }
             break;
           case "notifications":
             set({ overlay: { type: "notifications" } });
