@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSupabasePageSections } from "@/lib/admin-supabase";
 import { SECTION_SCHEMA_REGISTRY } from "@/lib/section-registry";
 import type { HomeSection, PageSlug, SectionType } from "@/lib/home-sections";
-import { ALLOWED_TYPES_BY_PAGE, previewPath } from "@/lib/page-sections";
+import { ALLOWED_TYPES_BY_PAGE, APP_PAGES, previewPath } from "@/lib/page-sections";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
@@ -234,11 +234,18 @@ function PhonePreview({ sections }: { sections: HomeSection[] }) {
 }
 
 /* ── Main App Builder component ─────────────────────────────────────── */
-const HOME_PAGE: PageSlug = "home";
 
-export function AppBuilder() {
+export interface AppBuilderProps {
+  pageSlug?: PageSlug;
+  /** Mode compact pour intégration dans d'autres modules admin */
+  embedded?: boolean;
+}
+
+export function AppBuilder({ pageSlug = "home", embedded = false }: AppBuilderProps) {
   const router = useRouter();
-  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(HOME_PAGE);
+  const pageMeta = APP_PAGES.find((p) => p.slug === pageSlug);
+  const pageLabel = pageMeta?.label ?? pageSlug;
+  const { published, draft: dbDraft, beginDraft, saveDraft, publishDraft, discardDraft } = useSupabasePageSections(pageSlug);
   const [localDraft, setLocalDraft] = useState<HomeSection[] | null>(null);
   const [editingSection, setEditingSection] = useState<HomeSection | null>(null);
   const [addingSection, setAddingSection] = useState(false);
@@ -313,7 +320,7 @@ export function AppBuilder() {
   }
 
   async function handleEdit(sec: HomeSection) {
-    if (sec.type === "hero") {
+    if (sec.type === "hero" && pageSlug === "home") {
       router.push("/admin/hero-carousel");
       return;
     }
@@ -387,7 +394,7 @@ export function AppBuilder() {
     const schema = SECTION_SCHEMA_REGISTRY[type];
     const newSec: HomeSection = {
       id: `${type}-${Date.now()}`,
-      pageSlug: HOME_PAGE,
+      pageSlug,
       type,
       name: schema.label,
       enabled: false,
@@ -409,63 +416,96 @@ export function AppBuilder() {
 
   return (
     <>
-      <div className="adm-content">
-        {/* Header */}
-        <div className="adm-topbar">
-          <div>
-            <div className="adm-page-eyebrow"><span className="dot" />ÉDITEUR VISUEL · SANS CODE</div>
-            <h1 className="adm-h1">Personnaliser l&apos;app</h1>
-          </div>
-          <div className="ab-publish-bar">
-            <a
-              href={previewPath(HOME_PAGE)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="adm-btn ghost sm"
-              style={{ textDecoration: "none" }}
-            >
-              <Icon name="search" size={14} /> Aperçu live
-            </a>
-            {hasDraft && (
-              <button className="adm-btn ghost sm" onClick={handleDiscard}>Ignorer</button>
-            )}
-            <button
-              type="button"
-              className={`adm-btn gold${!hasDraft ? " is-disabled" : ""}`}
-              onClick={handlePublish}
-              disabled={!hasDraft}
-            >
-              <Icon name="check" size={16} />
-              Publier
-              <Icon name="check" size={16} />
-            </button>
-          </div>
-        </div>
+      <div className={embedded ? "" : "adm-content"}>
+        {!embedded && (
+          <>
+            <div className="adm-topbar">
+              <div>
+                <div className="adm-page-eyebrow"><span className="dot" />ÉDITEUR VISUEL · SANS CODE</div>
+                <h1 className="adm-h1">Personnaliser l&apos;app</h1>
+              </div>
+              <div className="ab-publish-bar">
+                <a
+                  href={previewPath(pageSlug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="adm-btn ghost sm"
+                  style={{ textDecoration: "none" }}
+                >
+                  <Icon name="search" size={14} /> Aperçu live
+                </a>
+                {hasDraft && (
+                  <button className="adm-btn ghost sm" onClick={handleDiscard}>Ignorer</button>
+                )}
+                <button
+                  type="button"
+                  className={`adm-btn gold${!hasDraft ? " is-disabled" : ""}`}
+                  onClick={handlePublish}
+                  disabled={!hasDraft}
+                >
+                  <Icon name="check" size={16} />
+                  Publier
+                  <Icon name="check" size={16} />
+                </button>
+              </div>
+            </div>
 
-        {hasDraft && (
-          <div style={{ background: "rgba(212,175,55,.1)", border: "1px solid rgba(212,175,55,.3)", borderRadius: 10, padding: "10px 16px", fontSize: 13, color: "var(--adm-gold)", display: "flex", alignItems: "center", gap: 10 }}>
-            <Icon name="alert" size={16} color="var(--adm-gold)" />
-            Modifications en attente — publiez pour les rendre visibles aux clientes.
+            {hasDraft && (
+              <div style={{ background: "rgba(212,175,55,.1)", border: "1px solid rgba(212,175,55,.3)", borderRadius: 10, padding: "10px 16px", fontSize: 13, color: "var(--adm-gold)", display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <Icon name="alert" size={16} color="var(--adm-gold)" />
+                Modifications en attente — publiez pour les rendre visibles aux clientes.
+              </div>
+            )}
+
+            {pageSlug === "home" && (
+              <div className="adm-card" style={{ padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(212,175,55,.08)", border: "1px solid rgba(212,175,55,.25)" }}>
+                <div style={{ fontSize: 13, color: "var(--adm-gold)" }}>
+                  Le hero accueil est un <strong>carousel</strong> (jusqu&apos;à 3 slides) — géré séparément de cette liste.
+                </div>
+                <a href="/admin/hero-carousel" className="adm-btn ghost sm" style={{ textDecoration: "none", flexShrink: 0 }}>
+                  Ouvrir Hero Carousel
+                </a>
+              </div>
+            )}
+          </>
+        )}
+
+        {embedded && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--adm-ink)" }}>
+              Sections éditoriales · {pageLabel}
+            </div>
+            <div className="ab-publish-bar" style={{ margin: 0 }}>
+              <a
+                href={previewPath(pageSlug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="adm-btn ghost sm"
+                style={{ textDecoration: "none" }}
+              >
+                <Icon name="search" size={14} /> Aperçu
+              </a>
+              {hasDraft && (
+                <button className="adm-btn ghost sm" onClick={handleDiscard}>Ignorer</button>
+              )}
+              <button
+                type="button"
+                className={`adm-btn gold sm${!hasDraft ? " is-disabled" : ""}`}
+                onClick={handlePublish}
+                disabled={!hasDraft}
+              >
+                Publier
+              </button>
+            </div>
           </div>
         )}
 
-        <div className="adm-card" style={{ padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(212,175,55,.08)", border: "1px solid rgba(212,175,55,.25)" }}>
-          <div style={{ fontSize: 13, color: "var(--adm-gold)" }}>
-            Le hero accueil est un <strong>carousel</strong> (jusqu&apos;à 3 slides) — géré séparément de cette liste.
-          </div>
-          <a href="/admin/hero-carousel" className="adm-btn ghost sm" style={{ textDecoration: "none", flexShrink: 0 }}>
-            Ouvrir Hero Carousel
-          </a>
-        </div>
-
-        {/* Body */}
-        <div className="ab-layout">
-          {/* Section list */}
+        <div className={embedded ? "" : "ab-layout"}>
           <div>
             <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
               <div className="ab-list-head">
                 <div>
-                  <div className="ab-list-title">Sections · Accueil</div>
+                  <div className="ab-list-title">Sections · {pageLabel}</div>
                   <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
                 </div>
                 <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
@@ -525,8 +565,7 @@ export function AppBuilder() {
             </div>
           </div>
 
-          {/* Phone preview */}
-          <PhonePreview sections={sections} />
+          {!embedded && <PhonePreview sections={sections} />}
         </div>
       </div>
 
@@ -539,7 +578,7 @@ export function AppBuilder() {
         />
       )}
       {addingSection && (
-        <AddSectionModal pageSlug={HOME_PAGE} onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
+        <AddSectionModal pageSlug={pageSlug} onClose={() => setAddingSection(false)} onAdd={handleAddSection} />
       )}
       {toast && <AdminToast msg={toast.msg} variant={toast.variant} />}
     </>

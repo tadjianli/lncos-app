@@ -2,12 +2,7 @@
  * LN COS — Réseaux sociaux (config statique → futur admin / API)
  */
 
-export type SocialNetworkId =
-  | "instagram"
-  | "tiktok"
-  | "facebook"
-  | "youtube"
-  | "pinterest";
+export type SocialNetworkId = string;
 
 export interface SocialNetworkLink {
   id: SocialNetworkId;

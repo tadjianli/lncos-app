@@ -447,6 +447,231 @@ export interface Database {
         Relationships: [];
       };
 
+      flash_sales_settings: {
+        Row: {
+          id: string;
+          page_enabled: boolean;
+          banner_eyebrow: string;
+          banner_title: string;
+          banner_subtitle_template: string;
+          countdown_label: string;
+          empty_eyebrow: string;
+          empty_title: string;
+          empty_body: string;
+          empty_cta_label: string;
+          empty_cta_href: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          page_enabled?: boolean;
+          banner_eyebrow?: string;
+          banner_title?: string;
+          banner_subtitle_template?: string;
+          countdown_label?: string;
+          empty_eyebrow?: string;
+          empty_title?: string;
+          empty_body?: string;
+          empty_cta_label?: string;
+          empty_cta_href?: string;
+          updated_at?: string;
+        };
+        Update: {
+          page_enabled?: boolean;
+          banner_eyebrow?: string;
+          banner_title?: string;
+          banner_subtitle_template?: string;
+          countdown_label?: string;
+          empty_eyebrow?: string;
+          empty_title?: string;
+          empty_body?: string;
+          empty_cta_label?: string;
+          empty_cta_href?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      blog_page_settings: {
+        Row: {
+          id: string;
+          hero_eyebrow: string;
+          hero_title: string;
+          hero_subtitle: string;
+          articles_section_title: string;
+          articles_section_hint: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          hero_eyebrow?: string;
+          hero_title?: string;
+          hero_subtitle?: string;
+          articles_section_title?: string;
+          articles_section_hint?: string;
+          updated_at?: string;
+        };
+        Update: {
+          hero_eyebrow?: string;
+          hero_title?: string;
+          hero_subtitle?: string;
+          articles_section_title?: string;
+          articles_section_hint?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      blog_categories: {
+        Row: {
+          id: string;
+          label: string;
+          description: string;
+          icon: string;
+          position: number;
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          label: string;
+          description?: string;
+          icon?: string;
+          position?: number;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          label?: string;
+          description?: string;
+          icon?: string;
+          position?: number;
+          enabled?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      blog_articles: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          excerpt: string;
+          category_id: string;
+          published_at: string;
+          read_minutes: number;
+          featured: boolean;
+          cover_url: string | null;
+          published: boolean;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          slug: string;
+          title: string;
+          excerpt?: string;
+          category_id: string;
+          published_at?: string;
+          read_minutes?: number;
+          featured?: boolean;
+          cover_url?: string | null;
+          published?: boolean;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          slug?: string;
+          title?: string;
+          excerpt?: string;
+          category_id?: string;
+          published_at?: string;
+          read_minutes?: number;
+          featured?: boolean;
+          cover_url?: string | null;
+          published?: boolean;
+          position?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      social_page_settings: {
+        Row: {
+          id: string;
+          hero_eyebrow: string;
+          hero_title: string;
+          hero_subtitle: string;
+          footnote: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          hero_eyebrow?: string;
+          hero_title?: string;
+          hero_subtitle?: string;
+          footnote?: string;
+          updated_at?: string;
+        };
+        Update: {
+          hero_eyebrow?: string;
+          hero_title?: string;
+          hero_subtitle?: string;
+          footnote?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
+      social_network_links: {
+        Row: {
+          id: string;
+          name: string;
+          handle: string;
+          url: string;
+          accent: string;
+          followers: number | null;
+          latest_post: string | null;
+          latest_video: string | null;
+          position: number;
+          enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          handle?: string;
+          url: string;
+          accent?: string;
+          followers?: number | null;
+          latest_post?: string | null;
+          latest_video?: string | null;
+          position?: number;
+          enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          handle?: string;
+          url?: string;
+          accent?: string;
+          followers?: number | null;
+          latest_post?: string | null;
+          latest_video?: string | null;
+          position?: number;
+          enabled?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+
       rdv_settings: {
         Row: {
           id: string;

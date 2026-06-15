@@ -12,6 +12,9 @@ export const APP_PAGES: { slug: PageSlug; label: string; path: string }[] = [
   { slug: "discover", label: "Catégories", path: "/discover" },
   { slug: "rdv", label: "RDV", path: "/rdv" },
   { slug: "profile", label: "Profil", path: "/profile" },
+  { slug: "flash-sales", label: "Ventes Flash", path: "/flash-sales" },
+  { slug: "blog", label: "Blog", path: "/blog" },
+  { slug: "social", label: "Réseaux sociaux", path: "/social" },
 ];
 
 const base = (s: Partial<HomeSection> & Pick<HomeSection, "id" | "type" | "name" | "title">): HomeSection => ({
@@ -43,6 +46,18 @@ export const DEFAULT_SECTIONS_BY_PAGE: Record<PageSlug, HomeSection[]> = {
     base({ id: "hero-profile", type: "hero", name: "En-tête profil", pageSlug: "profile", eyebrow: "LN COS", title: "Mon espace", subtitle: "Compte, commandes et fidélité" }),
     base({ id: "newsletter-profile", type: "newsletter", name: "Club beauté", pageSlug: "profile", eyebrow: "Club VIP", title: "Rejoignez le Club LN COS", subtitle: "Offres exclusives et conseils personnalisés." }),
   ],
+  "flash-sales": [
+    base({ id: "hero-flash", type: "hero", name: "En-tête ventes flash", pageSlug: "flash-sales", eyebrow: "Offres limitées", title: "Ventes Flash LN COS", subtitle: "Prix exclusifs, stocks limités" }),
+    base({ id: "products-flash", type: "products", name: "Produits flash", pageSlug: "flash-sales", title: "En promotion", source: "flash", variant: "grid" }),
+  ],
+  blog: [
+    base({ id: "hero-blog", type: "hero", name: "En-tête blog", pageSlug: "blog", eyebrow: "Magazine beauté", title: "Blog LN COS", subtitle: "Magazine beauté LN COS" }),
+    base({ id: "quote-blog", type: "quote", name: "Citation blog", pageSlug: "blog", title: "La beauté commence par le soin de soi.", enabled: false }),
+  ],
+  social: [
+    base({ id: "hero-social", type: "hero", name: "En-tête réseaux", pageSlug: "social", eyebrow: "Communauté LN COS", title: "Réseaux sociaux", subtitle: "Communauté LN COS" }),
+    base({ id: "cta-social", type: "cta", name: "CTA réseaux", pageSlug: "social", title: "Rejoignez-nous", cta: "Suivre LN COS", enabled: false }),
+  ],
 };
 
 /** Section types allowed per page in App Builder */
@@ -52,6 +67,9 @@ export const ALLOWED_TYPES_BY_PAGE: Record<PageSlug, SectionType[]> = {
   discover: ["hero", "categories", "products", "promo", "trust"],
   rdv: ["hero", "trust", "cta", "promo", "quote"],
   profile: ["hero", "newsletter", "quote", "promo"],
+  "flash-sales": ["hero", "products", "promo", "quote", "trust", "newsletter"],
+  blog: ["hero", "quote", "promo", "newsletter", "cta"],
+  social: ["hero", "cta", "quote", "promo", "newsletter"],
 };
 
 export function previewPath(slug: PageSlug): string {

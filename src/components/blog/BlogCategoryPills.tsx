@@ -2,17 +2,23 @@
 
 import { Icon } from "@/components/shared/Icon";
 import { BLOG_CATEGORIES } from "@/lib/blog-content";
-import type { BlogCategoryId } from "@/lib/contracts/blog";
+import type { BlogCategory, BlogCategoryId } from "@/lib/contracts/blog";
 
 interface BlogCategoryPillsProps {
   active: BlogCategoryId | "all";
   onChange: (id: BlogCategoryId | "all") => void;
+  categories?: BlogCategory[];
 }
 
-export function BlogCategoryPills({ active, onChange }: BlogCategoryPillsProps) {
+export function BlogCategoryPills({
+  active,
+  onChange,
+  categories = BLOG_CATEGORIES,
+}: BlogCategoryPillsProps) {
+  const enabled = categories.filter((c) => ("enabled" in c ? (c as { enabled?: boolean }).enabled !== false : true));
   const pills: { id: BlogCategoryId | "all"; label: string }[] = [
     { id: "all", label: "Tout" },
-    ...BLOG_CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
+    ...enabled.map((c) => ({ id: c.id, label: c.label })),
   ];
 
   return (
@@ -36,10 +42,12 @@ export function BlogCategoryPills({ active, onChange }: BlogCategoryPillsProps) 
   );
 }
 
-export function BlogCategoryOverview() {
+export function BlogCategoryOverview({ categories = BLOG_CATEGORIES }: { categories?: BlogCategory[] }) {
+  const enabled = categories.filter((c) => ("enabled" in c ? (c as { enabled?: boolean }).enabled !== false : true));
+
   return (
     <div className="blog-categories-grid">
-      {BLOG_CATEGORIES.map((cat, i) => (
+      {enabled.map((cat, i) => (
         <div
           key={cat.id}
           className="blog-category-tile"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GoldBtn } from "@/components/shared/ActionButtons";
+import { DEFAULT_FLASH_SALES_SETTINGS, type FlashSalesSettings } from "@/lib/content-pages";
 
 function FlashSalesIllustration() {
   return (
@@ -48,25 +49,28 @@ function FlashSalesIllustration() {
   );
 }
 
-export function FlashSalesEmptyState() {
+export function FlashSalesEmptyState({
+  settings = DEFAULT_FLASH_SALES_SETTINGS,
+}: {
+  settings?: Pick<
+    FlashSalesSettings,
+    "emptyEyebrow" | "emptyTitle" | "emptyBody" | "emptyCtaLabel" | "emptyCtaHref"
+  >;
+}) {
   return (
     <div className="flash-sales-empty">
       <div className="flash-sales-empty__frame">
         <FlashSalesIllustration />
       </div>
 
-      <p className="flash-sales-empty__eyebrow">🔥 Ventes Flash LN COS</p>
+      <p className="flash-sales-empty__eyebrow">{settings.emptyEyebrow}</p>
 
-      <h1 className="flash-sales-empty__title">Aucune vente flash disponible</h1>
+      <h1 className="flash-sales-empty__title">{settings.emptyTitle}</h1>
 
-      <p className="flash-sales-empty__body">
-        Aucune vente flash n&apos;est disponible pour le moment.
-        <br />
-        De nouvelles offres exclusives arrivent bientôt.
-      </p>
+      <p className="flash-sales-empty__body">{settings.emptyBody}</p>
 
-      <Link href="/discover" className="flash-sales-empty__cta">
-        <GoldBtn icon="grid">Découvrir nos produits</GoldBtn>
+      <Link href={settings.emptyCtaHref} className="flash-sales-empty__cta">
+        <GoldBtn icon="grid">{settings.emptyCtaLabel}</GoldBtn>
       </Link>
     </div>
   );

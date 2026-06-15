@@ -32,7 +32,15 @@ export interface SectionSchedule {
   end: string;
 }
 
-export type PageSlug = "home" | "boutique" | "discover" | "rdv" | "profile";
+export type PageSlug =
+  | "home"
+  | "boutique"
+  | "discover"
+  | "rdv"
+  | "profile"
+  | "flash-sales"
+  | "blog"
+  | "social";
 
 export interface HomeSection {
   id: string;

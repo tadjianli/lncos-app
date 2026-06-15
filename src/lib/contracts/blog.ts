@@ -2,12 +2,8 @@
  * LN COS — Blog contracts (prêt pour publication admin)
  */
 
-export type BlogCategoryId =
-  | "conseils"
-  | "tutoriels"
-  | "skincare"
-  | "tendances"
-  | "nouveautes";
+/** Identifiant catégorie (admin : texte libre, ex. conseils, tutoriels) */
+export type BlogCategoryId = string;
 
 export interface BlogCategory {
   id: BlogCategoryId;
