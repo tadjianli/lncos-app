@@ -95,20 +95,6 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const stackedListingCategory = getStackedListingCategory(overlay);
   const productOverListing = isProductOpenedOverListing(overlay);
 
-  // When a full-shell modal is open (side menu / booking from rdv page),
-  // prevent any accidental touch-scroll on the body layer.
-  const isShellModal = overlay?.type === "side-menu";
-  useEffect(() => {
-    // Body is already overflow:hidden via globals.css — this is a no-op
-    // guard kept for any future dynamic body changes.
-    if (isShellModal) {
-      document.body.style.touchAction = "none";
-    } else {
-      document.body.style.touchAction = "";
-    }
-    return () => { document.body.style.touchAction = ""; };
-  }, [isShellModal]);
-
   const NAV_H = "var(--bottom-nav-h)";
 
   return (

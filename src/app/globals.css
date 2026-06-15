@@ -2031,6 +2031,50 @@
   text-align: center;
 }
 
+/* Side menu drawer */
+.side-menu-root {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  pointer-events: auto;
+}
+.side-menu-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: scrimIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  cursor: pointer;
+}
+.side-menu-drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 290px;
+  background: linear-gradient(160deg, #151515, #0c0c0c);
+  border-right: 1px solid rgba(212,175,55,.22);
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-top) + 12px) 0 var(--safe-bottom) 0;
+  animation: drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both;
+  box-shadow: 8px 0 48px rgba(0,0,0,.7);
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.side-menu-link {
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+.side-menu-link--footer {
+  min-height: 44px;
+}
+
 /* Bottom navigation — fixed viewport (Instagram/TikTok), safe-area une fois */
 .bottom-nav {
   position: fixed;

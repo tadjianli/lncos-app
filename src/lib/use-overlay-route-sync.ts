@@ -15,6 +15,7 @@ const ROUTE_RESET_OVERLAYS: OverlayType[] = [
   "orders",
   "appointments",
   "settings",
+  "side-menu",
 ];
 
 /**

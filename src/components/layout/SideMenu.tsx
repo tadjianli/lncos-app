@@ -3,10 +3,11 @@
  * LN COS — Side menu drawer (from handoff app.jsx SideMenu)
  */
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
+import { hasOverlayHistoryState } from "@/lib/overlay-history";
 
 type MenuLink = {
   i: string;
@@ -42,11 +43,25 @@ interface SideMenuProps {
 }
 
 export function SideMenu({ onClose }: SideMenuProps) {
+  const router       = useRouter();
   const openOrders   = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
 
-  function handleNav(item: MenuLink) {
+  /** Ferme le menu puis navigue — sans bloquer le routeur Next.js */
+  function closeMenuForNavigation() {
     closeOverlay();
+    if (typeof window !== "undefined" && hasOverlayHistoryState()) {
+      window.history.back();
+    }
+  }
+
+  function handleNavigate(href: string) {
+    closeMenuForNavigation();
+    router.push(href);
+  }
+
+  function handleNav(item: MenuLink) {
+    closeMenuForNavigation();
     if (item.overlay === "orders") {
       setTimeout(openOrders, 50);
     }
@@ -66,15 +81,16 @@ export function SideMenu({ onClose }: SideMenuProps) {
 
     if (l.href) {
       return (
-        <Link
+        <button
           key={l.t}
-          href={l.href}
-          onClick={onClose}
-          style={{ ...rowStyle, textDecoration: "none", color: "var(--ink-soft)" }}
+          type="button"
+          onClick={() => handleNavigate(l.href!)}
+          className="side-menu-link"
+          style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer" }}
         >
           <Icon name={l.i} size={21} color="var(--gold)" />
           <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
-        </Link>
+        </button>
       );
     }
 
@@ -83,7 +99,8 @@ export function SideMenu({ onClose }: SideMenuProps) {
         key={l.t}
         type="button"
         onClick={() => handleNav(l)}
-        style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none" }}
+        className="side-menu-link"
+        style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer" }}
       >
         <Icon name={l.i} size={21} color="var(--gold)" />
         <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
@@ -92,43 +109,16 @@ export function SideMenu({ onClose }: SideMenuProps) {
   }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 90,
-      }}
-    >
-      {/* Scrim */}
+    <div className="side-menu-root">
+      {/* Scrim — clic = fermer */}
       <div
+        className="side-menu-scrim"
         onClick={onClose}
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(0,0,0,.65)",
-          backdropFilter: "blur(3px)",
-          WebkitBackdropFilter: "blur(3px)",
-          animation: "scrimIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both",
-        }}
+        aria-hidden
       />
 
-      {/* Drawer */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: 290,
-          background: "linear-gradient(160deg, #151515, #0c0c0c)",
-          borderRight: "1px solid rgba(212,175,55,.22)",
-          display: "flex",
-          flexDirection: "column",
-          padding: "calc(var(--safe-top) + 12px) 0 var(--safe-bottom) 0",
-          animation: "drawerIn 0.36s cubic-bezier(0.22, 0.68, 0, 1) both",
-          boxShadow: "8px 0 48px rgba(0,0,0,.7)",
-        }}
-      >
+      {/* Drawer — au-dessus du scrim, reçoit les touches */}
+      <div className="side-menu-drawer">
         {/* Header */}
         <div
           style={{
@@ -175,20 +165,27 @@ export function SideMenu({ onClose }: SideMenuProps) {
 
         {/* Footer */}
         <div style={{ padding: "16px 24px 0", borderTop: "1px solid rgba(255,255,255,.06)" }}>
-          <Link
-            href="/admin"
+          <button
+            type="button"
+            onClick={() => handleNavigate("/admin")}
+            className="side-menu-link side-menu-link--footer"
             style={{
+              width: "100%",
               display: "flex",
               alignItems: "center",
               gap: 10,
               fontSize: 12.5,
               color: "var(--gold)",
-              textDecoration: "none",
               fontWeight: 600,
+              background: "none",
+              border: "none",
+              padding: "12px 0",
+              cursor: "pointer",
+              textAlign: "left",
             }}
           >
             <Icon name="sliders" size={17} color="var(--gold)" /> Espace commerçant →
-          </Link>
+          </button>
         </div>
       </div>
     </div>
