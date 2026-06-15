@@ -8,8 +8,9 @@
  * The parent container must be position:relative when using fill.
  */
 
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import Image, { type ImageProps } from "next/image";
+import { getImageSessionState, markImageError, markImageLoaded } from "@/lib/image-session-cache";
 
 type FadeImageProps = Omit<ImageProps, "onLoad" | "onError"> & {
   /** Label shown inside the placeholder if the image fails to load */
@@ -18,13 +19,32 @@ type FadeImageProps = Omit<ImageProps, "onLoad" | "onError"> & {
   skeletonClass?: string;
 };
 
+function resolveSrcKey(src: ImageProps["src"]): string {
+  if (typeof src === "string") return src;
+  if (src && typeof src === "object" && "src" in src) return src.src;
+  return String(src);
+}
+
 export const FadeImage = memo(function FadeImage({
   fallbackLabel,
   skeletonClass = "",
   style,
+  src,
   ...props
 }: FadeImageProps) {
-  const [state, setState] = useState<"loading" | "loaded" | "error">("loading");
+  const srcKey = resolveSrcKey(src);
+  const [state, setState] = useState<"loading" | "loaded" | "error">(
+    () => getImageSessionState(srcKey) ?? "loading",
+  );
+
+  useEffect(() => {
+    const cached = getImageSessionState(srcKey);
+    if (cached) setState(cached);
+    else setState("loading");
+  }, [srcKey]);
+
+  const isCached = state === "loaded";
+  const fadeMs = isCached ? 0.12 : 0.35;
 
   // ── Error state → branded striped placeholder ────────────────
   if (state === "error") {
@@ -51,14 +71,21 @@ export const FadeImage = memo(function FadeImage({
       {/* Actual image — invisible until loaded, then fades in */}
       <Image
         {...props}
+        src={src}
         style={{
           ...style,
           opacity: state === "loaded" ? 1 : 0,
-          transition: "opacity 0.45s cubic-bezier(0.2, 0.8, 0.2, 1)",
+          transition: `opacity ${fadeMs}s cubic-bezier(0.2, 0.8, 0.2, 1)`,
           willChange: state === "loaded" ? "auto" : "opacity",
         }}
-        onLoad={() => setState("loaded")}
-        onError={() => setState("error")}
+        onLoad={() => {
+          markImageLoaded(srcKey);
+          setState("loaded");
+        }}
+        onError={() => {
+          markImageError(srcKey);
+          setState("error");
+        }}
       />
     </>
   );

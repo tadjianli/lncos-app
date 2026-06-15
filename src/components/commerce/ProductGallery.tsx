@@ -147,7 +147,7 @@ export function ProductGallery({
           onTouchEnd={handleTouchEnd}
           aria-label="Agrandir l'image"
         >
-          <div className="pd-gallery-hero-inner" key={heroSrc}>
+          <div className="pd-gallery-hero-inner">
             <GalleryHeroImage src={heroSrc} alt={alt} />
           </div>
 

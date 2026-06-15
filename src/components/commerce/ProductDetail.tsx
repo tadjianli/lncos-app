@@ -39,6 +39,8 @@ import {
 interface ProductDetailProps {
   product: Product;
   onClose: () => void;
+  /** Transition douce depuis le listing catégories */
+  enterFromListing?: boolean;
 }
 
 function nonEmptyLines(lines: string[] | undefined): string[] {
@@ -218,7 +220,11 @@ function AccordionSection({
 
 /* ─── Component ──────────────────────────────────────────────── */
 
-export function ProductDetail({ product: initialProduct, onClose }: ProductDetailProps) {
+export function ProductDetail({
+  product: initialProduct,
+  onClose,
+  enterFromListing = false,
+}: ProductDetailProps) {
   const { products, byId } = usePublicProducts();
   const p = byId(initialProduct.id) ?? initialProduct;
 
@@ -400,7 +406,7 @@ export function ProductDetail({ product: initialProduct, onClose }: ProductDetai
   ]);
 
   return (
-    <div className="pd-overlay">
+    <div className={`pd-overlay${enterFromListing ? " pd-overlay--from-listing" : ""}`}>
       <div className="pd-overlay__handle" aria-hidden />
 
       {/* ── Header produit — retour toujours visible ; actions droite au scroll ── */}

@@ -28,6 +28,10 @@ import { closeProductDetailNavigation } from "@/lib/product-navigation";
 import { closeOverlayWithHistory } from "@/lib/overlay-history";
 import { useOverlayHistory } from "@/lib/use-product-overlay-history";
 import { useOverlayRouteSync } from "@/lib/use-overlay-route-sync";
+import {
+  getStackedListingCategory,
+  isProductOpenedOverListing,
+} from "@/lib/listing-overlay-stack";
 
 // Lazy-load overlay screens — keep initial bundle small
 const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
@@ -87,6 +91,8 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   }, []);
 
   const navVisible = bottomNav && showNav(mode);
+  const stackedListingCategory = getStackedListingCategory(overlay);
+  const productOverListing = isProductOpenedOverListing(overlay);
 
   // When a full-shell modal is open (side menu / booking from rdv page),
   // prevent any accidental touch-scroll on the body layer.
@@ -117,12 +123,17 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
         {/* ── z:80 content overlays ─────────────────────────── */}
         <Suspense fallback={null}>
           {overlay?.type === "product" && overlay.product && (
-            <ProductDetail product={overlay.product} onClose={handleProductClose} />
+            <ProductDetail
+              product={overlay.product}
+              onClose={handleProductClose}
+              enterFromListing={productOverListing}
+            />
           )}
-          {overlay?.type === "listing" && (
+          {stackedListingCategory !== undefined && (
             <ListingScreen
-              category={overlay.category ?? null}
+              category={stackedListingCategory}
               onClose={handleOverlayClose}
+              preserveUnderProduct={overlay?.type === "product"}
             />
           )}
           {overlay?.type === "search" && (

@@ -14,6 +14,7 @@ import {
   logProductNav,
   pushProductOverlayHistory,
 } from "./product-navigation";
+import { preloadProductImages } from "./image-session-cache";
 import { pushOverlayHistory, shouldPushOverlayHistory } from "./overlay-history";
 import {
   clearListingUrlParam,
@@ -192,6 +193,8 @@ export const useStore = create<AppStore>()(
       overlay: null,
 
       openProduct(product, opts) {
+        preloadProductImages(product);
+
         const current = get().overlay;
         const productReturn = buildReturnContext(current, opts);
 

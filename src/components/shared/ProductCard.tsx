@@ -6,6 +6,7 @@ import { FadeImage } from "./FadeImage";
 import { ProductImagePlaceholder } from "./ProductImagePlaceholder";
 import type { Product } from "@/lib/data";
 import { hasProductImage, resolveProductImage } from "@/lib/product-catalog";
+import { preloadImage } from "@/lib/image-session-cache";
 
 interface ProductCardProps {
   p: Product;
@@ -44,6 +45,15 @@ export const ProductCard = memo(function ProductCard({
   const imgSrc = resolveProductImage(p);
   const showImage = hasProductImage(p) && imgSrc != null;
 
+  const handleOpen = useCallback(() => {
+    if (imgSrc) void preloadImage(imgSrc);
+    onOpen?.(p);
+  }, [imgSrc, onOpen, p]);
+
+  const handlePrefetch = useCallback(() => {
+    if (imgSrc) void preloadImage(imgSrc);
+  }, [imgSrc]);
+
   const favIconSize = layout === "grid-2" ? 15 : layout === "grid-3" ? 13 : 16;
   const starSize = layout === "grid-2" ? 11 : layout === "grid-3" ? 10 : 12;
   const plusSize = layout === "grid-2" ? 16 : layout === "grid-3" ? 14 : 16;
@@ -56,7 +66,8 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <div
-      onClick={() => onOpen?.(p)}
+      onClick={handleOpen}
+      onPointerDown={handlePrefetch}
       className={`prod-card snap${isBoutiqueGrid ? ` prod-card--${layout}` : ""}`}
     >
       <div className="prod-imgwrap">

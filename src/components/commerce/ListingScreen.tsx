@@ -10,13 +10,20 @@ import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { usePublicProducts } from "@/lib/client-supabase";
 import { productsInCategory } from "@/lib/category-product-counts";
 import type { Category } from "@/lib/store";
+import { cn } from "@/lib/utils";
 
 interface ListingScreenProps {
   category: Category | null;
   onClose: () => void;
+  /** Listing conservé sous la fiche produit — pas de re-animation au retour */
+  preserveUnderProduct?: boolean;
 }
 
-export function ListingScreen({ category, onClose }: ListingScreenProps) {
+export function ListingScreen({
+  category,
+  onClose,
+  preserveUnderProduct = false,
+}: ListingScreenProps) {
   const { products, loading, error, reload } = usePublicProducts();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +48,13 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
     ) : null;
 
   return (
-    <div className="overlay-screen" style={{ animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both" }}>
+    <div
+      className={cn(
+        "overlay-screen",
+        preserveUnderProduct && "overlay-screen--under-product",
+      )}
+      aria-hidden={preserveUnderProduct || undefined}
+    >
       <div style={{ flex: "0 0 auto" }}>
         <SubHeader title={title} onBack={onClose} safeArea />
       </div>

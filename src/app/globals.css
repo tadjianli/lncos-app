@@ -884,6 +884,14 @@
     animation: overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both;
   }
 
+  /* Listing conservé sous fiche produit — évite remontage / flash images au retour */
+  .overlay-screen--under-product {
+    z-index: 105;
+    animation: none !important;
+    pointer-events: none;
+    visibility: visible;
+  }
+
   /* Corps scrollable des overlays z-110 (nav visible en dessous) */
   .overlay-screen-scroll {
     flex: 1 1 auto;
@@ -2967,6 +2975,22 @@
   overflow: hidden;
   animation: sheetIn 0.42s cubic-bezier(0.22, 0.68, 0, 1) both;
   will-change: transform;
+}
+
+.pd-overlay--from-listing {
+  animation: pdOverlayFromListing 0.28s cubic-bezier(0.22, 0.68, 0, 1) both;
+  will-change: opacity, transform;
+}
+
+@keyframes pdOverlayFromListing {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Fiche produit avec tab bar — overlay au-dessus de la nav, pas par-dessus */
