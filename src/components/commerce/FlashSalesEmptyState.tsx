@@ -51,21 +51,23 @@ function FlashSalesIllustration() {
 
 export function FlashSalesEmptyState({
   settings = DEFAULT_FLASH_SALES_SETTINGS,
+  inLayout = false,
 }: {
   settings?: Pick<
     FlashSalesSettings,
     "emptyEyebrow" | "emptyTitle" | "emptyBody" | "emptyCtaLabel" | "emptyCtaHref"
   >;
+  inLayout?: boolean;
 }) {
   return (
-    <div className="flash-sales-empty">
+    <div className={`flash-sales-empty${inLayout ? " flash-sales-empty--in-layout" : ""}`}>
       <div className="flash-sales-empty__frame">
         <FlashSalesIllustration />
       </div>
 
       <p className="flash-sales-empty__eyebrow">{settings.emptyEyebrow}</p>
 
-      <h1 className="flash-sales-empty__title">{settings.emptyTitle}</h1>
+      <h2 className="flash-sales-empty__title">{settings.emptyTitle}</h2>
 
       <p className="flash-sales-empty__body">{settings.emptyBody}</p>
 

@@ -19,7 +19,7 @@ export function isFlashSaleProduct(product: Product): boolean {
 }
 
 export function filterFlashSaleProducts(products: Product[]): Product[] {
-  return products.filter(isFlashSaleProduct);
+  return products.filter((p) => p.active !== false && isFlashSaleProduct(p));
 }
 
 /** Enrichit un produit avec isFlashSale calculé (catalogue / mapping DB). */
