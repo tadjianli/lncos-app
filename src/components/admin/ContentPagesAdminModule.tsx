@@ -13,6 +13,11 @@ import {
   useAdminSocialContent,
 } from "@/lib/content-pages-hooks";
 import { slugifyTitle, type AdminBlogCategory, type AdminSocialLink } from "@/lib/content-pages";
+import {
+  fromDatetimeLocalValue,
+  toDatetimeLocalValue,
+  type FlashSalesCountdown,
+} from "@/lib/flash-countdown";
 
 type Tab = "flash" | "blog" | "social";
 
@@ -85,7 +90,127 @@ function FlashTab({ showToast }: { showToast: (msg: string, v?: AdminToastVarian
           onChange={(v) => setSettings({ ...settings, bannerSubtitleTemplate: v })}
           hint="Utilisez {{count}} pour le nombre de promotions."
         />
-        <FieldRow label="Label countdown" value={settings.countdownLabel} onChange={(v) => setSettings({ ...settings, countdownLabel: v })} />
+        <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
+          {saving ? "Enregistrement…" : "Enregistrer"}
+        </button>
+      </div>
+
+      <div className="adm-card" style={{ padding: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Compte à rebours</h3>
+        <div className="pop-toggle-row" style={{ marginBottom: 12 }}>
+          <span className="pop-toggle-label">Afficher le compte à rebours</span>
+          <Toggle
+            checked={settings.countdown.enabled}
+            onChange={() =>
+              setSettings({
+                ...settings,
+                countdown: { ...settings.countdown, enabled: !settings.countdown.enabled },
+              })
+            }
+          />
+        </div>
+        <FieldRow
+          label="Label (texte à gauche du timer)"
+          value={settings.countdownLabel}
+          onChange={(v) => setSettings({ ...settings, countdownLabel: v })}
+          hint="Sur la page Ventes Flash, ce texte remplace le titre de section."
+        />
+        <div className="pop-field-row">
+          <label className="pop-field-label">Mode</label>
+          <select
+            className="pop-input"
+            value={settings.countdown.mode}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                countdown: {
+                  ...settings.countdown,
+                  mode: e.target.value === "end_at" ? "end_at" : "duration",
+                },
+              })
+            }
+          >
+            <option value="duration">Durée fixe (repart à chaque visite)</option>
+            <option value="end_at">Date et heure de fin</option>
+          </select>
+        </div>
+        {settings.countdown.mode === "duration" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            {(
+              [
+                ["hours", "Heures", 99],
+                ["minutes", "Minutes", 59],
+                ["seconds", "Secondes", 59],
+              ] as const
+            ).map(([key, label, max]) => (
+              <div key={key} className="pop-field-row" style={{ marginBottom: 0 }}>
+                <label className="pop-field-label">{label}</label>
+                <input
+                  className="pop-input"
+                  type="number"
+                  min={0}
+                  max={max}
+                  value={settings.countdown[key]}
+                  onChange={(e) => {
+                    const n = Math.min(max, Math.max(0, Number(e.target.value) || 0));
+                    setSettings({
+                      ...settings,
+                      countdown: { ...settings.countdown, [key]: n },
+                    });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="pop-field-row">
+            <label className="pop-field-label">Fin de la vente flash</label>
+            <input
+              className="pop-input"
+              type="datetime-local"
+              value={toDatetimeLocalValue(settings.countdown.endAt)}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  countdown: {
+                    ...settings.countdown,
+                    endAt: fromDatetimeLocalValue(e.target.value),
+                  },
+                })
+              }
+            />
+            <p style={{ fontSize: 11, color: "var(--adm-ink-mute)", margin: "4px 0 0" }}>
+              Heure locale de votre navigateur. Le timer se synchronise en temps réel pour tous les visiteurs.
+            </p>
+          </div>
+        )}
+        <div className="pop-field-row" style={{ marginTop: 12 }}>
+          <label className="pop-field-label">Quand le timer atteint zéro</label>
+          <select
+            className="pop-input"
+            value={settings.countdown.onExpire}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                countdown: {
+                  ...settings.countdown,
+                  onExpire: e.target.value as FlashSalesCountdown["onExpire"],
+                },
+              })
+            }
+          >
+            <option value="reset">Recommencer (mode durée uniquement)</option>
+            <option value="zeros">Afficher 00 : 00 : 00</option>
+            <option value="hide">Masquer le timer</option>
+          </select>
+        </div>
+        <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
+          {saving ? "Enregistrement…" : "Enregistrer le compte à rebours"}
+        </button>
+      </div>
+
+      <div className="adm-card" style={{ padding: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>État vide</h3>
         <FieldRow label="Eyebrow état vide" value={settings.emptyEyebrow} onChange={(v) => setSettings({ ...settings, emptyEyebrow: v })} />
         <FieldRow label="Titre état vide" value={settings.emptyTitle} onChange={(v) => setSettings({ ...settings, emptyTitle: v })} />
         <FieldRow label="Texte état vide" value={settings.emptyBody} onChange={(v) => setSettings({ ...settings, emptyBody: v })} multiline />
@@ -95,7 +220,7 @@ function FlashTab({ showToast }: { showToast: (msg: string, v?: AdminToastVarian
           Les produits affichés viennent du catalogue — cochez « Vente flash » sur chaque fiche produit (admin Produits).
         </p>
         <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
-          {saving ? "Enregistrement…" : "Enregistrer"}
+          {saving ? "Enregistrement…" : "Enregistrer l'état vide"}
         </button>
       </div>
       <div className="adm-card" style={{ padding: 20 }}>

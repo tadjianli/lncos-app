@@ -37,7 +37,10 @@ export default function FlashSalesPage() {
             compact
           />
           <div className="flash-sales-countdown-wrap">
-            <FlashSaleHead title={settings.countdownLabel} />
+            <FlashSaleHead
+              title={settings.countdownLabel}
+              countdown={settings.countdown}
+            />
           </div>
           <ProductGrid products={flashProducts} priorityCount={6} />
         </>

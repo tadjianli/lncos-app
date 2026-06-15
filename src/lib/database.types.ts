@@ -473,6 +473,7 @@ export interface Database {
           banner_title: string;
           banner_subtitle_template: string;
           countdown_label: string;
+          countdown: Json;
           empty_eyebrow: string;
           empty_title: string;
           empty_body: string;
@@ -487,6 +488,7 @@ export interface Database {
           banner_title?: string;
           banner_subtitle_template?: string;
           countdown_label?: string;
+          countdown?: Json;
           empty_eyebrow?: string;
           empty_title?: string;
           empty_body?: string;
@@ -500,6 +502,7 @@ export interface Database {
           banner_title?: string;
           banner_subtitle_template?: string;
           countdown_label?: string;
+          countdown?: Json;
           empty_eyebrow?: string;
           empty_title?: string;
           empty_body?: string;

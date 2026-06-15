@@ -15,6 +15,7 @@ import { SectionHead } from "@/components/shared/ActionButtons";
 import { useStore } from "@/lib/store";
 import { usePublicHomeSections } from "@/lib/client-supabase";
 import { usePublicProducts } from "@/lib/client-supabase";
+import { usePublicFlashSalesSettings } from "@/lib/content-pages-hooks";
 import type { HomeSection, ProductSource } from "@/lib/home-sections";
 import type { Product } from "@/lib/data";
 import {
@@ -426,6 +427,7 @@ export default function HomePage() {
   const activeSections = getVisible({ isMobile: true });
   const { settings: heroSettings, slides: heroSlides } = usePublicHeroCarousel();
   const heroDisplay = resolveHeroDisplay(heroSettings, heroSlides);
+  const { settings: flashSettings } = usePublicFlashSalesSettings();
 
   /* ── Stable callbacks ─────────────────────────────────────── */
   const handleAdd  = useCallback((p: Product) => addToCart(p), [addToCart]);
@@ -514,7 +516,7 @@ export default function HomePage() {
             >
               {isFirst ? (
                 <>
-                  <FlashSaleHead title={section.title} />
+                  <FlashSaleHead title={section.title} countdown={flashSettings.countdown} />
                   <HorizontalProductCarousel fillColumns={2}>
                     {prods.map((p, pi) => (
                       <ProductCard
@@ -662,7 +664,7 @@ export default function HomePage() {
       }
     },
      
-    [handleAdd, handleFav, handleOpen, favs, router, products, productsBySource, selfCareProducts, universeGrouped, heroDisplay, heroSettings]
+    [handleAdd, handleFav, handleOpen, favs, router, products, productsBySource, selfCareProducts, universeGrouped, heroDisplay, heroSettings, flashSettings]
   );
 
   return (

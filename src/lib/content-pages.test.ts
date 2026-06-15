@@ -25,6 +25,7 @@ describe("dbToFlashSalesSettings", () => {
   it("retourne les defaults si row null", () => {
     const s = dbToFlashSalesSettings(null);
     expect(s.bannerTitle).toContain("Ventes Flash");
+    expect(s.countdown.hours).toBe(4);
   });
 });
 

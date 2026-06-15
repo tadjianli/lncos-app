@@ -9,6 +9,14 @@ import type { Json } from "./database.types";
 import type { SocialNetworkLink } from "./social-links";
 import { BLOG_CATEGORIES as STATIC_BLOG_CATEGORIES } from "./blog-content";
 import { SOCIAL_NETWORK_LINKS as STATIC_SOCIAL_LINKS } from "./social-links";
+import {
+  DEFAULT_FLASH_SALES_COUNTDOWN,
+  flashCountdownToDb,
+  parseFlashCountdown,
+  type FlashSalesCountdown,
+} from "./flash-countdown";
+
+export type { FlashSalesCountdown };
 
 /* ── Flash sales settings ─────────────────────────────────────────────────── */
 
@@ -19,6 +27,7 @@ export interface FlashSalesSettings {
   /** Placeholder {{count}} pour le nombre de promotions */
   bannerSubtitleTemplate: string;
   countdownLabel: string;
+  countdown: FlashSalesCountdown;
   emptyEyebrow: string;
   emptyTitle: string;
   emptyBody: string;
@@ -33,6 +42,7 @@ export const DEFAULT_FLASH_SALES_SETTINGS: FlashSalesSettings = {
   bannerSubtitleTemplate:
     "{{count}} promotion(s) en cours — prix exclusifs, stocks limités.",
   countdownLabel: "Se termine dans",
+  countdown: { ...DEFAULT_FLASH_SALES_COUNTDOWN },
   emptyEyebrow: "🔥 Ventes Flash LN COS",
   emptyTitle: "Aucune vente flash disponible",
   emptyBody:
@@ -48,6 +58,7 @@ export interface DbFlashSalesSettings {
   banner_title: string;
   banner_subtitle_template: string;
   countdown_label: string;
+  countdown: Json;
   empty_eyebrow: string;
   empty_title: string;
   empty_body: string;
@@ -65,6 +76,7 @@ export function dbToFlashSalesSettings(
     bannerTitle: row.banner_title,
     bannerSubtitleTemplate: row.banner_subtitle_template,
     countdownLabel: row.countdown_label,
+    countdown: parseFlashCountdown(row.countdown),
     emptyEyebrow: row.empty_eyebrow,
     emptyTitle: row.empty_title,
     emptyBody: row.empty_body,
@@ -80,6 +92,7 @@ export function flashSalesSettingsToDb(s: FlashSalesSettings) {
     banner_title: s.bannerTitle,
     banner_subtitle_template: s.bannerSubtitleTemplate,
     countdown_label: s.countdownLabel,
+    countdown: flashCountdownToDb(s.countdown) as Json,
     empty_eyebrow: s.emptyEyebrow,
     empty_title: s.emptyTitle,
     empty_body: s.emptyBody,
