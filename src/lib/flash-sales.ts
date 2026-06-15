@@ -4,6 +4,7 @@
  */
 
 import type { Product } from "./data";
+import { normalizeHomeVisibility } from "./product-home-visibility";
 
 /** Dérive le flag depuis home_visibility (admin) ou tag legacy. */
 export function deriveIsFlashSale(
@@ -11,7 +12,8 @@ export function deriveIsFlashSale(
 ): boolean {
   if (product.isFlashSale === true) return true;
   if (product.isFlashSale === false) return false;
-  return product.homeVisibility?.flash === true || product.tag === "Flash";
+  const vis = normalizeHomeVisibility(product.homeVisibility, product.tag);
+  return vis.flash === true || product.tag === "Flash";
 }
 
 export function isFlashSaleProduct(product: Product): boolean {

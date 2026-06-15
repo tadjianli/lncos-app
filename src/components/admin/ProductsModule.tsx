@@ -13,7 +13,7 @@ import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
 import { ProductBeforeAfterEditor } from "@/components/admin/ProductBeforeAfterEditor";
-import { DEFAULT_HOME_VISIBILITY } from "@/lib/product-home-visibility";
+import { DEFAULT_HOME_VISIBILITY, normalizeHomeVisibility } from "@/lib/product-home-visibility";
 import {
   getProductViewActionLabel,
   openProductInStorefront,
@@ -38,6 +38,9 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   const [productId, setProductId] = useState(isNew ? slugifyProductId(product.name || "nouveau-produit") : product.id);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"info" | "seo">("info");
+  const [oldPriceEnabled, setOldPriceEnabled] = useState(
+    () => product.old != null && Number(product.old) > 0
+  );
   const seoScore = computeProductSeoScore(form);
   const categoryName = categories.find((c) => c.id === form.cat)?.name ?? form.cat;
 
@@ -58,16 +61,31 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
     setForm((p) => ({ ...p, [key]: val }));
   }
 
+  function handleOldPriceToggle(enabled: boolean) {
+    setOldPriceEnabled(enabled);
+    if (!enabled) {
+      set("old", null);
+      return;
+    }
+    if (form.old == null || Number(form.old) <= 0) {
+      const suggested =
+        form.price > 0 ? Math.round(form.price * 1.15 * 100) / 100 : 0;
+      set("old", suggested > form.price ? suggested : form.price + 1);
+    }
+  }
+
   async function handleSubmit() {
     setSaving(true);
+    const homeVisibility = normalizeHomeVisibility(form.homeVisibility ?? {}, form.tag ?? null);
     const payload: Product = {
       ...form,
       id: productId,
       seoSlug: form.seoSlug?.trim() || productId,
       mainImageUrl: form.mainImageUrl ?? null,
       galleryImages: form.galleryImages ?? [],
-      homeVisibility: form.homeVisibility ?? {},
+      homeVisibility,
       productVariants: variants,
+      old: oldPriceEnabled ? form.old : null,
     };
     await onSave(payload, variants.map((v) => ({ ...v, productId })));
     setSaving(false);
@@ -153,7 +171,6 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           {([
             { label: "Nom du produit", key: "name" as const, type: "text" },
             { label: "Prix de base (€)", key: "price" as const, type: "number" },
-            { label: "Prix barré (€)", key: "old" as const, type: "number" },
             { label: "Contenance (ml, g…)", key: "ml" as const, type: "text" },
           ] as const).map(({ label, key, type }) => (
             <div key={key} className="ab-field">
@@ -166,6 +183,52 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
               />
             </div>
           ))}
+
+          <div className="ab-field">
+            <div className="ab-toggle-row ab-field__head">
+              <label className="ab-field__label-inline">Prix barré (€)</label>
+              <div className="ab-field__toggle-meta">
+                <span className="ab-field__toggle-state">
+                  {oldPriceEnabled ? "Activé" : "Désactivé"}
+                </span>
+                <label className="ab-toggle" style={{ cursor: "pointer" }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={oldPriceEnabled}
+                    onChange={(e) => handleOldPriceToggle(e.target.checked)}
+                    aria-label={oldPriceEnabled ? "Désactiver le prix barré" : "Activer le prix barré"}
+                  />
+                  <div className="ab-toggle-track" />
+                  <div className="ab-toggle-thumb" />
+                </label>
+              </div>
+            </div>
+            <input
+              className="ab-input"
+              type="number"
+              min={0}
+              step={0.01}
+              disabled={!oldPriceEnabled}
+              value={oldPriceEnabled && form.old != null ? String(form.old) : ""}
+              placeholder={oldPriceEnabled ? "Ex. 49,90" : "Activez pour afficher un prix barré"}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                if (!raw) {
+                  set("old", null);
+                  return;
+                }
+                set("old", Number(raw));
+              }}
+            />
+            {oldPriceEnabled &&
+              form.old != null &&
+              form.price > 0 &&
+              Number(form.old) <= form.price && (
+                <p className="ab-field-hint ab-field-hint--warn">
+                  Le prix barré doit être supérieur au prix de vente ({form.price} €).
+                </p>
+              )}
+          </div>
 
           <div className="ab-field">
             <label>Catégorie</label>
@@ -189,7 +252,15 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
 
           <div className="ab-field">
             <label>Tag promo</label>
-            <select className="ab-input" value={form.tag ?? ""} onChange={(e) => set("tag", e.target.value || null)}>
+            <select
+              className="ab-input"
+              value={form.tag ?? ""}
+              onChange={(e) => {
+                const tag = e.target.value || null;
+                set("tag", tag);
+                set("homeVisibility", normalizeHomeVisibility(form.homeVisibility ?? {}, tag));
+              }}
+            >
               <option value="">Aucun</option>
               <option value="Flash">Flash</option>
               <option value="Best-seller">Best-seller</option>
@@ -247,6 +318,9 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             value={form.homeVisibility ?? DEFAULT_HOME_VISIBILITY}
             onChange={(vis) => set("homeVisibility", vis)}
           />
+          <p className="adm-form-section-desc" style={{ marginTop: 8 }}>
+            Pour les ventes flash : cochez <strong>Vente Flash</strong> ou choisissez le tag promo Flash. Le prix barré seul affiche le produit dans Promotions, pas ici.
+          </p>
 
           <div className="adm-form-section-title">Variantes</div>
           <p className="adm-form-section-desc">

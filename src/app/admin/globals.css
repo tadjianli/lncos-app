@@ -1718,6 +1718,44 @@
 }
 .ab-field { margin-bottom: 18px; }
 .ab-field label { display: block; font-size: 12px; font-weight: 700; color: var(--adm-ink-soft); margin-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
+.ab-field__head {
+  margin-bottom: 6px;
+}
+.ab-field__label-inline {
+  display: block;
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--adm-ink-soft);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.ab-field__toggle-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.ab-field__toggle-state {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--adm-ink-mute);
+  min-width: 4.5rem;
+  text-align: right;
+}
+.ab-field-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--adm-ink-mute);
+}
+.ab-field-hint--warn {
+  color: #e8a87c;
+}
+.ab-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .ab-input {
   width: 100%; padding: 11px 14px; border-radius: 10px;
   border: 1px solid var(--adm-border); background: var(--adm-surface-2);

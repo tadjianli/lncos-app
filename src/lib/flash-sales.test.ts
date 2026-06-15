@@ -32,6 +32,18 @@ describe("filterFlashSaleProducts", () => {
     expect(filterFlashSaleProducts(items)).toHaveLength(1);
   });
 
+  it("inclut tag Flash même avec un univers coché", () => {
+    const items = [
+      product({
+        id: "a",
+        name: "A",
+        tag: "Flash",
+        homeVisibility: { parfums: true },
+      }),
+    ];
+    expect(filterFlashSaleProducts(items)).toHaveLength(1);
+  });
+
   it("exclut les produits inactifs", () => {
     const items = [
       product({ id: "a", name: "A", tag: "Flash", active: false }),

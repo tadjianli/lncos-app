@@ -38,12 +38,10 @@ export function normalizeHomeVisibility(
     }
   }
 
-  const hasAny = Object.values(vis).some(Boolean);
-  if (!hasAny && tag) {
-    if (tag === "Flash") vis.flash = true;
-    if (tag === "Best-seller") vis.best_seller = true;
-    if (tag === "Nouveau") vis.new_arrivals = true;
-  }
+  // Tags promo legacy : toujours fusionnés (même si un univers est coché).
+  if (tag === "Flash") vis.flash = true;
+  if (tag === "Best-seller") vis.best_seller = true;
+  if (tag === "Nouveau") vis.new_arrivals = true;
 
   return vis;
 }
@@ -59,7 +57,11 @@ export function filterProductsByHomeKey(
   products: Product[],
   key: HomeDisplayKey | HomeUniverseKey
 ): Product[] {
-  return products.filter((p) => isVisibleInHome(p, key));
+  return products.filter((p) => {
+    if (p.active === false) return false;
+    const vis = normalizeHomeVisibility(p.homeVisibility, p.tag);
+    return vis[key] === true;
+  });
 }
 
 export function groupProductsByUniverse(
