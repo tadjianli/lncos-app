@@ -53,10 +53,14 @@ export interface Product {
   active?: boolean;
   /** SEO — mot-clé principal */
   seoKeyword?: string | null;
+  /** SEO — mots-clés secondaires (générateur IA) */
+  seoSecondaryKeywords?: string[] | null;
   seoTitle?: string | null;
   metaDescription?: string | null;
   seoSlug?: string | null;
   imageAlt?: string | null;
+  /** SEO — description courte (extrait fiche) */
+  seoExcerpt?: string | null;
 }
 
 export interface Category {

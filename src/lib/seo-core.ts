@@ -11,6 +11,8 @@ export interface ProductSeoFields {
   name: string;
   desc?: string;
   seoKeyword?: string | null;
+  seoSecondaryKeywords?: string[] | null;
+  seoExcerpt?: string | null;
   seoTitle?: string | null;
   metaDescription?: string | null;
   seoSlug?: string | null;
@@ -39,6 +41,8 @@ export const META_GEN_MAX = 160;
 export const DESC_WORD_MIN = 300;
 export const DESC_WORD_TARGET_MIN = 350;
 export const DESC_WORD_TARGET_MAX = 500;
+export const EXCERPT_IDEAL_MIN = 120;
+export const EXCERPT_IDEAL_MAX = 200;
 export const SEO_FAQ_SECTION_ID_PREFIX = "seo-faq-";
 
 export function slugifySeo(text: string): string {
@@ -88,6 +92,21 @@ export function keywordInH2(desc: string, keyword: string): boolean {
   return headings.some((h) => containsKeyword(h, keyword));
 }
 
+export function resolvePrimaryKeyword(fields: {
+  name: string;
+  seoKeyword?: string | null;
+}): string {
+  const fromField = fields.seoKeyword?.trim();
+  if (fromField && fromField.length >= 3) return fromField.toLowerCase();
+  return fields.name.trim().toLowerCase();
+}
+
+export function hasSeoFaqSection(fields: ProductSeoFields): boolean {
+  return (fields.extraSections ?? []).some(
+    (s) => s.enabled && s.id.startsWith(SEO_FAQ_SECTION_ID_PREFIX) && (s.items?.length ?? 0) > 0
+  );
+}
+
 export function titleCaseKeyword(keyword: string): string {
   return keyword
     .trim()
@@ -97,11 +116,9 @@ export function titleCaseKeyword(keyword: string): string {
     .join(" ");
 }
 
-export function resolvePrimaryKeyword(fields: {
-  name: string;
-  seoKeyword?: string | null;
-}): string {
-  const fromField = fields.seoKeyword?.trim();
-  if (fromField && fromField.length >= 3) return fromField.toLowerCase();
-  return fields.name.trim().toLowerCase();
+export function getProductSeoPath(
+  product: Pick<ProductSeoFields, "seoSlug" | "name"> & { id?: string }
+): string {
+  const slug = product.seoSlug?.trim() || product.id || slugifySeo(product.name);
+  return `/produit/${encodeURIComponent(slug)}`;
 }

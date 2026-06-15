@@ -15,9 +15,11 @@ import { fetchBlogSitemapEntries } from "@/lib/blog-server";
 import { fetchBeautyVideoSitemapEntries } from "@/lib/beauty-videos-server";
 import {
   PRODUCT_SELECT,
+  PRODUCT_SELECT_NO_AI,
   PRODUCT_SELECT_LEGACY,
   isMissingColumnError,
 } from "@/lib/product-select";
+import { buildProductSchemaOrg, type ProductReviewSchemaInput } from "@/lib/seo-schema";
 
 type DbVariantRow = {
   id: string;
@@ -59,6 +61,8 @@ type DbProductRow = {
   meta_description?: string | null;
   seo_slug?: string | null;
   image_alt?: string | null;
+  seo_secondary_keywords?: string[] | null;
+  seo_excerpt?: string | null;
   product_variants?: DbVariantRow[] | null;
 };
 
@@ -102,10 +106,12 @@ function mapProductRow(row: DbProductRow): Product {
     homeVisibility: normalizeHomeVisibility(row.home_visibility, row.tag),
     active: row.active ?? true,
     seoKeyword: row.seo_keyword ?? null,
+    seoSecondaryKeywords: row.seo_secondary_keywords ?? [],
     seoTitle: row.seo_title ?? null,
     metaDescription: row.meta_description ?? null,
     seoSlug: row.seo_slug ?? null,
     imageAlt: row.image_alt ?? null,
+    seoExcerpt: row.seo_excerpt ?? null,
   };
 }
 
@@ -172,13 +178,17 @@ async function fetchProductRowBySlug(
   slug: string,
   preview: boolean
 ): Promise<DbProductRow | null> {
-  const selects = [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY];
+  const selects = [PRODUCT_SELECT, PRODUCT_SELECT_NO_AI, PRODUCT_SELECT_LEGACY];
 
   for (const select of selects) {
     for (const column of ["seo_slug", "id"] as const) {
       const result = await queryProductRow(supabase, select, column, slug, preview);
       if (result.error) {
-        if (isMissingColumnError(result.error.message, "benefits") && select === PRODUCT_SELECT) {
+        if (
+          (isMissingColumnError(result.error.message, "benefits") ||
+            isMissingColumnError(result.error.message, "seo_secondary_keywords")) &&
+          select === PRODUCT_SELECT
+        ) {
           continue;
         }
         console.error(
@@ -259,7 +269,7 @@ export async function fetchCategoryBySeoSlug(slug: string): Promise<Category | n
 
 async function fetchAllActiveProducts(): Promise<Product[]> {
   const supabase = await createClient();
-  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY]) {
+  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_NO_AI, PRODUCT_SELECT_LEGACY]) {
     const { data, error } = await supabase
       .from("products")
       .select(select)
@@ -268,9 +278,62 @@ async function fetchAllActiveProducts(): Promise<Product[]> {
     if (!error && data) {
       return (data as unknown as DbProductRow[]).map((r) => mapProductRow(r));
     }
-    if (!isMissingColumnError(error?.message ?? "", "benefits")) break;
+    if (
+      !isMissingColumnError(error?.message ?? "", "benefits") &&
+      !isMissingColumnError(error?.message ?? "", "seo_secondary_keywords")
+    ) {
+      break;
+    }
   }
   return [];
+}
+
+export async function fetchProductReviewsForSchema(productId: string): Promise<ProductReviewSchemaInput[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("product_reviews")
+    .select("author_name, rating, body, title, verified, review_date, created_at")
+    .eq("product_id", productId)
+    .eq("status", "published")
+    .order("pinned", { ascending: false })
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  return (data ?? []).map((r) => ({
+    authorName: (r.author_name as string) || "Cliente LN COS",
+    rating: Number(r.rating),
+    body: (r.body as string) || "",
+    title: (r.title as string) || undefined,
+    verified: Boolean(r.verified),
+    date: (r.review_date as string) || (r.created_at as string) || undefined,
+  }));
+}
+
+export function buildProductPageSchema(product: Product, reviews: ProductReviewSchemaInput[] = []) {
+  return buildProductSchemaOrg(
+    {
+      id: product.id,
+      name: product.name,
+      desc: product.desc,
+      seoExcerpt: product.seoExcerpt,
+      metaDescription: product.metaDescription,
+      seoKeyword: product.seoKeyword,
+      seoSecondaryKeywords: product.seoSecondaryKeywords,
+      seoSlug: product.seoSlug,
+      imageAlt: product.imageAlt,
+      price: product.price,
+      stock: product.stock,
+      rating: product.rating,
+      reviews: product.reviews,
+      mainImageUrl: product.mainImageUrl,
+      imageUrl: product.imageUrl,
+      galleryImages: product.galleryImages,
+      extraSections: product.extraSections,
+    },
+    reviews
+  );
 }
 
 export async function fetchProductsByCategory(catId: string): Promise<Product[]> {
@@ -392,6 +455,7 @@ export function productMetadata(product: Product) {
   const title = product.seoTitle?.trim() || `${product.name} | LN COS`;
   const description =
     product.metaDescription?.trim() ||
+    product.seoExcerpt?.trim() ||
     product.desc?.trim().slice(0, 160) ||
     `Découvrez ${product.name} sur LN COS.`;
   const path = getProductSeoPath(product);

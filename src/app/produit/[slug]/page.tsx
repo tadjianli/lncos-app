@@ -6,6 +6,8 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { absoluteUrl } from "@/lib/site-url";
 import {
   fetchProductBySeoSlug,
+  fetchProductReviewsForSchema,
+  buildProductPageSchema,
   productMetadata,
 } from "@/lib/seo-server";
 import { getProductSeoPath } from "@/lib/seo";
@@ -89,38 +91,14 @@ export default async function ProduitPage({ params, searchParams }: Props) {
   const { title, description, canonical } = productMetadata(product);
   const image = resolveProductImage(product);
   const path = getProductSeoPath(product);
-
-  const productJsonLd: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.metaDescription || product.desc || description,
-    ...(image
-      ? { image: image.startsWith("http") ? image : absoluteUrl(image) }
-      : {}),
-    sku: product.id,
-    brand: { "@type": "Brand", name: "LN COS" },
-    offers: {
-      "@type": "Offer",
-      url: canonical,
-      priceCurrency: "EUR",
-      price: product.price.toFixed(2),
-      availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      seller: { "@type": "Organization", name: "LN COS" },
-    },
-  };
-
-  if (product.reviews > 0) {
-    productJsonLd.aggregateRating = {
-      "@type": "AggregateRating",
-      ratingValue: product.rating,
-      reviewCount: product.reviews,
-    };
-  }
+  const reviewSnippets = await fetchProductReviewsForSchema(product.id);
+  const schemaGraphs = buildProductPageSchema(product, reviewSnippets);
 
   return (
     <AppShell>
-      <JsonLd data={productJsonLd} />
+      {schemaGraphs.map((graph, i) => (
+        <JsonLd key={i} data={graph} />
+      ))}
       <article className="product-page-fallback noscroll">
         <h1 style={{ fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--ink)", margin: "0 0 8px" }}>
           {title.replace(/ \| LN COS$/, "")}

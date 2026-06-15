@@ -22,6 +22,7 @@ import {
 } from "@/lib/seo";
 import { useLegalSettings } from "@/lib/legal-settings-db";
 import { getSeoDeliveryPhrase } from "@/lib/delivery-zones";
+import { useProductReviews } from "@/lib/client-supabase";
 
 function getClientSiteUrl(): string {
   const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -51,10 +52,12 @@ function applyOptimization(
   onChange: ProductSeoTabProps["onChange"]
 ) {
   onChange("seoKeyword", result.seoKeyword);
+  onChange("seoSecondaryKeywords", result.seoSecondaryKeywords);
   onChange("seoTitle", result.seoTitle);
   onChange("metaDescription", result.metaDescription);
   onChange("imageAlt", result.imageAlt);
   onChange("seoSlug", result.seoSlug);
+  onChange("seoExcerpt", result.seoExcerpt);
   onChange("desc", result.desc);
   onChange("benefits", result.benefits);
   onChange("extraSections", result.extraSections);
@@ -62,7 +65,21 @@ function applyOptimization(
 
 export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabProps) {
   const [showPreview, setShowPreview] = useState(false);
+  const [showSchema, setShowSchema] = useState(false);
   const { settings: legalSettings } = useLegalSettings();
+  const { reviews, count: reviewCount } = useProductReviews(form.id !== "__new__" ? form.id : "");
+
+  const seoReviews = useMemo(
+    () =>
+      reviews.map((r) => ({
+        body: r.text,
+        rating: r.rating,
+        title: r.title,
+        authorName: r.name,
+        verified: r.verified,
+      })),
+    [reviews]
+  );
 
   const seoOptions = useMemo((): ProductSeoGenerationOptions => ({
     categoryId: form.cat,
@@ -72,7 +89,8 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
     tag: form.tag,
     productId: form.id,
     deliveryZones: legalSettings.deliveryZones,
-  }), [form.cat, form.ml, form.variants, form.tag, form.id, categoryName, legalSettings.deliveryZones]);
+    reviews: seoReviews,
+  }), [form.cat, form.ml, form.variants, form.tag, form.id, categoryName, legalSettings.deliveryZones, seoReviews]);
 
   const score = computeProductSeoScore(form);
   const previewStandard = useMemo(
@@ -96,13 +114,12 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
   }
 
   const deliveryHint = getSeoDeliveryPhrase(legalSettings.deliveryZones);
-
   const preview = previewMaximal;
   const canReach95 = preview ? preview.predictedScore >= 95 : false;
+  const secondaryKw = form.seoSecondaryKeywords?.filter((k) => k.trim()) ?? [];
 
   return (
     <div>
-      {/* Score actuel + prévisionnel */}
       <div
         className="adm-card"
         style={{
@@ -152,13 +169,13 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
           >
             <Icon name="sparkle" size={15} color={seoLevelColor(preview.predictedLevel)} />
             <span>
-              Score prévisionnel après optimisation :{" "}
+              Score prévisionnel après optimisation IA :{" "}
               <strong style={{ color: seoLevelColor(preview.predictedLevel) }}>
                 {preview.predictedScore}/100
               </strong>
               {!hasImage && (
                 <span style={{ color: "var(--adm-ink-mute)", display: "block", marginTop: 4 }}>
-                  Ajoutez une image produit pour dépasser 85/100 (bloc Images).
+                  Ajoutez une image produit pour viser 95+/100.
                 </span>
               )}
             </span>
@@ -167,7 +184,7 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
 
         {preview && canReach95 && hasImage && score.score < 95 && (
           <div style={{ fontSize: 12, color: "#2F9E68", marginBottom: 12, fontWeight: 600 }}>
-            L&apos;optimisation automatique peut atteindre {preview.predictedScore}/100 sans saisie manuelle.
+            L&apos;optimisation IA peut atteindre {preview.predictedScore}/100 sans saisie manuelle.
           </div>
         )}
 
@@ -181,24 +198,23 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
         </div>
       </div>
 
-      {/* Actions */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
         <button
           type="button"
           className="adm-btn gold sm"
           onClick={() => runOptimization("standard")}
           disabled={!form.name.trim()}
-          title="Complète les champs SEO pour viser 95–100/100"
+          title="Analyse IA multi-signaux — vise 95+/100"
         >
           <Icon name="sparkle" size={14} />
-          Optimiser automatiquement
+          Optimiser automatiquement (IA)
         </button>
         <button
           type="button"
           className="adm-btn sm"
           onClick={() => runOptimization("maximal")}
           disabled={!form.name.trim()}
-          title="Régénère tous les champs SEO manquants ou incomplets"
+          title="Régénère tous les champs SEO"
           style={{
             background: "linear-gradient(135deg, #1B7F4E 0%, #2F9E68 100%)",
             color: "#fff",
@@ -212,27 +228,54 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
           <Icon name="eye" size={14} />
           Aperçu SEO
         </button>
+        <button
+          type="button"
+          className="adm-btn ghost sm"
+          onClick={() => setShowSchema((v) => !v)}
+          disabled={!previewMaximal?.schemaOrg?.length}
+        >
+          <Icon name="eye" size={14} />
+          Schema.org
+        </button>
       </div>
 
       {previewStandard && (
         <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginBottom: 16, lineHeight: 1.5 }}>
-          Générateur V2 — contenu unique (nom, catégorie, bénéfices, format). Livraison SEO :{" "}
-          <strong>{deliveryHint}</strong>
+          Moteur SEO IA — analyse nom, catégorie, description, images, caractéristiques
+          {reviewCount > 0 ? ` et ${reviewCount} avis clients` : ""}.
+          {" "}Livraison : <strong>{deliveryHint}</strong>
           {" · "}
           Standard → <strong>{previewStandard.predictedScore}/100</strong>
           {" · "}
           Maximale → <strong>{previewMaximal?.predictedScore ?? "—"}/100</strong>
           {" · "}
-          Description générée : {countWords(previewMaximal?.desc)} mots (min. 300)
+          {countWords(previewMaximal?.desc)} mots générés
         </div>
       )}
 
-      {/* Google Preview — live */}
+      {showSchema && previewMaximal?.schemaOrg?.length ? (
+        <div className="adm-card" style={{ padding: 14, marginBottom: 16 }}>
+          <div className="adm-form-section-title" style={{ marginTop: 0 }}>Schema.org (aperçu)</div>
+          <pre
+            style={{
+              fontSize: 11,
+              overflow: "auto",
+              maxHeight: 280,
+              padding: 12,
+              borderRadius: 8,
+              background: "var(--adm-bg)",
+              margin: 0,
+            }}
+          >
+            {JSON.stringify(previewMaximal.schemaOrg, null, 2)}
+          </pre>
+        </div>
+      ) : null}
+
       <div style={{ marginBottom: 20 }}>
         <GooglePreview preview={google} />
       </div>
 
-      {/* Fields */}
       <div className="ab-field">
         <label>Mot-clé principal</label>
         <input
@@ -241,6 +284,28 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
           onChange={(e) => onChange("seoKeyword", e.target.value)}
           placeholder="cils magnétiques réutilisables"
         />
+      </div>
+
+      <div className="ab-field">
+        <label>Mots-clés secondaires</label>
+        <textarea
+          className="ab-input textarea"
+          rows={2}
+          value={secondaryKw.join(", ")}
+          onChange={(e) =>
+            onChange(
+              "seoSecondaryKeywords",
+              e.target.value
+                .split(",")
+                .map((k) => k.trim())
+                .filter(Boolean)
+            )
+          }
+          placeholder="cils magnétiques 30ml, maquillage LN COS, acheter cils magnétiques"
+        />
+        <div style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 4 }}>
+          Séparez par des virgules — minimum 3 pour le score SEO optimal.
+        </div>
       </div>
 
       <div className="ab-field">
@@ -289,6 +354,24 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
       </div>
 
       <div className="ab-field">
+        <label>Description courte SEO (extrait)</label>
+        <textarea
+          className="ab-input textarea"
+          rows={2}
+          value={form.seoExcerpt ?? ""}
+          onChange={(e) => onChange("seoExcerpt", e.target.value)}
+          placeholder="Texte court unique pour cartes et extraits — distinct de la meta description."
+        />
+        <SeoLengthBar
+          label="Longueur extrait"
+          length={(form.seoExcerpt ?? "").length}
+          displayMax={200}
+          idealMin={120}
+          idealMax={200}
+        />
+      </div>
+
+      <div className="ab-field">
         <label>Alt image</label>
         <input
           className="ab-input"
@@ -298,7 +381,6 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
         />
       </div>
 
-      {/* SEO Image */}
       <div className="adm-card" style={{ padding: 14, marginBottom: 18 }}>
         <div className="adm-form-section-title" style={{ marginTop: 0 }}>SEO Image</div>
         <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 8 }}>
@@ -339,19 +421,17 @@ export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabPro
         </div>
       </div>
 
-      {/* Description stats */}
       <div style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 16 }}>
         Description produit : <strong>{descWords} mots</strong>
         {" · "}
         objectif 350–500 mots (minimum 300)
         {descWords > 0 && descWords < 300 && (
           <span style={{ color: "#C2557A", display: "block", marginTop: 4 }}>
-            Description trop courte — lancez l&apos;optimisation pour générer un texte complet.
+            Description trop courte — lancez l&apos;optimisation IA pour un texte complet.
           </span>
         )}
       </div>
 
-      {/* Advanced analysis */}
       <div className="adm-form-section-title">Analyse SEO avancée</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
         {score.checks

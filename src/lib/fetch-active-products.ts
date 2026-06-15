@@ -4,7 +4,7 @@ import type { ProductVariant } from "./product-catalog";
 import { normalizeExtraSections, normalizeSectionToggles } from "./product-sections";
 import { normalizeHomeVisibility } from "./product-home-visibility";
 import { deriveIsFlashSale } from "./flash-sales";
-import { PRODUCT_SELECT, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
+import { PRODUCT_SELECT, PRODUCT_SELECT_NO_AI, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
 
 type DbVariantRow = {
   id: string;
@@ -46,6 +46,8 @@ export function mapProduct(row: {
   meta_description?: string | null;
   seo_slug?: string | null;
   image_alt?: string | null;
+  seo_secondary_keywords?: string[] | null;
+  seo_excerpt?: string | null;
   product_variants?: DbVariantRow[] | null;
 }): Product {
   const richVariants: ProductVariant[] = (row.product_variants ?? [])
@@ -92,15 +94,17 @@ export function mapProduct(row: {
     isFlashSale: deriveIsFlashSale({ homeVisibility, tag: row.tag }),
     active: row.active ?? true,
     seoKeyword: row.seo_keyword ?? null,
+    seoSecondaryKeywords: row.seo_secondary_keywords ?? [],
     seoTitle: row.seo_title ?? null,
     metaDescription: row.meta_description ?? null,
     seoSlug: row.seo_slug ?? null,
     imageAlt: row.image_alt ?? null,
+    seoExcerpt: row.seo_excerpt ?? null,
   };
 }
 
 export async function fetchActiveProductsFromDb(): Promise<Product[] | null> {
-  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_LEGACY]) {
+  for (const select of [PRODUCT_SELECT, PRODUCT_SELECT_NO_AI, PRODUCT_SELECT_LEGACY]) {
     const { data, error } = await getSupabase()
       .from("products")
       .select(select)
@@ -109,7 +113,7 @@ export async function fetchActiveProductsFromDb(): Promise<Product[] | null> {
     if (!error && data && data.length > 0) {
       return (data as unknown as Parameters<typeof mapProduct>[0][]).map(mapProduct);
     }
-    if (error && !isMissingColumnError(error.message, "benefits")) {
+    if (error && !isMissingColumnError(error.message, "benefits") && !isMissingColumnError(error.message, "seo_secondary_keywords")) {
       console.error("[usePublicProducts] Erreur Supabase:", error.message);
       break;
     }

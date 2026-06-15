@@ -245,10 +245,12 @@ function dbToProduct(r: DbProductWithVariants): Product {
     homeVisibility: normalizeHomeVisibility(r.home_visibility, r.tag),
     active: r.active ?? true,
     seoKeyword: r.seo_keyword ?? null,
+    seoSecondaryKeywords: r.seo_secondary_keywords ?? [],
     seoTitle: r.seo_title ?? null,
     metaDescription: r.meta_description ?? null,
     seoSlug: r.seo_slug ?? null,
     imageAlt: r.image_alt ?? null,
+    seoExcerpt: r.seo_excerpt ?? null,
   };
 }
 
@@ -281,6 +283,8 @@ function productToDb(p: Partial<Product>): ProductUpdate {
   if ("metaDescription" in p) db.meta_description = p.metaDescription ?? null;
   if ("seoSlug" in p) db.seo_slug = p.seoSlug?.trim() || (typeof p.id === "string" ? p.id : null) || null;
   if ("imageAlt" in p) db.image_alt = p.imageAlt ?? null;
+  if ("seoSecondaryKeywords" in p) db.seo_secondary_keywords = p.seoSecondaryKeywords ?? [];
+  if ("seoExcerpt" in p) db.seo_excerpt = p.seoExcerpt ?? null;
   return db;
 }
 
@@ -311,6 +315,8 @@ function buildProductInsertRow(product: Product, variantNames: string[]): Produc
     meta_description: product.metaDescription ?? null,
     seo_slug: product.seoSlug ?? product.id,
     image_alt: product.imageAlt ?? null,
+    seo_secondary_keywords: product.seoSecondaryKeywords ?? [],
+    seo_excerpt: product.seoExcerpt ?? null,
     rating: 5,
     reviews: 0,
   };

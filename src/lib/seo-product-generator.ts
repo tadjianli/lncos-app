@@ -106,7 +106,7 @@ export interface ProductSeoGenerationInput {
   deliveryZones?: DeliveryZoneSettings;
 }
 
-interface ProductAnalysis {
+export interface ProductAnalysis {
   seed: string;
   productName: string;
   keyword: string;
@@ -229,7 +229,7 @@ function extractTraits(input: ProductSeoGenerationInput, categoryMeta: ReturnTyp
   return [...new Set(traits)].slice(0, 6);
 }
 
-function analyzeProduct(input: ProductSeoGenerationInput): ProductAnalysis {
+export function analyzeProduct(input: ProductSeoGenerationInput): ProductAnalysis {
   const fields = input.fields;
   const productName = fields.name.trim();
   const categoryMeta = resolveCategoryMeta(input.categoryId, input.categoryName);
@@ -351,7 +351,7 @@ export function generateUniqueImageAlt(analysis: ProductAnalysis): string {
   return fitCharLength(picked, 24, 125);
 }
 
-function generateUniqueBenefits(analysis: ProductAnalysis): string[] {
+export function generateUniqueBenefits(analysis: ProductAnalysis): string[] {
   if (analysis.existingBenefits.length >= 3) {
     return analysis.existingBenefits.slice(0, 5);
   }
@@ -370,7 +370,7 @@ function generateUniqueBenefits(analysis: ProductAnalysis): string[] {
   return [...new Set(rotated.map((b) => b.trim()).filter(Boolean))].slice(0, 5);
 }
 
-function generateUniqueFaqSection(analysis: ProductAnalysis): ProductExtraSection {
+export function generateUniqueFaqSection(analysis: ProductAnalysis): ProductExtraSection {
   const { keyword, keywordTitle, productName, formatSpec, categoryLabel, deliveryPhrase, seed } = analysis;
   const slug = slugifySeo(keyword) || "produit";
 
@@ -589,14 +589,17 @@ function shouldRegenerateBenefits(fields: ProductSeoFields, mode: SeoOptimizeMod
 
 export interface ProductSeoGenerationResult {
   seoKeyword: string;
+  seoSecondaryKeywords?: string[];
   seoTitle: string;
   metaDescription: string;
   seoSlug: string;
   imageAlt: string;
   seoImageFilename: string;
+  seoExcerpt?: string;
   desc: string;
   benefits: string[];
   extraSections: ProductExtraSection[];
+  schemaOrg?: Record<string, unknown>[];
 }
 
 export function generateProductSeoV2(

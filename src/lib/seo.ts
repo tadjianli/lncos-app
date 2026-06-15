@@ -5,8 +5,8 @@
 import type { ProductExtraSection } from "@/lib/product-sections";
 import type { DeliveryZoneSettings } from "@/lib/delivery-zones";
 import { DEFAULT_DELIVERY_ZONES, getSeoDeliveryPhrase } from "@/lib/delivery-zones";
+import { generateProductSeoAI, type SeoReviewInput } from "@/lib/seo-ai-engine";
 import {
-  generateProductSeoV2,
   isGenericSeoDescription,
   type ProductSeoGenerationInput,
 } from "@/lib/seo-product-generator";
@@ -16,6 +16,8 @@ import {
   TITLE_IDEAL_MAX,
   META_IDEAL_MIN,
   META_IDEAL_MAX,
+  EXCERPT_IDEAL_MIN,
+  EXCERPT_IDEAL_MAX,
   slugifySeo,
   generateSeoSlugFromName,
   generateSeoImageFilename,
@@ -23,6 +25,8 @@ import {
   containsKeyword,
   keywordInFirstParagraph,
   keywordInH2,
+  hasSeoFaqSection,
+  getProductSeoPath as getProductSeoPathCore,
   resolvePrimaryKeyword,
   titleCaseKeyword,
   type ProductSeoFields,
@@ -68,6 +72,7 @@ export interface ProductSeoGenerationOptions {
   tag?: string | null;
   productId?: string;
   deliveryZones?: DeliveryZoneSettings;
+  reviews?: SeoReviewInput[];
 }
 
 export type LengthBarStatus = "short" | "ok" | "ideal";
@@ -84,14 +89,17 @@ export {
 
 export interface ProductSeoOptimizationResult {
   seoKeyword: string;
+  seoSecondaryKeywords: string[];
   seoTitle: string;
   metaDescription: string;
   seoSlug: string;
   imageAlt: string;
   seoImageFilename: string;
+  seoExcerpt: string;
   desc: string;
   benefits: string[];
   extraSections: ProductExtraSection[];
+  schemaOrg: Record<string, unknown>[];
   predictedScore: number;
   predictedLevel: SeoLevel;
 }
@@ -167,16 +175,20 @@ function scoreFromParts(parts: { ideal: boolean; ok: boolean; max: number }): nu
 
 export function computeProductSeoScore(fields: ProductSeoFields): SeoScoreResult {
   const keyword = fields.seoKeyword?.trim() ?? "";
+  const secondaryKws = fields.seoSecondaryKeywords?.filter((k) => k.trim()) ?? [];
+  const excerpt = fields.seoExcerpt?.trim() ?? "";
   const title = fields.seoTitle?.trim() ?? "";
   const meta = fields.metaDescription?.trim() ?? "";
   const slug = fields.seoSlug?.trim() ?? "";
   const alt = fields.imageAlt?.trim() ?? "";
   const desc = fields.desc?.trim() ?? "";
   const wordCount = countWords(desc);
+  const excerptLen = excerpt.length;
   const imageFilename = generateSeoImageFilename(keyword || fields.name);
   const hasImage = hasProductImage(fields);
   const hasGallery = hasGalleryImage(fields);
   const indexable = fields.active !== false;
+  const hasFaq = hasSeoFaqSection(fields);
 
   const titleLen = title.length;
   const metaLen = meta.length;
@@ -207,18 +219,20 @@ export function computeProductSeoScore(fields: ProductSeoFields): SeoScoreResult
   const altPts = Math.min(10, (alt.length > 0 ? 5 : 0) + (kwInAlt ? 5 : 0));
 
   let descPts = 0;
-  if (wordCount >= 300) descPts += 8;
-  else if (wordCount >= 150) descPts += 4;
-  if (kwInDesc) descPts += 4;
+  if (wordCount >= 300) descPts += 7;
+  else if (wordCount >= 150) descPts += 3;
+  if (kwInDesc) descPts += 3;
   if (descNotGeneric) descPts += 2;
-  if (hasSubheadings(fields)) descPts += 4;
-  if (hasBulletLists(fields)) descPts += 4;
+  if (hasSubheadings(fields)) descPts += 3;
+  if (hasBulletLists(fields)) descPts += 3;
+  if (excerptLen >= EXCERPT_IDEAL_MIN && excerptLen <= EXCERPT_IDEAL_MAX) descPts += 2;
   descPts = Math.min(20, descPts);
 
   let kwPts = 0;
-  if (kwSet) kwPts += 3;
+  if (kwSet) kwPts += 2;
+  if (secondaryKws.length >= 3) kwPts += 3;
   const placements = [kwInTitle, kwInMeta, kwInSlug, kwInAlt, kwInDesc].filter(Boolean).length;
-  kwPts += Math.min(12, placements * 2.4);
+  kwPts += Math.min(10, placements * 2);
   kwPts = Math.min(15, Math.round(kwPts));
 
   let imgPts = 0;
@@ -261,6 +275,9 @@ export function computeProductSeoScore(fields: ProductSeoFields): SeoScoreResult
     { id: "desc-words", label: "Longueur description > 300 mots", ok: wordCount >= 300, points: wordCount >= 300 ? 1 : 0, maxPoints: 1 },
     { id: "desc-unique", label: "Description non générique", ok: descNotGeneric, points: descNotGeneric ? 1 : 0, maxPoints: 1 },
     { id: "meta-unique", label: "Meta description non générique", ok: metaNotGeneric, points: metaNotGeneric ? 1 : 0, maxPoints: 1 },
+    { id: "sec-kw", label: "Mots-clés secondaires (≥3)", ok: secondaryKws.length >= 3, points: secondaryKws.length >= 3 ? 1 : 0, maxPoints: 1 },
+    { id: "excerpt", label: "Description courte SEO (120–200 car.)", ok: excerptLen >= EXCERPT_IDEAL_MIN && excerptLen <= EXCERPT_IDEAL_MAX, points: excerptLen >= EXCERPT_IDEAL_MIN && excerptLen <= EXCERPT_IDEAL_MAX ? 1 : 0, maxPoints: 1 },
+    { id: "faq-seo", label: "FAQ SEO structurée", ok: hasFaq, points: hasFaq ? 1 : 0, maxPoints: 1 },
     { id: "subheadings", label: "Présence de sous-titres", ok: hasSubheadings(fields), points: hasSubheadings(fields) ? 1 : 0, maxPoints: 1 },
     { id: "bullets", label: "Présence de listes à puces", ok: hasBulletLists(fields), points: hasBulletLists(fields) ? 1 : 0, maxPoints: 1 },
     { id: "has-image", label: "Présence d'au moins une image", ok: hasImage, points: hasImage ? 1 : 0, maxPoints: 1 },
@@ -307,7 +324,7 @@ export function seoLevelLabel(level: SeoLevel): string {
 function buildGenerationInput(
   fields: ProductSeoFields,
   options?: ProductSeoGenerationOptions
-): ProductSeoGenerationInput {
+): ProductSeoGenerationInput & { reviews?: SeoReviewInput[] } {
   return {
     fields,
     categoryId: options?.categoryId,
@@ -317,27 +334,30 @@ function buildGenerationInput(
     tag: options?.tag,
     productId: options?.productId,
     deliveryZones: options?.deliveryZones ?? DEFAULT_DELIVERY_ZONES,
+    reviews: options?.reviews,
   };
 }
 
 /**
- * Moteur d'optimisation SEO V2 — contenu unique par produit (nom, catégorie, bénéfices, caractéristiques).
+ * Moteur d'optimisation SEO IA — analyse multi-signaux, contenu unique par fiche.
  */
 export function optimizeProductSeo(
   fields: ProductSeoFields,
   mode: SeoOptimizeMode = "standard",
   options?: ProductSeoGenerationOptions
 ): ProductSeoOptimizationResult | null {
-  const generated = generateProductSeoV2(buildGenerationInput(fields, options), mode);
+  const generated = generateProductSeoAI(buildGenerationInput(fields, options), mode);
   if (!generated) return null;
 
   const optimized: ProductSeoFields = {
     ...fields,
     seoKeyword: generated.seoKeyword,
+    seoSecondaryKeywords: generated.seoSecondaryKeywords,
     seoTitle: generated.seoTitle,
     metaDescription: generated.metaDescription,
     seoSlug: generated.seoSlug,
     imageAlt: generated.imageAlt,
+    seoExcerpt: generated.seoExcerpt,
     desc: generated.desc,
     benefits: generated.benefits,
     extraSections: generated.extraSections,
@@ -395,8 +415,7 @@ export function generateSeoFieldsFromProduct(
 }
 
 export function getProductSeoPath(product: Pick<ProductSeoFields, "seoSlug" | "name"> & { id?: string }): string {
-  const slug = product.seoSlug?.trim() || product.id || slugifySeo(product.name);
-  return `/produit/${encodeURIComponent(slug)}`;
+  return getProductSeoPathCore(product);
 }
 
 export function getCategorySeoPath(category: { seoSlug?: string | null; id: string }): string {

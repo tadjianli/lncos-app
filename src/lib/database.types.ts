@@ -78,6 +78,8 @@ export interface Database {
           meta_description: string | null;
           seo_slug: string | null;
           image_alt: string | null;
+          seo_secondary_keywords: string[];
+          seo_excerpt: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -112,6 +114,8 @@ export interface Database {
           meta_description?: string | null;
           seo_slug?: string | null;
           image_alt?: string | null;
+          seo_secondary_keywords?: string[];
+          seo_excerpt?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -145,6 +149,8 @@ export interface Database {
           meta_description?: string | null;
           seo_slug?: string | null;
           image_alt?: string | null;
+          seo_secondary_keywords?: string[];
+          seo_excerpt?: string | null;
           updated_at?: string;
         };
         Relationships: [];
