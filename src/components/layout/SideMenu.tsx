@@ -4,6 +4,8 @@
  */
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
@@ -43,8 +45,16 @@ interface SideMenuProps {
 }
 
 export function SideMenu({ onClose }: SideMenuProps) {
+  const pathname = usePathname();
   const openOrders   = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
+
+  const isInfoRoute = INFO_LINKS.some((l) => l.href === pathname);
+  const [infoOpen, setInfoOpen] = useState(isInfoRoute);
+
+  useEffect(() => {
+    if (isInfoRoute) setInfoOpen(true);
+  }, [isInfoRoute]);
 
   /** Ferme le menu sans history.back — la navigation est gérée par Link / openOrders */
   function closeMenuOnly() {
@@ -100,6 +110,22 @@ export function SideMenu({ onClose }: SideMenuProps) {
     );
   }
 
+  function renderInfoLink(l: MenuLink) {
+    const active = l.href === pathname;
+    return (
+      <Link
+        key={l.t}
+        href={l.href!}
+        onClick={closeMenuOnly}
+        className={`side-menu-link side-menu-info-link${active ? " side-menu-info-link--active" : ""}`}
+        aria-current={active ? "page" : undefined}
+      >
+        <Icon name={l.i} size={18} color="var(--gold)" />
+        <span>{l.t}</span>
+      </Link>
+    );
+  }
+
   return (
     <div className="side-menu-root">
       {/* Scrim — clic = fermer */}
@@ -132,27 +158,41 @@ export function SideMenu({ onClose }: SideMenuProps) {
           {MAIN_LINKS.map((l, i) => renderLink(l, i, 0.08))}
 
           <div
-            style={{
-              margin: "18px 14px 10px",
-              paddingTop: 16,
-              borderTop: "1px solid rgba(255,255,255,.06)",
-              animation: "fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) 0.32s both",
-            }}
+            className="side-menu-info"
+            style={{ animation: "fadeUp 0.38s cubic-bezier(0.22,0.68,0,1) 0.32s both" }}
           >
-            <span
-              style={{
-                fontSize: 10.5,
-                fontWeight: 700,
-                letterSpacing: ".16em",
-                textTransform: "uppercase",
-                color: "var(--gold)",
-              }}
+            <button
+              type="button"
+              className="side-menu-info-toggle"
+              onClick={() => setInfoOpen((o) => !o)}
+              aria-expanded={infoOpen}
+              aria-controls="side-menu-info-panel"
             >
-              Informations
-            </span>
-          </div>
+              <span className="side-menu-info-toggle__label">
+                <Icon name="info" size={21} color="var(--gold)" />
+                Informations
+              </span>
+              <Icon
+                name="chevD"
+                size={18}
+                color="var(--ink-soft)"
+                style={{
+                  transition: "transform 0.22s ease",
+                  transform: infoOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              />
+            </button>
 
-          {INFO_LINKS.map((l, i) => renderLink(l, i, 0.36))}
+            <div
+              id="side-menu-info-panel"
+              className={`side-menu-info-panel${infoOpen ? " side-menu-info-panel--open" : ""}`}
+              aria-hidden={!infoOpen}
+            >
+              <div className="side-menu-info-panel__inner">
+                {INFO_LINKS.map((l) => renderInfoLink(l))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
