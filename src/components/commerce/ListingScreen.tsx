@@ -26,6 +26,8 @@ export function ListingScreen({
 }: ListingScreenProps) {
   const { products, loading, error, reload } = usePublicProducts();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const wasStackedUnderProductRef = useRef(false);
+  const prevCategoryIdRef = useRef(category?.id);
 
   const list = useMemo(
     () => productsInCategory(products, category?.id),
@@ -35,8 +37,18 @@ export function ListingScreen({
   const title = category ? category.name : "Tous les produits";
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, [category?.id]);
+    if (preserveUnderProduct) {
+      wasStackedUnderProductRef.current = true;
+      return;
+    }
+    if (prevCategoryIdRef.current !== category?.id) {
+      scrollRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      prevCategoryIdRef.current = category?.id;
+    }
+  }, [category?.id, preserveUnderProduct]);
+
+  const restoredFromProduct =
+    wasStackedUnderProductRef.current && !preserveUnderProduct;
 
   const countHeader =
     !error || list.length > 0 ? (
@@ -52,6 +64,7 @@ export function ListingScreen({
       className={cn(
         "overlay-screen",
         preserveUnderProduct && "overlay-screen--under-product",
+        restoredFromProduct && "overlay-screen--restored",
       )}
       aria-hidden={preserveUnderProduct || undefined}
     >

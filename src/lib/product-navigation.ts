@@ -126,6 +126,19 @@ export function canNavigateProductBack(returnCtx: ProductReturnContext | undefin
 
 export type RestoreOverlayFn = (overlay: OverlayState) => void;
 
+/** Ferme la fiche produit en restaurant l'overlay précédent sans démontage intermédiaire. */
+export function finishProductOverlayClose(
+  returnCtx: ProductReturnContext | undefined,
+  closeOverlay: () => void,
+  restoreOverlay: RestoreOverlayFn,
+) {
+  if (returnCtx?.previousOverlay) {
+    restoreOverlay(returnCtx.previousOverlay);
+    return;
+  }
+  closeOverlay();
+}
+
 export function closeProductDetailNavigation(
   router: AppRouterInstance,
   returnCtx: ProductReturnContext | undefined,
@@ -148,8 +161,6 @@ export function closeProductDetailNavigation(
     return;
   }
 
-  closeOverlay();
-
   if (returnCtx?.previousOverlay) {
     restoreOverlay(returnCtx.previousOverlay);
     logProductNav("close-restore-overlay", {
@@ -158,6 +169,8 @@ export function closeProductDetailNavigation(
     });
     return;
   }
+
+  closeOverlay();
 
   const target = returnCtx
     ? returnCtx.pathname + returnCtx.search

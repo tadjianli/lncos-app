@@ -886,10 +886,15 @@
 
   /* Listing conservé sous fiche produit — évite remontage / flash images au retour */
   .overlay-screen--under-product {
-    z-index: 105;
+    z-index: 110;
     animation: none !important;
     pointer-events: none;
     visibility: visible;
+  }
+
+  /* Retour depuis fiche produit — pas de re-jeu overlayIn */
+  .overlay-screen--restored {
+    animation: none !important;
   }
 
   /* Corps scrollable des overlays z-110 (nav visible en dessous) */
@@ -3016,11 +3021,9 @@
 @keyframes pdOverlayExitSoft {
   from {
     opacity: 1;
-    transform: none;
   }
   to {
     opacity: 0;
-    transform: translateY(6px);
   }
 }
 

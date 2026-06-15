@@ -8,6 +8,7 @@ import {
 } from "@/lib/overlay-history";
 import { clearListingUrlParam } from "@/lib/listing-route-sync";
 import { requestProductExitAnimation } from "@/lib/product-exit-animation";
+import { finishProductOverlayClose } from "@/lib/product-navigation";
 
 /**
  * Ferme les overlays sur retour navigateur (swipe-back iOS, bouton retour, popstate).
@@ -25,10 +26,7 @@ export function useOverlayHistory() {
 
         const ret = overlay.productReturn;
         const finishClose = () => {
-          closeOverlay();
-          if (ret?.previousOverlay) {
-            restoreOverlay(ret.previousOverlay);
-          }
+          finishProductOverlayClose(ret, closeOverlay, restoreOverlay);
         };
 
         if (requestProductExitAnimation(finishClose)) return;
