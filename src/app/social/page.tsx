@@ -25,7 +25,7 @@ export default function SocialPage() {
 
   return (
     <AppShell>
-      <ScrollRegion variant="page" insetX={18}>
+      <ScrollRegion variant="page" insetX={18} className="social-page">
         <header className="social-hero">
           <div className="social-hero__glow" aria-hidden />
           <span className="social-hero__eyebrow">

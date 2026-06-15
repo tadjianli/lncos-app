@@ -1951,6 +1951,9 @@
 }
 
 /* Social page */
+.social-page {
+  padding-top: 20px;
+}
 .social-cards {
   display: flex;
   flex-direction: column;
