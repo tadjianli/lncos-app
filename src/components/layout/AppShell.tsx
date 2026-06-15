@@ -95,8 +95,6 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const stackedListingCategory = getStackedListingCategory(overlay);
   const productOverListing = isProductOpenedOverListing(overlay);
 
-  const NAV_H = "var(--bottom-nav-h)";
-
   return (
     <div
       data-render-mode={mode}
@@ -160,18 +158,9 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
       {/* ── Social proof notifications (bas gauche) ───────── */}
       <SocialProofRotator navVisible={navVisible} />
 
-      {/* ── Toast — floats above nav ────────────────────────── */}
+      {/* ── Toast — sous le header (ne masque pas le contenu / CTA) ── */}
       {toast && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: navVisible ? `calc(${NAV_H} + 0.75rem)` : "1.25rem",
-            left: "1rem",
-            right: "1rem",
-            zIndex: 75,
-            pointerEvents: "none",
-          }}
-        >
+        <div className="app-toast-host">
           <Toast msg={toast.msg} icon={toast.icon} />
         </div>
       )}

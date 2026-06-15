@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { AppShell } from "@/components/layout/AppShell";
-import { ScrollRegion } from "@/components/layout/ScrollRegion";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
 import { ProductGrid } from "@/components/commerce/ProductGrid";
 import { FlashSaleHead } from "@/components/commerce/FlashSaleHead";
@@ -35,42 +34,38 @@ export default function FlashSalesPage() {
 
   if (!settings.pageEnabled && !loading) {
     return (
-      <AppShell>
-        <ScrollRegion variant="page" insetX={18}>
-          <FlashSalesEmptyState settings={settings} />
-        </ScrollRegion>
-      </AppShell>
+      <PageLayout title="Ventes Flash" backHref="/">
+        <FlashSalesEmptyState settings={settings} />
+      </PageLayout>
     );
   }
 
   return (
-    <AppShell>
-      <ScrollRegion variant="page" insetX={18} padBottom={hasFlashSales}>
-        {loading ? (
-          <div className="flash-sales-loading" aria-busy="true" aria-label="Chargement des ventes flash">
-            <div className="flash-sales-loading__bar" />
-            <div className="flash-sales-loading__bar flash-sales-loading__bar--short" />
+    <PageLayout title="Ventes Flash" backHref="/" padBottom={hasFlashSales}>
+      {loading ? (
+        <div className="flash-sales-loading" aria-busy="true" aria-label="Chargement des ventes flash">
+          <div className="flash-sales-loading__bar" />
+          <div className="flash-sales-loading__bar flash-sales-loading__bar--short" />
+        </div>
+      ) : hasFlashSales ? (
+        <>
+          <FlashSalesBanner productCount={flashProducts.length} settings={settings} />
+          <div style={{ padding: "4px 0 10px" }}>
+            <FlashSaleHead title={settings.countdownLabel} />
           </div>
-        ) : hasFlashSales ? (
-          <>
-            <FlashSalesBanner productCount={flashProducts.length} settings={settings} />
-            <div style={{ padding: "4px 0 10px" }}>
-              <FlashSaleHead title={settings.countdownLabel} />
-            </div>
-            <ProductGrid products={flashProducts} priorityCount={6} />
-            {extraSections.length > 0 && (
-              <PageSectionsView sections={extraSections} />
-            )}
-          </>
-        ) : (
-          <>
-            <FlashSalesEmptyState settings={settings} />
-            {extraSections.length > 0 && (
-              <PageSectionsView sections={extraSections} />
-            )}
-          </>
-        )}
-      </ScrollRegion>
-    </AppShell>
+          <ProductGrid products={flashProducts} priorityCount={6} />
+          {extraSections.length > 0 && (
+            <PageSectionsView sections={extraSections} />
+          )}
+        </>
+      ) : (
+        <>
+          <FlashSalesEmptyState settings={settings} />
+          {extraSections.length > 0 && (
+            <PageSectionsView sections={extraSections} />
+          )}
+        </>
+      )}
+    </PageLayout>
   );
 }

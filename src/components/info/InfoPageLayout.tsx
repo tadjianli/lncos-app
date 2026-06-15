@@ -1,8 +1,6 @@
 "use client";
 
-import { AppShell } from "@/components/layout/AppShell";
-import { ScrollRegion } from "@/components/layout/ScrollRegion";
-import { SubHeader } from "@/components/shared/ActionButtons";
+import { PageLayout } from "@/components/layout/PageLayout";
 
 interface InfoPageLayoutProps {
   title: string;
@@ -11,6 +9,7 @@ interface InfoPageLayoutProps {
   children: React.ReactNode;
 }
 
+/** Pages Informations / légales — même shell que Panier, Favoris, Catégories. */
 export function InfoPageLayout({
   title,
   eyebrow = "Informations",
@@ -18,14 +17,15 @@ export function InfoPageLayout({
   children,
 }: InfoPageLayoutProps) {
   return (
-    <AppShell>
-      <ScrollRegion variant="page" insetX={18}>
-        <SubHeader title={title} backHref={backHref} />
-        <div className="info-page" style={{ animation: "fadeUp .45s cubic-bezier(.22,.68,0,1) both" }}>
-          <p className="info-page__eyebrow">{eyebrow}</p>
-          {children}
-        </div>
-      </ScrollRegion>
-    </AppShell>
+    <PageLayout
+      variant="info"
+      title={title}
+      backHref={backHref}
+      eyebrow={eyebrow}
+      insetX={18}
+      padBottom
+    >
+      {children}
+    </PageLayout>
   );
 }

@@ -41,7 +41,7 @@ export default function ContactPage() {
         </InfoCard>
       </div>
 
-      <div className="info-page__cta">
+      <div className="page-layout__cta">
         <GoldBtn
           icon="send"
           onClick={() => {

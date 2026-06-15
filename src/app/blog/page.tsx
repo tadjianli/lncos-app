@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
-import { AppShell } from "@/components/layout/AppShell";
-import { ScrollRegion } from "@/components/layout/ScrollRegion";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Icon } from "@/components/shared/Icon";
 import { BlogArticleCard } from "@/components/blog/BlogArticleCard";
 import {
@@ -48,15 +47,13 @@ export default function BlogPage() {
   };
 
   return (
-    <AppShell>
-      <ScrollRegion variant="page" insetX={18}>
-        <header className="blog-hero">
+    <PageLayout title="Blog LN COS" backHref="/">
+        <header className="blog-hero blog-hero--compact">
           <div className="blog-hero__glow" aria-hidden />
           <span className="blog-hero__eyebrow">
             <Icon name="edit" size={13} color="var(--gold)" />
             {pageSettings.heroEyebrow}
           </span>
-          <h1 className="blog-hero__title">{pageSettings.heroTitle}</h1>
           <p className="blog-hero__sub">{pageSettings.heroSubtitle}</p>
         </header>
 
@@ -109,7 +106,6 @@ export default function BlogPage() {
         )}
 
         {extraSections.length > 0 && <PageSectionsView sections={extraSections} />}
-      </ScrollRegion>
-    </AppShell>
+    </PageLayout>
   );
 }

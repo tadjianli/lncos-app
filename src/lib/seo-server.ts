@@ -407,6 +407,17 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
     { url: absoluteUrl("/rdv") },
     { url: absoluteUrl("/blog") },
     { url: absoluteUrl("/videos") },
+    { url: absoluteUrl("/social") },
+    { url: absoluteUrl("/flash-sales") },
+    { url: absoluteUrl("/promotions") },
+    { url: absoluteUrl("/informations") },
+    { url: absoluteUrl("/faq") },
+    { url: absoluteUrl("/contact") },
+    { url: absoluteUrl("/livraison") },
+    { url: absoluteUrl("/retours") },
+    { url: absoluteUrl("/cgv") },
+    { url: absoluteUrl("/confidentialite") },
+    { url: absoluteUrl("/mentions-legales") },
   ];
 
   const { data: products } = await supabase
