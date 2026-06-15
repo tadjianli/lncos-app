@@ -1,17 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Icon } from "@/components/shared/Icon";
 import { BlogArticleCard } from "@/components/blog/BlogArticleCard";
-import {
-  BlogCategoryOverview,
-  BlogCategoryPills,
-} from "@/components/blog/BlogCategoryPills";
+import { BlogCategoryOverview } from "@/components/blog/BlogCategoryPills";
 import { BlogSearch } from "@/components/blog/BlogSearch";
-import { PageSectionsView } from "@/components/page/PageSectionsView";
-import { usePublicPageSections } from "@/lib/client-supabase";
 import { usePublicBlogContent } from "@/lib/content-pages-hooks";
 import { filterBlogArticlesByCategory, searchBlogArticles } from "@/lib/blog-content";
 import type { BlogCategoryId } from "@/lib/contracts/blog";
@@ -21,25 +15,21 @@ export default function BlogPage() {
   const [query, setQuery] = useState("");
   const articlesRef = useRef<HTMLDivElement>(null);
   const { pageSettings, categories, articles, loading: contentLoading } = usePublicBlogContent();
-  const { getVisible, loading: sectionsLoading } = usePublicPageSections("blog");
+
+  useEffect(() => {
+    const cat = new URLSearchParams(window.location.search).get("cat");
+    if (!cat) return;
+    const valid = categories.some((c) => c.id === cat);
+    if (valid) setCategory(cat);
+  }, [categories]);
 
   const filteredArticles = useMemo(() => {
     const byCategory = filterBlogArticlesByCategory(articles, category);
     return searchBlogArticles(byCategory, query);
   }, [articles, category, query]);
 
-  const extraSections = useMemo(
-    () =>
-      getVisible({ isMobile: true }).filter(
-        (s) => s.enabled && s.type !== "hero"
-      ),
-    [getVisible]
-  );
-
-  const loading = contentLoading || sectionsLoading;
-
   const handleCategoryFromTile = (id: BlogCategoryId) => {
-    setCategory(id);
+    setCategory((prev) => (prev === id ? "all" : id));
     setQuery("");
     requestAnimationFrame(() => {
       articlesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -48,64 +38,59 @@ export default function BlogPage() {
 
   return (
     <PageLayout title="Blog LN COS" backHref="/">
-        <header className="blog-hero blog-hero--compact">
-          <div className="blog-hero__glow" aria-hidden />
-          <span className="blog-hero__eyebrow">
-            <Icon name="edit" size={13} color="var(--gold)" />
-            {pageSettings.heroEyebrow}
-          </span>
-          <p className="blog-hero__sub">{pageSettings.heroSubtitle}</p>
-        </header>
+      <header className="blog-hero blog-hero--compact">
+        <div className="blog-hero__glow" aria-hidden />
+        <span className="blog-hero__eyebrow">
+          <Icon name="edit" size={13} color="var(--gold)" />
+          {pageSettings.heroEyebrow}
+        </span>
+        <p className="blog-hero__sub">{pageSettings.heroSubtitle}</p>
+      </header>
 
-        <BlogCategoryOverview
-          categories={categories}
-          active={category === "all" ? undefined : category}
-          onSelect={handleCategoryFromTile}
-        />
+      <BlogCategoryOverview
+        categories={categories}
+        active={category === "all" ? undefined : category}
+        onSelect={handleCategoryFromTile}
+      />
 
-        <div className="blog-section-head" ref={articlesRef}>
-          <h2 className="blog-section-head__title">{pageSettings.articlesSectionTitle}</h2>
-          {pageSettings.articlesSectionHint ? (
-            <p className="blog-section-head__hint">{pageSettings.articlesSectionHint}</p>
+      <BlogSearch onSearch={setQuery} />
+
+      {contentLoading ? (
+        <div className="flash-sales-loading" aria-busy="true">
+          <div className="flash-sales-loading__bar" />
+        </div>
+      ) : filteredArticles.length > 0 ? (
+        <div className="blog-articles" ref={articlesRef}>
+          {filteredArticles.map((article, i) => (
+            <BlogArticleCard
+              key={article.id}
+              article={article}
+              categories={categories}
+              index={i}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="blog-empty" ref={articlesRef}>
+          <Icon name="sparkle" size={32} color="var(--gold)" />
+          <p>
+            {query.trim()
+              ? "Aucun article ne correspond à votre recherche."
+              : category !== "all"
+                ? "Aucun article dans cette catégorie pour le moment."
+                : "Aucun article pour le moment."}
+          </p>
+          {query.trim() ? (
+            <button type="button" className="blog-empty__reset" onClick={() => setQuery("")}>
+              Effacer la recherche
+            </button>
+          ) : category !== "all" ? (
+            <button type="button" className="blog-empty__reset" onClick={() => setCategory("all")}>
+              Voir tous les articles
+            </button>
           ) : null}
         </div>
-
-        <BlogSearch onSearch={setQuery} />
-
-        <BlogCategoryPills categories={categories} active={category} onChange={setCategory} />
-
-        {loading ? (
-          <div className="flash-sales-loading" aria-busy="true">
-            <div className="flash-sales-loading__bar" />
-          </div>
-        ) : filteredArticles.length > 0 ? (
-          <div className="blog-articles">
-            {filteredArticles.map((article, i) => (
-              <BlogArticleCard
-                key={article.id}
-                article={article}
-                categories={categories}
-                index={i}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="blog-empty">
-            <Icon name="sparkle" size={32} color="var(--gold)" />
-            <p>
-              {query.trim()
-                ? "Aucun article ne correspond à votre recherche."
-                : "Aucun article dans cette catégorie pour le moment."}
-            </p>
-            {query.trim() ? (
-              <button type="button" className="blog-empty__reset" onClick={() => setQuery("")}>
-                Effacer la recherche
-              </button>
-            ) : null}
-          </div>
-        )}
-
-        {extraSections.length > 0 && <PageSectionsView sections={extraSections} />}
+      )}
     </PageLayout>
   );
 }

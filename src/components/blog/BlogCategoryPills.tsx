@@ -4,44 +4,6 @@ import { Icon } from "@/components/shared/Icon";
 import { BLOG_CATEGORIES } from "@/lib/blog-content";
 import type { BlogCategory, BlogCategoryId } from "@/lib/contracts/blog";
 
-interface BlogCategoryPillsProps {
-  active: BlogCategoryId | "all";
-  onChange: (id: BlogCategoryId | "all") => void;
-  categories?: BlogCategory[];
-}
-
-export function BlogCategoryPills({
-  active,
-  onChange,
-  categories = BLOG_CATEGORIES,
-}: BlogCategoryPillsProps) {
-  const enabled = categories.filter((c) => ("enabled" in c ? (c as { enabled?: boolean }).enabled !== false : true));
-  const pills: { id: BlogCategoryId | "all"; label: string }[] = [
-    { id: "all", label: "Tout" },
-    ...enabled.map((c) => ({ id: c.id, label: c.label })),
-  ];
-
-  return (
-    <div className="blog-pills noscroll" role="tablist" aria-label="Catégories du blog">
-      {pills.map((pill) => {
-        const selected = active === pill.id;
-        return (
-          <button
-            key={pill.id}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            className={`blog-pill${selected ? " blog-pill--active" : ""}`}
-            onClick={() => onChange(pill.id)}
-          >
-            {pill.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 interface BlogCategoryOverviewProps {
   categories?: BlogCategory[];
   active?: BlogCategoryId | "all";
@@ -56,7 +18,7 @@ export function BlogCategoryOverview({
   const enabled = categories.filter((c) => ("enabled" in c ? (c as { enabled?: boolean }).enabled !== false : true));
 
   return (
-    <div className="blog-categories-grid">
+    <div className="blog-categories-grid" role="group" aria-label="Catégories du blog">
       {enabled.map((cat, i) => {
         const selected = active === cat.id;
         return (
