@@ -3,7 +3,7 @@
  * LN COS — Side menu drawer (from handoff app.jsx SideMenu)
  */
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
@@ -43,28 +43,20 @@ interface SideMenuProps {
 }
 
 export function SideMenu({ onClose }: SideMenuProps) {
-  const router       = useRouter();
   const openOrders   = useStore((s) => s.openOrders);
   const closeOverlay = useStore((s) => s.closeOverlay);
 
-  /** Ferme le menu puis navigue — sans bloquer le routeur Next.js */
-  function closeMenuForNavigation() {
+  /** Ferme le menu sans history.back — la navigation est gérée par Link / openOrders */
+  function closeMenuOnly() {
     closeOverlay();
+  }
+
+  function handleOrders() {
+    closeMenuOnly();
     if (typeof window !== "undefined" && hasOverlayHistoryState()) {
       window.history.back();
     }
-  }
-
-  function handleNavigate(href: string) {
-    closeMenuForNavigation();
-    router.push(href);
-  }
-
-  function handleNav(item: MenuLink) {
-    closeMenuForNavigation();
-    if (item.overlay === "orders") {
-      setTimeout(openOrders, 50);
-    }
+    setTimeout(openOrders, 50);
   }
 
   function renderLink(l: MenuLink, index: number, baseDelay: number) {
@@ -81,16 +73,16 @@ export function SideMenu({ onClose }: SideMenuProps) {
 
     if (l.href) {
       return (
-        <button
+        <Link
           key={l.t}
-          type="button"
-          onClick={() => handleNavigate(l.href!)}
+          href={l.href}
+          onClick={closeMenuOnly}
           className="side-menu-link"
-          style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer" }}
+          style={{ ...rowStyle, textDecoration: "none", color: "var(--ink-soft)" }}
         >
           <Icon name={l.i} size={21} color="var(--gold)" />
           <span style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}>{l.t}</span>
-        </button>
+        </Link>
       );
     }
 
@@ -98,7 +90,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
       <button
         key={l.t}
         type="button"
-        onClick={() => handleNav(l)}
+        onClick={handleOrders}
         className="side-menu-link"
         style={{ ...rowStyle, textAlign: "left", color: "var(--ink-soft)", background: "none", border: "none", cursor: "pointer" }}
       >
@@ -165,9 +157,9 @@ export function SideMenu({ onClose }: SideMenuProps) {
 
         {/* Footer */}
         <div style={{ padding: "16px 24px 0", borderTop: "1px solid rgba(255,255,255,.06)" }}>
-          <button
-            type="button"
-            onClick={() => handleNavigate("/admin")}
+          <Link
+            href="/admin"
+            onClick={closeMenuOnly}
             className="side-menu-link side-menu-link--footer"
             style={{
               width: "100%",
@@ -176,16 +168,13 @@ export function SideMenu({ onClose }: SideMenuProps) {
               gap: 10,
               fontSize: 12.5,
               color: "var(--gold)",
+              textDecoration: "none",
               fontWeight: 600,
-              background: "none",
-              border: "none",
               padding: "12px 0",
-              cursor: "pointer",
-              textAlign: "left",
             }}
           >
             <Icon name="sliders" size={17} color="var(--gold)" /> Espace commerçant →
-          </button>
+          </Link>
         </div>
       </div>
     </div>
