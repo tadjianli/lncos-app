@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ScrollRegionProps {
@@ -18,19 +18,23 @@ export interface ScrollRegionProps {
  * Zone scrollable avec clearance bottom nav (via CSS var).
  * Ne jamais utiliser padding shorthand — écrase padding-bottom.
  */
-export function ScrollRegion({
-  variant = "page",
-  insetX,
-  padBottom = true,
-  className,
-  children,
-}: ScrollRegionProps) {
+export const ScrollRegion = forwardRef<HTMLDivElement, ScrollRegionProps>(function ScrollRegion(
+  {
+    variant = "page",
+    insetX,
+    padBottom = true,
+    className,
+    children,
+  },
+  ref,
+) {
   const base = variant === "overlay" ? "overlay-screen-scroll" : "app-scroll-page";
   const inset =
     insetX === 18 ? "scroll-region--x18" : insetX === 16 ? "scroll-region--x16" : "";
 
   return (
     <div
+      ref={ref}
       className={cn(
         "noscroll",
         base,
@@ -42,4 +46,4 @@ export function ScrollRegion({
       {children}
     </div>
   );
-}
+});

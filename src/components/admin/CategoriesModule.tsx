@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
+import { applyCategoryProductCounts } from "@/lib/category-product-counts";
+import type { Product } from "@/lib/data";
 
 interface Category {
   id: string;
@@ -49,11 +51,39 @@ export function CategoriesModule() {
   }
 
   const load = useCallback(async () => {
-    const { data } = await getSupabase()
-      .from("categories")
-      .select("id,name,count,cover_url,position")
-      .order("position");
-    setCategories((data ?? []) as Category[]);
+    const [{ data: categoryRows }, { data: productRows }] = await Promise.all([
+      getSupabase()
+        .from("categories")
+        .select("id,name,cover_url,position")
+        .order("position"),
+      getSupabase().from("products").select("id,cat,active").eq("active", true),
+    ]);
+
+    const listedProducts = ((productRows ?? []) as Pick<Product, "id" | "cat" | "active">[]).map(
+      (row) => ({ ...row, active: row.active ?? true }) as Product,
+    );
+
+    const withCounts = applyCategoryProductCounts(
+      (categoryRows ?? []).map((row) => ({
+        id: row.id,
+        name: row.name,
+        count: 0,
+      })),
+      listedProducts,
+    );
+
+    setCategories(
+      withCounts.map((category) => {
+        const row = categoryRows?.find((r) => r.id === category.id);
+        return {
+          id: category.id,
+          name: category.name,
+          count: category.count,
+          cover_url: row?.cover_url ?? null,
+          position: row?.position ?? 0,
+        };
+      }),
+    );
     setLoading(false);
   }, []);
 
@@ -64,9 +94,11 @@ export function CategoriesModule() {
     setSaving(true);
     await getSupabase()
       .from("categories")
-      .update({ name: editing.name, count: editing.count })
+      .update({ name: editing.name })
       .eq("id", editing.id);
-    setCategories((prev) => prev.map((c) => c.id === editing.id ? { ...c, ...editing } : c));
+    setCategories((prev) =>
+      prev.map((c) => (c.id === editing.id ? { ...c, name: editing.name } : c)),
+    );
     setSaving(false);
     setEditing(null);
     showToast("Catégorie enregistrée");
@@ -273,14 +305,8 @@ export function CategoriesModule() {
               />
             </div>
             <div className="ab-field">
-              <label>Nombre de produits (affiché)</label>
-              <input
-                className="ab-input"
-                type="number"
-                min={0}
-                value={editing.count}
-                onChange={(e) => setEditing({ ...editing, count: Number(e.target.value) })}
-              />
+              <label>Produits publiés (calculé automatiquement)</label>
+              <input className="ab-input" value={editing.count} readOnly disabled />
             </div>
             <div className="ab-modal-foot">
               <button className="adm-btn ghost" onClick={() => setEditing(null)}>Annuler</button>

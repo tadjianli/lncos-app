@@ -3,11 +3,12 @@
  * LN COS — Product listing overlay (catégories discover)
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { SubHeader } from "@/components/shared/ActionButtons";
 import { CategoryProductsView } from "@/components/commerce/CategoryProductsView";
 import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { usePublicProducts } from "@/lib/client-supabase";
+import { productsInCategory } from "@/lib/category-product-counts";
 import type { Category } from "@/lib/store";
 
 interface ListingScreenProps {
@@ -17,18 +18,25 @@ interface ListingScreenProps {
 
 export function ListingScreen({ category, onClose }: ListingScreenProps) {
   const { products, loading, error, reload } = usePublicProducts();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const list = useMemo(
-    () => (category ? products.filter((p) => p.cat === category.id) : products),
+    () => productsInCategory(products, category?.id),
     [products, category?.id],
   );
 
   const title = category ? category.name : "Tous les produits";
 
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [category?.id]);
+
   const countHeader =
-    !loading && !error ? (
+    !error || list.length > 0 ? (
       <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
-        {list.length} produit{list.length !== 1 ? "s" : ""}
+        {loading && list.length === 0
+          ? "Chargement…"
+          : `${list.length} produit${list.length !== 1 ? "s" : ""}`}
       </div>
     ) : null;
 
@@ -38,7 +46,13 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
         <SubHeader title={title} onBack={onClose} safeArea />
       </div>
 
-      <ScrollRegion variant="overlay" insetX={16} className="scroll-region--y4" padBottom={false}>
+      <ScrollRegion
+        ref={scrollRef}
+        variant="overlay"
+        insetX={16}
+        className="scroll-region--y4"
+        padBottom={false}
+      >
         <CategoryProductsView
           products={list}
           loading={loading}
@@ -51,9 +65,6 @@ export function ListingScreen({ category, onClose }: ListingScreenProps) {
               : "Aucun produit disponible pour le moment."
           }
           header={countHeader}
-          getCellStyle={(i) => ({
-            animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both`,
-          })}
         />
       </ScrollRegion>
     </div>

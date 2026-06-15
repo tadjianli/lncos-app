@@ -8,6 +8,7 @@ import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow"
 import { SkeletonCategoryGrid } from "@/components/shared/Skeleton";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
+import { formatCategoryProductCount, productsInCategory } from "@/lib/category-product-counts";
 import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
 import type { HomeSection } from "@/lib/home-sections";
 import { isImageUrl } from "@/lib/admin-media";
@@ -98,7 +99,7 @@ function PageProducts({ section }: { section: HomeSection }) {
           .slice(0, 8);
       }
     }
-    if (cat !== "all") next = next.filter((p) => p.cat === cat);
+    if (cat !== "all") next = productsInCategory(next, cat);
     return next;
   }, [products, section.source, cat]);
 
@@ -163,7 +164,7 @@ function PageCategories({ section }: { section: HomeSection }) {
               >
                 <Icon name={m.icon as "sparkle"} size={22} color={m.accent} />
                 <span className="category-grid__name">{c.name}</span>
-                <span className="category-grid__count">{c.count} produits</span>
+                <span className="category-grid__count">{formatCategoryProductCount(c.count)}</span>
               </button>
             );
           })}

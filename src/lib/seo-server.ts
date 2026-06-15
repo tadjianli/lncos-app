@@ -10,6 +10,7 @@ import { normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-s
 import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
 import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
+import { applyCategoryProductCounts } from "@/lib/category-product-counts";
 import {
   PRODUCT_SELECT,
   PRODUCT_SELECT_LEGACY,
@@ -122,7 +123,7 @@ function mapCategoryRow(row: DbCategoryRow): Category {
   return {
     id: row.id,
     name: row.name,
-    count: row.count,
+    count: 0,
     coverUrl: row.cover_url ?? null,
     seoKeyword: row.seo_keyword ?? null,
     seoTitle: row.seo_title ?? null,
@@ -236,19 +237,22 @@ export async function fetchCategoryBySeoSlug(slug: string): Promise<Category | n
 
   const { data: bySlug } = await supabase
     .from("categories")
-    .select("id,name,count,cover_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt")
+    .select("id,name,cover_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt")
     .eq("seo_slug", slug)
     .maybeSingle();
-  if (bySlug) return mapCategoryRow(bySlug as DbCategoryRow);
+  const row = bySlug
+    ?? (
+      await supabase
+        .from("categories")
+        .select("id,name,cover_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt")
+        .eq("id", slug)
+        .maybeSingle()
+    ).data;
 
-  const { data: byId } = await supabase
-    .from("categories")
-    .select("id,name,count,cover_url,seo_keyword,seo_title,meta_description,seo_slug,image_alt")
-    .eq("id", slug)
-    .maybeSingle();
-  if (byId) return mapCategoryRow(byId as DbCategoryRow);
+  if (!row) return null;
 
-  return null;
+  const products = await fetchAllActiveProducts();
+  return applyCategoryProductCounts([mapCategoryRow(row as DbCategoryRow)], products)[0];
 }
 
 async function fetchAllActiveProducts(): Promise<Product[]> {
@@ -269,7 +273,7 @@ async function fetchAllActiveProducts(): Promise<Product[]> {
 
 export async function fetchProductsByCategory(catId: string): Promise<Product[]> {
   const products = await fetchAllActiveProducts();
-  return products.filter((p) => p.cat === catId);
+  return products.filter((p) => p.active !== false && p.cat === catId);
 }
 
 /** Audit catalogue — pages produit accessibles vs cassées */

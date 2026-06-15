@@ -129,7 +129,7 @@ export function CategoryProductsView({
   getCellStyle,
   header,
 }: CategoryProductsViewProps) {
-  if (loading) {
+  if (loading && products.length === 0) {
     return (
       <>
         {header}
@@ -138,7 +138,7 @@ export function CategoryProductsView({
     );
   }
 
-  if (error) {
+  if (error && products.length === 0) {
     return (
       <>
         {header}

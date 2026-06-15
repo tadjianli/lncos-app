@@ -121,7 +121,6 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
           )}
           {overlay?.type === "listing" && (
             <ListingScreen
-              key={overlay.category?.id ?? "all"}
               category={overlay.category ?? null}
               onClose={handleOverlayClose}
             />
