@@ -39,6 +39,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"info" | "seo">("info");
   const seoScore = computeProductSeoScore(form);
+  const categoryName = categories.find((c) => c.id === form.cat)?.name ?? form.cat;
 
   useEffect(() => {
     if (isNew && form.name) {
@@ -137,7 +138,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
 
         <div className="ab-modal-scroll">
           {activeTab === "seo" ? (
-            <ProductSeoTab form={form} onChange={set} />
+            <ProductSeoTab form={form} onChange={set} categoryName={categoryName} />
           ) : (
           <>
           <div className="adm-form-section-title">Informations</div>

@@ -17,8 +17,11 @@ import {
   seoLevelColor,
   seoLevelLabel,
   slugifySeo,
+  type ProductSeoGenerationOptions,
   type SeoOptimizeMode,
 } from "@/lib/seo";
+import { useLegalSettings } from "@/lib/legal-settings-db";
+import { getSeoDeliveryPhrase } from "@/lib/delivery-zones";
 
 function getClientSiteUrl(): string {
   const env = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
@@ -30,6 +33,7 @@ function getClientSiteUrl(): string {
 interface ProductSeoTabProps {
   form: Product;
   onChange: <K extends keyof Product>(key: K, val: Product[K]) => void;
+  categoryName?: string;
 }
 
 const BREAKDOWN_LABELS: Record<keyof ReturnType<typeof computeProductSeoScore>["breakdown"], string> = {
@@ -56,28 +60,42 @@ function applyOptimization(
   onChange("extraSections", result.extraSections);
 }
 
-export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
+export function ProductSeoTab({ form, onChange, categoryName }: ProductSeoTabProps) {
   const [showPreview, setShowPreview] = useState(false);
+  const { settings: legalSettings } = useLegalSettings();
+
+  const seoOptions = useMemo((): ProductSeoGenerationOptions => ({
+    categoryId: form.cat,
+    categoryName,
+    ml: form.ml,
+    variants: form.variants,
+    tag: form.tag,
+    productId: form.id,
+    deliveryZones: legalSettings.deliveryZones,
+  }), [form.cat, form.ml, form.variants, form.tag, form.id, categoryName, legalSettings.deliveryZones]);
+
   const score = computeProductSeoScore(form);
   const previewStandard = useMemo(
-    () => previewProductSeoOptimization(form, "standard"),
-    [form]
+    () => previewProductSeoOptimization(form, "standard", seoOptions),
+    [form, seoOptions]
   );
   const previewMaximal = useMemo(
-    () => previewProductSeoOptimization(form, "maximal"),
-    [form]
+    () => previewProductSeoOptimization(form, "maximal", seoOptions),
+    [form, seoOptions]
   );
-  const google = getGooglePreview(form, getClientSiteUrl());
+  const google = getGooglePreview(form, getClientSiteUrl(), legalSettings.deliveryZones);
   const seoFilename = generateSeoImageFilename(form.seoKeyword || form.name);
   const descWords = countWords(form.desc);
   const hasImage = hasProductImage(form);
 
   function runOptimization(mode: SeoOptimizeMode) {
     if (!form.name.trim()) return;
-    const result = optimizeProductSeo(form, mode);
+    const result = optimizeProductSeo(form, mode, seoOptions);
     if (!result) return;
     applyOptimization(result, onChange);
   }
+
+  const deliveryHint = getSeoDeliveryPhrase(legalSettings.deliveryZones);
 
   const preview = previewMaximal;
   const canReach95 = preview ? preview.predictedScore >= 95 : false;
@@ -198,6 +216,9 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
 
       {previewStandard && (
         <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginBottom: 16, lineHeight: 1.5 }}>
+          Générateur V2 — contenu unique (nom, catégorie, bénéfices, format). Livraison SEO :{" "}
+          <strong>{deliveryHint}</strong>
+          {" · "}
           Standard → <strong>{previewStandard.predictedScore}/100</strong>
           {" · "}
           Maximale → <strong>{previewMaximal?.predictedScore ?? "—"}/100</strong>
@@ -256,7 +277,7 @@ export function ProductSeoTab({ form, onChange }: ProductSeoTabProps) {
           rows={3}
           value={form.metaDescription ?? ""}
           onChange={(e) => onChange("metaDescription", e.target.value)}
-          placeholder="Découvrez nos cils magnétiques LN COS. Faciles à poser, réutilisables et confortables. Livraison rapide à La Réunion."
+          placeholder={`Découvrez ${form.name || "votre produit"} chez LN COS. ${deliveryHint}.`}
         />
         <SeoLengthBar
           label="Longueur meta"

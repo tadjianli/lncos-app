@@ -23,7 +23,7 @@ export function useLegalSettings() {
     setLoading(true);
     const { data, error } = await getSupabase()
       .from("legal_settings")
-      .select("hosting_info")
+      .select("hosting_info, delivery_reunion, delivery_france, delivery_europe, delivery_international")
       .eq("id", "default")
       .maybeSingle();
     if (error) console.warn("[legal-settings] load:", error.message);

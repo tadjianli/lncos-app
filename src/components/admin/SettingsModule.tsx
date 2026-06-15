@@ -9,6 +9,7 @@ import {
   RdvPageSettingsPanel,
 } from "@/components/admin/RdvSettingsSection";
 import { LegalSettingsPanel } from "@/components/admin/LegalSettingsPanel";
+import { DeliveryZonesSettingsPanel } from "@/components/admin/DeliveryZonesSettingsPanel";
 
 interface SettingValues {
   storeName: string;
@@ -181,6 +182,10 @@ export function SettingsModule() {
               <SaveRow onSave={save} />
             </>
           ),
+        },
+        {
+          icon: "truck", label: "Zone de livraison", sub: "Réunion, France, Europe, international — SEO",
+          content: <DeliveryZonesSettingsPanel onSaved={showToast} />,
         },
         {
           icon: "bag", label: "Livraison & frais de port", sub: "Zones, tarifs, délais",

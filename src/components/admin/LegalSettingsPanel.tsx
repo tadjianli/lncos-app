@@ -52,7 +52,7 @@ export function LegalSettingsPanel({ onSaved }: { onSaved: (msg: string) => void
   }, [loading, settings.hostingInfo]);
 
   async function handleSave() {
-    const result = await save({ hostingInfo });
+    const result = await save({ ...settings, hostingInfo });
     if (result.ok) onSaved("Mentions légales mises à jour");
     else onSaved(result.error ?? "Erreur lors de l'enregistrement");
   }
