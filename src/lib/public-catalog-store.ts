@@ -84,15 +84,6 @@ function getSnapshot(): CatalogState {
   return state;
 }
 
-function setProductsLoading(active: boolean) {
-  if (state.products.length === 0) {
-    state = { ...state, productsLoading: active };
-  } else {
-    state = { ...state, productsLoading: false };
-  }
-  notify();
-}
-
 async function loadProducts(force = false): Promise<void> {
   ensureProductsRealtime();
 
@@ -110,7 +101,9 @@ async function loadProducts(force = false): Promise<void> {
   if (productsInFlight && !force) return productsInFlight;
   if (state.productsFetched && !force) return;
 
-  setProductsLoading(true);
+  if (!state.productsFetched || state.products.length === 0) {
+    state = { ...state, productsLoading: true };
+  }
   state = { ...state, productsError: null };
   notify();
 
@@ -212,12 +205,14 @@ export function usePublicCatalogProducts() {
 
   const reload = useCallback(() => loadProducts(true), []);
 
-  const loading = snap.productsLoading && snap.products.length === 0;
+  const loading =
+    !snap.productsFetched || (snap.productsLoading && snap.products.length === 0);
   const byId = (id: string) => snap.products.find((p) => p.id === id) ?? null;
 
   return {
     products: snap.products,
     loading,
+    productsFetched: snap.productsFetched,
     isRefreshing: snap.productsLoading && snap.products.length > 0,
     error: snap.productsError,
     reload,
