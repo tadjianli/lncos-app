@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { usePublicPageSections } from "@/lib/client-supabase";
+import { useDiscoverListingSync } from "@/lib/use-discover-listing-sync";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
 
 /* ─── Featured editorial tiles ─────────────────────────────────────── */
@@ -30,6 +31,8 @@ export default function DiscoverPage() {
   const openSearch  = useStore((s) => s.openSearch);
   const { getVisible } = usePublicPageSections("discover");
   const sections = getVisible({ isMobile: true });
+
+  useDiscoverListingSync();
 
   return (
     <AppShell>

@@ -15,6 +15,11 @@ import {
   pushProductOverlayHistory,
 } from "./product-navigation";
 import { pushOverlayHistory, shouldPushOverlayHistory } from "./overlay-history";
+import {
+  clearListingUrlParam,
+  pushListingOverlayHistory,
+  replaceListingUrl,
+} from "./listing-route-sync";
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -96,7 +101,7 @@ interface AppStore {
   openProduct: (product: Product, opts?: { source?: ProductNavSource; fromRecommendations?: boolean }) => void;
   openSearch: () => void;
   openSideMenu: () => void;
-  openListing: (category: Category | null) => void;
+  openListing: (category: Category | null, opts?: { fromUrl?: boolean }) => void;
   openBooking: (serviceId?: string | null, resume?: boolean) => void;
   openLoyalty: () => void;
   openNotifications: () => void;
@@ -226,13 +231,22 @@ export const useStore = create<AppStore>()(
         stackOverlayHistory(current, "side-menu");
         set({ overlay: { type: "side-menu" } });
       },
-      openListing(category) {
+      openListing(category, opts) {
         const current = get().overlay;
+        const categoryId = category?.id ?? null;
+
         if (current?.type === "listing") {
+          if (typeof window !== "undefined") replaceListingUrl(categoryId);
           set({ overlay: { type: "listing", category } });
           return;
         }
-        stackOverlayHistory(current, "listing");
+
+        if (typeof window !== "undefined" && !opts?.fromUrl) {
+          pushListingOverlayHistory(categoryId);
+        } else if (typeof window !== "undefined" && opts?.fromUrl) {
+          replaceListingUrl(categoryId);
+        }
+
         set({ overlay: { type: "listing", category } });
       },
       openBooking(serviceId = null, resume = false) {
@@ -274,6 +288,9 @@ export const useStore = create<AppStore>()(
         set({ overlay: { type: "settings" } });
       },
       closeOverlay() {
+        if (typeof window !== "undefined") {
+          clearListingUrlParam();
+        }
         set({ overlay: null });
       },
 

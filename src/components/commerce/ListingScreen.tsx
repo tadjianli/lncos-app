@@ -1,13 +1,11 @@
 "use client";
 /**
- * LN COS — Product listing screen (from handoff screens-discover.jsx ListingScreen)
+ * LN COS — Product listing overlay (catégories discover)
  */
 
-import { useState } from "react";
-import { Icon } from "@/components/shared/Icon";
+import { useMemo } from "react";
 import { SubHeader } from "@/components/shared/ActionButtons";
-import { ProductGrid } from "@/components/commerce/ProductGrid";
-import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
+import { CategoryProductsView } from "@/components/commerce/CategoryProductsView";
 import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { usePublicProducts } from "@/lib/client-supabase";
 import type { Category } from "@/lib/store";
@@ -17,103 +15,42 @@ interface ListingScreenProps {
   onClose: () => void;
 }
 
-const SUBS = ["Tous", "Sérums", "Crèmes", "Nettoyants", "Masques"];
-const FILTERS = ["Prix ↑", "Mieux notés", "Nouveautés", "Promotions"];
-
 export function ListingScreen({ category, onClose }: ListingScreenProps) {
-  const [sub, setSub] = useState("Tous");
-  const [showFilter, setShowFilter] = useState(false);
+  const { products, loading, error, reload } = usePublicProducts();
 
-  const { products } = usePublicProducts();
-
-  const list = category
-    ? products.filter((p) => p.cat === category.id)
-    : products;
+  const list = useMemo(
+    () => (category ? products.filter((p) => p.cat === category.id) : products),
+    [products, category?.id],
+  );
 
   const title = category ? category.name : "Tous les produits";
+
+  const countHeader =
+    !loading && !error ? (
+      <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
+        {list.length} produit{list.length !== 1 ? "s" : ""}
+      </div>
+    ) : null;
 
   return (
     <div className="overlay-screen" style={{ animation: "slideUp .3s cubic-bezier(.2,.8,.2,1) both" }}>
       <div style={{ flex: "0 0 auto" }}>
-        <SubHeader
-          title={title}
-          onBack={onClose}
-          safeArea
-          right={
-            <button
-              type="button"
-              onClick={() => setShowFilter((f) => !f)}
-              className="mobile-screen-header__back"
-              style={{ background: "transparent", border: "none" }}
-              aria-label="Filtrer"
-            >
-              <Icon name="filter" size={20} />
-            </button>
-          }
-        />
-
-        {/* Sub-category chips */}
-        <HorizontalScrollRow enhanceScroll={false} style={{ padding: "0 16px 12px", gap: 8 }}>
-          {SUBS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              className="snap"
-              onClick={() => setSub(s)}
-              style={{
-                flex: "0 0 auto",
-                padding: "8px 16px",
-                borderRadius: "var(--r-pill)",
-                fontSize: 12.5,
-                fontWeight: 600,
-                background: sub === s ? "var(--gold-grad)" : "var(--charcoal)",
-                color: sub === s ? "#1a1306" : "var(--ink-soft)",
-                border: sub === s ? "none" : "1px solid rgba(255,255,255,.06)",
-              }}
-            >
-              {s}
-            </button>
-          ))}
-        </HorizontalScrollRow>
-
-        {/* Filter chips */}
-        {showFilter && (
-          <div
-            style={{
-              padding: "0 16px 12px",
-              display: "flex",
-              gap: 8,
-              animation: "fadeUp .3s ease both",
-              flexWrap: "wrap",
-            }}
-          >
-            {FILTERS.map((f) => (
-              <span
-                key={f}
-                style={{
-                  padding: "7px 13px",
-                  borderRadius: "var(--r-pill)",
-                  background: "var(--charcoal-2)",
-                  color: "var(--ink-soft)",
-                  fontSize: 11.5,
-                  fontWeight: 500,
-                  border: "1px solid rgba(212,175,55,.18)",
-                }}
-              >
-                {f}
-              </span>
-            ))}
-          </div>
-        )}
+        <SubHeader title={title} onBack={onClose} safeArea />
       </div>
 
-      {/* Grid */}
       <ScrollRegion variant="overlay" insetX={16} className="scroll-region--y4" padBottom={false}>
-        <div style={{ fontSize: 11.5, color: "var(--ink-mute)", marginBottom: 14 }}>
-          {list.length} produit{list.length > 1 ? "s" : ""}
-        </div>
-        <ProductGrid
+        <CategoryProductsView
           products={list}
+          loading={loading}
+          error={error}
+          onRetry={() => void reload()}
+          emptyTitle="Aucun produit disponible"
+          emptyMessage={
+            category
+              ? `Aucun article dans « ${category.name} » pour le moment.`
+              : "Aucun produit disponible pour le moment."
+          }
+          header={countHeader}
           getCellStyle={(i) => ({
             animation: `fadeUp .5s ease ${Math.min(i, 6) * 0.05}s both`,
           })}

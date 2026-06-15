@@ -6,6 +6,7 @@ import {
   isOverlayHistoryState,
   isProductHistoryState,
 } from "@/lib/overlay-history";
+import { clearListingUrlParam } from "@/lib/listing-route-sync";
 
 /**
  * Ferme les overlays sur retour navigateur (swipe-back iOS, bouton retour, popstate).
@@ -32,6 +33,7 @@ export function useOverlayHistory() {
       if (isOverlayHistoryState(state)) return;
 
       closeOverlay();
+      clearListingUrlParam();
     };
 
     window.addEventListener("popstate", onPopState);

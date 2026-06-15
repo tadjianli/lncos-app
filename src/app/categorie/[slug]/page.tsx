@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { SeoPageHeader } from "@/components/layout/SeoPageHeader";
-import { CategoryProductGrid } from "@/components/commerce/CategoryProductGrid";
+import { CategoryProductsView } from "@/components/commerce/CategoryProductsView";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { absoluteUrl } from "@/lib/site-url";
 import {
@@ -72,10 +72,13 @@ export default async function CategoriePage({ params }: Props) {
         <p style={{ fontSize: 14, color: "var(--ink-mute)", margin: "0 0 20px", lineHeight: 1.5 }}>
           {description}
         </p>
-        <CategoryProductGrid products={products} />
-        {products.length === 0 && (
-          <p style={{ color: "var(--ink-mute)", fontSize: 14 }}>Aucun produit dans cette catégorie.</p>
-        )}
+        <CategoryProductsView
+          products={products}
+          variant="category"
+          bottomClearance={false}
+          emptyTitle="Aucun produit disponible"
+          emptyMessage={`Aucun produit dans la catégorie « ${category.name} » pour le moment.`}
+        />
       </ScrollRegion>
     </AppShell>
   );

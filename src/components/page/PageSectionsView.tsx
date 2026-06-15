@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
-import { ProductGrid } from "@/components/commerce/ProductGrid";
+import { CategoryProductsView } from "@/components/commerce/CategoryProductsView";
 import { GoldBtn } from "@/components/shared/ActionButtons";
 import { HorizontalScrollRow } from "@/components/carousels/HorizontalScrollRow";
+import { SkeletonCategoryGrid } from "@/components/shared/Skeleton";
 import { useStore } from "@/lib/store";
 import { usePublicProducts, usePublicCategories } from "@/lib/client-supabase";
 import { filterProductsByHomeKey, homeKeyFromProductSource } from "@/lib/product-home-visibility";
@@ -76,34 +77,37 @@ function PageCta({ section, onClick }: { section: HomeSection; onClick?: () => v
 }
 
 function PageProducts({ section }: { section: HomeSection }) {
-  const { products } = usePublicProducts();
+  const { products, loading, error, reload } = usePublicProducts();
+  const { categories } = usePublicCategories();
   const [cat, setCat] = useState("all");
 
-  let list = products;
-  if (section.source && section.source !== "all") {
-    const visKey = homeKeyFromProductSource(section.source);
-    if (visKey) {
-      list = filterProductsByHomeKey(products, visKey);
-    } else if (section.source === "reco") {
-      list = products
-        .filter(
-          (p) =>
-            p.homeVisibility?.flash ||
-            p.homeVisibility?.best_seller ||
-            p.homeVisibility?.new_arrivals
-        )
-        .slice(0, 8);
+  const list = useMemo(() => {
+    let next = products;
+    if (section.source && section.source !== "all") {
+      const visKey = homeKeyFromProductSource(section.source);
+      if (visKey) {
+        next = filterProductsByHomeKey(products, visKey);
+      } else if (section.source === "reco") {
+        next = products
+          .filter(
+            (p) =>
+              p.homeVisibility?.flash ||
+              p.homeVisibility?.best_seller ||
+              p.homeVisibility?.new_arrivals
+          )
+          .slice(0, 8);
+      }
     }
-  }
-  if (cat !== "all") list = list.filter((p) => p.cat === cat);
-  const { categories } = usePublicCategories();
+    if (cat !== "all") next = next.filter((p) => p.cat === cat);
+    return next;
+  }, [products, section.source, cat]);
 
   return (
     <div style={{ padding: "0 max(18px, var(--safe-right)) 0 max(18px, var(--safe-left))" }}>
       {section.title && (
         <h3 style={{ margin: "0 0 12px", padding: "0 2px", fontWeight: 600, fontSize: "var(--fs-h3)", color: "var(--ink)" }}>{section.title}</h3>
       )}
-      {section.source === "all" && (
+      {section.source === "all" && !loading && !error && (
         <HorizontalScrollRow enhanceScroll={false} style={{ marginBottom: 14, padding: "0 2px", gap: 8 }}>
           <button type="button" className="snap" onClick={() => setCat("all")} style={{ flex: "0 0 auto", padding: "9px 16px", borderRadius: "var(--r-pill)", fontSize: 12.5, fontWeight: 600, background: cat === "all" ? "var(--gold-grad)" : "var(--charcoal)", color: cat === "all" ? "#1a1306" : "var(--ink-soft)", border: cat === "all" ? "none" : "1px solid rgba(255,255,255,.07)" }}>Tous</button>
           {categories.map((c) => (
@@ -111,13 +115,19 @@ function PageProducts({ section }: { section: HomeSection }) {
           ))}
         </HorizontalScrollRow>
       )}
-      <ProductGrid products={list} bottomClearance={false} />
+      <CategoryProductsView
+        products={list}
+        loading={loading}
+        error={error}
+        onRetry={() => void reload()}
+        bottomClearance={false}
+      />
     </div>
   );
 }
 
 function PageCategories({ section }: { section: HomeSection }) {
-  const { categories } = usePublicCategories();
+  const { categories, loading, error, reload } = usePublicCategories();
   const openListing = useStore((s) => s.openListing);
 
   return (
@@ -127,24 +137,38 @@ function PageCategories({ section }: { section: HomeSection }) {
           {section.title}
         </h3>
       )}
-      <div className="category-grid">
-        {categories.map((c) => {
-          const m = CAT_META[c.id] ?? { icon: "sparkle", grad: "var(--charcoal)", accent: "var(--gold)" };
-          return (
-            <button
-              key={c.id}
-              type="button"
-              className="category-grid__card"
-              onClick={() => openListing(c)}
-              style={{ background: m.grad }}
-            >
-              <Icon name={m.icon as "sparkle"} size={22} color={m.accent} />
-              <span className="category-grid__name">{c.name}</span>
-              <span className="category-grid__count">{c.count} produits</span>
-            </button>
-          );
-        })}
-      </div>
+
+      {loading ? (
+        <SkeletonCategoryGrid />
+      ) : error ? (
+        <div style={{ padding: "24px 18px", textAlign: "center" }}>
+          <p style={{ color: "var(--ink-soft)", fontSize: 14, marginBottom: 16 }}>{error}</p>
+          <GoldBtn onClick={() => void reload()}>Réessayer</GoldBtn>
+        </div>
+      ) : categories.length === 0 ? (
+        <div style={{ padding: "32px 18px", textAlign: "center", color: "var(--ink-mute)", fontSize: 14 }}>
+          Aucune catégorie disponible.
+        </div>
+      ) : (
+        <div className="category-grid">
+          {categories.map((c) => {
+            const m = CAT_META[c.id] ?? { icon: "sparkle", grad: "var(--charcoal)", accent: "var(--gold)" };
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className="category-grid__card"
+                onClick={() => openListing(c)}
+                style={{ background: m.grad }}
+              >
+                <Icon name={m.icon as "sparkle"} size={22} color={m.accent} />
+                <span className="category-grid__name">{c.name}</span>
+                <span className="category-grid__count">{c.count} produits</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

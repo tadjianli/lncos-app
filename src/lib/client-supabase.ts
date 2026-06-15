@@ -4,7 +4,7 @@
  * Maps DB column names → UI field names. Falls back to static data on error.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { dbToSection } from "./home-sections-db";
 import {
@@ -184,53 +184,72 @@ export function usePublicProducts() {
     }))
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!isSupabaseConfigured()) {
       setLoading(false);
+      setError(null);
       return;
     }
 
-    void (async () => {
-      try {
-        const loaded = await fetchActiveProductsFromDb();
-        if (loaded) setProducts(loaded);
-      } catch {
-        // Conserver le catalogue statique de secours
-      } finally {
-        setLoading(false);
-      }
-    })();
+    setLoading(true);
+    setError(null);
+    try {
+      const loaded = await fetchActiveProductsFromDb();
+      if (loaded) setProducts(loaded);
+    } catch {
+      setError("Impossible de charger les produits. Vérifiez votre connexion.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
   const byId = (id: string) => products.find((p) => p.id === id) ?? null;
 
-  return { products, loading, byId };
+  return { products, loading, error, reload, byId };
 }
 
 /* ── usePublicCategories ─────────────────────────────────────── */
 export function usePublicCategories() {
   const [categories, setCategories] = useState<Category[]>(STATIC_CATEGORIES);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+  const reload = useCallback(async () => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
-    void (async () => {
-      try {
-        const { data, error } = await getSupabase()
-          .from("categories")
-          .select("id,name,count")
-          .order("position");
-        if (!error && data && data.length > 0) {
-          setCategories(data as Category[]);
-        }
-      } catch {
-        // Conserver les catégories statiques
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchErr } = await getSupabase()
+        .from("categories")
+        .select("id,name,count")
+        .order("position");
+      if (fetchErr) throw fetchErr;
+      if (data && data.length > 0) {
+        setCategories(data as Category[]);
       }
-    })();
+    } catch {
+      setError("Impossible de charger les catégories.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { categories };
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  return { categories, loading, error, reload };
 }
 
 /* ── usePublicPageSections ───────────────────────────────────── */

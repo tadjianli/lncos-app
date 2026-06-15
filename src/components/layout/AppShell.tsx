@@ -120,7 +120,11 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
             <ProductDetail product={overlay.product} onClose={handleProductClose} />
           )}
           {overlay?.type === "listing" && (
-            <ListingScreen category={overlay.category ?? null} onClose={handleOverlayClose} />
+            <ListingScreen
+              key={overlay.category?.id ?? "all"}
+              category={overlay.category ?? null}
+              onClose={handleOverlayClose}
+            />
           )}
           {overlay?.type === "search" && (
             <SearchScreen onClose={handleOverlayClose} />
