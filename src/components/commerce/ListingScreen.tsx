@@ -67,6 +67,7 @@ export function ListingScreen({
         restoredFromProduct && "overlay-screen--restored",
       )}
       aria-hidden={preserveUnderProduct || undefined}
+      {...(preserveUnderProduct ? { inert: true } : {})}
     >
       <div style={{ flex: "0 0 auto" }}>
         <SubHeader title={title} onBack={onClose} safeArea />

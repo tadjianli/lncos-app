@@ -4,7 +4,7 @@ import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.
 import type { OverlayState, OverlayType } from "@/lib/store";
 
 /** Logs temporaires de diagnostic navigation produit */
-export const PRODUCT_NAV_DEBUG = true;
+export const PRODUCT_NAV_DEBUG = false;
 
 export type ProductNavSource =
   | "home"

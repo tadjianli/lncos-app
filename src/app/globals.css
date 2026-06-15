@@ -884,12 +884,16 @@
     animation: overlayIn 0.38s cubic-bezier(0.22,0.68,0,1) both;
   }
 
-  /* Listing conservé sous fiche produit — évite remontage / flash images au retour */
+  /* Listing conservé sous fiche produit — invisible et inactif, DOM conservé pour le retour */
   .overlay-screen--under-product {
-    z-index: 110;
+    z-index: 105;
     animation: none !important;
-    pointer-events: none;
-    visibility: visible;
+    pointer-events: none !important;
+    visibility: hidden;
+  }
+
+  .overlay-screen--under-product * {
+    pointer-events: none !important;
   }
 
   /* Retour depuis fiche produit — pas de re-jeu overlayIn */

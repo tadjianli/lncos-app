@@ -32,9 +32,9 @@ import {
   getStackedListingCategory,
   isProductOpenedOverListing,
 } from "@/lib/listing-overlay-stack";
+import { ProductDetail } from "@/components/commerce/ProductDetail";
 
 // Lazy-load overlay screens — keep initial bundle small
-const ProductDetail       = lazy(() => import("@/components/commerce/ProductDetail").then(m => ({ default: m.ProductDetail })));
 const ListingScreen       = lazy(() => import("@/components/commerce/ListingScreen").then(m => ({ default: m.ListingScreen })));
 const SearchScreen        = lazy(() => import("@/components/commerce/SearchScreen").then(m => ({ default: m.SearchScreen })));
 const LoyaltyScreen       = lazy(() => import("@/components/profile/LoyaltyScreen").then(m => ({ default: m.LoyaltyScreen })));
@@ -122,18 +122,18 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
 
         {/* ── z:80 content overlays ─────────────────────────── */}
         <Suspense fallback={null}>
-          {overlay?.type === "product" && overlay.product && (
-            <ProductDetail
-              product={overlay.product}
-              onClose={handleProductClose}
-              enterFromListing={productOverListing}
-            />
-          )}
           {stackedListingCategory !== undefined && (
             <ListingScreen
               category={stackedListingCategory}
               onClose={handleOverlayClose}
               preserveUnderProduct={overlay?.type === "product"}
+            />
+          )}
+          {overlay?.type === "product" && overlay.product && (
+            <ProductDetail
+              product={overlay.product}
+              onClose={handleProductClose}
+              enterFromListing={productOverListing}
             />
           )}
           {overlay?.type === "search" && (
