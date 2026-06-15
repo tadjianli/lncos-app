@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Category, Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { useAdminCategories, useProducts } from "@/lib/admin-supabase";
 import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGalleryEditor";
@@ -481,7 +482,9 @@ export function ProductsModule() {
           </button>
         </div>
 
-        <div className="adm-card adm-card-scroll">
+        <AdminAccordionStack>
+        <AdminAccordion title="Catalogue produits">
+        <div className="adm-card adm-card-scroll" style={{ border: "none", boxShadow: "none", padding: 0 }}>
           <div className="adm-table-toolbar">
             <div className="adm-searchbox wide">
               <Icon name="search" size={16} color="var(--adm-ink-mute)" />
@@ -582,6 +585,8 @@ export function ProductsModule() {
             </table>
           )}
         </div>
+        </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {editingProduct && (

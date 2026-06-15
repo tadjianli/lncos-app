@@ -6,10 +6,9 @@ import type { Appointment, Notification } from "@/lib/rdv-store";
 import { staff, availability, type Service } from "@/lib/rdv-data";
 import { useAdminServiceCategories } from "@/lib/rdv-services-db";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { ServiceCategoriesModule } from "@/components/admin/ServiceCategoriesModule";
-
-type Tab = "dashboard" | "calendar" | "availability" | "services" | "categories" | "staff" | "notifications";
 
 /* ── helpers ────────────────────────────────────────────────────────── */
 
@@ -798,7 +797,6 @@ function NotificationsView({ notifications, services, onMarkAllRead }: {
 
 /* ── Root RDV module ────────────────────────────────────────────────── */
 export function RdvModule() {
-  const [tab, setTab] = useState<Tab>("dashboard");
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
@@ -819,16 +817,6 @@ export function RdvModule() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const tabs: { id: Tab; icon: string; label: string; badge?: number }[] = [
-    { id: "dashboard",    icon: "home",     label: "Tableau de bord" },
-    { id: "calendar",     icon: "calendar", label: "Calendrier" },
-    { id: "availability", icon: "clock",    label: "Disponibilités" },
-    { id: "services",     icon: "sliders",  label: "Prestations" },
-    { id: "categories",   icon: "grid",     label: "Catégories" },
-    { id: "staff",        icon: "user",     label: "Prothésistes" },
-    { id: "notifications",icon: "bell",     label: "Notifications", badge: unreadCount },
-  ];
-
   return (
     <>
       <div className="adm-content">
@@ -839,46 +827,50 @@ export function RdvModule() {
             <h1 className="adm-h1">Rendez-vous</h1>
           </div>
           <div className="adm-topbar-right">
-            <button className="adm-notif-btn" onClick={() => setTab("notifications")}>
+            <button type="button" className="adm-notif-btn" aria-label="Notifications">
               <Icon name="bell" size={18} />
               {unreadCount > 0 && <span className="adm-notif-badge">{unreadCount}</span>}
             </button>
-            <button className="adm-btn gold sm" onClick={() => setTab("calendar")}>
+            <button type="button" className="adm-btn gold sm">
               <Icon name="calendar" size={15} /> Ouvrir le calendrier
             </button>
           </div>
         </div>
 
-        {/* Sub-tabs */}
-        <div className="adm-subtabs">
-          {tabs.map((t) => (
-            <button key={t.id} className={`adm-subtab${tab === t.id ? " on" : ""}`} onClick={() => setTab(t.id)}>
-              <Icon name={t.icon} size={16} />
-              {t.label}
-              {(t.badge ?? 0) > 0 && <span className="badge">{t.badge}</span>}
-            </button>
-          ))}
-        </div>
+        <AdminAccordionStack>
+          <AdminAccordion title="Vue d'ensemble">
+            <Dashboard
+              appointments={appointments}
+              notifications={notifications}
+              services={catalogServices}
+              onOpenCalendar={() => {}}
+            />
+          </AdminAccordion>
 
-        {/* Content */}
-        {tab === "dashboard" && (
-          <Dashboard
-            appointments={appointments}
-            notifications={notifications}
-            services={catalogServices}
-            onOpenCalendar={() => setTab("calendar")}
-          />
-        )}
-        {tab === "calendar" && (
-          <CalendarView appointments={appointments} services={catalogServices} onSelectAppt={setSelectedAppt} />
-        )}
-        {tab === "availability" && <AvailabilityView />}
-        {tab === "services" && <ServicesView />}
-        {tab === "categories" && <ServiceCategoriesModule embedded />}
-        {tab === "staff" && <StaffView />}
-        {tab === "notifications" && (
-          <NotificationsView notifications={notifications} services={catalogServices} onMarkAllRead={handleMarkAllRead} />
-        )}
+          <AdminAccordion title="Calendrier">
+            <CalendarView appointments={appointments} services={catalogServices} onSelectAppt={setSelectedAppt} />
+          </AdminAccordion>
+
+          <AdminAccordion title="Horaires">
+            <AvailabilityView />
+          </AdminAccordion>
+
+          <AdminAccordion title="Prestations">
+            <ServicesView />
+          </AdminAccordion>
+
+          <AdminAccordion title="Catégories">
+            <ServiceCategoriesModule embedded />
+          </AdminAccordion>
+
+          <AdminAccordion title="Prothésistes">
+            <StaffView />
+          </AdminAccordion>
+
+          <AdminAccordion title="Notifications">
+            <NotificationsView notifications={notifications} services={catalogServices} onMarkAllRead={handleMarkAllRead} />
+          </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {/* Appointment detail drawer */}

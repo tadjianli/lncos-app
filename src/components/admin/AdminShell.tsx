@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminPushRegister } from "./AdminPushRegister";
@@ -49,12 +49,14 @@ export function AdminShell({ children }: AdminShellProps) {
         {mobileNav && (
           <div className="adm-sidebar-scrim" onClick={() => setMobileNav(false)} />
         )}
-        <AdminSidebar
-          onNav={closeNav}
-          onClose={closeNav}
-          onLogout={handleLogout}
-          loggingOut={loggingOut}
-        />
+        <Suspense fallback={null}>
+          <AdminSidebar
+            onNav={closeNav}
+            onClose={closeNav}
+            onLogout={handleLogout}
+            loggingOut={loggingOut}
+          />
+        </Suspense>
       </div>
 
       {/* Main */}

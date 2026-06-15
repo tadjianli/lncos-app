@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { useShippingMethods, type ShippingMethod } from "@/lib/admin-supabase";
 import {
@@ -488,7 +489,8 @@ export function ShippingModule() {
           </div>
         </div>
 
-        {/* Summary bar */}
+        <AdminAccordionStack>
+        <AdminAccordion title="Résumé">
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           {[
             { label: "Total", value: methods.length, icon: "truck", color: "var(--adm-gold-bg)", iconColor: "var(--adm-gold)" },
@@ -510,11 +512,11 @@ export function ShippingModule() {
             </div>
           ))}
         </div>
+        </AdminAccordion>
 
-        {/* Methods list */}
-        <div className="adm-card adm-list-card">
+        <AdminAccordion title="Méthodes configurées">
+        <div className="adm-card adm-list-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
           <div className="adm-list-card-head">
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--adm-ink)" }}>Méthodes configurées</div>
             <div style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>Ordre affiché dans le checkout ↕</div>
           </div>
 
@@ -683,19 +685,21 @@ export function ShippingModule() {
             </div>
           )}
         </div>
+        </AdminAccordion>
 
-        {/* Help card */}
-        <div className="adm-card" style={{ padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+        <AdminAccordion title="Comment ça marche ?">
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(59,125,216,.1)", display: "grid", placeItems: "center", flex: "0 0 auto", marginTop: 2 }}>
             <Icon name="sparkle" size={16} color="#3B7DD8" />
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--adm-ink)", marginBottom: 4 }}>Comment ça marche ?</div>
             <div style={{ fontSize: 12.5, color: "var(--adm-ink-mute)", lineHeight: 1.6 }}>
               Les méthodes actives apparaissent dans l&apos;étape 2 du checkout client. Le client sélectionne sa méthode préférée et le total se met à jour automatiquement. Les méthodes inactives sont masquées sans être supprimées.
             </div>
           </div>
         </div>
+        </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {/* Modal */}

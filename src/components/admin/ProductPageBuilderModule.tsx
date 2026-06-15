@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { ProductPageBlockEditor, blockHasBuilderEditor } from "@/components/admin/ProductPageBlockEditor";
 import {
   ADDABLE_BLOCK_TYPES,
@@ -458,21 +459,19 @@ export function ProductPageBuilderModule() {
           </div>
         )}
 
-        <div className="ab-layout">
-          <div>
-            <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
-              <div className="ab-list-head">
-                <div>
-                  <div className="ab-list-title">Sections · Fiche produit</div>
-                  <div className="ab-list-sub">
-                    {activeCount}/{sections.length} actives · glissez pour réordonner
-                  </div>
+        <AdminAccordionStack>
+          <AdminAccordion title="Sections · Fiche produit">
+            <div className="ab-list-head" style={{ marginBottom: 12 }}>
+              <div>
+                <div className="ab-list-sub">
+                  {activeCount}/{sections.length} actives · glissez pour réordonner
                 </div>
-                <button type="button" className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
-                  <Icon name="plus" size={15} />
-                  Ajouter
-                </button>
               </div>
+              <button type="button" className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
+                <Icon name="plus" size={15} />
+                Ajouter
+              </button>
+            </div>
 
               {sections.map((block) => {
                 const m = productBlockMeta(block.type);
@@ -569,11 +568,12 @@ export function ProductPageBuilderModule() {
                   </div>
                 );
               })}
-            </div>
-          </div>
+          </AdminAccordion>
 
-          <PhonePreview blocks={blocks} />
-        </div>
+          <AdminAccordion title="Aperçu mobile">
+            <PhonePreview blocks={blocks} />
+          </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {editingBlock && (

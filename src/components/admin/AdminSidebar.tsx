@@ -1,44 +1,20 @@
 "use client";
 /**
- * LN COS — Admin sidebar
+ * LN COS — Admin sidebar (groupes repliables)
  */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useAdminOrderBadge } from "@/lib/admin-supabase";
-
-interface NavItem {
-  id: string;
-  href: string;
-  icon: string;
-  label: string;
-  live?: boolean;
-  badgeKey?: "orders";
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: "dashboard",   href: "/admin/dashboard",    icon: "home",     label: "Tableau de bord" },
-  { id: "rdv",         href: "/admin/rdv",           icon: "calendar", label: "Rendez-vous",         live: true },
-  { id: "service-categories", href: "/admin/service-categories", icon: "grid", label: "Catég. prestations", live: true },
-  { id: "popups",      href: "/admin/popups",        icon: "gift",     label: "Popups Marketing",    live: true },
-  { id: "content-pages", href: "/admin/content-pages", icon: "edit", label: "Pages contenu", live: true },
-  { id: "appbuilder",  href: "/admin/app-builder",   icon: "grid",     label: "Personnaliser l'app", live: true },
-  { id: "hero-carousel", href: "/admin/hero-carousel", icon: "sparkle", label: "Hero Carousel", live: true },
-  { id: "orders",      href: "/admin/orders",        icon: "bag",      label: "Commandes",           badgeKey: "orders" },
-  { id: "products",    href: "/admin/products",      icon: "tag",      label: "Produits" },
-  { id: "product-page-builder", href: "/admin/product-page-builder", icon: "grid", label: "Fiche produit", live: true },
-  { id: "seo",         href: "/admin/seo",           icon: "search",   label: "SEO", live: true },
-  { id: "shipping",    href: "/admin/shipping",       icon: "truck",    label: "Livraison" },
-  { id: "categories",  href: "/admin/categories",    icon: "grid",     label: "Catégories" },
-  { id: "customers",   href: "/admin/customers",     icon: "user",     label: "Clients" },
-  { id: "promotions",  href: "/admin/promotions",    icon: "sparkle",  label: "Promotions" },
-  { id: "reviews",     href: "/admin/reviews",       icon: "star",     label: "Avis" },
-  { id: "social-proof", href: "/admin/social-proof", icon: "bolt",    label: "Social Proof", live: true },
-  { id: "analytics",   href: "/admin/analytics",     icon: "sliders",  label: "Statistiques" },
-  { id: "settings",    href: "/admin/settings",      icon: "sliders",  label: "Paramètres" },
-];
+import {
+  ADMIN_NAV_GROUPS,
+  findNavGroupForPath,
+  isNavItemActive,
+  type AdminNavGroup,
+} from "@/lib/admin-nav-config";
 
 interface AdminSidebarProps {
   onNav?: () => void;
@@ -47,9 +23,96 @@ interface AdminSidebarProps {
   loggingOut?: boolean;
 }
 
+function NavGroupSection({
+  group,
+  open,
+  onToggle,
+  pathname,
+  search,
+  orderBadge,
+  onNav,
+}: {
+  group: AdminNavGroup;
+  open: boolean;
+  onToggle: () => void;
+  pathname: string;
+  search: URLSearchParams;
+  orderBadge: number;
+  onNav?: () => void;
+}) {
+  const panelId = `adm-nav-group-${group.id}`;
+
+  return (
+    <div className={`adm-nav-group${open ? " adm-nav-group--open" : ""}`}>
+      <button
+        type="button"
+        className="adm-nav-group__trigger"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        <span className="adm-nav-group__sign" aria-hidden>
+          {open ? "−" : "+"}
+        </span>
+        <span className="adm-nav-group__emoji" aria-hidden>
+          {group.emoji}
+        </span>
+        <span className="adm-nav-group__label">{group.label}</span>
+      </button>
+      <div id={panelId} className="adm-nav-group__panel" hidden={!open}>
+        {group.items.map((item) => {
+          const active = isNavItemActive(item, pathname, search);
+          const badge =
+            item.badgeKey === "orders" && orderBadge > 0 ? orderBadge : undefined;
+
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`adm-navitem adm-navitem--nested${active ? " on" : ""}`}
+              onClick={onNav}
+            >
+              <Icon name={item.icon} size={17} />
+              <span>{item.label}</span>
+              {item.live && <span className="adm-nav-live" title="Temps réel" />}
+              {badge !== undefined && <span className="adm-navbadge">{badge}</span>}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchKey = searchParams.toString();
+  const search = useMemo(() => new URLSearchParams(searchKey), [searchKey]);
   const orderBadge = useAdminOrderBadge();
+
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    const activeGroup = findNavGroupForPath(pathname, searchKey ? `?${searchKey}` : "");
+    if (activeGroup) {
+      setOpenGroups((prev) => {
+        if (prev.has(activeGroup)) return prev;
+        const next = new Set(prev);
+        next.add(activeGroup);
+        return next;
+      });
+    }
+  }, [pathname, searchKey]);
+
+  function toggleGroup(id: string) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <aside className="adm-sidebar">
@@ -68,30 +131,19 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
         <Logo size={26} />
       </div>
 
-      <nav className="adm-nav">
-        {NAV_ITEMS.map((item) => {
-          const active =
-            pathname === item.href ||
-            (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
-          const badge =
-            item.badgeKey === "orders" && orderBadge > 0 ? orderBadge : undefined;
-
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`adm-navitem${active ? " on" : ""}`}
-              onClick={onNav}
-            >
-              <Icon name={item.icon} size={19} />
-              <span>{item.label}</span>
-              {item.live && <span className="adm-nav-live" title="Temps réel" />}
-              {badge !== undefined && (
-                <span className="adm-navbadge">{badge}</span>
-              )}
-            </Link>
-          );
-        })}
+      <nav className="adm-nav adm-nav--grouped">
+        {ADMIN_NAV_GROUPS.map((group) => (
+          <NavGroupSection
+            key={group.id}
+            group={group}
+            open={openGroups.has(group.id)}
+            onToggle={() => toggleGroup(group.id)}
+            pathname={pathname}
+            search={search}
+            orderBadge={orderBadge}
+            onNav={onNav}
+          />
+        ))}
       </nav>
 
       <div className="adm-side-foot">
@@ -100,7 +152,11 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
             className="adm-navitem adm-navitem-logout"
             onClick={onLogout}
             disabled={loggingOut}
-            style={{ border: "none", background: "transparent", cursor: loggingOut ? "default" : "pointer" }}
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: loggingOut ? "default" : "pointer",
+            }}
           >
             <Icon name="x" size={17} />
             <span>{loggingOut ? "Déconnexion…" : "Déconnexion"}</span>

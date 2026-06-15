@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
 import {
@@ -103,52 +104,46 @@ export function SocialProofModule() {
         </button>
       </div>
 
-      <div className="adm-card" style={{ marginBottom: 18 }}>
-        <div className="adm-card-head">
-          <h2 className="adm-card-title">Notifications flottantes</h2>
-        </div>
-        <ToggleRow
-          label="Activer les notifications d'achat"
-          desc="Bas gauche · apparition 3 s · format discret"
-          checked={draft.purchaseNotifications}
-          onChange={(v) => set("purchaseNotifications", v)}
-        />
-        <ToggleRow
-          label="Activer les notifications d'avis"
-          checked={draft.reviewNotifications}
-          onChange={(v) => set("reviewNotifications", v)}
-        />
-        <ToggleRow
-          label="Activer les notifications de favoris"
-          checked={draft.favoriteNotifications}
-          onChange={(v) => set("favoriteNotifications", v)}
-        />
-        <ToggleRow
-          label="Activer les notifications d'ajout panier"
-          checked={draft.cartNotifications}
-          onChange={(v) => set("cartNotifications", v)}
-        />
+      <AdminAccordionStack>
+        <AdminAccordion title="Notifications flottantes">
+          <ToggleRow
+            label="Activer les notifications d'achat"
+            desc="Bas gauche · apparition 3 s · format discret"
+            checked={draft.purchaseNotifications}
+            onChange={(v) => set("purchaseNotifications", v)}
+          />
+          <ToggleRow
+            label="Activer les notifications d'avis"
+            checked={draft.reviewNotifications}
+            onChange={(v) => set("reviewNotifications", v)}
+          />
+          <ToggleRow
+            label="Activer les notifications de favoris"
+            checked={draft.favoriteNotifications}
+            onChange={(v) => set("favoriteNotifications", v)}
+          />
+          <ToggleRow
+            label="Activer les notifications d'ajout panier"
+            checked={draft.cartNotifications}
+            onChange={(v) => set("cartNotifications", v)}
+          />
 
-        <div className="ab-field" style={{ marginTop: 16 }}>
-          <label>Intervalle de rotation</label>
-          <select
-            className="ab-input"
-            value={draft.rotationIntervalSec}
-            onChange={(e) => set("rotationIntervalSec", Number(e.target.value) as RotationInterval)}
-          >
-            <option value={5}>5 secondes</option>
-            <option value={10}>10 secondes</option>
-            <option value={15}>15 secondes</option>
-            <option value={30}>30 secondes</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="adm-grid-2">
-        <div className="adm-card">
-          <div className="adm-card-head">
-            <h2 className="adm-card-title">Fiche produit</h2>
+          <div className="ab-field" style={{ marginTop: 16 }}>
+            <label>Intervalle de rotation</label>
+            <select
+              className="ab-input"
+              value={draft.rotationIntervalSec}
+              onChange={(e) => set("rotationIntervalSec", Number(e.target.value) as RotationInterval)}
+            >
+              <option value={5}>5 secondes</option>
+              <option value={10}>10 secondes</option>
+              <option value={15}>15 secondes</option>
+              <option value={30}>30 secondes</option>
+            </select>
           </div>
+        </AdminAccordion>
+
+        <AdminAccordion title="Fiche produit">
           <ToggleRow
             label="Activer les visiteurs en temps réel"
             checked={draft.liveViewersEnabled}
@@ -203,12 +198,9 @@ export function SocialProofModule() {
             checked={draft.salesCounterEnabled}
             onChange={(v) => set("salesCounterEnabled", v)}
           />
-        </div>
+        </AdminAccordion>
 
-        <div className="adm-card">
-          <div className="adm-card-head">
-            <h2 className="adm-card-title">Badges de confiance</h2>
-          </div>
+        <AdminAccordion title="Badges de confiance">
           <ToggleRow
             label="✓ Livraison rapide"
             checked={draft.trustFastDelivery}
@@ -229,8 +221,8 @@ export function SocialProofModule() {
             checked={draft.trustEasyReturns}
             onChange={(v) => set("trustEasyReturns", v)}
           />
-        </div>
-      </div>
+        </AdminAccordion>
+      </AdminAccordionStack>
     </div>
   );
 }

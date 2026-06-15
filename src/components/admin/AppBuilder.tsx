@@ -8,6 +8,7 @@ import type { HomeSection, PageSlug, SectionType } from "@/lib/home-sections";
 import { ALLOWED_TYPES_BY_PAGE, APP_PAGES, previewPath } from "@/lib/page-sections";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
 import { HeroLivePreview } from "@/components/admin/HeroLivePreview";
 
@@ -457,7 +458,9 @@ export function AppBuilder({ pageSlug = "home", embedded = false }: AppBuilderPr
             )}
 
             {pageSlug === "home" && (
-              <div className="adm-card" style={{ padding: "14px 18px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "rgba(212,175,55,.08)", border: "1px solid rgba(212,175,55,.25)" }}>
+              <AdminAccordionStack>
+              <AdminAccordion title="Hero carousel">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 13, color: "var(--adm-gold)" }}>
                   Le hero accueil est un <strong>carousel</strong> (jusqu&apos;à 3 slides) — géré séparément de cette liste.
                 </div>
@@ -465,6 +468,8 @@ export function AppBuilder({ pageSlug = "home", embedded = false }: AppBuilderPr
                   Ouvrir Hero Carousel
                 </a>
               </div>
+              </AdminAccordion>
+              </AdminAccordionStack>
             )}
           </>
         )}
@@ -499,12 +504,12 @@ export function AppBuilder({ pageSlug = "home", embedded = false }: AppBuilderPr
           </div>
         )}
 
-        <div className={embedded ? "" : "ab-layout"}>
-          <div>
-            <div className="adm-card" style={{ padding: "20px 20px 12px" }}>
-              <div className="ab-list-head">
+        {!embedded ? (
+        <AdminAccordionStack>
+          <AdminAccordion title={`Sections · ${pageLabel}`}>
+        <div style={{ padding: 0 }}>
+              <div className="ab-list-head" style={{ marginBottom: 12 }}>
                 <div>
-                  <div className="ab-list-title">Sections · {pageLabel}</div>
                   <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
                 </div>
                 <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
@@ -561,11 +566,75 @@ export function AppBuilder({ pageSlug = "home", embedded = false }: AppBuilderPr
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {!embedded && <PhonePreview sections={sections} />}
         </div>
+          </AdminAccordion>
+
+          <AdminAccordion title="Aperçu mobile">
+            <PhonePreview sections={sections} />
+          </AdminAccordion>
+        </AdminAccordionStack>
+        ) : (
+        <div>
+            <div className="ab-list-head" style={{ marginBottom: 12 }}>
+              <div>
+                <div className="ab-list-sub">{activeCount}/{sections.length} actives · glissez pour réordonner</div>
+              </div>
+              <button className="adm-btn ghost sm" onClick={() => setAddingSection(true)}>
+                <Icon name="plus" size={15} />
+                Ajouter
+              </button>
+            </div>
+
+            {sections.map((sec) => {
+                const m = TYPE_META[sec.type] ?? { icon: "sparkle", color: "#B8902B", bg: "rgba(212,175,55,.14)" };
+                const schema = SECTION_SCHEMA_REGISTRY[sec.type];
+                return (
+                  <div
+                    key={sec.id}
+                    className={`ab-row${dragOverId === sec.id ? " drag-over" : ""}`}
+                    draggable
+                    onDragStart={() => onDragStart(sec.id)}
+                    onDragOver={(e) => onDragOver(e, sec.id)}
+                    onDrop={() => onDrop(sec.id)}
+                    onDragEnd={onDragEnd}
+                  >
+                    <DragHandle />
+
+                    <div className="ab-sec-icon" style={{ background: m.bg }}>
+                      <Icon name={m.icon} size={18} color={m.color} />
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="ab-sec-name">{sec.name}</div>
+                      <div className="ab-sec-meta">
+                        <span className="ab-sec-tag">{schema.label}</span>
+                        {sec.variant && <><span style={{ color: "var(--adm-border)" }}>·</span><span className="ab-sec-tag" style={{ textTransform: "capitalize" }}>{sec.variant}</span></>}
+                      </div>
+                    </div>
+
+                    <div className="ab-row-actions">
+                      <button className="adm-iconbtn sm" title="Modifier" onClick={() => handleEdit(sec)}>
+                        <Icon name="edit" size={14} />
+                      </button>
+                      <button className="adm-iconbtn sm" title="Dupliquer" onClick={() => handleDuplicate(sec.id)}>
+                        <Icon name="share" size={14} />
+                      </button>
+                      {confirmDeleteId === sec.id ? (
+                        <button className="adm-iconbtn sm" title="Confirmer la suppression" style={{ color: "var(--tone-pink)", fontWeight: 700, fontSize: 10, width: "auto", padding: "0 6px" }} onClick={() => handleDelete(sec.id)}>
+                          Confirmer
+                        </button>
+                      ) : (
+                        <button className="adm-iconbtn sm" title="Supprimer" style={{ color: "var(--tone-pink)" }} onClick={() => setConfirmDeleteId(sec.id)}>
+                          <Icon name="trash" size={14} />
+                        </button>
+                      )}
+                      <Toggle checked={sec.enabled} onChange={() => handleToggle(sec.id)} />
+                    </div>
+                  </div>
+                );
+              })}
+        </div>
+        )}
       </div>
 
       {/* Section editor modal */}

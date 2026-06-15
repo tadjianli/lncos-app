@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { getSupabase } from "@/lib/supabase";
 
 interface Customer {
@@ -62,7 +63,8 @@ export function CustomersModule() {
         </div>
       </div>
 
-      {/* Stats */}
+      <AdminAccordionStack>
+        <AdminAccordion title="Indicateurs">
       <div className="adm-grid-3">
         {[
           { label: "Total clients", value: customers.length, icon: "user", color: "var(--tone-blue)", bg: "rgba(59,125,216,.12)" },
@@ -80,9 +82,10 @@ export function CustomersModule() {
           </div>
         ))}
       </div>
+        </AdminAccordion>
 
-      {/* Table */}
-      <div className="adm-card adm-card-scroll">
+        <AdminAccordion title="Liste des clients">
+      <div className="adm-card adm-card-scroll" style={{ border: "none", boxShadow: "none", padding: 0 }}>
         <div className="adm-table-toolbar">
           <div className="adm-searchbox wide">
             <Icon name="search" size={15} color="var(--adm-ink-mute)" />
@@ -141,6 +144,8 @@ export function CustomersModule() {
           </table>
         )}
       </div>
+        </AdminAccordion>
+      </AdminAccordionStack>
     </div>
   );
 }

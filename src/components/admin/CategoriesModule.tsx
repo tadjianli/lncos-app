@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
 import { applyCategoryProductCounts } from "@/lib/category-product-counts";
@@ -163,6 +164,8 @@ export function CategoriesModule() {
           </button>
         </div>
 
+        <AdminAccordionStack>
+        <AdminAccordion title="Catégories">
         {loading ? (
           <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--adm-ink-mute)" }}>
             Chargement…
@@ -255,6 +258,8 @@ export function CategoriesModule() {
             })}
           </div>
         )}
+        </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {/* Add modal */}

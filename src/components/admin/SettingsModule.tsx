@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/shared/Icon";
 import { AdminToast } from "@/components/admin/AdminToast";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import {
   RdvCatalogLinkPanel,
   RdvDepositSettingsPanel,
@@ -119,6 +121,7 @@ function ComingSoonBadge() {
 }
 
 export function SettingsModule() {
+  const searchParams = useSearchParams();
   const [values, setValues] = useState<SettingValues>(DEFAULT_SETTINGS);
   const [active, setActive] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -126,6 +129,13 @@ export function SettingsModule() {
   useEffect(() => {
     setValues(loadSettings());
   }, []);
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section === "legal") {
+      setActive("Pages légales");
+    }
+  }, [searchParams]);
 
   function set<K extends keyof SettingValues>(key: K, val: SettingValues[K]) {
     setValues((p) => ({ ...p, [key]: val }));
@@ -140,8 +150,6 @@ export function SettingsModule() {
     localStorage.setItem("lncos-admin-settings", JSON.stringify(values));
     showToast("Paramètres enregistrés");
   }
-
-  const toggle = (key: string) => setActive(active === key ? null : key);
 
   const GROUPS = [
     {
@@ -416,51 +424,26 @@ export function SettingsModule() {
             <div className="adm-settings-head">
               <div className="adm-settings-grouptitle">{group.title}</div>
             </div>
-            <div className="adm-list-card-body">
+            <AdminAccordionStack className="adm-settings-accordion-stack">
               {group.items.map((item) => {
                 const key = item.label;
                 const isOpen = active === key;
                 return (
-                  <div key={key}>
-                    <button
-                      type="button"
-                      className={`adm-setrow${isOpen ? " on" : ""}`}
-                      aria-expanded={isOpen}
-                      onClick={() => toggle(key)}
-                    >
-                      <div
-                        className="adm-set-icon"
-                        style={("danger" in item && item.danger) ? { background: "rgba(194,85,122,.1)" } : {}}
-                      >
-                        <Icon
-                          name={item.icon as "sparkle"}
-                          size={18}
-                          color={("danger" in item && item.danger) ? "var(--tone-pink)" : "var(--adm-ink-soft)"}
-                        />
-                      </div>
-                      <div style={{ flex: 1, textAlign: "left" }}>
-                        <div className="adm-set-t" style={("danger" in item && item.danger) ? { color: "var(--tone-pink)" } : {}}>
-                          {item.label}
-                          {"badge" in item && item.badge}
-                        </div>
-                        <div className="adm-set-s">{item.sub}</div>
-                      </div>
-                      <Icon
-                        name="chevR"
-                        size={16}
-                        color="var(--adm-ink-mute)"
-                        style={{ transform: isOpen ? "rotate(90deg)" : "none", transition: "transform .2s" }}
-                      />
-                    </button>
-                    {isOpen && (
-                      <div className="adm-set-panel">
-                        {item.content}
-                      </div>
+                  <AdminAccordion
+                    key={key}
+                    title={item.label}
+                    open={isOpen}
+                    onOpenChange={(open) => setActive(open ? key : null)}
+                  >
+                    {item.sub && (
+                      <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", margin: "0 0 12px" }}>{item.sub}</p>
                     )}
-                  </div>
+                    {"badge" in item && item.badge}
+                    {item.content}
+                  </AdminAccordion>
                 );
               })}
-            </div>
+            </AdminAccordionStack>
           </div>
         ))}
 

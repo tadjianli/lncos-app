@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppBuilder } from "@/components/admin/AppBuilder";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { Icon } from "@/components/shared/Icon";
 import type { BlogArticle } from "@/lib/contracts/blog";
@@ -19,7 +21,12 @@ import {
   type FlashSalesCountdown,
 } from "@/lib/flash-countdown";
 
-type Tab = "flash" | "blog" | "social";
+type Tab = "flash" | "blog" | "social" | "overview";
+
+function parseContentTab(raw: string | null): Tab {
+  if (raw === "flash" || raw === "blog" || raw === "social") return raw;
+  return "overview";
+}
 
 function FieldRow({
   label,
@@ -75,13 +82,8 @@ function FlashTab({ showToast }: { showToast: (msg: string, v?: AdminToastVarian
   if (loading) return <p style={{ padding: 20, color: "var(--adm-ink-mute)" }}>Chargement…</p>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div className="adm-card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Textes de la page</h3>
-        <div className="pop-toggle-row" style={{ marginBottom: 12 }}>
-          <span className="pop-toggle-label">Page activée</span>
-          <Toggle checked={settings.pageEnabled} onChange={() => setSettings({ ...settings, pageEnabled: !settings.pageEnabled })} />
-        </div>
+    <AdminAccordionStack>
+      <AdminAccordion title="Bannière">
         <FieldRow label="Eyebrow bannière" value={settings.bannerEyebrow} onChange={(v) => setSettings({ ...settings, bannerEyebrow: v })} />
         <FieldRow label="Titre bannière" value={settings.bannerTitle} onChange={(v) => setSettings({ ...settings, bannerTitle: v })} />
         <FieldRow
@@ -91,12 +93,11 @@ function FlashTab({ showToast }: { showToast: (msg: string, v?: AdminToastVarian
           hint="Utilisez {{count}} pour le nombre de promotions."
         />
         <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
-          {saving ? "Enregistrement…" : "Enregistrer"}
+          {saving ? "Enregistrement…" : "Enregistrer la bannière"}
         </button>
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Compte à rebours</h3>
+      <AdminAccordion title="Compte à rebours">
         <div className="pop-toggle-row" style={{ marginBottom: 12 }}>
           <span className="pop-toggle-label">Afficher le compte à rebours</span>
           <Toggle
@@ -207,26 +208,36 @@ function FlashTab({ showToast }: { showToast: (msg: string, v?: AdminToastVarian
         <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
           {saving ? "Enregistrement…" : "Enregistrer le compte à rebours"}
         </button>
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>État vide</h3>
+      <AdminAccordion title="Produits">
+        <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", margin: "0 0 12px" }}>
+          Les produits affichés viennent du catalogue — cochez « Vente flash » sur chaque fiche produit (admin Produits).
+        </p>
+        <AppBuilder pageSlug="flash-sales" embedded />
+      </AdminAccordion>
+
+      <AdminAccordion title="État vide">
         <FieldRow label="Eyebrow état vide" value={settings.emptyEyebrow} onChange={(v) => setSettings({ ...settings, emptyEyebrow: v })} />
         <FieldRow label="Titre état vide" value={settings.emptyTitle} onChange={(v) => setSettings({ ...settings, emptyTitle: v })} />
         <FieldRow label="Texte état vide" value={settings.emptyBody} onChange={(v) => setSettings({ ...settings, emptyBody: v })} multiline />
         <FieldRow label="Bouton CTA (label)" value={settings.emptyCtaLabel} onChange={(v) => setSettings({ ...settings, emptyCtaLabel: v })} />
         <FieldRow label="Bouton CTA (lien)" value={settings.emptyCtaHref} onChange={(v) => setSettings({ ...settings, emptyCtaHref: v })} />
-        <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 12 }}>
-          Les produits affichés viennent du catalogue — cochez « Vente flash » sur chaque fiche produit (admin Produits).
-        </p>
         <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
-          {saving ? "Enregistrement…" : "Enregistrer l'état vide"}
+          {saving ? "Enregistrement…" : "Enregistrer l&apos;état vide"}
         </button>
-      </div>
-      <div className="adm-card" style={{ padding: 20 }}>
-        <AppBuilder pageSlug="flash-sales" embedded />
-      </div>
-    </div>
+      </AdminAccordion>
+
+      <AdminAccordion title="Paramètres">
+        <div className="pop-toggle-row" style={{ marginBottom: 12 }}>
+          <span className="pop-toggle-label">Page activée</span>
+          <Toggle checked={settings.pageEnabled} onChange={() => setSettings({ ...settings, pageEnabled: !settings.pageEnabled })} />
+        </div>
+        <button type="button" className="adm-btn gold" style={{ marginTop: 16 }} onClick={handleSave} disabled={saving}>
+          {saving ? "Enregistrement…" : "Enregistrer les paramètres"}
+        </button>
+      </AdminAccordion>
+    </AdminAccordionStack>
   );
 }
 
@@ -298,9 +309,8 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
   if (loading) return <p style={{ padding: 20, color: "var(--adm-ink-mute)" }}>Chargement…</p>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div className="adm-card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>En-tête blog</h3>
+    <AdminAccordionStack>
+      <AdminAccordion title="En-tête blog">
         <FieldRow label="Eyebrow" value={pageSettings.heroEyebrow} onChange={(v) => setPageSettings({ ...pageSettings, heroEyebrow: v })} />
         <FieldRow label="Titre" value={pageSettings.heroTitle} onChange={(v) => setPageSettings({ ...pageSettings, heroTitle: v })} />
         <FieldRow label="Sous-titre" value={pageSettings.heroSubtitle} onChange={(v) => setPageSettings({ ...pageSettings, heroSubtitle: v })} multiline />
@@ -318,11 +328,11 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
         >
           Enregistrer l&apos;en-tête
         </button>
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
+      <AdminAccordion title="Catégories">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Catégories ({categories.length})</h3>
+          <p style={{ fontSize: 13, color: "var(--adm-ink-soft)", margin: 0 }}>{categories.length} catégories</p>
           <button
             type="button"
             className="adm-btn ghost sm"
@@ -355,11 +365,11 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
             </button>
           </div>
         ))}
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
+      <AdminAccordion title="Articles">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Articles ({articles.length})</h3>
+          <p style={{ fontSize: 13, color: "var(--adm-ink-soft)", margin: 0 }}>{articles.length} articles</p>
           <button
             type="button"
             className="adm-btn ghost sm"
@@ -407,11 +417,11 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
             </button>
           </div>
         ))}
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
+      <AdminAccordion title="App Builder">
         <AppBuilder pageSlug="blog" embedded />
-      </div>
+      </AdminAccordion>
 
       {editCat && (
         <CategoryEditor
@@ -439,7 +449,7 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
           }}
         />
       )}
-    </div>
+    </AdminAccordionStack>
   );
 }
 
@@ -493,9 +503,8 @@ function SocialTab({ showToast }: { showToast: (msg: string, v?: AdminToastVaria
   if (loading) return <p style={{ padding: 20, color: "var(--adm-ink-mute)" }}>Chargement…</p>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div className="adm-card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>En-tête réseaux sociaux</h3>
+    <AdminAccordionStack>
+      <AdminAccordion title="En-tête">
         <FieldRow label="Eyebrow" value={pageSettings.heroEyebrow} onChange={(v) => setPageSettings({ ...pageSettings, heroEyebrow: v })} />
         <FieldRow label="Titre" value={pageSettings.heroTitle} onChange={(v) => setPageSettings({ ...pageSettings, heroTitle: v })} />
         <FieldRow label="Sous-titre" value={pageSettings.heroSubtitle} onChange={(v) => setPageSettings({ ...pageSettings, heroSubtitle: v })} multiline />
@@ -512,11 +521,11 @@ function SocialTab({ showToast }: { showToast: (msg: string, v?: AdminToastVaria
         >
           Enregistrer l&apos;en-tête
         </button>
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
+      <AdminAccordion title="Réseaux">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Réseaux ({links.length})</h3>
+          <p style={{ fontSize: 13, color: "var(--adm-ink-soft)", margin: 0 }}>{links.length} réseaux</p>
           <button
             type="button"
             className="adm-btn ghost sm"
@@ -565,11 +574,11 @@ function SocialTab({ showToast }: { showToast: (msg: string, v?: AdminToastVaria
             </button>
           </div>
         ))}
-      </div>
+      </AdminAccordion>
 
-      <div className="adm-card" style={{ padding: 20 }}>
+      <AdminAccordion title="App Builder">
         <AppBuilder pageSlug="social" embedded />
-      </div>
+      </AdminAccordion>
 
       {editLink && (
         <SocialLinkEditor
@@ -582,14 +591,44 @@ function SocialTab({ showToast }: { showToast: (msg: string, v?: AdminToastVaria
           }}
         />
       )}
-    </div>
+    </AdminAccordionStack>
   );
 }
 
 /* ── Main module ───────────────────────────────────────────────────────────── */
 
+const TAB_TITLES: Record<Exclude<Tab, "overview">, string> = {
+  flash: "Ventes Flash",
+  blog: "Blog LN COS",
+  social: "Réseaux sociaux",
+};
+
+function ContentOverview() {
+  const router = useRouter();
+  const sections: { tab: Exclude<Tab, "overview">; title: string; desc: string }[] = [
+    { tab: "flash", title: "Ventes Flash", desc: "Bannière, compte à rebours, produits et état vide." },
+    { tab: "blog", title: "Blog LN COS", desc: "Articles, catégories et mise en page du journal beauté." },
+    { tab: "social", title: "Réseaux sociaux", desc: "Liens, en-tête et sections de la page communauté." },
+  ];
+
+  return (
+    <AdminAccordionStack>
+      {sections.map((s) => (
+        <AdminAccordion key={s.tab} title={s.title}>
+          <p style={{ fontSize: 13, color: "var(--adm-ink-soft)", margin: "0 0 12px" }}>{s.desc}</p>
+          <button type="button" className="adm-btn gold sm" onClick={() => router.push(`/admin/content-pages?tab=${s.tab}`)}>
+            Configurer
+          </button>
+        </AdminAccordion>
+      ))}
+    </AdminAccordionStack>
+  );
+}
+
 export function ContentPagesAdminModule() {
-  const [tab, setTab] = useState<Tab>("flash");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = parseContentTab(searchParams.get("tab"));
   const [toast, setToast] = useState<{ msg: string; variant: AdminToastVariant } | null>(null);
 
   function showToast(msg: string, variant: AdminToastVariant = "success") {
@@ -597,35 +636,29 @@ export function ContentPagesAdminModule() {
     setTimeout(() => setToast(null), 2800);
   }
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: "flash", label: "Ventes Flash", icon: "flame" },
-    { id: "blog", label: "Blog LN COS", icon: "edit" },
-    { id: "social", label: "Réseaux sociaux", icon: "share" },
-  ];
+  const pageTitle =
+    tab === "overview" ? "Pages contenu" : TAB_TITLES[tab];
 
   return (
     <div className="adm-content">
       <div className="adm-topbar">
         <div>
           <div className="adm-page-eyebrow"><span className="dot" />CONTENU · STOREFRONT</div>
-          <h1 className="adm-h1">Pages contenu</h1>
+          <h1 className="adm-h1">{pageTitle}</h1>
+          {tab !== "overview" && (
+            <button
+              type="button"
+              className="adm-btn ghost sm"
+              style={{ marginTop: 8 }}
+              onClick={() => router.push("/admin/content-pages")}
+            >
+              ← Toutes les pages contenu
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="adm-tabs" style={{ marginBottom: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={`adm-btn${tab === t.id ? " gold" : " ghost"}`}
-            onClick={() => setTab(t.id)}
-          >
-            <Icon name={t.icon} size={15} />
-            {t.label}
-          </button>
-        ))}
-      </div>
-
+      {tab === "overview" && <ContentOverview />}
       {tab === "flash" && <FlashTab showToast={showToast} />}
       {tab === "blog" && <BlogTab showToast={showToast} />}
       {tab === "social" && <SocialTab showToast={showToast} />}

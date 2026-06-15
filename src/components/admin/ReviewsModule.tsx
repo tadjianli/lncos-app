@@ -17,6 +17,7 @@ import {
   type DraftStyle,
 } from "@/lib/review-drafts";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { ReviewFormModal, type ReviewFormValues } from "@/components/admin/ReviewFormModal";
 import { isImageUrl } from "@/lib/admin-media";
@@ -348,6 +349,8 @@ export function ReviewsModule() {
         </div>
       </div>
 
+      <AdminAccordionStack>
+        <AdminAccordion title="Indicateurs">
       <div className="adm-grid-4">
         {[
           { label: "Avis total", value: String(stats.total), color: "var(--adm-ink)" },
@@ -361,15 +364,13 @@ export function ReviewsModule() {
           </div>
         ))}
       </div>
+        </AdminAccordion>
 
       {featuredReviews.length > 0 && (
-        <div className="adm-card" style={{ marginBottom: 18 }}>
-          <div className="adm-card-head">
-            <h2 className="adm-card-title">Avis vedettes</h2>
-            <span className="adm-badge" style={{ background: "rgba(194,85,122,.1)", color: "var(--tone-pink)" }}>
-              {stats.featured} publié{stats.featured !== 1 ? "s" : ""}
-            </span>
-          </div>
+        <AdminAccordion title="Avis vedettes">
+          <span className="adm-badge" style={{ background: "rgba(194,85,122,.1)", color: "var(--tone-pink)", marginBottom: 12, display: "inline-block" }}>
+            {stats.featured} publié{stats.featured !== 1 ? "s" : ""}
+          </span>
           <p style={{ fontSize: 12.5, color: "var(--adm-ink-mute)", margin: "0 0 14px" }}>
             Avis cochés « Mis en avant » — visibles sur l&apos;accueil, les landing pages et certaines fiches produit.
           </p>
@@ -385,10 +386,11 @@ export function ReviewsModule() {
               />
             ))}
           </div>
-        </div>
+        </AdminAccordion>
       )}
 
-      <div className="adm-card">
+        <AdminAccordion title="Liste des avis">
+      <div className="adm-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
           {([
             ["all", "Tous"],
@@ -428,6 +430,8 @@ export function ReviewsModule() {
           </div>
         )}
       </div>
+        </AdminAccordion>
+      </AdminAccordionStack>
 
       {(showCreate || editing) && (
         <ReviewFormModal

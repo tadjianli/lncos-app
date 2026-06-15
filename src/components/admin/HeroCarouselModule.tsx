@@ -14,6 +14,7 @@ import {
 } from "@/lib/hero-carousel";
 import { AdminImageUpload } from "@/components/admin/AdminImageUpload";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { HomeHeroCarousel, HomeHeroSingleSlide } from "@/components/home/HomeHeroCarousel";
 import { Icon } from "@/components/shared/Icon";
 
@@ -203,11 +204,9 @@ export function HeroCarouselModule() {
         )}
 
         {!loading && settings && slides && (
-          <div className="hero-carousel-admin-layout">
-            <div className="hero-carousel-admin-col">
-              <div className="adm-card" style={{ padding: 20 }}>
-                <div className="hero-admin-global-title">Options globales</div>
-                <div className="hero-admin-global" style={{ marginTop: 12, padding: 0, border: "none", background: "transparent" }}>
+          <AdminAccordionStack>
+            <AdminAccordion title="Options globales">
+                <div className="hero-admin-global" style={{ padding: 0, border: "none", background: "transparent" }}>
                   <Toggle label="Activer le carousel" checked={settings.enabled} onChange={(enabled) => patchSettings({ enabled })} />
                   <Toggle label="Défilement automatique" checked={settings.autoplay} onChange={(autoplay) => patchSettings({ autoplay })} />
                   <Toggle label="Afficher les indicateurs" checked={settings.showIndicators} onChange={(showIndicators) => patchSettings({ showIndicators })} />
@@ -228,12 +227,11 @@ export function HeroCarouselModule() {
                     />
                   </div>
                 </div>
-              </div>
+            </AdminAccordion>
 
-              <div className="adm-card" style={{ padding: "16px 16px 12px" }}>
-                <div className="ab-list-head">
+            <AdminAccordion title={`Slides (${filledCount}/${MAX_HERO_SLIDES})`}>
+                <div className="ab-list-head" style={{ marginBottom: 12 }}>
                   <div>
-                    <div className="ab-list-title">Slides ({filledCount}/{MAX_HERO_SLIDES})</div>
                     <div className="ab-list-sub">Glissez pour réordonner · {active.length} active{active.length !== 1 ? "s" : ""}</div>
                   </div>
                   <button
@@ -296,14 +294,13 @@ export function HeroCarouselModule() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
+            </AdminAccordion>
 
-            <div className="hero-carousel-admin-col">
+            <AdminAccordion title="Édition slide">
               {selected ? (
-                <div className="adm-card hero-admin-slide" style={{ marginBottom: 16 }}>
+                <div className="hero-admin-slide" style={{ marginBottom: 0, border: "none", boxShadow: "none", padding: 0 }}>
                   <div className="hero-admin-slide-head">
-                    <span className="hero-admin-slide-num">Édition · Slide {selected.position}</span>
+                    <span className="hero-admin-slide-num">Slide {selected.position}</span>
                   </div>
 
                   <div className="ab-field">
@@ -383,13 +380,14 @@ export function HeroCarouselModule() {
                   </div>
                 </div>
               ) : (
-                <div className="adm-card" style={{ padding: 24, color: "var(--adm-ink-mute)" }}>
+                <div style={{ padding: "8px 0", color: "var(--adm-ink-mute)" }}>
                   Sélectionnez une slide dans la liste.
                 </div>
               )}
+            </AdminAccordion>
 
-              <div className="adm-card hero-admin-preview">
-                <div className="hero-admin-preview-label">Aperçu carousel complet</div>
+            <AdminAccordion title="Aperçu carousel complet">
+              <div className="hero-admin-preview" style={{ border: "none", boxShadow: "none", padding: 0 }}>
                 {active.length === 0 ? (
                   <p style={{ fontSize: 13, color: "var(--adm-ink-mute)", margin: 0 }}>
                     Aucune slide active avec image — fallback sur l&apos;ancienne bannière héro.
@@ -400,8 +398,8 @@ export function HeroCarouselModule() {
                   <HomeHeroCarousel slides={active} settings={previewSettings} preview />
                 )}
               </div>
-            </div>
-          </div>
+            </AdminAccordion>
+          </AdminAccordionStack>
         )}
       </div>
 

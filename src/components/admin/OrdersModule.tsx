@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast, type AdminToastVariant } from "@/components/admin/AdminToast";
 import { getSupabase } from "@/lib/supabase";
 import {
@@ -158,6 +159,8 @@ export function OrdersModule() {
         </div>
       </div>
 
+      <AdminAccordionStack>
+        <AdminAccordion title="Indicateurs">
       <div className="adm-grid-3">
         {[
           { label: "Total commandes", value: orders.length, icon: "bag", bg: "rgba(59,125,216,.12)", color: "var(--tone-blue)" },
@@ -175,8 +178,10 @@ export function OrdersModule() {
           </div>
         ))}
       </div>
+        </AdminAccordion>
 
-      <div className="adm-card adm-card-scroll">
+        <AdminAccordion title="Liste des commandes">
+      <div className="adm-card adm-card-scroll" style={{ border: "none", boxShadow: "none", padding: 0 }}>
         <div className="adm-table-toolbar">
           <div className="adm-searchbox wide">
             <Icon name="search" size={15} color="var(--adm-ink-mute)" />
@@ -296,6 +301,8 @@ export function OrdersModule() {
           </table>
         )}
       </div>
+        </AdminAccordion>
+      </AdminAccordionStack>
 
       {selected && (
         <OrderDetailModal

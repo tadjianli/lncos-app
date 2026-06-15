@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import type { Popup } from "@/lib/rdv-store";
 import { usePopups } from "@/lib/admin-supabase";
 import { Icon } from "@/components/shared/Icon";
-
-type Tab = "list" | "analytics" | "tips";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 
 /* ── Toggle ─────────────────────────────────────────────────────────── */
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -266,22 +265,8 @@ function TipsView() {
 
 /* ── Root Popups module ─────────────────────────────────────────────── */
 export function PopupsModule() {
-  const [tab, setTab] = useState<Tab>("list");
   const [editingPopup, setEditingPopup] = useState<Popup | null>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const { popups, updatePopup, insertPopup, deletePopup } = usePopups();
-
-  function selectTab(next: Tab) {
-    setTab(next);
-    requestAnimationFrame(() => {
-      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  useEffect(() => {
-    const el = contentRef.current?.closest(".adm-content");
-    if (el) el.scrollTop = 0;
-  }, [tab]);
 
   function handleToggle(id: string) {
     const p = popups.find((x) => x.id === id);
@@ -307,12 +292,6 @@ export function PopupsModule() {
   const totalConversions = popups.reduce((t, p) => t + p.stats.conversions, 0);
   const activeCount = popups.filter((p) => p.enabled).length;
 
-  const tabs = [
-    { id: "list" as Tab,      icon: "gift",    label: "Mes popups", badge: activeCount },
-    { id: "analytics" as Tab, icon: "sliders", label: "Analytics" },
-    { id: "tips" as Tab,      icon: "sparkle", label: "Bonnes pratiques" },
-  ];
-
   return (
     <>
       <div className="adm-content">
@@ -329,54 +308,32 @@ export function PopupsModule() {
           </div>
         </div>
 
-        {/* Sub-tabs */}
-        <div className="adm-subtabs" role="tablist" aria-label="Sections popups">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              className={`adm-subtab${tab === t.id ? " on" : ""}`}
-              onClick={() => selectTab(t.id)}
-            >
-              <Icon name={t.icon} size={16} />
-              {t.label}
-              {t.badge !== undefined && t.badge > 0 && <span className="badge">{t.badge}</span>}
-            </button>
-          ))}
-        </div>
-
-        <div ref={contentRef} className="adm-tab-panel" role="tabpanel">
-        {/* Summary bar */}
-        {tab === "list" && (
-          <div className="pop-summary-bar">
-            <div className="pop-summary-text">
-              <div className="pop-summary-icon"><Icon name="bolt" size={17} color="var(--adm-gold)" /></div>
-              <span style={{ fontSize: 13.5, color: "var(--adm-ink-soft)" }}>
-                <strong style={{ color: "var(--adm-ink)" }}>{activeCount} popup{activeCount !== 1 ? "s" : ""} en ligne</strong> — diffusée{activeCount !== 1 ? "s" : ""}{" "}en temps réel sur l&apos;app cliente selon votre ciblage.
-              </span>
-            </div>
-            <div className="pop-summary-stats">
-              <div className="pop-summary-stat">
-                <div className="pop-summary-val">{totalViews.toLocaleString("fr-FR")}</div>
-                <div className="pop-summary-label">vues totales</div>
+        <AdminAccordionStack>
+          <AdminAccordion title="Mes popups">
+            <div className="pop-summary-bar">
+              <div className="pop-summary-text">
+                <div className="pop-summary-icon"><Icon name="bolt" size={17} color="var(--adm-gold)" /></div>
+                <span style={{ fontSize: 13.5, color: "var(--adm-ink-soft)" }}>
+                  <strong style={{ color: "var(--adm-ink)" }}>{activeCount} popup{activeCount !== 1 ? "s" : ""} en ligne</strong> — diffusée{activeCount !== 1 ? "s" : ""}{" "}en temps réel sur l&apos;app cliente selon votre ciblage.
+                </span>
               </div>
-              <div className="pop-summary-stat">
-                <div className="pop-summary-val">{totalCtr}</div>
-                <div className="pop-summary-label">taux de clic</div>
-              </div>
-              <div className="pop-summary-stat">
-                <div className="pop-summary-val">{totalConversions}</div>
-                <div className="pop-summary-label">conversions</div>
+              <div className="pop-summary-stats">
+                <div className="pop-summary-stat">
+                  <div className="pop-summary-val">{totalViews.toLocaleString("fr-FR")}</div>
+                  <div className="pop-summary-label">vues totales</div>
+                </div>
+                <div className="pop-summary-stat">
+                  <div className="pop-summary-val">{totalCtr}</div>
+                  <div className="pop-summary-label">taux de clic</div>
+                </div>
+                <div className="pop-summary-stat">
+                  <div className="pop-summary-val">{totalConversions}</div>
+                  <div className="pop-summary-label">conversions</div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Content */}
-        {tab === "list" && (
-          <div className="adm-card adm-list-card">
+            <div className="adm-card adm-list-card" style={{ border: "none", boxShadow: "none", padding: 0, marginTop: 16 }}>
             {popups.length === 0 ? (
               <div style={{ padding: "60px 0", textAlign: "center", color: "var(--adm-ink-mute)" }}>
                 <Icon name="gift" size={40} color="var(--adm-border)" />
@@ -420,12 +377,17 @@ export function PopupsModule() {
                 );
               })
             )}
-          </div>
-        )}
+            </div>
+          </AdminAccordion>
 
-        {tab === "analytics" && <AnalyticsView popups={popups} />}
-        {tab === "tips" && <TipsView />}
-        </div>
+          <AdminAccordion title="Analytics">
+            <AnalyticsView popups={popups} />
+          </AdminAccordion>
+
+          <AdminAccordion title="Bonnes pratiques">
+            <TipsView />
+          </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {editingPopup && (

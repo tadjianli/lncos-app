@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import {
   slugifyServiceCategory,
@@ -257,7 +258,69 @@ export function ServiceCategoriesModule({ embedded }: ServiceCategoriesModulePro
         </div>
       )}
 
-      {loading ? (
+      {!embedded ? (
+        <AdminAccordionStack>
+          <AdminAccordion title="Catégories de prestations">
+            {loading ? (
+              <div style={{ padding: 32, textAlign: "center", color: "var(--adm-ink-mute)" }}>Chargement…</div>
+            ) : sorted.length === 0 ? (
+              <div style={{ padding: 40, textAlign: "center" }}>
+                <Icon name="grid" size={36} color="var(--adm-ink-mute)" />
+                <p style={{ marginTop: 12, color: "var(--adm-ink-mute)" }}>Aucune catégorie — créez la première pour organiser vos prestations.</p>
+              </div>
+            ) : (
+              <div className="adm-card adm-list-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
+                {sorted.map((cat) => (
+                  <div
+                    key={cat.id}
+                    className={`ab-row${dragOverId === cat.id ? " drag-over" : ""}`}
+                    draggable
+                    onDragStart={() => { dragId.current = cat.id; }}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverId(cat.id); }}
+                    onDrop={() => onDrop(cat.id)}
+                    onDragEnd={() => { dragId.current = null; setDragOverId(null); }}
+                    style={{ alignItems: "center", padding: "12px 14px" }}
+                  >
+                    <div className="ab-drag" title="Glisser pour réordonner">
+                      <span /><span /><span />
+                    </div>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        background: `${cat.color}22`,
+                        border: `1px solid ${cat.color}44`,
+                        display: "grid",
+                        placeItems: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name={cat.icon as "scissors"} size={18} color={cat.color} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{cat.name}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 2 }}>
+                        {cat.slug} · {cat.serviceCount ?? 0} prestation{(cat.serviceCount ?? 0) !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                    <span className={`adm-badge${cat.isActive ? "" : " muted"}`} style={{ fontSize: 10 }}>
+                      {cat.isActive ? "Active" : "Inactive"}
+                    </span>
+                    <div className="adm-rowactions">
+                      <button type="button" className="adm-act" onClick={() => updateCategory(cat.id, { isActive: !cat.isActive })} title={cat.isActive ? "Désactiver" : "Activer"}>
+                        <Icon name={cat.isActive ? "eye" : "x"} size={14} />
+                      </button>
+                      <button type="button" className="adm-act" onClick={() => setEditing(cat)}><Icon name="edit" size={14} /></button>
+                      <button type="button" className="adm-act danger" onClick={() => handleDelete(cat.id)}><Icon name="trash" size={14} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </AdminAccordion>
+        </AdminAccordionStack>
+      ) : loading ? (
         <div style={{ padding: 32, textAlign: "center", color: "var(--adm-ink-mute)" }}>Chargement…</div>
       ) : sorted.length === 0 ? (
         <div className="adm-card" style={{ padding: 40, textAlign: "center" }}>

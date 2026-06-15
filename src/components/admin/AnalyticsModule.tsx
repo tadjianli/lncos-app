@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { getSupabase } from "@/lib/supabase";
 
 interface KPI {
@@ -112,8 +113,8 @@ export function AnalyticsModule() {
           Chargement des données…
         </div>
       ) : !kpi ? null : (
-        <>
-          {/* KPI strip */}
+        <AdminAccordionStack>
+          <AdminAccordion title="Indicateurs clés">
           <div className="adm-grid-4">
             {[
               { label: "Chiffre d'affaires", value: `${kpi.totalRevenue.toFixed(2)} €`, icon: "sparkle", color: "var(--tone-green)", bg: "rgba(47,158,104,.12)" },
@@ -132,16 +133,10 @@ export function AnalyticsModule() {
               </div>
             ))}
           </div>
+          </AdminAccordion>
 
-          <div className="adm-dash-cols" style={{ gap: 16 }}>
-            {/* Revenue chart */}
-            <div className="adm-card">
-              <div className="adm-card-head">
-                <div>
-                  <div className="adm-card-title">Revenus — 6 derniers mois</div>
-                  <div className="adm-card-sub">En euros (commandes)</div>
-                </div>
-              </div>
+          <AdminAccordion title="Revenus — 6 derniers mois">
+            <div className="adm-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
               {kpi.totalOrders === 0 ? (
                 <div style={{ padding: "24px 0", textAlign: "center", color: "var(--adm-ink-mute)", fontSize: 13 }}>
                   Aucune commande enregistrée
@@ -170,15 +165,10 @@ export function AnalyticsModule() {
                 </div>
               )}
             </div>
+            </AdminAccordion>
 
-            {/* Status breakdown */}
-            <div className="adm-card">
-              <div className="adm-card-head">
-                <div>
-                  <div className="adm-card-title">Statuts des commandes</div>
-                  <div className="adm-card-sub">Répartition par statut</div>
-                </div>
-              </div>
+          <AdminAccordion title="Statuts des commandes">
+            <div className="adm-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
               {kpi.totalOrders === 0 ? (
                 <div style={{ padding: "24px 0", textAlign: "center", color: "var(--adm-ink-mute)", fontSize: 13 }}>
                   Aucune commande enregistrée
@@ -199,16 +189,10 @@ export function AnalyticsModule() {
                 </div>
               )}
             </div>
-          </div>
+            </AdminAccordion>
 
-          {/* Top products */}
-          <div className="adm-card">
-            <div className="adm-card-head">
-              <div>
-                <div className="adm-card-title">Top 5 produits</div>
-                <div className="adm-card-sub">Classés par chiffre d&apos;affaires généré</div>
-              </div>
-            </div>
+          <AdminAccordion title="Top 5 produits">
+          <div className="adm-card" style={{ border: "none", boxShadow: "none", padding: 0 }}>
             {kpi.topProducts.length === 0 ? (
               <div style={{ padding: "24px 0", textAlign: "center", color: "var(--adm-ink-mute)", fontSize: 13 }}>
                 Aucune donnée de vente disponible
@@ -231,7 +215,8 @@ export function AnalyticsModule() {
               </div>
             )}
           </div>
-        </>
+          </AdminAccordion>
+        </AdminAccordionStack>
       )}
     </div>
   );

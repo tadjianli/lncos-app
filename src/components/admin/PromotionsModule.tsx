@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/shared/Icon";
+import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import { AdminToast } from "@/components/admin/AdminToast";
 import { usePromos, type Promo } from "@/lib/admin-supabase";
 
@@ -303,9 +304,9 @@ export function PromotionsModule() {
           </button>
         </div>
 
-        {/* Status badge */}
+        <AdminAccordionStack>
+        <AdminAccordion title="Statut Supabase">
         <div
-          className="adm-card"
           style={{
             background: "linear-gradient(135deg, rgba(47,158,104,.08), rgba(47,158,104,.03))",
             border: "1px solid rgba(47,158,104,.2)",
@@ -313,6 +314,7 @@ export function PromotionsModule() {
             alignItems: "center",
             gap: 16,
             padding: "14px 18px",
+            borderRadius: 12,
           }}
         >
           <div
@@ -340,17 +342,15 @@ export function PromotionsModule() {
             </div>
           </div>
         </div>
+        </AdminAccordion>
 
-        {/* List */}
+        <AdminAccordion title="Codes promo">
         {loading ? (
-          <div
-            className="adm-card"
-            style={{ padding: "40px 20px", textAlign: "center", color: "var(--adm-ink-mute)" }}
-          >
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "var(--adm-ink-mute)" }}>
             Chargement…
           </div>
         ) : promos.length === 0 ? (
-          <div className="adm-card" style={{ padding: "56px 20px", textAlign: "center" }}>
+          <div style={{ padding: "56px 20px", textAlign: "center" }}>
             <Icon name="gift" size={40} color="var(--adm-ink-mute)" />
             <p style={{ marginTop: 12, color: "var(--adm-ink-mute)", fontSize: 14 }}>
               Aucun code promo créé
@@ -494,6 +494,8 @@ export function PromotionsModule() {
             ))}
           </div>
         )}
+        </AdminAccordion>
+        </AdminAccordionStack>
       </div>
 
       {creating && (
