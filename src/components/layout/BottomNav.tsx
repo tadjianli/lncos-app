@@ -10,20 +10,17 @@ import { usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
 import {
   Home,
-  LayoutGrid,
-  Search,
+  ShoppingBag,
   Heart,
   User,
-  ShoppingBag,
   type LucideProps,
 } from "lucide-react";
 
-const ICON_SIZE = 28;
+const ICON_SIZE = 23;
 
 const TAB_ITEMS = [
   { href: "/", id: "home", label: "Accueil" },
-  { href: "/discover", id: "categories", label: "Catégories" },
-  { id: "search", label: "Recherche" },
+  { href: "/boutique", id: "boutique", label: "Boutique" },
   { href: "/favorites", id: "favorites", label: "Favoris" },
   { href: "/profile", id: "account", label: "Compte" },
 ] as const;
@@ -41,9 +38,9 @@ function isActive(pathname: string, href: string) {
 function navIconProps(active: boolean, filledWhenActive = false): LucideProps {
   return {
     size: ICON_SIZE,
-    strokeWidth: active ? 2.15 : 1.85,
-    color: active ? "var(--gold)" : "rgba(255,255,255,0.55)",
-    fill: active && filledWhenActive ? "rgba(212,175,55,.22)" : "none",
+    strokeWidth: active ? 2.2 : 1.8,
+    color: active ? "var(--gold-soft)" : "rgba(255,255,255,0.42)",
+    fill: active && filledWhenActive ? "rgba(212,175,55,.24)" : "none",
     strokeLinecap: "round",
     strokeLinejoin: "round",
     "aria-hidden": true,
@@ -57,10 +54,8 @@ function TabIcon({ id, active }: { id: TabItemId; active: boolean }) {
   switch (id) {
     case "home":
       return <Home {...props} />;
-    case "categories":
-      return <LayoutGrid {...props} />;
-    case "search":
-      return <Search {...props} />;
+    case "boutique":
+      return <ShoppingBag {...navIconProps(active, true)} />;
     case "favorites":
       return <Heart {...navIconProps(active, true)} />;
     case "account":
@@ -70,9 +65,7 @@ function TabIcon({ id, active }: { id: TabItemId; active: boolean }) {
 
 export function BottomNav({ cartCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
-  const overlay = useStore((s) => s.overlay);
   const closeOverlay = useStore((s) => s.closeOverlay);
-  const openSearch = useStore((s) => s.openSearch);
   const [mounted, setMounted] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
 
@@ -87,20 +80,15 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
     return () => window.clearTimeout(timer);
   }, [cartCount]);
 
-  const searchActive = overlay?.type === "search";
   const cartActive = pathname === "/bag" || pathname.startsWith("/bag/");
 
   const tabActive = useCallback(
     (id: TabItemId) => {
-      if (id === "search") return searchActive;
       const item = TAB_ITEMS.find((t) => t.id === id);
-      if (!item || !("href" in item)) return false;
-      if (id === "categories") {
-        return isActive(pathname, item.href) || pathname.startsWith("/categorie/");
-      }
+      if (!item) return false;
       return isActive(pathname, item.href);
     },
-    [pathname, searchActive]
+    [pathname]
   );
 
   const nav = (
@@ -109,30 +97,6 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
         <div className="bottom-nav-bar" role="tablist">
           {TAB_ITEMS.map((item) => {
             const active = tabActive(item.id);
-            const content = (
-              <>
-                <span className="bottom-nav-icon-wrap">
-                  <TabIcon id={item.id} active={active} />
-                </span>
-                <span className="bottom-nav-label">{item.label}</span>
-              </>
-            );
-
-            if (item.id === "search") {
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  className={`bottom-nav-item${active ? " bottom-nav-item--active" : ""}`}
-                  aria-current={active ? "page" : undefined}
-                  aria-label="Recherche"
-                  onClick={() => openSearch()}
-                >
-                  {content}
-                </button>
-              );
-            }
 
             return (
               <Link
@@ -143,7 +107,10 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
                 aria-current={active ? "page" : undefined}
                 onClick={() => closeOverlay()}
               >
-                {content}
+                <span className="bottom-nav-icon-wrap">
+                  <TabIcon id={item.id} active={active} />
+                </span>
+                <span className="bottom-nav-label">{item.label}</span>
               </Link>
             );
           })}
