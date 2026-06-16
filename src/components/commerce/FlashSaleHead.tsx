@@ -3,16 +3,40 @@
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import {
+  countdownUnitLabel,
   DEFAULT_FLASH_SALES_COUNTDOWN,
   durationTotalSeconds,
   endAtRemainingSeconds,
-  splitSeconds,
+  getCountdownDisplayUnits,
   type FlashSalesCountdown,
 } from "@/lib/flash-countdown";
 
 interface FlashSaleHeadProps {
   title?: string;
   countdown?: FlashSalesCountdown;
+}
+
+function CountdownBlock({
+  value,
+  label,
+  shortLabel,
+}: {
+  value: number;
+  label: string;
+  shortLabel: string;
+}) {
+  return (
+    <span className="flash-countdown-block">
+      <span className="flash-countdown-value" key={value}>
+        {value}
+      </span>
+      <span className="flash-countdown-unit">{label}</span>
+      <span className="flash-countdown-compact" aria-hidden>
+        {value}
+        {shortLabel}
+      </span>
+    </span>
+  );
 }
 
 export function FlashSaleHead({
@@ -76,15 +100,20 @@ export function FlashSaleHead({
     initialDuration,
   ]);
 
-  const showTimer =
+  const isExpiredOffer =
     countdown.enabled &&
-    !(expired && countdown.onExpire === "hide");
+    expired &&
+    countdown.onExpire !== "reset";
+
+  const showTimer = countdown.enabled && !isExpiredOffer;
 
   const displaySeconds =
     expired && countdown.onExpire === "zeros" ? 0 : remaining;
 
-  const { h, m, s } = splitSeconds(displaySeconds);
-  const pad = (n: number) => String(n).padStart(2, "0");
+  const units = useMemo(
+    () => getCountdownDisplayUnits(displaySeconds),
+    [displaySeconds]
+  );
 
   return (
     <div className="flash-head">
@@ -97,15 +126,24 @@ export function FlashSaleHead({
         />
         {title}
       </h3>
+      {isExpiredOffer && (
+        <p className="flash-countdown-expired" role="status">
+          Offre terminée
+        </p>
+      )}
       {showTimer && (
-        <div className="flash-countdown" aria-label="Compte à rebours vente flash">
-          {[h, m, s].map((v, i) => (
-            <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span className="flash-countdown-digit">{pad(v)}</span>
-              {i < 2 && (
-                <span style={{ color: "var(--ink-mute)", fontWeight: 700 }}>:</span>
-              )}
-            </span>
+        <div
+          className="flash-countdown"
+          aria-label="Compte à rebours vente flash"
+          role="timer"
+        >
+          {units.map((unit) => (
+            <CountdownBlock
+              key={unit.key}
+              value={unit.value}
+              label={countdownUnitLabel(unit.key, unit.value)}
+              shortLabel={unit.shortLabel}
+            />
           ))}
         </div>
       )}

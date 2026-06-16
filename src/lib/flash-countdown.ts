@@ -84,6 +84,74 @@ export function splitSeconds(total: number): { h: number; m: number; s: number }
   return { h, m, s };
 }
 
+const SECONDS_PER_DAY = 86_400;
+const THIRTY_DAYS_SECONDS = 30 * SECONDS_PER_DAY;
+
+export interface CountdownParts {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  total: number;
+}
+
+/** Décompose le total en jours / heures / minutes / secondes. */
+export function splitCountdownParts(total: number): CountdownParts {
+  const clamped = Math.max(0, Math.floor(total));
+  const days = Math.floor(clamped / SECONDS_PER_DAY);
+  const hours = Math.floor((clamped % SECONDS_PER_DAY) / 3600);
+  const minutes = Math.floor((clamped % 3600) / 60);
+  const seconds = clamped % 60;
+  return { days, hours, minutes, seconds, total: clamped };
+}
+
+export type CountdownUnitKey = "days" | "hours" | "minutes" | "seconds";
+
+export interface CountdownDisplayUnit {
+  key: CountdownUnitKey;
+  value: number;
+  label: string;
+  shortLabel: string;
+}
+
+const UNIT_LABELS: Record<CountdownUnitKey, { label: string; shortLabel: string }> = {
+  days: { label: "Jours", shortLabel: "j" },
+  hours: { label: "Heures", shortLabel: "h" },
+  minutes: { label: "Min", shortLabel: "m" },
+  seconds: { label: "Sec", shortLabel: "s" },
+};
+
+/**
+ * Unités visibles selon le temps restant :
+ * - > 30 j : J / H / Min
+ * - ≥ 24 h et ≤ 30 j : J / H / Min / Sec
+ * - < 24 h : H / Min / Sec
+ */
+export function getCountdownDisplayUnits(totalSeconds: number): CountdownDisplayUnit[] {
+  const parts = splitCountdownParts(totalSeconds);
+  const keys: CountdownUnitKey[] =
+    parts.total > THIRTY_DAYS_SECONDS
+      ? ["days", "hours", "minutes"]
+      : parts.total >= SECONDS_PER_DAY
+        ? ["days", "hours", "minutes", "seconds"]
+        : ["hours", "minutes", "seconds"];
+
+  return keys.map((key) => ({
+    key,
+    value: parts[key],
+    label: UNIT_LABELS[key].label,
+    shortLabel: UNIT_LABELS[key].shortLabel,
+  }));
+}
+
+/** Affichage singulier/pluriel pour l'unité empilée (Jour vs Jours). */
+export function countdownUnitLabel(key: CountdownUnitKey, value: number): string {
+  if (key === "days") return value <= 1 ? "Jour" : "Jours";
+  if (key === "hours") return value <= 1 ? "Heure" : "Heures";
+  if (key === "minutes") return value <= 1 ? "Minute" : "Minutes";
+  return value <= 1 ? "Seconde" : "Secondes";
+}
+
 /** Secondes restantes en mode end_at (null si date invalide). */
 export function endAtRemainingSeconds(endAt: string, now = Date.now()): number | null {
   const end = Date.parse(endAt);
