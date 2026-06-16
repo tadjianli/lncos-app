@@ -2,12 +2,19 @@
  * LN COS — Client unifié fournisseurs IA (serveur)
  */
 
+import {
+  anthropicComplete as sdkAnthropicComplete,
+  anthropicTestConnection,
+} from "@/lib/ai-anthropic-client";
+import { estimateAiCostEur } from "@/lib/ai-cost-estimate";
 import type { AiProvider } from "./ai-settings";
 
 export interface AiCompletionResult {
   text: string;
   tokensInput: number;
   tokensOutput: number;
+  resolvedModel?: string;
+  autoSelected?: boolean;
 }
 
 export async function testAiProvider(
@@ -15,6 +22,16 @@ export async function testAiProvider(
   apiKey: string,
   model: string
 ): Promise<AiCompletionResult> {
+  if (provider === "anthropic") {
+    const result = await anthropicTestConnection(apiKey, model || undefined);
+    return {
+      text: result.text,
+      tokensInput: result.tokensInput,
+      tokensOutput: result.tokensOutput,
+      resolvedModel: result.resolvedModel,
+      autoSelected: result.autoSelected,
+    };
+  }
   return completeAi({
     provider,
     apiKey,
@@ -54,33 +71,11 @@ async function anthropicComplete(opts: {
   user: string;
   maxTokens?: number;
 }): Promise<AiCompletionResult> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": opts.apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: opts.model,
-      max_tokens: opts.maxTokens ?? 1024,
-      system: opts.system,
-      messages: [{ role: "user", content: opts.user }],
-    }),
-  });
-  const data = (await res.json()) as {
-    error?: { message?: string };
-    content?: { type: string; text?: string }[];
-    usage?: { input_tokens?: number; output_tokens?: number };
-  };
-  if (!res.ok) {
-    throw new Error(data.error?.message ?? `Anthropic HTTP ${res.status}`);
-  }
-  const text = data.content?.find((c) => c.type === "text")?.text?.trim() ?? "";
+  const result = await sdkAnthropicComplete(opts);
   return {
-    text,
-    tokensInput: data.usage?.input_tokens ?? 0,
-    tokensOutput: data.usage?.output_tokens ?? 0,
+    text: result.text,
+    tokensInput: result.tokensInput,
+    tokensOutput: result.tokensOutput,
   };
 }
 
@@ -197,12 +192,5 @@ export function estimateCostEur(
   tokensInput: number,
   tokensOutput: number
 ): number {
-  const rates: Record<AiProvider, { in: number; out: number }> = {
-    anthropic: { in: 0.000003, out: 0.000015 },
-    openai: { in: 0.000002, out: 0.000008 },
-    gemini: { in: 0.000001, out: 0.000004 },
-    mistral: { in: 0.000002, out: 0.000006 },
-  };
-  const r = rates[provider];
-  return Number(((tokensInput * r.in + tokensOutput * r.out) * 0.92).toFixed(6));
+  return estimateAiCostEur(provider, tokensInput, tokensOutput);
 }

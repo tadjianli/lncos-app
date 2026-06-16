@@ -193,6 +193,8 @@ export interface DbBlogArticle {
   canonical_url?: string | null;
   faq?: unknown;
   related_product_ids?: string[] | null;
+  tags?: string[] | null;
+  schema_article?: unknown;
 }
 
 export function dbToBlogCategory(row: DbBlogCategory): AdminBlogCategory {
@@ -249,6 +251,11 @@ export function dbToBlogArticle(row: DbBlogArticle): BlogArticle {
     canonicalUrl: row.canonical_url ?? null,
     faq: parseBlogFaq(row.faq),
     relatedProductIds: row.related_product_ids ?? [],
+    tags: row.tags ?? [],
+    schemaArticle:
+      row.schema_article && typeof row.schema_article === "object"
+        ? (row.schema_article as Record<string, unknown>)
+        : null,
   };
 }
 
@@ -273,6 +280,8 @@ export function blogArticleToDb(a: Partial<BlogArticle> & { id: string; slug: st
     canonical_url: a.canonicalUrl ?? null,
     faq: (a.faq ?? []) as unknown as Json,
     related_product_ids: a.relatedProductIds ?? [],
+    tags: a.tags ?? [],
+    schema_article: (a.schemaArticle ?? null) as Json | null,
   };
 }
 

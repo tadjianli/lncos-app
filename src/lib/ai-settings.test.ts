@@ -24,7 +24,7 @@ describe("dbToAiSettings", () => {
   it("mappe une ligne DB", () => {
     const s = dbToAiSettings(
       {
-        id: "default",
+        id: "00000000-0000-4000-a000-000000000001",
         provider: "openai",
         api_key_encrypted: "enc",
         model: "gpt-4.1",
@@ -60,8 +60,8 @@ describe("defaultModelForProvider", () => {
     expect(defaultModelForProvider("mistral")).toContain("mistral");
   });
 
-  it("retourne le premier modèle anthropic", () => {
-    expect(defaultModelForProvider("anthropic")).toBe("claude-opus-4-20250514");
+  it("retourne une chaîne vide pour Anthropic (modèles chargés via API)", () => {
+    expect(defaultModelForProvider("anthropic")).toBe("");
   });
 });
 

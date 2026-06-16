@@ -4,18 +4,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
 import {
+  AI_CONNECTION_STATUS_LABELS,
   AI_DESCRIPTION_LENGTH_LABELS,
   AI_LANGUAGE_LABELS,
   AI_PROVIDER_LABELS,
   AI_PROVIDER_MODELS,
   AI_TONE_LABELS,
   DEFAULT_AI_SETTINGS,
+  type AiConnectionStatus,
   type AiLanguage,
   type AiProvider,
+  type AiProviderModel,
   type AiSettings,
   type AiTone,
   type AiUsageLogRow,
   type AiUsageStats,
+  type AiEnvCheckItem,
+  type AiDiagnosticPayload,
   defaultModelForProvider,
 } from "@/lib/ai-settings";
 
@@ -85,7 +90,22 @@ function ToggleRow({
   );
 }
 
-function ConnectionBadge({ connected }: { connected: boolean }) {
+function ConnectionBadge({
+  status,
+}: {
+  status: AiConnectionStatus | "disconnected";
+}) {
+  const colors: Record<AiConnectionStatus | "disconnected", string> = {
+    connected: "var(--tone-green, #2F9E68)",
+    disconnected: "var(--adm-ink-mute)",
+    invalid_key: "var(--tone-pink, #C2557A)",
+    insufficient_credit: "#D97706",
+    api_error: "var(--tone-pink, #C2557A)",
+  };
+  const label =
+    status === "disconnected" ? "Non connecté" : AI_CONNECTION_STATUS_LABELS[status];
+  const color = colors[status];
+
   return (
     <span
       style={{
@@ -94,7 +114,7 @@ function ConnectionBadge({ connected }: { connected: boolean }) {
         gap: 6,
         fontSize: 12,
         fontWeight: 600,
-        color: connected ? "var(--tone-green, #2F9E68)" : "var(--adm-ink-mute)",
+        color,
       }}
     >
       <span
@@ -102,11 +122,45 @@ function ConnectionBadge({ connected }: { connected: boolean }) {
           width: 8,
           height: 8,
           borderRadius: "50%",
-          background: connected ? "var(--tone-green, #2F9E68)" : "var(--adm-ink-mute)",
+          background: color,
         }}
       />
-      {connected ? "Connecté" : "Non connecté"}
+      {label}
     </span>
+  );
+}
+
+function EnvStatusRow({ label, ok, hint }: { label: string; ok: boolean; hint?: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 10,
+        padding: "10px 0",
+        borderBottom: "1px solid var(--adm-border, rgba(0,0,0,.06))",
+      }}
+    >
+      <span
+        style={{
+          fontSize: 16,
+          lineHeight: 1.2,
+          color: ok ? "var(--tone-green, #2F9E68)" : "var(--tone-pink, #C2557A)",
+          flexShrink: 0,
+        }}
+        aria-hidden
+      >
+        {ok ? "✓" : "✗"}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--adm-ink)" }}>{label}</div>
+        {hint ? (
+          <div style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 3, lineHeight: 1.45 }}>
+            {hint}
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -130,6 +184,17 @@ export function AiSettingsPanel({
   const [showApiKey, setShowApiKey] = useState(false);
   const [openCard, setOpenCard] = useState<string | null>("Fournisseur IA");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<AiConnectionStatus | "disconnected">(
+    "disconnected"
+  );
+  const [envChecks, setEnvChecks] = useState<AiEnvCheckItem[]>([]);
+  const [encryptionErrorMessage, setEncryptionErrorMessage] = useState<string | null>(null);
+  const [canPersistApiKeys, setCanPersistApiKeys] = useState(true);
+  const [diagnostic, setDiagnostic] = useState<AiDiagnosticPayload | null>(null);
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false);
+  const [providerModels, setProviderModels] = useState<AiProviderModel[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
   const onNotifyRef = useRef(onNotify);
   onNotifyRef.current = onNotify;
 
@@ -140,9 +205,15 @@ export function AiSettingsPanel({
       const res = await fetch("/api/admin/ai/settings");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Chargement impossible");
-      if (data.settings) setSettings(data.settings);
+      if (data.settings) {
+        setSettings(data.settings);
+        setConnectionStatus(data.settings.lastTestOk ? "connected" : "disconnected");
+      }
       if (data.logs) setLogs(data.logs);
       if (data.stats) setStats(data.stats);
+      if (Array.isArray(data.envChecks)) setEnvChecks(data.envChecks);
+      setEncryptionErrorMessage(data.encryptionErrorMessage ?? null);
+      setCanPersistApiKeys(data.canPersistApiKeys !== false);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erreur de chargement";
       setLoadError(msg);
@@ -151,23 +222,95 @@ export function AiSettingsPanel({
     }
   }, []);
 
+  const loadProviderModels = useCallback(async () => {
+    if (settings.provider !== "anthropic") {
+      setProviderModels(AI_PROVIDER_MODELS[settings.provider]);
+      setModelsError(null);
+      return;
+    }
+
+    if (!settings.hasApiKey && !apiKeyInput.trim()) {
+      setProviderModels([]);
+      setModelsError("Configurez une clé API puis testez la connexion pour lister les modèles.");
+      return;
+    }
+
+    setModelsLoading(true);
+    setModelsError(null);
+    try {
+      const res = await fetch(`/api/admin/ai/models?provider=${settings.provider}`);
+      const data = (await res.json()) as {
+        models?: AiProviderModel[];
+        selected?: string | null;
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(data.error ?? "Impossible de charger les modèles");
+      }
+
+      const models = data.models ?? [];
+      setProviderModels(models);
+
+      setSettings((prev) => {
+        if (models.length === 0) return prev;
+        const valid = models.some((m) => m.id === prev.model);
+        if (valid) return prev;
+        const sonnet = models.find((m) => /sonnet/i.test(m.id) || /sonnet/i.test(m.label));
+        return { ...prev, model: sonnet?.id ?? models[0].id };
+      });
+    } catch (e) {
+      setProviderModels([]);
+      setModelsError(e instanceof Error ? e.message : "Erreur de chargement des modèles");
+    } finally {
+      setModelsLoading(false);
+    }
+  }, [settings.provider, settings.hasApiKey, apiKeyInput]);
+
+  const runDiagnostic = useCallback(async () => {
+    setDiagnosticLoading(true);
+    try {
+      const res = await fetch("/api/admin/ai/diagnostic");
+      const data = (await res.json()) as AiDiagnosticPayload & { error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Diagnostic impossible");
+      setDiagnostic(data);
+      if (data.checks) setEnvChecks(data.checks);
+      setEncryptionErrorMessage(data.encryptionErrorMessage ?? null);
+      setCanPersistApiKeys(data.canPersistApiKeys);
+    } catch (e) {
+      onNotifyRef.current(e instanceof Error ? e.message : "Diagnostic échoué", true);
+    } finally {
+      setDiagnosticLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadProviderModels();
+  }, [loadProviderModels]);
 
   function patch(partial: Partial<AiSettings>) {
     setSettings((prev) => ({ ...prev, ...partial }));
   }
 
   function onProviderChange(provider: AiProvider) {
-    const models = AI_PROVIDER_MODELS[provider];
-    const model = models.some((m) => m.id === settings.model)
-      ? settings.model
-      : defaultModelForProvider(provider);
+    const staticModels = AI_PROVIDER_MODELS[provider];
+    const model =
+      provider === "anthropic"
+        ? ""
+        : staticModels.some((m) => m.id === settings.model)
+          ? settings.model
+          : defaultModelForProvider(provider);
     patch({ provider, model });
   }
 
   async function handleSave() {
+    if (!canPersistApiKeys) {
+      onNotifyRef.current(encryptionErrorMessage ?? "Configuration serveur incomplète", true);
+      return;
+    }
     setSaving(true);
     try {
       const body: Record<string, unknown> = { ...settings };
@@ -199,32 +342,51 @@ export function AiSettingsPanel({
   async function handleTest() {
     setTesting(true);
     try {
+      const settingsPayload: Record<string, unknown> = { ...settings };
+      delete settingsPayload.apiKeyMasked;
+      delete settingsPayload.hasApiKey;
+      delete settingsPayload.lastTestOk;
+      delete settingsPayload.lastTestAt;
+
       const res = await fetch("/api/admin/ai/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          provider: settings.provider,
-          model: settings.model,
+          settings: settingsPayload,
           ...(apiKeyInput.trim() ? { apiKey: apiKeyInput.trim() } : {}),
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error ?? "Test de connexion échoué");
+
+      if (data.settings) {
+        setSettings(data.settings);
+        setApiKeyInput("");
+        setShowApiKey(false);
       }
-      patch({ lastTestOk: true, lastTestAt: new Date().toISOString() });
+
+      if (!res.ok || !data.ok) {
+        const status = (data.status ?? "api_error") as AiConnectionStatus;
+        setConnectionStatus(status);
+        await load();
+        const detail = data.detail ? `\n${data.detail}` : "";
+        onNotifyRef.current(`${data.error ?? "Test échoué"}${detail}`, true);
+        return;
+      }
+
+      setConnectionStatus("connected");
       await load();
-      onNotifyRef.current(data.message ?? "Connexion réussie");
+      await loadProviderModels();
+      onNotifyRef.current(data.message ?? "Connecté");
     } catch (e) {
-      patch({ lastTestOk: false });
+      setConnectionStatus("api_error");
       onNotifyRef.current(e instanceof Error ? e.message : "Test échoué", true);
     } finally {
       setTesting(false);
     }
   }
 
-  const connected = settings.hasApiKey && settings.lastTestOk;
-  const models = AI_PROVIDER_MODELS[settings.provider];
+  const badgeStatus = connectionStatus;
+  const models = providerModels.length > 0 ? providerModels : AI_PROVIDER_MODELS[settings.provider];
 
   if (loading) {
     return (
@@ -236,6 +398,27 @@ export function AiSettingsPanel({
 
   return (
     <>
+      {!canPersistApiKeys && encryptionErrorMessage && (
+        <div
+          role="alert"
+          style={{
+            marginTop: 12,
+            padding: "12px 14px",
+            borderRadius: 10,
+            background: "rgba(194,85,122,.08)",
+            border: "1px solid rgba(194,85,122,.25)",
+            fontSize: 12.5,
+            color: "var(--tone-pink)",
+            lineHeight: 1.55,
+          }}
+        >
+          <strong>Configuration serveur requise</strong>
+          <div style={{ marginTop: 6 }}>{encryptionErrorMessage}</div>
+          <div style={{ marginTop: 6, color: "var(--adm-ink-soft)", fontSize: 11.5 }}>
+            Consultez <code>docs/AI_MODULE_SETUP.md</code> ou ouvrez la section Diagnostic ci-dessous.
+          </div>
+        </div>
+      )}
       {loadError && (
         <div
           role="alert"
@@ -254,7 +437,7 @@ export function AiSettingsPanel({
           {loadError.includes("ai_settings") || loadError.includes("does not exist") ? (
             <div style={{ marginTop: 6, color: "var(--adm-ink-soft)" }}>
               Appliquez la migration Supabase{" "}
-              <code style={{ fontSize: 11 }}>20260713_ai_settings.sql</code>.
+              <code style={{ fontSize: 11 }}>20260616120000_ai_settings.sql</code>.
             </div>
           ) : null}
         </div>
@@ -266,7 +449,7 @@ export function AiSettingsPanel({
           onOpenChange={(open) => setOpenCard(open ? "Fournisseur IA" : null)}
         >
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-            <ConnectionBadge connected={connected} />
+            <ConnectionBadge status={badgeStatus} />
           </div>
           <div className="ab-field" style={{ marginTop: 8 }}>
             <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5, display: "block" }}>
@@ -326,6 +509,64 @@ export function AiSettingsPanel({
         </AdminAccordion>
 
         <AdminAccordion
+          title="Diagnostic"
+          open={openCard === "Diagnostic"}
+          onOpenChange={(open) => {
+            setOpenCard(open ? "Diagnostic" : null);
+            if (open && !diagnostic) void runDiagnostic();
+          }}
+        >
+          <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginTop: 8, lineHeight: 1.5 }}>
+            Vérifie les variables d&apos;environnement serveur et les connexions Supabase / Anthropic.
+            Aucune valeur secrète n&apos;est affichée.
+          </p>
+          <div style={{ marginTop: 12 }}>
+            {(diagnostic?.checks ?? envChecks).map((check) => (
+              <EnvStatusRow
+                key={check.id}
+                label={check.label}
+                ok={check.ok}
+                hint={check.hint}
+              />
+            ))}
+            {envChecks.length === 0 && !diagnosticLoading && (
+              <p style={{ fontSize: 12, color: "var(--adm-ink-mute)" }}>Aucun contrôle chargé.</p>
+            )}
+          </div>
+          {diagnostic && (
+            <p style={{ fontSize: 11.5, color: "var(--adm-ink-mute)", marginTop: 12 }}>
+              Chiffrement :{" "}
+              <strong style={{ color: "var(--adm-ink)" }}>
+                {diagnostic.encryptionSource === "ai_encryption_key"
+                  ? "AI_ENCRYPTION_KEY"
+                  : diagnostic.encryptionSource === "service_role_fallback"
+                    ? "Repli service role"
+                    : "Non configuré"}
+              </strong>
+              {" · "}
+              Clé Anthropic :{" "}
+              <strong style={{ color: "var(--adm-ink)" }}>
+                {diagnostic.anthropicKeySource === "env"
+                  ? "ANTHROPIC_API_KEY (env)"
+                  : diagnostic.anthropicKeySource === "database"
+                    ? "Base chiffrée"
+                    : "Aucune"}
+              </strong>
+            </p>
+          )}
+          <div style={{ marginTop: 14 }}>
+            <button
+              type="button"
+              className="adm-btn ghost sm"
+              onClick={() => void runDiagnostic()}
+              disabled={diagnosticLoading}
+            >
+              {diagnosticLoading ? "Diagnostic…" : "Relancer le diagnostic"}
+            </button>
+          </div>
+        </AdminAccordion>
+
+        <AdminAccordion
           title="Modèle IA"
           open={openCard === "Modèle IA"}
           onOpenChange={(open) => setOpenCard(open ? "Modèle IA" : null)}
@@ -334,17 +575,37 @@ export function AiSettingsPanel({
             <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5, display: "block" }}>
               Modèle ({AI_PROVIDER_LABELS[settings.provider]})
             </label>
+            {settings.provider === "anthropic" && modelsLoading ? (
+              <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", margin: "6px 0" }}>
+                Chargement des modèles Anthropic…
+              </p>
+            ) : null}
+            {modelsError ? (
+              <p style={{ fontSize: 11.5, color: "var(--tone-pink)", marginBottom: 6, lineHeight: 1.45 }}>
+                {modelsError}
+              </p>
+            ) : null}
             <select
               className="ab-input"
               value={settings.model}
               onChange={(e) => patch({ model: e.target.value })}
+              disabled={settings.provider === "anthropic" && models.length === 0}
             >
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
-              ))}
+              {models.length === 0 ? (
+                <option value="">— Aucun modèle disponible —</option>
+              ) : (
+                models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))
+              )}
             </select>
+            {settings.provider === "anthropic" && models.length > 0 ? (
+              <p style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 6, lineHeight: 1.45 }}>
+                {models.length} modèle{models.length > 1 ? "s" : ""} disponible{models.length > 1 ? "s" : ""} via l&apos;API Anthropic.
+              </p>
+            ) : null}
           </div>
         </AdminAccordion>
 
@@ -515,6 +776,7 @@ export function AiSettingsPanel({
                     <th style={{ padding: "6px 4px" }}>Action</th>
                     <th style={{ padding: "6px 4px" }}>Modèle</th>
                     <th style={{ padding: "6px 4px" }}>Tokens</th>
+                    <th style={{ padding: "6px 4px" }}>Détail</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -529,7 +791,19 @@ export function AiSettingsPanel({
                       </td>
                       <td style={{ padding: "8px 4px" }}>{row.model}</td>
                       <td style={{ padding: "8px 4px", whiteSpace: "nowrap" }}>
-                        {(row.tokens_input + row.tokens_output).toLocaleString("fr-FR")}
+                        {(row.tokens ?? 0).toLocaleString("fr-FR")}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 4px",
+                          maxWidth: 220,
+                          color: row.error_detail ? "var(--tone-pink)" : "var(--tone-green, #2F9E68)",
+                          fontSize: 11,
+                          wordBreak: "break-word",
+                        }}
+                        title={row.error_detail ?? undefined}
+                      >
+                        {row.error_detail ? row.error_detail : "OK"}
                       </td>
                     </tr>
                   ))}
@@ -582,7 +856,7 @@ export function AiSettingsPanel({
       </AdminAccordionStack>
 
       <div style={{ padding: "16px 0 4px", display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="adm-btn gold sm" onClick={handleSave} disabled={saving}>
+        <button type="button" className="adm-btn gold sm" onClick={handleSave} disabled={saving || !canPersistApiKeys}>
           <Icon name="check" size={14} /> {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
       </div>

@@ -44,6 +44,10 @@ export interface BlogArticle {
   canonicalUrl?: string | null;
   faq: BlogFaqItem[];
   relatedProductIds: string[];
+  /** Tags éditoriaux / SEO (ex. cils magnétiques, tutoriel) */
+  tags?: string[];
+  /** Schema.org Article (JSON-LD) généré ou édité */
+  schemaArticle?: Record<string, unknown> | null;
 }
 
 export function getBlogArticlePath(slug: string): string {
@@ -64,6 +68,8 @@ export function emptyBlogArticle(
     body: [],
     faq: [],
     relatedProductIds: [],
+    tags: [],
+    schemaArticle: null,
     ...partial,
   };
 }

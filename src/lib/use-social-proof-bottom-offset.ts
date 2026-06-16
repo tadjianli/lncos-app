@@ -89,7 +89,7 @@ export function useSocialProofBottomOffset(navVisible: boolean): number {
     const scan = () => {
       track(shell);
       document
-        .querySelectorAll(".bottom-action-bar, .bottom-nav, .bottom-nav-bar")
+        .querySelectorAll(".bottom-action-bar, .bottom-nav, .bottom-nav-dock, .bottom-nav-bar, .bottom-nav-cart-fab")
         .forEach((el) => track(el));
       update();
     };

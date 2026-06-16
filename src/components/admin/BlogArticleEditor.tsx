@@ -204,6 +204,20 @@ export function BlogArticleEditor({
               />
               <FieldRow label="Slug URL" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} />
               <FieldRow label="Extrait" value={form.excerpt} onChange={(v) => setForm({ ...form, excerpt: v })} multiline />
+              <FieldRow
+                label="Tags"
+                value={(form.tags ?? []).join(", ")}
+                onChange={(v) =>
+                  setForm({
+                    ...form,
+                    tags: v
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean),
+                  })
+                }
+                hint="Séparez par des virgules — générés automatiquement par l'IA."
+              />
               <FieldRow label="Auteur" value={form.authorName} onChange={(v) => setForm({ ...form, authorName: v })} />
               <div className="pop-field-row">
                 <label className="pop-field-label">Catégorie</label>
@@ -267,6 +281,24 @@ export function BlogArticleEditor({
               <FieldRow label="Meta Description" value={form.metaDescription ?? ""} onChange={(v) => setForm({ ...form, metaDescription: v || null })} multiline />
               <FieldRow label="Mot-clé principal" value={form.seoKeyword ?? ""} onChange={(v) => setForm({ ...form, seoKeyword: v || null })} />
               <FieldRow label="Canonical URL" value={form.canonicalUrl ?? ""} onChange={(v) => setForm({ ...form, canonicalUrl: v || null })} hint="Laisser vide pour l'URL par défaut /blog/slug" />
+              {form.schemaArticle ? (
+                <div className="pop-field-row">
+                  <label className="pop-field-label">Schema Article (JSON-LD)</label>
+                  <pre
+                    style={{
+                      fontSize: 11,
+                      overflow: "auto",
+                      maxHeight: 220,
+                      padding: 12,
+                      borderRadius: 8,
+                      background: "var(--adm-bg)",
+                      margin: 0,
+                    }}
+                  >
+                    {JSON.stringify(form.schemaArticle, null, 2)}
+                  </pre>
+                </div>
+              ) : null}
               <GooglePreview preview={googlePreview} />
             </>
           )}

@@ -43,3 +43,45 @@ export function estimateReadMinutes(blocks: BlogContentBlock[], fallback = 5): n
   if (words === 0) return fallback;
   return Math.max(2, Math.round(words / 200));
 }
+
+/** Convertit du markdown simple (H1–H3, paragraphes) en blocs blog. */
+export function markdownToBlogBlocks(markdown: string, fallbackTitle?: string): BlogContentBlock[] {
+  const blocks: BlogContentBlock[] = [];
+  const lines = markdown.split("\n");
+  let paragraphBuffer: string[] = [];
+
+  const flushParagraph = () => {
+    const text = paragraphBuffer.join(" ").trim();
+    paragraphBuffer = [];
+    if (text) blocks.push({ type: "p", text });
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      continue;
+    }
+    if (trimmed.startsWith("### ")) {
+      flushParagraph();
+      blocks.push({ type: "h3", text: trimmed.slice(4).trim() });
+    } else if (trimmed.startsWith("## ")) {
+      flushParagraph();
+      blocks.push({ type: "h2", text: trimmed.slice(3).trim() });
+    } else if (trimmed.startsWith("# ")) {
+      flushParagraph();
+      blocks.push({ type: "h1", text: trimmed.slice(2).trim() });
+    } else {
+      paragraphBuffer.push(trimmed);
+    }
+  }
+  flushParagraph();
+
+  if (blocks.length === 0 && fallbackTitle?.trim()) {
+    return [{ type: "h1", text: fallbackTitle.trim() }];
+  }
+  if (blocks.length > 0 && blocks[0].type !== "h1" && fallbackTitle?.trim()) {
+    return [{ type: "h1", text: fallbackTitle.trim() }, ...blocks];
+  }
+  return blocks;
+}

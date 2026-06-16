@@ -9,6 +9,7 @@ import { Icon } from "@/components/shared/Icon";
 import type { BlogArticle } from "@/lib/contracts/blog";
 import { emptyBlogArticle } from "@/lib/contracts/blog";
 import { BlogArticleEditor } from "@/components/admin/BlogArticleEditor";
+import { BlogAiGeneratePanel } from "@/components/admin/BlogAiGeneratePanel";
 import {
   useAdminBlogContent,
   useAdminFlashSalesSettings,
@@ -365,6 +366,21 @@ function BlogTab({ showToast }: { showToast: (msg: string, v?: AdminToastVariant
             </button>
           </div>
         ))}
+      </AdminAccordion>
+
+      <AdminAccordion title="Générer un article IA">
+        <BlogAiGeneratePanel
+          categories={categories}
+          onNotify={(msg, err) => showToast(msg, err ? "error" : "success")}
+          onSaved={async (article) => {
+            const { error } = await upsertArticle(article);
+            showToast(
+              error ? error : "Article IA enregistré en brouillon",
+              error ? "error" : "success"
+            );
+            if (!error) setEditArt(article);
+          }}
+        />
       </AdminAccordion>
 
       <AdminAccordion title="Articles">

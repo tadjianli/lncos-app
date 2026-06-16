@@ -3,19 +3,23 @@
  */
 
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
+import { assertAiEncryptionConfigured, getAiEncryptionSecret, isAiEncryptionConfigured } from "@/lib/ai-env";
 
 const ALGO = "aes-256-gcm";
 const IV_LEN = 12;
 
 function deriveKey(): Buffer {
-  const secret = process.env.AI_ENCRYPTION_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secret = getAiEncryptionSecret();
   if (!secret) {
-    throw new Error("AI_ENCRYPTION_KEY ou SUPABASE_SERVICE_ROLE_KEY requis pour chiffrer les clés API");
+    throw new Error(
+      "AI_ENCRYPTION_KEY ou SUPABASE_SERVICE_ROLE_KEY requis pour chiffrer les clés API"
+    );
   }
   return createHash("sha256").update(secret).digest();
 }
 
 export function encryptApiKey(plain: string): string {
+  assertAiEncryptionConfigured();
   const key = deriveKey();
   const iv = randomBytes(IV_LEN);
   const cipher = createCipheriv(ALGO, key, iv);
@@ -25,6 +29,7 @@ export function encryptApiKey(plain: string): string {
 }
 
 export function decryptApiKey(payload: string): string {
+  assertAiEncryptionConfigured();
   const parts = payload.split(".");
   if (parts.length !== 3) throw new Error("Clé chiffrée invalide");
   const [ivB64, tagB64, dataB64] = parts;
@@ -39,5 +44,5 @@ export function decryptApiKey(payload: string): string {
 }
 
 export function isEncryptionConfigured(): boolean {
-  return Boolean(process.env.AI_ENCRYPTION_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return isAiEncryptionConfigured();
 }

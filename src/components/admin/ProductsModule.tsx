@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Category, Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
 import { AdminAccordion, AdminAccordionStack } from "@/components/admin/AdminAccordion";
@@ -24,15 +24,17 @@ import {
 import type { ProductVariant } from "@/lib/product-catalog";
 import { AdminProductSaveDialog } from "@/components/admin/AdminProductSaveDialog";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
+import { ProductAiGenerateBar } from "@/components/admin/ProductAiGenerateBar";
 import { computeProductSeoScore, seoLevelColor } from "@/lib/seo";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
-function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
+function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotify }: {
   product: Product;
   categories: Category[];
   onClose: () => void;
   onSave: (p: Product, variants: ProductVariant[]) => Promise<{ error: string | null }>;
   isNew?: boolean;
+  onNotify?: (msg: string, error?: boolean) => void;
 }) {
   const [form, setForm] = useState({ ...product });
   const [variants, setVariants] = useState<ProductVariant[]>(product.productVariants ?? []);
@@ -44,6 +46,13 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
   );
   const seoScore = computeProductSeoScore(form);
   const categoryName = categories.find((c) => c.id === form.cat)?.name ?? form.cat;
+  const contentSectionRef = useRef<HTMLDivElement>(null);
+
+  function scrollToGeneratedContent() {
+    requestAnimationFrame(() => {
+      contentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   useEffect(() => {
     if (isNew && form.name) {
@@ -169,8 +178,46 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             </div>
           )}
 
+          <div className="ab-field">
+            <label>Nom du produit</label>
+            <input
+              className="ab-input"
+              type="text"
+              value={String(form.name ?? "")}
+              onChange={(e) => set("name", e.target.value)}
+            />
+          </div>
+
+          <div className="ab-field">
+            <label>Catégorie</label>
+            <select
+              className="ab-input"
+              value={form.cat}
+              onChange={(e) => set("cat", e.target.value)}
+              disabled={categories.length === 0}
+            >
+              {categories.length === 0 && (
+                <option value="">Aucune catégorie — créez-en une dans Catégories</option>
+              )}
+              {!categories.some((c) => c.id === form.cat) && form.cat && (
+                <option value={form.cat}>{form.cat}</option>
+              )}
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <ProductAiGenerateBar
+            form={form}
+            productId={productId}
+            categoryName={categoryName}
+            onApply={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+            onNotify={(msg, error) => onNotify?.(msg, error)}
+            onGenerated={scrollToGeneratedContent}
+          />
+
           {([
-            { label: "Nom du produit", key: "name" as const, type: "text" },
             { label: "Prix de base (€)", key: "price" as const, type: "number" },
             { label: "Contenance (ml, g…)", key: "ml" as const, type: "text" },
           ] as const).map(({ label, key, type }) => (
@@ -232,26 +279,6 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
           </div>
 
           <div className="ab-field">
-            <label>Catégorie</label>
-            <select
-              className="ab-input"
-              value={form.cat}
-              onChange={(e) => set("cat", e.target.value)}
-              disabled={categories.length === 0}
-            >
-              {categories.length === 0 && (
-                <option value="">Aucune catégorie — créez-en une dans Catégories</option>
-              )}
-              {!categories.some((c) => c.id === form.cat) && form.cat && (
-                <option value={form.cat}>{form.cat}</option>
-              )}
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="ab-field">
             <label>Tag promo</label>
             <select
               className="ab-input"
@@ -275,8 +302,13 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             <input className="ab-input" type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} />
           </div>
 
-          <div className="adm-form-section-title">Contenu fiche produit</div>
-          <ProductContentSectionsEditor
+          <div
+            ref={contentSectionRef}
+            id="product-ai-generated-content"
+            className="product-ai-content-anchor"
+          >
+            <div className="adm-form-section-title">Contenu fiche produit</div>
+            <ProductContentSectionsEditor
             desc={form.desc}
             onDescChange={(v) => set("desc", v)}
             benefits={form.benefits ?? []}
@@ -288,6 +320,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew }: {
             extraSections={form.extraSections ?? []}
             onExtraSectionsChange={(sections) => set("extraSections", sections)}
           />
+          </div>
 
           <div className="adm-form-section-title">Image principale</div>
           <p className="adm-form-section-desc">
@@ -595,6 +628,7 @@ export function ProductsModule() {
           categories={categories}
           onClose={() => setEditingProduct(null)}
           onSave={handleSave}
+          onNotify={(msg) => showToast(msg)}
         />
       )}
       {creatingProduct && (
@@ -604,6 +638,7 @@ export function ProductsModule() {
           onClose={() => setCreatingProduct(false)}
           onSave={handleCreate}
           isNew
+          onNotify={(msg) => showToast(msg)}
         />
       )}
       {saveNotice && (

@@ -449,9 +449,9 @@ export interface Database {
           action: string;
           provider: string;
           model: string;
-          tokens_input: number;
-          tokens_output: number;
-          cost_eur: number;
+          tokens: number;
+          estimated_cost: number;
+          error_detail: string | null;
           created_at: string;
         };
         Insert: {
@@ -461,9 +461,9 @@ export interface Database {
           action: string;
           provider: string;
           model: string;
-          tokens_input?: number;
-          tokens_output?: number;
-          cost_eur?: number;
+          tokens?: number;
+          estimated_cost?: number;
+          error_detail?: string | null;
           created_at?: string;
         };
         Update: {
@@ -472,9 +472,9 @@ export interface Database {
           action?: string;
           provider?: string;
           model?: string;
-          tokens_input?: number;
-          tokens_output?: number;
-          cost_eur?: number;
+          tokens?: number;
+          estimated_cost?: number;
+          error_detail?: string | null;
         };
         Relationships: [];
       };
@@ -708,6 +708,8 @@ export interface Database {
           canonical_url: string | null;
           faq: Json;
           related_product_ids: string[];
+          tags: string[];
+          schema_article: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -731,6 +733,8 @@ export interface Database {
           canonical_url?: string | null;
           faq?: Json;
           related_product_ids?: string[];
+          tags?: string[];
+          schema_article?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -753,6 +757,8 @@ export interface Database {
           canonical_url?: string | null;
           faq?: Json;
           related_product_ids?: string[];
+          tags?: string[];
+          schema_article?: Json | null;
           updated_at?: string;
         };
         Relationships: [];

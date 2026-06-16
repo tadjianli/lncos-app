@@ -39,11 +39,9 @@ export const AI_PROVIDER_LABELS: Record<AiProvider, string> = {
   mistral: "Mistral AI",
 };
 
+/** Anthropic : liste vide côté client — chargée via GET /api/admin/ai/models */
 export const AI_PROVIDER_MODELS: Record<AiProvider, AiProviderModel[]> = {
-  anthropic: [
-    { id: "claude-opus-4-20250514", label: "Claude Opus" },
-    { id: "claude-sonnet-4-20250514", label: "Claude Sonnet" },
-  ],
+  anthropic: [],
   openai: [
     { id: "gpt-4.1", label: "GPT-5" },
     { id: "gpt-4.1-mini", label: "GPT-5 Mini" },
@@ -106,17 +104,17 @@ export interface AiSettings {
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {
   provider: "anthropic",
-  model: "claude-sonnet-4-20250514",
+  model: "",
   language: "fr",
-  tone: "luxe",
+  tone: "ecommerce",
   descriptionLength: "medium",
-  seoEnabled: false,
+  seoEnabled: true,
   seoAutoTitle: true,
   seoAutoMeta: true,
   seoAutoSlug: true,
   seoAutoAlt: true,
   seoAutoKeywords: true,
-  blogEnabled: false,
+  blogEnabled: true,
   blogWordCount: 1000,
   blogIncludeFaq: true,
   blogIncludeSchema: true,
@@ -131,6 +129,9 @@ export interface AiSettingsInput extends Omit<AiSettings, "apiKeyMasked" | "hasA
   /** Nouvelle clé — envoyée uniquement si l'admin la saisit */
   apiKey?: string;
 }
+
+/** UUID singleton — ligne de configuration unique en base */
+export const AI_SETTINGS_ROW_ID = "00000000-0000-4000-a000-000000000001";
 
 export interface DbAiSettings {
   id: string;
@@ -163,17 +164,49 @@ export interface AiUsageLogRow {
   action: string;
   provider: string;
   model: string;
-  tokens_input: number;
-  tokens_output: number;
-  cost_eur: number;
+  tokens: number;
+  estimated_cost: number;
+  error_detail: string | null;
   created_at: string;
 }
+
+export type AiConnectionStatus =
+  | "connected"
+  | "invalid_key"
+  | "insufficient_credit"
+  | "api_error";
+
+export const AI_CONNECTION_STATUS_LABELS: Record<AiConnectionStatus, string> = {
+  connected: "Connecté",
+  invalid_key: "Clé invalide",
+  insufficient_credit: "Crédit insuffisant",
+  api_error: "Erreur API",
+};
 
 export interface AiUsageStats {
   todayEur: number;
   weekEur: number;
   monthEur: number;
   totalRequests: number;
+}
+
+/** Contrôle diagnostic (admin) — sans valeurs secrètes */
+export interface AiEnvCheckItem {
+  id: string;
+  label: string;
+  ok: boolean;
+  hint: string;
+}
+
+export interface AiDiagnosticPayload {
+  checks: AiEnvCheckItem[];
+  encryptionReady: boolean;
+  encryptionSource: "ai_encryption_key" | "service_role_fallback" | "none";
+  canPersistApiKeys: boolean;
+  anthropicKeySource: "env" | "database" | "none";
+  ready: boolean;
+  encryptionConfigured?: boolean;
+  encryptionErrorMessage?: string | null;
 }
 
 export function maskApiKey(key: string): string {
@@ -235,7 +268,7 @@ export function aiSettingsToDb(
 }
 
 export function defaultModelForProvider(provider: AiProvider): string {
-  return AI_PROVIDER_MODELS[provider][0]?.id ?? DEFAULT_AI_SETTINGS.model;
+  return AI_PROVIDER_MODELS[provider][0]?.id ?? "";
 }
 
 export function tonePrompt(tone: AiTone): string {

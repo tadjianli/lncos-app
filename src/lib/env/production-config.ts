@@ -34,6 +34,8 @@ export const PRODUCTION_ENV_SPECS: EnvVarSpec[] = [
   { key: "RESEND_FROM", required: true, clientSafe: false },
   { key: "NEXT_PUBLIC_VAPID_PUBLIC_KEY", required: true, clientSafe: true, aliases: ["VAPID_PUBLIC_KEY"] },
   { key: "VAPID_PRIVATE_KEY", required: true, clientSafe: false },
+  { key: "AI_ENCRYPTION_KEY", required: false, clientSafe: false },
+  { key: "ANTHROPIC_API_KEY", required: false, clientSafe: false },
 ];
 
 function readEnv(key: string): string {
