@@ -5,6 +5,18 @@ import { useRouter } from "next/navigation";
 import type { HeroCarouselSettings, HeroCarouselSlide } from "@/lib/hero-carousel";
 import { isImageUrl } from "@/lib/admin-media";
 
+const AUTOPLAY_LOG = true;
+const RESUME_AFTER_MS = 5000;
+
+function logHero(message: string, detail?: unknown) {
+  if (!AUTOPLAY_LOG || typeof console === "undefined") return;
+  if (detail !== undefined) {
+    console.log(`[HeroCarousel] ${message}`, detail);
+  } else {
+    console.log(`[HeroCarousel] ${message}`);
+  }
+}
+
 export interface HomeHeroCarouselProps {
   slides: HeroCarouselSlide[];
   settings: HeroCarouselSettings;
@@ -93,21 +105,35 @@ function SlideContent({ slide, isActive, priority, preview, onCta }: SlideConten
 export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarouselProps) {
   const router = useRouter();
   const [index, setIndex] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
   const touchStartX = useRef<number | null>(null);
-  const reducedMotion = useRef(false);
+  const indexRef = useRef(0);
+  const countRef = useRef(slides.length);
+  const pausedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
+  const resumeTimerRef = useRef<number | null>(null);
+  const autoplayActiveRef = useRef(false);
 
   const count = slides.length;
   const isCarousel = count > 1 && settings.enabled;
-  const intervalMs = Math.max(2000, (settings.intervalSeconds || 5) * 1000);
+  const intervalMs = Math.max(4000, Math.min(5000, (settings.intervalSeconds || 5) * 1000));
+
+  countRef.current = count;
+  indexRef.current = index;
 
   useEffect(() => {
-    reducedMotion.current =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setPrefersReducedMotion(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
   }, []);
 
   useEffect(() => {
     setIndex(0);
+    indexRef.current = 0;
   }, [slides.map((s) => s.id).join(",")]);
 
   useEffect(() => {
@@ -125,24 +151,110 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
     };
   }, [slides[0]?.imageUrl]);
 
-  const goTo = useCallback(
-    (next: number) => {
-      if (count <= 1) return;
-      setIndex(((next % count) + count) % count);
-    },
-    [count]
-  );
+  const goTo = useCallback((next: number) => {
+    const total = countRef.current;
+    if (total <= 1) return;
+    const normalized = ((next % total) + total) % total;
+    if (normalized === indexRef.current) return;
+    indexRef.current = normalized;
+    setIndex(normalized);
+    logHero("slide changed", { index: normalized, total });
+  }, []);
 
-  const goNext = useCallback(() => goTo(index + 1), [goTo, index]);
-  const goPrev = useCallback(() => goTo(index - 1), [goTo, index]);
+  const goNext = useCallback(() => goTo(indexRef.current + 1), [goTo]);
+  const goPrev = useCallback(() => goTo(indexRef.current - 1), [goTo]);
+
+  const clearAutoplayTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const clearResumeTimer = useCallback(() => {
+    if (resumeTimerRef.current !== null) {
+      window.clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleAutoplayTick = useCallback(() => {
+    clearAutoplayTimer();
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      if (
+        !autoplayActiveRef.current ||
+        pausedRef.current ||
+        document.hidden ||
+        countRef.current <= 1
+      ) {
+        scheduleAutoplayTick();
+        return;
+      }
+      goNext();
+      scheduleAutoplayTick();
+    }, intervalMs);
+  }, [clearAutoplayTimer, goNext, intervalMs]);
+
+  const pauseAutoplay = useCallback(() => {
+    pausedRef.current = true;
+    clearAutoplayTimer();
+    clearResumeTimer();
+    resumeTimerRef.current = window.setTimeout(() => {
+      resumeTimerRef.current = null;
+      pausedRef.current = false;
+      logHero("autoplay resumed");
+      scheduleAutoplayTick();
+    }, RESUME_AFTER_MS);
+  }, [clearAutoplayTimer, clearResumeTimer, scheduleAutoplayTick]);
 
   useEffect(() => {
-    if (!isCarousel || !settings.autoplay || preview || reducedMotion.current) return;
-    const id = window.setInterval(goNext, intervalMs);
-    return () => window.clearInterval(id);
-  }, [isCarousel, settings.autoplay, preview, intervalMs, goNext]);
+    const canAutoplay =
+      isCarousel && settings.autoplay && !preview && !prefersReducedMotion;
+
+    autoplayActiveRef.current = canAutoplay;
+    pausedRef.current = false;
+    clearAutoplayTimer();
+    clearResumeTimer();
+
+    if (!canAutoplay) return;
+
+    logHero("autoplay started", { intervalMs, slides: countRef.current });
+    scheduleAutoplayTick();
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        clearAutoplayTimer();
+        return;
+      }
+      if (!pausedRef.current && autoplayActiveRef.current) {
+        logHero("autoplay resumed");
+        scheduleAutoplayTick();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      autoplayActiveRef.current = false;
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearAutoplayTimer();
+      clearResumeTimer();
+    };
+  }, [
+    isCarousel,
+    settings.autoplay,
+    preview,
+    prefersReducedMotion,
+    intervalMs,
+    scheduleAutoplayTick,
+    clearAutoplayTimer,
+    clearResumeTimer,
+  ]);
 
   function onTouchStart(e: React.TouchEvent) {
+    if (!isCarousel) return;
+    pauseAutoplay();
     touchStartX.current = e.touches[0]?.clientX ?? null;
   }
 
@@ -154,9 +266,16 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
     if (Math.abs(delta) < 40) return;
     if (delta < 0) goNext();
     else goPrev();
+    pauseAutoplay();
+  }
+
+  function handleDotClick(i: number) {
+    goTo(i);
+    pauseAutoplay();
   }
 
   function handleCta(slide: HeroCarouselSlide) {
+    pauseAutoplay();
     if (slide.buttonLink.trim()) {
       navigateToLink(router, slide.buttonLink);
       return;
@@ -174,6 +293,7 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
         className="hero-carousel"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onPointerDown={isCarousel ? pauseAutoplay : undefined}
         role={isCarousel ? "region" : undefined}
         aria-roledescription={isCarousel ? "carousel" : undefined}
         aria-label={isCarousel ? "Bannière d'accueil" : undefined}
@@ -199,7 +319,7 @@ export function HomeHeroCarousel({ slides, settings, preview }: HomeHeroCarousel
                 className={`hero-carousel-dot${i === index ? " is-active" : ""}`}
                 aria-selected={i === index}
                 aria-label={`Slide ${slide.position}`}
-                onClick={() => goTo(i)}
+                onClick={() => handleDotClick(i)}
               />
             ))}
           </div>
