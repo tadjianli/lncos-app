@@ -941,7 +941,7 @@ export default function BagPage() {
   };
 
   return (
-    <AppShell>
+    <AppShell bottomNav={screen === "cart"}>
       <div style={{ display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {screen === "cart" && (
           <CartScreen

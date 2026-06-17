@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useState, lazy, Suspense, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { BottomNav } from "./BottomNav";
 import { SideMenu } from "./SideMenu";
 import { Toast } from "./Toast";
@@ -27,6 +27,7 @@ import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
 import { PopupPromo } from "@/components/marketing/PopupPromo";
 import { closeProductDetailNavigation } from "@/lib/product-navigation";
+import { isCheckoutFocusMode, isCheckoutRoute } from "@/lib/checkout-navigation";
 import { closeOverlayWithHistory } from "@/lib/overlay-history";
 import { useOverlayHistory } from "@/lib/use-product-overlay-history";
 import { useOverlayRouteSync } from "@/lib/use-overlay-route-sync";
@@ -58,6 +59,7 @@ interface AppShellProps {
 
 export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const router       = useRouter();
+  const pathname     = usePathname();
   const toast        = useStore(selectToast);
   const cartCount    = useStore(selectCartCount);
   const overlay      = useStore(selectOverlay);
@@ -91,12 +93,26 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
     setMode(getRenderModeFromSearch(window.location.search));
   }, []);
 
-  const navVisible = bottomNav && showNav(mode);
+  const checkoutRoute = isCheckoutRoute(pathname);
+  const checkoutFocus = isCheckoutFocusMode(pathname, bottomNav);
+  const navVisible = bottomNav && showNav(mode) && !checkoutRoute;
   const sideMenuOpen = overlay?.type === "side-menu";
   const bottomNavVisible = navVisible && !sideMenuOpen;
   const stackedListingCategory = getStackedListingCategory(overlay);
   const productOverListing = isProductOpenedOverListing(overlay);
   const productOverlayOpen = overlay?.type === "product";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (checkoutFocus) {
+      root.dataset.lncosCheckoutTunnel = "true";
+    } else {
+      delete root.dataset.lncosCheckoutTunnel;
+    }
+    return () => {
+      delete root.dataset.lncosCheckoutTunnel;
+    };
+  }, [checkoutFocus]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -125,7 +141,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   return (
     <div
       data-render-mode={mode}
-      className={`app-shell${navVisible ? " app-shell--with-nav" : ""}`}
+      className={`app-shell${navVisible ? " app-shell--with-nav" : ""}${checkoutFocus ? " app-shell--checkout-tunnel" : ""}`}
     >
       {/* ── Content area (flex:1, clips to its bounds) ─────── */}
       {/*    z:80 overlays sit here — they cover content, NOT nav */}
@@ -179,11 +195,11 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
         )}
       </Suspense>
 
-      {/* Popups marketing — web + PWA iOS/Android (même bundle Next.js) */}
-      {mode === "live" && !overlay && <PopupPromo />}
+      {/* Popups marketing — masqués dans le tunnel checkout (focus conversion) */}
+      {mode === "live" && !overlay && !checkoutFocus && <PopupPromo />}
 
-      {/* ── Social proof notifications (bas gauche) ───────── */}
-      <SocialProofRotator navVisible={bottomNavVisible} />
+      {/* ── Social proof — masqué dans le tunnel checkout ───────── */}
+      {!checkoutFocus && <SocialProofRotator navVisible={bottomNavVisible} />}
 
       {/* ── Toast — sous le header (ne masque pas le contenu / CTA) ── */}
       {toast && (

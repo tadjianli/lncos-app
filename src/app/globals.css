@@ -4896,6 +4896,29 @@ html[data-lncos-side-menu-open] .bottom-nav {
   pointer-events: none;
 }
 
+/* Tunnel checkout — tab bar / FAB panier masqués (repli CSS si portal résiduel) */
+html[data-lncos-checkout-tunnel] .bottom-nav {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.app-shell--checkout-tunnel .app-shell-main {
+  padding-bottom: 0;
+}
+
+/* CTA checkout sans tab bar : safe-area iOS uniquement (pas de bande vide) */
+.app-shell:not(.app-shell--with-nav) .bottom-action-bar--in-shell,
+.app-shell--checkout-tunnel .bottom-action-bar--in-shell {
+  padding-bottom: calc(
+    var(--sticky-cart-bar-pad-y, 6px) + max(12px, env(safe-area-inset-bottom, 0px))
+  );
+}
+
+.app-shell--checkout-tunnel .bag-page-scroll,
+.app-shell--checkout-tunnel .checkout-flow.app-scroll-page {
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+}
+
 .pd-overlay__handle {
   position: absolute;
   top: calc(var(--safe-top) + 8px);
