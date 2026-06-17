@@ -24,7 +24,30 @@ Branche : `ui/lncos-beige-theme` · Glow atténué sur les éléments ciblés (C
 
 Popup et menu latéral : injection markup avec les classes CSS prod (comparaison visuelle pure).
 
-## Regénérer
+## Tunnel checkout (focus conversion)
+
+| # | Étape | iPhone | Android |
+|---|-------|--------|---------|
+| 1 | Adresse | `checkout/iphone/01-adresse.png` | `checkout/android/01-adresse.png` |
+| 2 | Livraison | `checkout/iphone/02-livraison.png` | `checkout/android/02-livraison.png` |
+| 3 | Paiement | `checkout/iphone/03-paiement.png` | `checkout/android/03-paiement.png` |
+| 4 | Confirmation | `checkout/iphone/04-confirmation.png` | `checkout/android/04-confirmation.png` |
+
+Étapes 1–3 : navigation réelle `/bag` → checkout (panier seedé, tab bar masquée).  
+Étape 4 : injection markup aligné `ConfirmedScreen` (sans appel Stripe).
+
+```bash
+npm run dev
+npm run ui:screenshots:checkout
+# Port alternatif :
+UI_SCREENSHOT_BASE=http://127.0.0.1:3002 npm run ui:screenshots:checkout
+# Un seul device :
+node scripts/ui-checkout-screenshots.mjs --device iphone
+```
+
+Viewports : iPhone 390×844 · Android 412×915 · scale 2× / 2.625×.
+
+## Regénérer (thème beige)
 
 ```bash
 npm run dev

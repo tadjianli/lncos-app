@@ -2,19 +2,25 @@
 /**
  * Captures mobile UI screenshots for beige theme comparison.
  * Usage: node scripts/ui-theme-screenshots.mjs --label before|after
+ *
+ * Tunnel checkout (4 étapes) : node scripts/ui-checkout-screenshots.mjs
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "playwright";
+import { baseUrl, shot as takeShot } from "./ui-screenshot-shared.mjs";
 
 const label = process.argv.includes("--label")
   ? process.argv[process.argv.indexOf("--label") + 1]
   : "capture";
 
-const baseUrl = process.env.UI_SCREENSHOT_BASE ?? "http://127.0.0.1:3000";
 const outDir = join(process.cwd(), "docs", "ui-screenshots", label);
 
 const VIEWPORT = { width: 390, height: 844 };
+
+async function shot(page, name) {
+  await takeShot(page, outDir, name);
+}
 
 const POPUP_HTML = `
 <div class="popup-promo-overlay popup-promo-overlay--screenshot" style="pointer-events:auto;z-index:9999">
@@ -88,8 +94,6 @@ async function openFirstProduct(page) {
 }
 
 async function main() {
-  await mkdir(outDir, { recursive: true });
-
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     viewport: VIEWPORT,

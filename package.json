@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "ai:smoke": "node scripts/ai-smoke-test.mjs"
+    "ai:smoke": "node scripts/ai-smoke-test.mjs",
+    "ui:screenshots": "node scripts/ui-theme-screenshots.mjs",
+    "ui:screenshots:checkout": "node scripts/ui-checkout-screenshots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
