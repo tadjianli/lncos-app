@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { pageSeo } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "Mon profil | LN COS",
-  robots: { index: false, follow: false },
+  title: pageSeo("profile").title,
 };
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {

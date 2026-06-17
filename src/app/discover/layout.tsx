@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
+import { formatPageTitle, getAppName, pageSeo } from "@/lib/branding";
+
+const seo = pageSeo("discover");
 
 export const metadata: Metadata = {
-  title: "Nouveautés",
-  description:
-    "Découvrez les nouveautés LN COS : lancements vernis semi-permanents, accessoires ongles, maquillage et soins beauté à La Réunion.",
+  title: seo.title,
+  description: seo.description,
   alternates: { canonical: absoluteUrl("/discover") },
   openGraph: {
-    title: "Nouveautés | LN COS",
-    description: "Dernières nouveautés beauté et cosmétiques LN COS.",
+    title: formatPageTitle("Nouveautés"),
+    description: seo.description,
     url: absoluteUrl("/discover"),
+    siteName: getAppName(),
   },
 };
 

@@ -3,6 +3,7 @@ import type { ShippingAddress } from "@/lib/stripe/shipping-address";
 import { formatOrderRef } from "@/lib/order-ref";
 import { carrierLabel, resolveOrderTrackingUrl } from "@/lib/order-tracking";
 import { absoluteUrl } from "@/lib/site-url";
+import { getAppName, interpolateBrand } from "@/lib/branding";
 import { getEmailFrom, getResendClient, isEmailConfigured } from "./resend-client";
 
 function formatAddress(addr: ShippingAddress | null | undefined): string {
@@ -39,12 +40,14 @@ export async function sendOrderConfirmationEmail(input: {
   const { to, orderRef, total, items, shippingAddress } = input;
   const ref = formatOrderRef(orderRef);
 
+  const appName = getAppName();
+
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
     to,
-    subject: `Confirmation de commande #${ref} — LN COS`,
+    subject: interpolateBrand(`Confirmation de commande #${ref} — {{appName}}`),
     text: [
-      "Merci pour votre commande chez LN COS !",
+      interpolateBrand("Merci pour votre commande chez {{appName}} !"),
       "",
       `Référence : #${ref}`,
       `Total payé : ${total.toFixed(2)} €`,
@@ -58,7 +61,7 @@ export async function sendOrderConfirmationEmail(input: {
       `Suivez votre commande : ${absoluteUrl("/profile")}`,
       "",
       "À très bientôt,",
-      "L'équipe LN COS",
+      interpolateBrand("L'équipe {{appName}}"),
     ].join("\n"),
   });
 
@@ -97,9 +100,9 @@ export async function sendOrderShippedEmail(input: {
   const { error } = await resend.emails.send({
     from: getEmailFrom(),
     to,
-    subject: `Votre commande #${ref} est expédiée — LN COS`,
+    subject: interpolateBrand(`Votre commande #${ref} est expédiée — {{appName}}`),
     text: [
-      "Bonne nouvelle — votre commande LN COS a été expédiée !",
+      interpolateBrand("Bonne nouvelle — votre commande {{appName}} a été expédiée !"),
       "",
       `Référence : #${ref}`,
       carrierLine,
@@ -109,7 +112,7 @@ export async function sendOrderShippedEmail(input: {
       `Suivre dans l'app : ${absoluteUrl(`/profile/orders/${encodeURIComponent(ref)}/tracking`)}`,
       "",
       "Merci de votre confiance,",
-      "L'équipe LN COS",
+      interpolateBrand("L'équipe {{appName}}"),
     ]
       .filter(Boolean)
       .join("\n"),

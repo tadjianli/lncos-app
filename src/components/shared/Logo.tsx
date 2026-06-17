@@ -1,9 +1,5 @@
 import Image from "next/image";
-
-/** Chemin public du logo officiel LN COS */
-export const LOGO_PATH = "/assets/logo-lncos.jpg";
-
-const LOGO_ASPECT = 1600 / 1460;
+import { branding, getLogoAlt, getLogoPath } from "@/lib/branding";
 
 interface LogoProps {
   size?: number;
@@ -15,12 +11,12 @@ interface LogoProps {
 
 export function Logo({ size = 30 }: LogoProps) {
   const height = size;
-  const width = Math.round(size * LOGO_ASPECT);
+  const width = Math.round(size * branding.logo.aspectRatio);
 
   return (
     <Image
-      src={LOGO_PATH}
-      alt="LN COS"
+      src={getLogoPath()}
+      alt={getLogoAlt()}
       width={width}
       height={height}
       className="lncos-logo"
@@ -29,3 +25,6 @@ export function Logo({ size = 30 }: LogoProps) {
     />
   );
 }
+
+/** @deprecated Utiliser getLogoPath() depuis @/lib/branding */
+export const LOGO_PATH = branding.logo.path;

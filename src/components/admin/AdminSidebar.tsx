@@ -10,7 +10,7 @@ import { Logo } from "@/components/shared/Logo";
 import { Icon } from "@/components/shared/Icon";
 import { useAdminOrderBadge } from "@/lib/admin-supabase";
 import {
-  ADMIN_NAV_GROUPS,
+  getAdminNavGroups,
   findNavGroupForPath,
   isNavItemActive,
   type AdminNavGroup,
@@ -135,7 +135,7 @@ export function AdminSidebar({ onNav, onClose, onLogout, loggingOut }: AdminSide
       </div>
 
       <nav className="adm-nav adm-nav--grouped">
-        {ADMIN_NAV_GROUPS.map((group) => (
+        {getAdminNavGroups().map((group) => (
           <NavGroupSection
             key={group.id}
             group={group}

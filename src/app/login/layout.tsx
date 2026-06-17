@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import "../admin/globals.css";
+import { pageSeo } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "LN COS — Connexion admin",
+  title: pageSeo("adminLogin").title,
   robots: "noindex,nofollow",
 };
 

@@ -7,25 +7,26 @@ import {
   buildHomePageSchemaGraph,
 } from "@/lib/seo-site";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
+import { branding, getAppName } from "@/lib/branding";
 
 export const metadata: Metadata = {
   title: HOME_SEO_TITLE,
   description: HOME_SEO_DESCRIPTION,
-  keywords: SITE_KEYWORDS,
+  keywords: [...SITE_KEYWORDS],
   alternates: { canonical: absoluteUrl("/") },
   openGraph: {
     type: "website",
-    locale: "fr_FR",
+    locale: branding.locale.replace("-", "_"),
     url: absoluteUrl("/"),
-    siteName: "LN COS",
+    siteName: getAppName(),
     title: HOME_SEO_TITLE,
     description: HOME_SEO_DESCRIPTION,
     images: [
       {
-        url: absoluteUrl("/assets/icon-512.png"),
+        url: absoluteUrl(branding.icons.icon512),
         width: 512,
         height: 512,
-        alt: "LN COS — Cosmétiques & beauté à La Réunion",
+        alt: getAppName(),
       },
     ],
   },
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: HOME_SEO_TITLE,
     description: HOME_SEO_DESCRIPTION,
-    images: [absoluteUrl("/assets/icon-512.png")],
+    images: [absoluteUrl(branding.icons.icon512)],
   },
   robots: {
     index: true,

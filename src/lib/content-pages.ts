@@ -9,6 +9,7 @@ import type { Json } from "./database.types";
 import type { SocialNetworkLink } from "./social-links";
 import { BLOG_CATEGORIES as STATIC_BLOG_CATEGORIES } from "./blog-content";
 import { SOCIAL_NETWORK_LINKS as STATIC_SOCIAL_LINKS } from "./social-links";
+import { brandCopy } from "@/lib/branding";
 import {
   DEFAULT_FLASH_SALES_COUNTDOWN,
   flashCountdownToDb,
@@ -38,12 +39,12 @@ export interface FlashSalesSettings {
 export const DEFAULT_FLASH_SALES_SETTINGS: FlashSalesSettings = {
   pageEnabled: true,
   bannerEyebrow: "Offres limitées",
-  bannerTitle: "Ventes Flash LN COS",
+  bannerTitle: brandCopy("flashBannerTitle"),
   bannerSubtitleTemplate:
     "{{count}} promotion(s) en cours — prix exclusifs, stocks limités.",
   countdownLabel: "Se termine dans",
   countdown: { ...DEFAULT_FLASH_SALES_COUNTDOWN },
-  emptyEyebrow: "🔥 Ventes Flash LN COS",
+  emptyEyebrow: brandCopy("flashEmptyEyebrow"),
   emptyTitle: "Aucune vente flash disponible",
   emptyBody:
     "Aucune vente flash n'est disponible pour le moment. De nouvelles offres exclusives arrivent bientôt.",
@@ -119,10 +120,9 @@ export interface BlogPageSettings {
 }
 
 export const DEFAULT_BLOG_PAGE_SETTINGS: BlogPageSettings = {
-  heroEyebrow: "Magazine beauté",
-  heroTitle: "Blog LN COS",
-  heroSubtitle:
-    "Conseils beauté, tutoriels, astuces skincare, tendances et nouveautés — curated by LN COS.",
+  heroEyebrow: brandCopy("blogHeroEyebrow"),
+  heroTitle: brandCopy("blogHeroTitle"),
+  heroSubtitle: brandCopy("blogHeroSubtitle"),
   articlesSectionTitle: "Derniers articles",
   articlesSectionHint: "",
 };
@@ -243,7 +243,7 @@ export function dbToBlogArticle(row: DbBlogArticle): BlogArticle {
     featured: row.featured,
     coverUrl: row.cover_url,
     published: row.published,
-    authorName: row.author_name ?? "Équipe LN COS",
+    authorName: row.author_name ?? brandCopy("teamAuthor"),
     body: parseBlogBody(row.body),
     seoTitle: row.seo_title ?? null,
     metaDescription: row.meta_description ?? null,
@@ -273,7 +273,7 @@ export function blogArticleToDb(a: Partial<BlogArticle> & { id: string; slug: st
     published: a.published ?? false,
     position: 0,
     body: (a.body ?? []) as unknown as Json,
-    author_name: a.authorName ?? "Équipe LN COS",
+    author_name: a.authorName ?? brandCopy("teamAuthor"),
     seo_title: a.seoTitle ?? null,
     meta_description: a.metaDescription ?? null,
     seo_keyword: a.seoKeyword ?? null,
@@ -307,10 +307,9 @@ export interface SocialPageSettings {
 }
 
 export const DEFAULT_SOCIAL_PAGE_SETTINGS: SocialPageSettings = {
-  heroEyebrow: "Communauté LN COS",
+  heroEyebrow: brandCopy("socialHeroEyebrow"),
   heroTitle: "Réseaux sociaux",
-  heroSubtitle:
-    "Suivez LN COS au quotidien — inspiration beauté, coulisses, tutoriels et lancements en exclusivité.",
+  heroSubtitle: brandCopy("socialHeroSubtitle"),
   footnote:
     "Statistiques et dernières publications affichées automatiquement dès la connexion admin.",
 };

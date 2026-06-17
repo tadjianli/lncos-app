@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { pageSeo } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "Favoris | LN COS",
-  robots: { index: false, follow: false },
+  title: pageSeo("favorites").title,
 };
 
 export default function FavoritesLayout({ children }: { children: React.ReactNode }) {

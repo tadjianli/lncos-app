@@ -1,6 +1,8 @@
 /**
- * LN COS — Navigation admin groupée (sidebar repliable)
+ * Navigation admin groupée — filtrée par modules activés (config/modules.ts).
  */
+
+import { isModuleEnabled, type ModuleId } from "@config/modules";
 
 export interface AdminNavItem {
   id: string;
@@ -9,6 +11,8 @@ export interface AdminNavItem {
   label: string;
   live?: boolean;
   badgeKey?: "orders";
+  /** Module requis — masqué si désactivé */
+  module?: ModuleId;
 }
 
 export interface AdminNavGroup {
@@ -18,7 +22,7 @@ export interface AdminNavGroup {
   items: AdminNavItem[];
 }
 
-export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
+const ALL_ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     id: "analyse",
     label: "Analyse",
@@ -33,22 +37,24 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Boutique",
     emoji: "🛍",
     items: [
-      { id: "products", href: "/admin/products", icon: "tag", label: "Produits" },
-      { id: "categories", href: "/admin/categories", icon: "grid", label: "Catégories" },
+      { id: "products", href: "/admin/products", icon: "tag", label: "Produits", module: "products" },
+      { id: "categories", href: "/admin/categories", icon: "grid", label: "Catégories", module: "products" },
       {
         id: "product-page-builder",
         href: "/admin/product-page-builder",
         icon: "grid",
         label: "Fiche produit",
         live: true,
+        module: "products",
       },
-      { id: "promotions", href: "/admin/promotions", icon: "sparkle", label: "Promotions" },
+      { id: "promotions", href: "/admin/promotions", icon: "sparkle", label: "Promotions", module: "payments" },
       {
         id: "flash-sales",
         href: "/admin/content-pages?tab=flash",
         icon: "flame",
         label: "Ventes Flash",
         live: true,
+        module: "marketing",
       },
     ],
   },
@@ -57,8 +63,15 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Commandes",
     emoji: "📦",
     items: [
-      { id: "orders", href: "/admin/orders", icon: "bag", label: "Commandes", badgeKey: "orders" },
-      { id: "shipping", href: "/admin/shipping", icon: "truck", label: "Livraison" },
+      {
+        id: "orders",
+        href: "/admin/orders",
+        icon: "bag",
+        label: "Commandes",
+        badgeKey: "orders",
+        module: "orders",
+      },
+      { id: "shipping", href: "/admin/shipping", icon: "truck", label: "Livraison", module: "delivery" },
       {
         id: "returns",
         href: "/admin/settings?section=legal",
@@ -72,8 +85,8 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Clients",
     emoji: "👥",
     items: [
-      { id: "customers", href: "/admin/customers", icon: "user", label: "Clients" },
-      { id: "reviews", href: "/admin/reviews", icon: "star", label: "Avis" },
+      { id: "customers", href: "/admin/customers", icon: "user", label: "Clients", module: "customers" },
+      { id: "reviews", href: "/admin/reviews", icon: "star", label: "Avis", module: "reviews" },
     ],
   },
   {
@@ -87,13 +100,15 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: "edit",
         label: "Pages contenu",
         live: true,
+        module: "marketing",
       },
       {
         id: "blog",
         href: "/admin/content-pages?tab=blog",
         icon: "edit",
-        label: "Blog LN COS",
+        label: "Blog",
         live: true,
+        module: "blog",
       },
       {
         id: "social-content",
@@ -101,6 +116,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: "share",
         label: "Réseaux sociaux",
         live: true,
+        module: "marketing",
       },
       {
         id: "hero-carousel",
@@ -108,6 +124,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         icon: "sparkle",
         label: "Hero Carousel",
         live: true,
+        module: "marketing",
       },
     ],
   },
@@ -116,9 +133,16 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Marketing",
     emoji: "📢",
     items: [
-      { id: "social-proof", href: "/admin/social-proof", icon: "bolt", label: "Social Proof", live: true },
-      { id: "popups", href: "/admin/popups", icon: "gift", label: "Popups Marketing", live: true },
-      { id: "seo", href: "/admin/seo", icon: "search", label: "SEO", live: true },
+      {
+        id: "social-proof",
+        href: "/admin/social-proof",
+        icon: "bolt",
+        label: "Social Proof",
+        live: true,
+        module: "notifications",
+      },
+      { id: "popups", href: "/admin/popups", icon: "gift", label: "Popups Marketing", live: true, module: "notifications" },
+      { id: "seo", href: "/admin/seo", icon: "search", label: "SEO", live: true, module: "seo" },
     ],
   },
   {
@@ -135,21 +159,38 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "Services",
     emoji: "📅",
     items: [
-      { id: "rdv", href: "/admin/rdv", icon: "calendar", label: "Rendez-vous", live: true },
+      { id: "rdv", href: "/admin/rdv", icon: "calendar", label: "Rendez-vous", live: true, module: "appointments" },
       {
         id: "service-categories",
         href: "/admin/service-categories",
         icon: "grid",
         label: "Catégories prestations",
         live: true,
+        module: "appointments",
       },
     ],
   },
 ];
 
+function isNavItemVisible(item: AdminNavItem): boolean {
+  if (!item.module) return true;
+  return isModuleEnabled(item.module);
+}
+
+/** Navigation admin filtrée selon les modules activés */
+export function getAdminNavGroups(): AdminNavGroup[] {
+  return ALL_ADMIN_NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter(isNavItemVisible),
+  })).filter((group) => group.items.length > 0);
+}
+
+/** @deprecated Utiliser getAdminNavGroups() — conservé pour compatibilité tests */
+export const ADMIN_NAV_GROUPS = getAdminNavGroups();
+
 export function findNavGroupForPath(pathname: string, search: string): string | null {
   const params = new URLSearchParams(search);
-  for (const group of ADMIN_NAV_GROUPS) {
+  for (const group of getAdminNavGroups()) {
     for (const item of group.items) {
       if (isNavItemActive(item, pathname, params)) return group.id;
     }

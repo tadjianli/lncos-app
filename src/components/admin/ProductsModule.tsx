@@ -24,7 +24,6 @@ import {
 import type { ProductVariant } from "@/lib/product-catalog";
 import { AdminProductSaveDialog } from "@/components/admin/AdminProductSaveDialog";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
-import { ProductAiGenerateBar } from "@/components/admin/ProductAiGenerateBar";
 import { computeProductSeoScore, seoLevelColor } from "@/lib/seo";
 
 /* ── Product edit modal ─────────────────────────────────────────────── */
@@ -47,12 +46,6 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
   const seoScore = computeProductSeoScore(form);
   const categoryName = categories.find((c) => c.id === form.cat)?.name ?? form.cat;
   const contentSectionRef = useRef<HTMLDivElement>(null);
-
-  function scrollToGeneratedContent() {
-    requestAnimationFrame(() => {
-      contentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
 
   useEffect(() => {
     if (isNew && form.name) {
@@ -207,16 +200,6 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
               ))}
             </select>
           </div>
-
-          <ProductAiGenerateBar
-            form={form}
-            productId={productId}
-            categoryName={categoryName}
-            onApply={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-            onNotify={(msg, error) => onNotify?.(msg, error)}
-            onGenerated={scrollToGeneratedContent}
-          />
-
           {([
             { label: "Prix de base (€)", key: "price" as const, type: "number" },
             { label: "Contenance (ml, g…)", key: "ml" as const, type: "text" },

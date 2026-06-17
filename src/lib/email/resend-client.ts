@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { getTransactionalEmailFrom } from "@/lib/branding";
 
 let client: Resend | null = null;
 
@@ -14,5 +15,5 @@ export function getResendClient(): Resend | null {
 }
 
 export function getEmailFrom(): string {
-  return process.env.RESEND_FROM?.trim() || "LN COS <commandes@lncos.fr>";
+  return getTransactionalEmailFrom();
 }

@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
+import { formatPageTitle, getAppName, pageSeo } from "@/lib/branding";
+
+const seo = pageSeo("blog");
 
 export const metadata: Metadata = {
-  title: "Blog beauté — Conseils, tutoriels & tendances",
-  description:
-    "Blog beauté LN COS : conseils onglerie, vernis semi-permanent, skincare, maquillage et nouveautés. Tutoriels et tendances — La Réunion & France.",
+  title: seo.title,
+  description: seo.description,
   alternates: { canonical: absoluteUrl("/blog") },
   openGraph: {
-    title: "Blog beauté | LN COS",
-    description:
-      "Conseils beauté, tutoriels ongles, skincare et nouveautés LN COS.",
+    title: formatPageTitle("Blog"),
+    description: seo.description,
     url: absoluteUrl("/blog"),
-    siteName: "LN COS",
-    locale: "fr_FR",
-    type: "website",
+    siteName: getAppName(),
   },
 };
 

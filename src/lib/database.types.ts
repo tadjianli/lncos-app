@@ -1833,7 +1833,7 @@ export interface Database {
     Functions: {
       increment_promo_uses: {
         Args: { promo_code_arg: string };
-        Returns: undefined;
+        Returns: boolean;
       };
       decrement_order_items_stock: {
         Args: { items: Json };

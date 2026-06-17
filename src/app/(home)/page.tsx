@@ -28,6 +28,7 @@ import {
 import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { BlogJournalSection } from "@/components/home/BlogJournalSection";
+import { brandCopy } from "@/lib/branding";
 import { HomeSitelinksNav } from "@/components/seo/HomeSitelinksNav";
 import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { HomeHeroBanner } from "@/components/home/HomeHeroBanner";
@@ -363,7 +364,7 @@ function QuoteSection() {
         La beauté commence à l&apos;instant où vous décidez d&apos;être{" "}
         <span className="hl">vous-même</span>.
       </div>
-      <div className="home-quote-by">— La maison LN COS</div>
+      <div className="home-quote-by">{brandCopy("quoteAttribution")}</div>
     </div>
   );
 }
@@ -376,7 +377,7 @@ function NewsletterBlock() {
       <div className="home-news">
         <div className="home-news-glow" />
         <div className="rev-sec-eyebrow" style={{ justifyContent: "center", display: "flex" }}>
-          <Icon name="mail" size={13} color="var(--gold)" /> Club LN COS
+          <Icon name="mail" size={13} color="var(--gold)" /> {brandCopy("newsletterEyebrow")}
         </div>
         <h3
           style={{

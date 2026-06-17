@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
+import { formatPageTitle, getAppName, pageSeo } from "@/lib/branding";
+
+const seo = pageSeo("contact");
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description:
-    "Contactez LN COS — questions commandes, produits beauté, vernis semi-permanents et accessoires ongles. Réponse sous 24 à 48 h. La Réunion & France.",
+  title: seo.title,
+  description: seo.description,
   alternates: { canonical: absoluteUrl("/contact") },
   openGraph: {
-    title: "Contact | LN COS",
-    description: "Contactez l'équipe LN COS — La Réunion & France.",
+    title: formatPageTitle("Contact"),
+    description: seo.description,
     url: absoluteUrl("/contact"),
+    siteName: getAppName(),
   },
 };
 

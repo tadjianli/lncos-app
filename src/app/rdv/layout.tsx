@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { absoluteUrl } from "@/lib/site-url";
+import { pageSeo } from "@/lib/branding";
+
+const seo = pageSeo("rdv");
 
 export const metadata: Metadata = {
-  title: "Prendre rendez-vous | LN COS",
-  description: "Réservez votre moment beauté à l'institut LN COS en quelques clics.",
-  alternates: { canonical: absoluteUrl("/rdv") },
+  title: seo.title,
+  description: seo.description,
   openGraph: {
-    title: "Prendre rendez-vous | LN COS",
-    description: "Institut onglerie & beauté — réservation en ligne.",
-    url: absoluteUrl("/rdv"),
+    title: seo.title,
+    description: seo.description,
   },
 };
 

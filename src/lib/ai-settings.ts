@@ -219,7 +219,7 @@ export function dbToAiSettings(row: DbAiSettings | null, decryptedKey?: string |
   if (!row) return { ...DEFAULT_AI_SETTINGS };
   const hasKey = Boolean(row.api_key_encrypted);
   return {
-    provider: row.provider,
+    provider: "anthropic",
     model: row.model,
     language: row.language,
     tone: row.tone,
@@ -247,7 +247,7 @@ export function aiSettingsToDb(
   apiKeyEncrypted?: string | null
 ): Partial<DbAiSettings> {
   return {
-    provider: s.provider,
+    provider: "anthropic",
     model: s.model,
     language: s.language,
     tone: s.tone,

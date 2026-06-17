@@ -11,6 +11,7 @@ import {
   type OrderLineItem,
 } from "@/lib/stripe/order-fulfillment";
 import { encodeShippingAddress, type ShippingAddress } from "@/lib/stripe/shipping-address";
+import { resolveCheckoutOrigin } from "@/lib/stripe/checkout-origin";
 
 interface CheckoutBody {
   items: OrderLineItem[];
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       discount,
       promo_code,
       total,
-      returnUrl: clientReturnUrl,
+      returnUrl: _clientReturnUrl,
     } = body;
 
     if (!items?.length || total <= 0) {
@@ -171,12 +172,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Total invalide" }, { status: 400 });
     }
 
-    let origin = clientReturnUrl?.startsWith("http") ? new URL(clientReturnUrl).origin : null;
-    if (!origin) {
-      const host = req.headers.get("host") ?? "localhost:3000";
-      const proto = host.includes("localhost") ? "http" : "https";
-      origin = `${proto}://${host}`;
-    }
+    const origin = resolveCheckoutOrigin(req);
 
     const successUrl = `${origin}/bag?stripe_session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${origin}/bag`;

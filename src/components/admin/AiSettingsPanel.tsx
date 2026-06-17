@@ -26,6 +26,8 @@ import {
 
 const ACTION_LABELS: Record<string, string> = {
   test_connection: "Test connexion",
+  seo_analyze: "Analyse SEO produit",
+  seo_optimize: "Optimisation SEO produit",
   seo_title: "Titre SEO",
   short_description: "Description courte",
   long_description: "Description longue",
@@ -182,7 +184,7 @@ export function AiSettingsPanel({
   const [testing, setTesting] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [openCard, setOpenCard] = useState<string | null>("Fournisseur IA");
+  const [openCard, setOpenCard] = useState<string | null>("Claude (Anthropic)");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<AiConnectionStatus | "disconnected">(
     "disconnected"
@@ -206,7 +208,7 @@ export function AiSettingsPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Chargement impossible");
       if (data.settings) {
-        setSettings(data.settings);
+        setSettings({ ...data.settings, provider: "anthropic" });
         setConnectionStatus(data.settings.lastTestOk ? "connected" : "disconnected");
       }
       if (data.logs) setLogs(data.logs);
@@ -223,12 +225,6 @@ export function AiSettingsPanel({
   }, []);
 
   const loadProviderModels = useCallback(async () => {
-    if (settings.provider !== "anthropic") {
-      setProviderModels(AI_PROVIDER_MODELS[settings.provider]);
-      setModelsError(null);
-      return;
-    }
-
     if (!settings.hasApiKey && !apiKeyInput.trim()) {
       setProviderModels([]);
       setModelsError("Configurez une clé API puis testez la connexion pour lister les modèles.");
@@ -238,7 +234,7 @@ export function AiSettingsPanel({
     setModelsLoading(true);
     setModelsError(null);
     try {
-      const res = await fetch(`/api/admin/ai/models?provider=${settings.provider}`);
+      const res = await fetch("/api/admin/ai/models?provider=anthropic");
       const data = (await res.json()) as {
         models?: AiProviderModel[];
         selected?: string | null;
@@ -313,7 +309,7 @@ export function AiSettingsPanel({
     }
     setSaving(true);
     try {
-      const body: Record<string, unknown> = { ...settings };
+      const body: Record<string, unknown> = { ...settings, provider: "anthropic" };
       delete body.apiKeyMasked;
       delete body.hasApiKey;
       delete body.lastTestOk;
@@ -327,7 +323,7 @@ export function AiSettingsPanel({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Enregistrement échoué");
-      if (data.settings) setSettings(data.settings);
+      if (data.settings) setSettings({ ...data.settings, provider: "anthropic" });
       setApiKeyInput("");
       setShowApiKey(false);
       await load();
@@ -444,28 +440,33 @@ export function AiSettingsPanel({
       )}
       <AdminAccordionStack className="adm-settings-accordion-stack">
         <AdminAccordion
-          title="Fournisseur IA"
-          open={openCard === "Fournisseur IA"}
-          onOpenChange={(open) => setOpenCard(open ? "Fournisseur IA" : null)}
+          title="Claude (Anthropic)"
+          open={openCard === "Claude (Anthropic)"}
+          onOpenChange={(open) => setOpenCard(open ? "Claude (Anthropic)" : null)}
         >
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
             <ConnectionBadge status={badgeStatus} />
           </div>
           <div className="ab-field" style={{ marginTop: 8 }}>
             <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5, display: "block" }}>
-              Fournisseur
+              Moteur SEO produit
             </label>
-            <select
+            <div
               className="ab-input"
-              value={settings.provider}
-              onChange={(e) => onProviderChange(e.target.value as AiProvider)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: "var(--adm-bg)",
+                cursor: "default",
+              }}
             >
-              {(Object.keys(AI_PROVIDER_LABELS) as AiProvider[]).map((p) => (
-                <option key={p} value={p}>
-                  {AI_PROVIDER_LABELS[p]}
-                </option>
-              ))}
-            </select>
+              <Icon name="sparkle" size={14} />
+              Anthropic Claude
+            </div>
+            <p style={{ fontSize: 11, color: "var(--adm-ink-mute)", marginTop: 6, lineHeight: 1.45 }}>
+              L&apos;assistant SEO produit utilise exclusivement Claude. Le contenu marketing n&apos;est jamais réécrit automatiquement.
+            </p>
           </div>
           <div className="ab-field" style={{ marginTop: 12 }}>
             <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5, display: "block" }}>
@@ -573,7 +574,7 @@ export function AiSettingsPanel({
         >
           <div className="ab-field" style={{ marginTop: 8 }}>
             <label style={{ fontSize: 12, color: "var(--adm-ink-mute)", marginBottom: 5, display: "block" }}>
-              Modèle ({AI_PROVIDER_LABELS[settings.provider]})
+              Modèle Claude
             </label>
             {settings.provider === "anthropic" && modelsLoading ? (
               <p style={{ fontSize: 12, color: "var(--adm-ink-mute)", margin: "6px 0" }}>

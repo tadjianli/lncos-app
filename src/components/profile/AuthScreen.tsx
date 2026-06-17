@@ -10,6 +10,7 @@ import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
 import { isVipProgramEnabled } from "@/lib/feature-flags";
 import { translateAuthError } from "@/lib/auth-errors";
+import { brandCopy, getAppName } from "@/lib/branding";
 
 type Tab = "login" | "signup";
 
@@ -113,7 +114,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
             color: "var(--gold)",
           }}
         >
-          LN COS
+          {getAppName()}
         </div>
         <div className="mobile-screen-header__slot" aria-hidden />
       </div>
@@ -139,8 +140,8 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
             {tab === "login"
               ? "Connectez-vous pour accéder à votre espace"
               : vipEnabled
-                ? "Rejoignez le programme VIP LN COS"
-                : "Créez votre compte LN COS en quelques secondes"}
+                ? brandCopy("vipSignup")
+                : brandCopy("accountSignup")}
           </p>
         </div>
 

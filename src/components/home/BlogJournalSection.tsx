@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
+import { brandCopy } from "@/lib/branding";
 
 interface BlogJournalSectionProps {
   title?: string;
@@ -11,9 +12,9 @@ interface BlogJournalSectionProps {
 }
 
 export function BlogJournalSection({
-  title = "LE JOURNAL BEAUTÉ LN COS",
-  subtitle = "Conseils, tutoriels et tendances curated by LN COS.",
-  eyebrow = "Magazine",
+  title = brandCopy("blogHeroTitle").toUpperCase(),
+  subtitle = brandCopy("blogHeroSubtitle"),
+  eyebrow = brandCopy("blogHeroEyebrow"),
   cta = "Voir tous les articles",
 }: BlogJournalSectionProps) {
   return (
@@ -28,10 +29,9 @@ export function BlogJournalSection({
         </h2>
         {subtitle ? <p className="blog-journal__sub">{subtitle}</p> : null}
       </div>
-
       <Link href="/blog" className="blog-journal__cta">
         {cta}
-        <Icon name="arrowR" size={16} />
+        <Icon name="arrowR" size={14} />
       </Link>
     </section>
   );

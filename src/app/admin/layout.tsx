@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { brandCopy } from "@/lib/branding";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LN COS — Espace commerçant",
+  title: brandCopy("adminTitle"),
   robots: "noindex,nofollow",
 };
 

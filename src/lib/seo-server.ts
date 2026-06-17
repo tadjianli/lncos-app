@@ -10,6 +10,7 @@ import { normalizeExtraSections, normalizeSectionToggles } from "@/lib/product-s
 import { normalizeHomeVisibility } from "@/lib/product-home-visibility";
 import { getProductSeoPath, getCategorySeoPath, slugifySeo } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site-url";
+import { brandCopy, formatPageTitle } from "@/lib/branding";
 import { applyCategoryProductCounts } from "@/lib/category-product-counts";
 import { fetchBlogSitemapEntries } from "@/lib/blog-server";
 import {
@@ -301,7 +302,7 @@ export async function fetchProductReviewsForSchema(productId: string): Promise<P
     .limit(5);
 
   return (data ?? []).map((r) => ({
-    authorName: (r.author_name as string) || "Cliente LN COS",
+    authorName: (r.author_name as string) || "Client",
     rating: Number(r.rating),
     body: (r.body as string) || "",
     title: (r.title as string) || undefined,
@@ -454,12 +455,12 @@ export async function fetchSitemapEntries(): Promise<{ url: string; lastModified
 }
 
 export function productMetadata(product: Product) {
-  const title = product.seoTitle?.trim() || `${product.name} | LN COS`;
+  const title = product.seoTitle?.trim() || formatPageTitle(product.name);
   const description =
     product.metaDescription?.trim() ||
     product.seoExcerpt?.trim() ||
     product.desc?.trim().slice(0, 160) ||
-    `Découvrez ${product.name} sur LN COS.`;
+    brandCopy("productMetaFallback", { productName: product.name });
   const path = getProductSeoPath(product);
   const canonical = absoluteUrl(path);
   const image = product.mainImageUrl ?? undefined;
@@ -468,10 +469,10 @@ export function productMetadata(product: Product) {
 }
 
 export function categoryMetadata(category: Category) {
-  const title = category.seoTitle?.trim() || `${category.name} | LN COS`;
+  const title = category.seoTitle?.trim() || formatPageTitle(category.name);
   const description =
     category.metaDescription?.trim() ||
-    `Découvrez la catégorie ${category.name} — cosmétiques premium LN COS.`;
+    brandCopy("categoryMetaFallback", { categoryName: category.name });
   const path = getCategorySeoPath(category);
   const canonical = absoluteUrl(path);
 

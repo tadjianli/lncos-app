@@ -266,6 +266,22 @@ async function markStockAdjusted(
   }
 }
 
+async function attachUserIfMissing(
+  supabase: SupabaseClient<Database>,
+  orderId: string,
+  userId: string | null | undefined,
+): Promise<void> {
+  if (!userId) return;
+  const { error } = await supabase
+    .from("orders")
+    .update({ user_id: userId })
+    .eq("id", orderId)
+    .is("user_id", null);
+  if (error) {
+    console.warn("[stripe/fulfill] attach user_id failed:", error);
+  }
+}
+
 async function applyPromoOnce(
   supabase: SupabaseClient<Database>,
   orderId: string,
@@ -274,7 +290,20 @@ async function applyPromoOnce(
 ): Promise<void> {
   if (!promoCode || alreadyApplied) return;
 
-  await supabase.rpc("increment_promo_uses", { promo_code_arg: promoCode });
+  const { data: applied, error } = await supabase.rpc("increment_promo_uses", {
+    promo_code_arg: promoCode,
+  });
+
+  if (error) {
+    console.error("[stripe/fulfill] promo increment:", error);
+    return;
+  }
+
+  if (applied === false) {
+    console.warn(`[stripe/fulfill] promo max_uses reached for ${promoCode}`);
+    return;
+  }
+
   await supabase.from("orders").update({ promo_uses_applied: true }).eq("id", orderId);
 }
 
@@ -387,12 +416,13 @@ export async function fulfillStripeOrder(input: FulfillOrderInput): Promise<Fulf
   const { data: existing } = await supabase
     .from("orders")
     .select(
-      "id, subtotal, shipping_cost, discount, promo_code, total, stock_adjusted, shipping_address, promo_uses_applied",
+      "id, user_id, subtotal, shipping_cost, discount, promo_code, total, stock_adjusted, shipping_address, promo_uses_applied",
     )
     .eq("stripe_session_id", sessionId)
     .maybeSingle();
 
   if (existing) {
+    await attachUserIfMissing(supabase, existing.id, userId);
     const existingCount = await countOrderItems(supabase, existing.id);
     if (existingCount === 0 && items?.length) {
       await insertOrderItems(supabase, existing.id, items);

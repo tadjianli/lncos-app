@@ -888,6 +888,7 @@ export default function BagPage() {
             body: JSON.stringify({
               session_id: sessionId,
               password: pending.account_password,
+              email: pending.customer_email ?? "",
             }),
           });
         } catch (accountErr) {

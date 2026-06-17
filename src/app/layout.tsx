@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { ThemeStyles } from "@/components/theme/ThemeStyles";
 import { buildGlobalOrganizationGraph } from "@/lib/seo-site";
 import { getSiteUrl } from "@/lib/site-url";
+import { branding, formatPageTitle, getAppName, getThemeColor } from "@/lib/branding";
 import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
 import { NavLayoutDebug } from "@/components/layout/NavLayoutDebug";
 import { PwaUpdateManager } from "@/components/pwa/PwaUpdateManager";
@@ -28,55 +30,53 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "LN COS | Cosmétiques, Ongles, Beauté & Accessoires à La Réunion",
-    template: "%s | LN COS",
+    default: branding.seo.homeTitle,
+    template: branding.seo.titleTemplate,
   },
-  description:
-    "Découvrez LN COS : vernis semi-permanents, accessoires ongles, maquillage, soins beauté et nouveautés. Livraison rapide à La Réunion et en France.",
-  applicationName: "LN COS",
-  authors: [{ name: "LN COS" }],
+  description: branding.seo.homeDescription,
+  applicationName: getAppName(),
+  authors: [{ name: branding.companyName }],
+  keywords: [...branding.seo.keywords],
 
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "LN COS",
+    title: getAppName(),
     statusBarStyle: "black-translucent",
   },
 
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
-      { url: "/assets/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/assets/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: branding.icons.favicon, sizes: "32x32", type: "image/png" },
+      { url: branding.icons.icon192, sizes: "192x192", type: "image/png" },
+      { url: branding.icons.icon512, sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/assets/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: branding.icons.appleTouchIcon, sizes: "180x180", type: "image/png" },
     ],
   },
 
   openGraph: {
     type: "website",
-    locale: "fr_FR",
-    siteName: "LN COS",
-    title: "LN COS | Cosmétiques, Ongles, Beauté & Accessoires à La Réunion",
-    description:
-      "Découvrez LN COS : vernis semi-permanents, accessoires ongles, maquillage, soins beauté et nouveautés. Livraison rapide à La Réunion et en France.",
-    images: [{ url: "/assets/icon-512.png", width: 512, height: 512, alt: "LN COS" }],
+    locale: branding.locale.replace("-", "_"),
+    siteName: getAppName(),
+    title: branding.seo.homeTitle,
+    description: branding.seo.homeDescription,
+    images: [{ url: branding.icons.icon512, width: 512, height: 512, alt: getAppName() }],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "LN COS | Cosmétiques & beauté à La Réunion",
-    description:
-      "Vernis semi-permanents, accessoires ongles, maquillage et soins beauté. Livraison La Réunion & France.",
-    images: ["/assets/icon-512.png"],
+    title: formatPageTitle(branding.tagline),
+    description: branding.appDescription,
+    images: [branding.icons.icon512],
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0A0A0A",
+  themeColor: getThemeColor(),
   viewportFit: "cover",
   colorScheme: "dark",
 };
@@ -88,11 +88,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="fr"
+      lang={branding.language}
       suppressHydrationWarning
       className={`${montserrat.variable} ${geistMono.variable}`}
     >
       <head>
+        <ThemeStyles />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <JsonLd data={buildGlobalOrganizationGraph()} />

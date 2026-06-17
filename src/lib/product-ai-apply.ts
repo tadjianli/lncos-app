@@ -1,73 +1,36 @@
 /**
- * LN COS — Application des résultats IA sur une fiche produit
+ * LN COS — Application des résultats IA sur une fiche produit (SEO uniquement)
  */
 
 import type { Product } from "@/lib/data";
 import type { ProductSEOResult } from "@/lib/ai-generate";
-import type { ProductExtraSection } from "@/lib/product-sections";
-import { SEO_FAQ_SECTION_ID_PREFIX, slugifySeo } from "@/lib/seo-core";
-import { computeProductSeoScore } from "@/lib/seo";
+import {
+  applySeoOptimizationPatch,
+  type ProductSeoOptimizationResult,
+} from "@/lib/seo-claude";
 
 export interface ProductAiApplyResult {
   patch: Partial<Product>;
   predictedScore: number;
 }
 
-function buildFaqSection(
-  productName: string,
-  slug: string,
-  faq: ProductSEOResult["faq"],
-  existing: ProductExtraSection[] | undefined
-): ProductExtraSection[] {
-  if (!faq.length) return existing ?? [];
-
-  const faqSection: ProductExtraSection = {
-    id: `${SEO_FAQ_SECTION_ID_PREFIX}${slugifySeo(slug) || "produit"}`,
-    title: `Questions sur ${productName}`,
-    type: "list",
-    body: "",
-    enabled: true,
-    items: faq.map((entry) => {
-      const q = entry.question.trim();
-      const a = entry.answer.trim();
-      if (!q) return a;
-      if (!a) return q;
-      return q.endsWith("?") ? `${q} ${a}` : `${q} ? ${a}`;
-    }),
-  };
-
-  const list = [...(existing ?? [])].filter((s) => !s.id.startsWith(SEO_FAQ_SECTION_ID_PREFIX));
-  return [...list, faqSection];
-}
-
-/** Transforme la réponse IA en patch produit + score SEO prévisionnel. */
+/**
+ * @deprecated Utiliser applySeoOptimizationPatch — ne modifie plus le contenu marketing.
+ */
 export function applyProductSeoAiResult(
   form: Product,
-  data: ProductSEOResult
+  data: ProductSEOResult,
 ): ProductAiApplyResult {
   const keywords = data.keywords.filter(Boolean);
-  const primaryKeyword = keywords[0] ?? form.seoKeyword ?? "";
-  const secondaryKeywords = keywords.length > 1 ? keywords.slice(1) : (form.seoSecondaryKeywords ?? []);
-
-  const optimizedName = data.optimizedName.trim() || form.name;
-  const slug = data.slug.trim() || form.seoSlug || form.id;
-
-  const patch: Partial<Product> = {
-    name: optimizedName,
+  const optimization: ProductSeoOptimizationResult = {
     seoTitle: data.seoTitle,
     metaDescription: data.metaDescription,
-    seoSlug: slug,
-    seoExcerpt: data.shortDescription,
-    desc: data.longDescription,
+    focusKeyword: keywords[0] ?? form.seoKeyword ?? "",
+    secondaryKeywords: keywords.length > 1 ? keywords.slice(1) : (form.seoSecondaryKeywords ?? []),
+    slug: data.slug.trim() || form.seoSlug || form.id,
     imageAlt: data.imageAlt,
-    seoKeyword: primaryKeyword,
-    seoSecondaryKeywords: secondaryKeywords,
-    benefits: data.benefits.length ? data.benefits : form.benefits,
-    extraSections: buildFaqSection(optimizedName, slug, data.faq, form.extraSections),
+    predictedScore: 0,
   };
 
-  const merged: Product = { ...form, ...patch };
-  const predictedScore = computeProductSeoScore(merged).score;
-
-  return { patch, predictedScore };
+  return applySeoOptimizationPatch(form, optimization);
 }

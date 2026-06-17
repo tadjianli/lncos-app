@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { calcDeposit, dbToRdvSettings } from "@/lib/rdv-settings";
+import { resolveCheckoutOrigin } from "@/lib/stripe/checkout-origin";
 
 interface RdvCheckoutBody {
   appointment_id: string;
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const body: RdvCheckoutBody = await req.json();
-    const { appointment_id, service_name, returnUrl: clientReturnUrl } = body;
+    const { appointment_id, service_name, returnUrl: _clientReturnUrl } = body;
 
     if (!appointment_id) {
       return NextResponse.json({ error: "Données de réservation invalides" }, { status: 400 });
@@ -82,12 +83,7 @@ export async function POST(req: Request) {
       }
     }
 
-    let origin = clientReturnUrl?.startsWith("http") ? new URL(clientReturnUrl).origin : null;
-    if (!origin) {
-      const host = req.headers.get("host") ?? "localhost:3000";
-      const proto = host.includes("localhost") ? "http" : "https";
-      origin = `${proto}://${host}`;
-    }
+    const origin = resolveCheckoutOrigin(req);
 
     const successUrl = `${origin}/rdv?rdv_session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${origin}/rdv`;

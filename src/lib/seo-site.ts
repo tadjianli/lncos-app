@@ -1,87 +1,45 @@
 /**
- * LN COS — SEO site-wide (accueil, sitelinks, Schema.org)
+ * SEO site-wide — alimenté par config/branding.ts (générique multi-secteur).
  */
 
+import { branding } from "@config/branding";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
-import { getCategorySeoPath } from "@/lib/seo";
 
-export const HOME_SEO_TITLE =
-  "LN COS | Cosmétiques, Ongles, Beauté & Accessoires à La Réunion";
+export const HOME_SEO_TITLE = branding.seo.homeTitle;
+export const HOME_SEO_DESCRIPTION = branding.seo.homeDescription;
 
-export const HOME_SEO_DESCRIPTION =
-  "Découvrez LN COS : vernis semi-permanents, accessoires ongles, maquillage, soins beauté et nouveautés. Livraison rapide à La Réunion et en France.";
-
-export const SITE_KEYWORDS = [
-  "LN COS",
-  "cosmétiques La Réunion",
-  "vernis semi-permanent",
-  "accessoires ongles",
-  "maquillage",
-  "soins beauté",
-  "nail art",
-  "boutique beauté",
-  "livraison La Réunion",
-];
+export const SITE_KEYWORDS = [...branding.seo.keywords, branding.appName];
 
 /** Pages prioritaires pour sitelinks Google Search */
-export const SEO_SITELINKS = [
-  {
-    name: "Nouveautés",
-    path: "/discover",
-    description: "Dernières nouveautés beauté et lancements LN COS",
-  },
-  {
-    name: "Meilleures ventes",
-    path: "/boutique",
-    description: "Best-sellers et produits les plus populaires",
-  },
-  {
-    name: "Vernis semi-permanent",
-    path: "/boutique",
-    description: "Vernis semi-permanents et couleurs ongles",
-  },
-  {
-    name: "Accessoires ongles",
-    path: getCategorySeoPath({ id: "accessoires" }),
-    description: "Accessoires pro onglerie et nail art",
-  },
-  {
-    name: "Blog beauté",
-    path: "/blog",
-    description: "Conseils, tutoriels et tendances beauté",
-  },
-  {
-    name: "Contact",
-    path: "/contact",
-    description: "Contactez l'équipe LN COS",
-  },
-] as const;
+export const SEO_SITELINKS = branding.seo.sitelinks.map((link) => ({ ...link }));
 
 export const ORGANIZATION_ID = `${getSiteUrl()}/#organization`;
 export const WEBSITE_ID = `${getSiteUrl()}/#website`;
 
 export function buildOrganizationSchema() {
   const siteUrl = getSiteUrl();
+  const { address } = branding;
   return {
     "@type": "Organization",
     "@id": ORGANIZATION_ID,
-    name: "LN COS",
+    name: branding.companyName,
     url: siteUrl,
-    logo: absoluteUrl("/assets/icon-512.png"),
-    email: "contact@lncos.fr",
+    logo: absoluteUrl(branding.icons.icon512),
+    email: branding.supportEmail,
+    ...(branding.supportPhone ? { telephone: branding.supportPhone } : {}),
     address: {
       "@type": "PostalAddress",
-      streetAddress: "4 rue du Mur Cassé",
-      addressLocality: "Saint-Louis",
-      postalCode: "97450",
-      addressRegion: "La Réunion",
-      addressCountry: "FR",
+      streetAddress: address.street,
+      addressLocality: address.city,
+      postalCode: address.postalCode,
+      addressRegion: address.region,
+      addressCountry: address.country,
     },
     areaServed: [
       { "@type": "Country", name: "France" },
-      { "@type": "AdministrativeArea", name: "La Réunion" },
+      ...(address.region ? [{ "@type": "AdministrativeArea", name: address.region }] : []),
     ],
-    sameAs: [absoluteUrl("/social")],
+    sameAs: branding.socialLinks.map((s) => s.url).filter(Boolean),
   };
 }
 
@@ -91,9 +49,9 @@ export function buildWebSiteSchema() {
     "@type": "WebSite",
     "@id": WEBSITE_ID,
     url: siteUrl,
-    name: "LN COS",
+    name: branding.appName,
     description: HOME_SEO_DESCRIPTION,
-    inLanguage: "fr-FR",
+    inLanguage: branding.locale,
     publisher: { "@id": ORGANIZATION_ID },
     potentialAction: {
       "@type": "SearchAction",
@@ -123,7 +81,7 @@ export function buildHomeBreadcrumbSchema() {
 export function buildSitelinksNavigationSchema() {
   return {
     "@type": "ItemList",
-    name: "Navigation LN COS",
+    name: `Navigation ${branding.appName}`,
     itemListElement: SEO_SITELINKS.map((link, index) => ({
       "@type": "SiteNavigationElement",
       position: index + 1,

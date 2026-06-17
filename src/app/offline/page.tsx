@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { getAppName } from "@/lib/branding";
 
 export default function OfflinePage() {
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function OfflinePage() {
           color: "#d4af37",
         }}
       >
-        LN COS
+        {getAppName()}
       </p>
       <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Connexion instable</h1>
       <p style={{ margin: 0, maxWidth: 280, lineHeight: 1.5, color: "#a3a3a3" }}>

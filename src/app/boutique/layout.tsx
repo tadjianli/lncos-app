@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
+import { formatPageTitle, getAppName, pageSeo } from "@/lib/branding";
+
+const seo = pageSeo("boutique");
 
 export const metadata: Metadata = {
-  title: "Boutique — Meilleures ventes & catalogue",
-  description:
-    "Boutique LN COS : vernis semi-permanents, accessoires ongles, maquillage et soins beauté. Meilleures ventes et catalogue complet — livraison La Réunion & France.",
+  title: seo.title,
+  description: seo.description,
   alternates: { canonical: absoluteUrl("/boutique") },
   openGraph: {
-    title: "Boutique | LN COS",
-    description: "Vernis semi-permanents, accessoires ongles et cosmétiques premium LN COS.",
+    title: formatPageTitle("Boutique"),
+    description: seo.description,
     url: absoluteUrl("/boutique"),
+    siteName: getAppName(),
   },
 };
 
