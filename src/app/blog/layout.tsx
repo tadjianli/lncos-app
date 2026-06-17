@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Blog LN COS | Conseils beauté, skincare & tutoriels",
+  title: "Blog beauté — Conseils, tutoriels & tendances",
   description:
-    "Magazine beauté LN COS : conseils beauté, tutoriels, astuces skincare, tendances et nouveautés — curated by LN COS.",
+    "Blog beauté LN COS : conseils onglerie, vernis semi-permanent, skincare, maquillage et nouveautés. Tutoriels et tendances — La Réunion & France.",
   alternates: { canonical: absoluteUrl("/blog") },
   openGraph: {
-    title: "Blog LN COS",
+    title: "Blog beauté | LN COS",
     description:
-      "Conseils beauté, tutoriels, astuces skincare, tendances et nouveautés LN COS.",
+      "Conseils beauté, tutoriels ongles, skincare et nouveautés LN COS.",
     url: absoluteUrl("/blog"),
     siteName: "LN COS",
     locale: "fr_FR",

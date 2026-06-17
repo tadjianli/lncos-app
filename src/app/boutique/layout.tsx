@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { absoluteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Boutique | LN COS",
-  description: "Découvrez la boutique LN COS — cosmétiques premium formulés en France.",
+  title: "Boutique — Meilleures ventes & catalogue",
+  description:
+    "Boutique LN COS : vernis semi-permanents, accessoires ongles, maquillage et soins beauté. Meilleures ventes et catalogue complet — livraison La Réunion & France.",
   alternates: { canonical: absoluteUrl("/boutique") },
   openGraph: {
     title: "Boutique | LN COS",
-    description: "Cosmétiques premium formulés en France.",
+    description: "Vernis semi-permanents, accessoires ongles et cosmétiques premium LN COS.",
     url: absoluteUrl("/boutique"),
   },
 };

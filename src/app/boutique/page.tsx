@@ -2,6 +2,7 @@
 
 import { AppShell } from "@/components/layout/AppShell";
 import { StickySearchBar } from "@/components/commerce/StickySearchBar";
+import { BoutiqueSearchFromUrl } from "@/components/commerce/BoutiqueSearchFromUrl";
 import { PageSectionsView } from "@/components/page/PageSectionsView";
 import { usePublicPageSections } from "@/lib/client-supabase";
 
@@ -11,6 +12,7 @@ export default function BoutiquePage() {
 
   return (
     <AppShell>
+      <BoutiqueSearchFromUrl />
       <div className="noscroll app-scroll-page boutique-page">
         <StickySearchBar />
         <PageSectionsView sections={sections} />

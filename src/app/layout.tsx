@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Geist_Mono } from "next/font/google";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildGlobalOrganizationGraph } from "@/lib/seo-site";
 import { getSiteUrl } from "@/lib/site-url";
 import { StandaloneViewportSync } from "@/components/layout/StandaloneViewportSync";
 import { NavLayoutDebug } from "@/components/layout/NavLayoutDebug";
@@ -25,14 +27,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: "LN COS — Beauté & Cosmétique",
-  description: "Cosmétiques premium. Formulés en France.",
-  alternates: { canonical: "/" },
+  title: {
+    default: "LN COS | Cosmétiques, Ongles, Beauté & Accessoires à La Réunion",
+    template: "%s | LN COS",
+  },
+  description:
+    "Découvrez LN COS : vernis semi-permanents, accessoires ongles, maquillage, soins beauté et nouveautés. Livraison rapide à La Réunion et en France.",
   applicationName: "LN COS",
-  keywords: ["beauté", "cosmétique", "soins", "maquillage", "premium"],
   authors: [{ name: "LN COS" }],
 
-  /* ── PWA ── */
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -40,7 +43,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
 
-  /* ── Icons ── */
   icons: {
     icon: [
       { url: "/favicon.png", sizes: "32x32", type: "image/png" },
@@ -52,20 +54,21 @@ export const metadata: Metadata = {
     ],
   },
 
-  /* ── Open Graph ── */
   openGraph: {
     type: "website",
+    locale: "fr_FR",
     siteName: "LN COS",
-    title: "LN COS — Beauté & Cosmétique",
-    description: "Cosmétiques premium. Formulés en France.",
+    title: "LN COS | Cosmétiques, Ongles, Beauté & Accessoires à La Réunion",
+    description:
+      "Découvrez LN COS : vernis semi-permanents, accessoires ongles, maquillage, soins beauté et nouveautés. Livraison rapide à La Réunion et en France.",
     images: [{ url: "/assets/icon-512.png", width: 512, height: 512, alt: "LN COS" }],
   },
 
-  /* ── Twitter card ── */
   twitter: {
     card: "summary_large_image",
-    title: "LN COS",
-    description: "Cosmétiques premium. Formulés en France.",
+    title: "LN COS | Cosmétiques & beauté à La Réunion",
+    description:
+      "Vernis semi-permanents, accessoires ongles, maquillage et soins beauté. Livraison La Réunion & France.",
     images: ["/assets/icon-512.png"],
   },
 };
@@ -90,11 +93,9 @@ export default function RootLayout({
       className={`${montserrat.variable} ${geistMono.variable}`}
     >
       <head>
-        {/* Preconnect to font origin for faster loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
-        {/* PWA iOS : hauteur viewport avant hydratation React (évite zone noire sous TabBar) */}
+        <JsonLd data={buildGlobalOrganizationGraph()} />
         <script
           dangerouslySetInnerHTML={{
             __html: `

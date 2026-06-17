@@ -63,6 +63,7 @@ interface SearchScreenProps {
 /* ─── Component ──────────────────────────────────────────────────────────── */
 
 export function SearchScreen({ onClose }: SearchScreenProps) {
+  const pendingSearchQuery = useStore((s) => s.pendingSearchQuery);
   const [q, setQ] = useState("");
   const [displayQ, setDisplayQ] = useState("");
   const [recents, setRecents] = useState<string[]>([]);
@@ -74,14 +75,18 @@ export function SearchScreen({ onClose }: SearchScreenProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* Load recents + auto-focus */
+  /* Load recents + auto-focus + requête SearchAction (?q=) */
   useEffect(() => {
     inputRef.current?.focus();
+    if (pendingSearchQuery) {
+      setQ(pendingSearchQuery);
+      setDisplayQ(pendingSearchQuery);
+    }
     try {
       const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
       if (Array.isArray(saved)) setRecents(saved.slice(0, MAX_RECENTS));
     } catch {}
-  }, []);
+  }, [pendingSearchQuery]);
 
   /* Save recent */
   const saveRecent = useCallback(

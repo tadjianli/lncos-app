@@ -29,6 +29,10 @@ const MENU_SECTIONS: MenuSection[] = [
     label: "Boutique",
     links: [
       { i: "home", t: "Accueil", href: "/" },
+      { i: "sparkle", t: "Nouveautés", href: "/discover" },
+      { i: "bag", t: "Meilleures ventes", href: "/boutique" },
+      { i: "tag", t: "Vernis semi-permanent", href: "/boutique" },
+      { i: "grid", t: "Accessoires ongles", href: "/categorie/accessoires" },
       { i: "sparkle", t: "Promotions", href: "/promotions" },
       { i: "flame", t: "Ventes Flash", href: "/flash-sales" },
     ],
@@ -36,7 +40,7 @@ const MENU_SECTIONS: MenuSection[] = [
   {
     label: "Découvrir",
     links: [
-      { i: "edit", t: "Blog LN COS", href: "/blog" },
+      { i: "edit", t: "Blog beauté", href: "/blog" },
       { i: "share", t: "Réseaux sociaux", href: "/social" },
     ],
   },

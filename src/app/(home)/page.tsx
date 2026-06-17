@@ -28,6 +28,7 @@ import {
 import { resolveProductImage } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { BlogJournalSection } from "@/components/home/BlogJournalSection";
+import { HomeSitelinksNav } from "@/components/seo/HomeSitelinksNav";
 import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { HomeHeroBanner } from "@/components/home/HomeHeroBanner";
 import {
@@ -678,6 +679,7 @@ export default function HomePage() {
       {/* Scrollable content — dynamic section order driven by home-sections store */}
       <div className="noscroll app-scroll-page home-scroll">
         {activeSections.map((section, i) => renderSection(section, i))}
+        <HomeSitelinksNav />
       </div>
     </AppShell>
   );

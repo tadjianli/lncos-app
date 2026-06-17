@@ -23,7 +23,7 @@ export default function DiscoverPage() {
         {/* ── Search bar ─────────────────────────────────────── */}
         <div style={{ padding: "0 18px 20px" }}>
           <button
-            onClick={openSearch}
+            onClick={() => openSearch()}
             style={{
               width: "100%",
               display: "flex",

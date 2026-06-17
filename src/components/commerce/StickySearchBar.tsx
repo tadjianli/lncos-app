@@ -18,7 +18,7 @@ export function StickySearchBar({
       <button
         type="button"
         className="sticky-search-bar__trigger"
-        onClick={openSearch}
+        onClick={() => openSearch()}
         aria-label="Ouvrir la recherche produits"
       >
         <Icon name="search" size={17} color="var(--gold)" />

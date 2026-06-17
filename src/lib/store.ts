@@ -99,8 +99,9 @@ interface AppStore {
 
   /* Overlay / modal stack */
   overlay: OverlayState | null;
+  pendingSearchQuery: string | null;
   openProduct: (product: Product, opts?: { source?: ProductNavSource; fromRecommendations?: boolean }) => void;
-  openSearch: () => void;
+  openSearch: (initialQuery?: string) => void;
   openSideMenu: () => void;
   openListing: (category: Category | null, opts?: { fromUrl?: boolean }) => void;
   openBooking: (serviceId?: string | null, resume?: boolean) => void;
@@ -190,6 +191,7 @@ export const useStore = create<AppStore>()(
 
       /* ── Overlay ─────────────────────────────── */
       overlay: null,
+      pendingSearchQuery: null,
 
       openProduct(product, opts) {
         preloadProductImages(product);
@@ -223,10 +225,11 @@ export const useStore = create<AppStore>()(
 
         set({ overlay: { type: "product", product, productReturn } });
       },
-      openSearch() {
+      openSearch(initialQuery?: string) {
         const current = get().overlay;
         stackOverlayHistory(current, "search");
-        set({ overlay: { type: "search" } });
+        const q = initialQuery?.trim() || null;
+        set({ overlay: { type: "search" }, pendingSearchQuery: q });
       },
       openSideMenu() {
         const current = get().overlay;
@@ -289,7 +292,7 @@ export const useStore = create<AppStore>()(
         if (typeof window !== "undefined") {
           clearListingUrlParam();
         }
-        set({ overlay: null });
+        set({ overlay: null, pendingSearchQuery: null });
       },
 
       restoreOverlay(overlay: OverlayState) {
