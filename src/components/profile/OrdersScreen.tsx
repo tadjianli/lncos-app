@@ -5,6 +5,7 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { getBrowserUser, getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { fetchUserReviewKeys, usePublicProducts } from "@/lib/client-supabase";
 import { resolveProductImage } from "@/lib/product-catalog";
@@ -355,8 +356,8 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
         ))}
       </div>
 
-      <div className="noscroll overlay-screen-scroll">
-        <div style={{ padding: "4px 18px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <ScrollRegion variant="overlay" insetX={18} className="scroll-region--y4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {loading ? (
             // Skeleton
             Array.from({ length: 2 }).map((_, i) => (
@@ -394,7 +395,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
             ))
           )}
         </div>
-      </div>
+      </ScrollRegion>
 
       {reviewTarget && userId && (
         <ReviewSubmitModal

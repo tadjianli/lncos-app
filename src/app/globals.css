@@ -155,15 +155,15 @@
   --bottom-nav-item-gap: 2px;
   --bottom-nav-safe-bottom: env(safe-area-inset-bottom, 0px);
   --bottom-nav-bar-h: var(--bottom-nav-bar-height);
-  --bottom-nav-h: calc(
+  /* Hauteur réelle du dock tab bar (gap + pill + safe-area) — voir tab-bar-layout.ts */
+  --tab-bar-scroll-comfort: 24px;
+  --tab-bar-height: calc(
     var(--bottom-nav-float-gap) + var(--bottom-nav-bar-height) + var(--bottom-nav-safe-bottom)
   );
+  --bottom-nav-h: var(--tab-bar-height);
   --bottom-nav-content-h: var(--bottom-nav-bar-height);
-  /* Marge scroll : dock flottant + marge contenu */
-  --app-scroll-pad-bottom: calc(
-    var(--bottom-nav-float-gap) + var(--bottom-nav-bar-height) + var(--bottom-nav-float-gap) +
-      var(--safe-bottom)
-  );
+  /* Clearance scroll : tab bar + marge confort */
+  --app-scroll-pad-bottom: calc(var(--tab-bar-height) + var(--tab-bar-scroll-comfort));
   --product-grid-bottom-clearance: var(--app-scroll-pad-bottom);
   --bottom-action-cta-h: 60px;
   --cta-premium-h: 60px;
@@ -953,6 +953,11 @@
     padding-bottom: 0;
   }
 
+  /* Alias explicite — clearance tab bar sur tout conteneur scroll */
+  .scroll-with-tab-bar {
+    padding-bottom: var(--app-scroll-pad-bottom);
+  }
+
   /* ── PageLayout — header fixe + scroll (frères flex dans main) ── */
   .page-layout__header {
     flex: 0 0 auto;
@@ -1006,7 +1011,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 16px calc(var(--sticky-cart-height) + var(--sticky-cart-bar-pad-y) * 2 + 20px);
+    padding: 4px 16px 16px;
   }
 
   /* Scroll plein écran sans bottom nav (RDV confirmation, etc.) */
@@ -4832,7 +4837,7 @@
 
 /* Dans AppShell au-dessus de la bottom nav — safe area via bottom-nav uniquement */
 .bottom-action-bar--in-shell {
-  padding-bottom: var(--sticky-cart-bar-pad-y, 6px);
+  padding-bottom: calc(var(--sticky-cart-bar-pad-y, 6px) + var(--tab-bar-height));
   flex-shrink: 0;
 }
 
@@ -5579,10 +5584,10 @@ html.standalone-pwa .reel-slide {
 @media (display-mode: standalone) {
   :root {
     --bottom-nav-safe-bottom: max(8px, env(safe-area-inset-bottom, 0px));
-    --app-scroll-pad-bottom: calc(
-      var(--bottom-nav-float-gap) + var(--bottom-nav-bar-height) + var(--bottom-nav-float-gap) +
-        var(--safe-bottom)
+    --tab-bar-height: calc(
+      var(--bottom-nav-float-gap) + var(--bottom-nav-bar-height) + var(--bottom-nav-safe-bottom)
     );
+    --app-scroll-pad-bottom: calc(var(--tab-bar-height) + var(--tab-bar-scroll-comfort));
   }
 
   .home-section,

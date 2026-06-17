@@ -60,7 +60,7 @@ export function MobilePageLayout({
         />
       ) : null}
       <div
-        className={cn(scroll && "noscroll", "mobile-page-layout__body", bodyClassName)}
+        className={cn(scroll && "noscroll app-scroll-page scroll-with-tab-bar", "mobile-page-layout__body", bodyClassName)}
         style={{
           flex: "1 1 auto",
           minHeight: 0,

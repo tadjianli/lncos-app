@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { isVipProgramEnabled } from "@/lib/feature-flags";
 
 /* ─── Types ────────────────────────────────────────────────────────────── */
@@ -489,7 +490,7 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
       />
 
       {/* Scroll container */}
-      <div className="noscroll overlay-screen-scroll" style={{ padding: "0 18px 16px" }}>
+      <ScrollRegion variant="overlay" insetX={18}>
         {todayNotifs.length > 0 && (
           <>
             <GroupLabel label="Aujourd'hui" first />
@@ -516,7 +517,7 @@ export function NotificationsScreen({ onClose }: NotificationsScreenProps) {
             ))}
           </>
         )}
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

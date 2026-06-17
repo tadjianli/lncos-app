@@ -15,7 +15,7 @@ export interface ScrollRegionProps {
 }
 
 /**
- * Zone scrollable avec clearance bottom nav (via CSS var).
+ * Zone scrollable avec clearance bottom nav (via `--app-scroll-pad-bottom` / tab-bar-layout.ts).
  * Ne jamais utiliser padding shorthand — écrase padding-bottom.
  */
 export const ScrollRegion = forwardRef<HTMLDivElement, ScrollRegionProps>(function ScrollRegion(

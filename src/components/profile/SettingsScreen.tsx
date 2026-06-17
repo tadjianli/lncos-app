@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader } from "@/components/shared/ActionButtons";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { useStore } from "@/lib/store";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 import { getBrowserUser, getSupabase, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
@@ -272,7 +273,7 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
     <div className="overlay-screen">
       <SubHeader title="Paramètres" onBack={onClose} safeArea />
 
-      <div className="noscroll overlay-screen-scroll" style={{ padding: "0 18px 16px" }}>
+      <ScrollRegion variant="overlay" insetX={18}>
         {/* ── Compte ─────────────────────────────────────────────── */}
         <SectionTitle>Compte</SectionTitle>
         <div
@@ -474,7 +475,7 @@ export function SettingsScreen({ onClose }: SettingsScreenProps) {
             {loggingOut ? "Déconnexion…" : "Se déconnecter"}
           </button>
         )}
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

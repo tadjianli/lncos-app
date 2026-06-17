@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { SubHeader, PinkBtn } from "@/components/shared/ActionButtons";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 
 /* ─── Data ──────────────────────────────────────────────────────────────── */
@@ -86,8 +87,8 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
       <SubHeader title="Programme Fidélité" onBack={onClose} safeArea />
 
       {/* Scroll area */}
-      <div className="noscroll overlay-screen-scroll" style={{ paddingBottom: 16 }}>
-        <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 24 }}>
+      <ScrollRegion variant="overlay" insetX={18}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
           {/* ── VIP Member Card ────────────────────────────────────────── */}
           <div
@@ -813,7 +814,7 @@ export function LoyaltyScreen({ onClose }: LoyaltyScreenProps) {
           </div>
 
         </div>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

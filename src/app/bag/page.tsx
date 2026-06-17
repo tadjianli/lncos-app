@@ -479,7 +479,7 @@ function CartScreen({
         <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
           <SubHeader title="Mon panier" />
         </div>
-        <div style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 40px", textAlign: "center" }}>
+        <div style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 40px var(--app-scroll-pad-bottom)", textAlign: "center" }}>
           <div style={{ width: 90, height: 90, borderRadius: "50%", background: "var(--charcoal)", display: "grid", placeItems: "center", marginBottom: 22 }}>
             <Icon name="bag" size={38} color="var(--ink-mute)" />
           </div>
