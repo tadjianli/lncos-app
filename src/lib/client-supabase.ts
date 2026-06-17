@@ -37,6 +37,8 @@ import type { BeforeAfterResult, PublicBeforeAfterResult, ResultDuration } from 
 import { sortBeforeAfterResults, toPublicBeforeAfter } from "./before-after";
 import { PRODUCT_SELECT, PRODUCT_SELECT_LEGACY, isMissingColumnError } from "./product-select";
 import { mapProduct } from "./fetch-active-products";
+import { dbToPopup } from "./popups-mapper";
+import { popupLog } from "./popups-public";
 
 /** Charge un produit par identifiant (preview = inclut les produits inactifs). */
 export async function fetchPublicProductById(
@@ -228,6 +230,97 @@ export function usePublicHeroCarousel() {
   }, []);
 
   return { settings, slides, loading };
+}
+
+/* ── Popups promotionnels (public) ───────────────────────────── */
+
+export function usePublicPopups() {
+  const [popups, setPopups] = useState<import("./rdv-store").Popup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+
+      if (!isSupabaseConfigured()) {
+        popupLog("warn", "Supabase non configuré — aucune popup chargée");
+        if (!cancelled) {
+          setPopups([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const { data, error: queryError } = await getSupabase()
+          .from("popups")
+          .select("*")
+          .eq("enabled", true)
+          .order("updated_at", { ascending: false });
+
+        if (queryError) {
+          popupLog("error", "Échec chargement popups Supabase", queryError.message);
+          if (!cancelled) {
+            setError(queryError.message);
+            setPopups([]);
+          }
+          return;
+        }
+
+        const mapped = (data ?? []).map((row) =>
+          dbToPopup(row as import("./database.types").Database["public"]["Tables"]["popups"]["Row"])
+        );
+
+        popupLog("info", `popups fetched: ${mapped.length}`, mapped.map((p) => p.id));
+
+        if (!cancelled) setPopups(mapped);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Erreur inconnue";
+        popupLog("error", "Exception chargement popups", message);
+        if (!cancelled) {
+          setError(message);
+          setPopups([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void load();
+
+    let channel: ReturnType<ReturnType<typeof getSupabase>["channel"]> | null = null;
+    try {
+      channel = getSupabase()
+        .channel("popups-public")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "popups" },
+          () => {
+            void load();
+          }
+        )
+        .subscribe();
+    } catch {
+      popupLog("warn", "Realtime popups indisponible");
+    }
+
+    return () => {
+      cancelled = true;
+      if (channel) {
+        try {
+          getSupabase().removeChannel(channel);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, []);
+
+  return { popups, loading, error };
 }
 
 /* ── Product reviews ─────────────────────────────────────────── */

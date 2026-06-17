@@ -1763,6 +1763,145 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Popup promotionnel (web + PWA iOS/Android) ─────────────── */
+.popup-promo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  display: grid;
+  place-items: center;
+  padding: 24px 18px calc(24px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.popup-promo-scrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.popup-promo-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 340px);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #1c1610 0%, #120e12 100%);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  box-shadow:
+    0 28px 64px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  pointer-events: auto;
+  animation: popupPromoIn 0.42s cubic-bezier(0.22, 0.68, 0, 1);
+}
+
+@keyframes popupPromoIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popup-promo-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.popup-promo-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.popup-promo-body {
+  padding: 22px 20px 20px;
+  text-align: center;
+}
+
+.popup-promo-eyebrow {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--popup-accent, var(--gold));
+}
+
+.popup-promo-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.popup-promo-subtitle {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+.popup-promo-code {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px dashed rgba(212, 175, 55, 0.35);
+  font-family: var(--font-geist-mono, monospace);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--popup-accent, var(--gold));
+}
+
+.popup-promo-countdown {
+  margin: 0 0 12px;
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+
+.popup-promo-cta {
+  width: 100%;
+  min-height: 46px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  color: #1a1306;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-promo-card {
+    animation: none;
+  }
+}
+
 /* Flash sales page */
 .flash-sales-banner {
   position: relative;

@@ -25,6 +25,7 @@ import { useStore, selectToast, selectCartCount, selectOverlay } from "@/lib/sto
 import { isVipProgramEnabled } from "@/lib/feature-flags";
 import { getRenderModeFromSearch, showNav } from "@/lib/render-mode";
 import { SocialProofRotator } from "@/components/social-proof/SocialProofRotator";
+import { PopupPromo } from "@/components/marketing/PopupPromo";
 import { closeProductDetailNavigation } from "@/lib/product-navigation";
 import { closeOverlayWithHistory } from "@/lib/overlay-history";
 import { useOverlayHistory } from "@/lib/use-product-overlay-history";
@@ -150,6 +151,9 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
           <AuthScreen onClose={handleOverlayClose} />
         )}
       </Suspense>
+
+      {/* Popups marketing — web + PWA iOS/Android (même bundle Next.js) */}
+      {mode === "live" && !overlay && <PopupPromo />}
 
       {/* ── Social proof notifications (bas gauche) ───────── */}
       <SocialProofRotator navVisible={navVisible} />

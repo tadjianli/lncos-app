@@ -118,7 +118,7 @@ function buildSeed(): Record<string, unknown[]> {
   };
 }
 
-const DEFAULT_POPUP: Popup = {
+export const DEFAULT_POPUP: Popup = {
   id: "pop_welcome",
   name: "Bienvenue · -10%",
   enabled: true,
