@@ -4746,6 +4746,12 @@ html[data-lncos-product-overlay] .bottom-nav {
   z-index: 120;
 }
 
+/* Menu latéral ouvert — tab bar masquée côté React ; repli CSS si portal résiduel */
+html[data-lncos-side-menu-open] .bottom-nav {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .pd-overlay__handle {
   position: absolute;
   top: calc(var(--safe-top) + 8px);

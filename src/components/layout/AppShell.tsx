@@ -92,9 +92,23 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   }, []);
 
   const navVisible = bottomNav && showNav(mode);
+  const sideMenuOpen = overlay?.type === "side-menu";
+  const bottomNavVisible = navVisible && !sideMenuOpen;
   const stackedListingCategory = getStackedListingCategory(overlay);
   const productOverListing = isProductOpenedOverListing(overlay);
   const productOverlayOpen = overlay?.type === "product";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (sideMenuOpen) {
+      root.dataset.lncosSideMenuOpen = "true";
+    } else {
+      delete root.dataset.lncosSideMenuOpen;
+    }
+    return () => {
+      delete root.dataset.lncosSideMenuOpen;
+    };
+  }, [sideMenuOpen]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -152,8 +166,8 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
         </Suspense>
       </main>
 
-      {/* ── BottomNav — in-flow flex child, always at bottom ── */}
-      {navVisible && <BottomNav cartCount={cartCount} />}
+      {/* ── BottomNav — masquée quand le menu latéral est ouvert (portal body, z-40) ── */}
+      {bottomNavVisible && <BottomNav cartCount={cartCount} />}
 
       {/* ── z:90 shell modals — cover main + nav ──────────── */}
       {overlay?.type === "side-menu" && (
@@ -169,7 +183,7 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
       {mode === "live" && !overlay && <PopupPromo />}
 
       {/* ── Social proof notifications (bas gauche) ───────── */}
-      <SocialProofRotator navVisible={navVisible} />
+      <SocialProofRotator navVisible={bottomNavVisible} />
 
       {/* ── Toast — sous le header (ne masque pas le contenu / CTA) ── */}
       {toast && (
