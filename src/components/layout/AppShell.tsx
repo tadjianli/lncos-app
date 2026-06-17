@@ -6,7 +6,7 @@
  *   html/body  : inset 0 ; PWA standalone idem (pas de height innerHeight sur le shell)
  *   AppShell   : position fixed, remplit le viewport, max-width 480px
  *   main       : flex:1, safe-top, pleine hauteur (clearance nav via scroll CSS)
- *   BottomNav  : portal document.body, floating pill + FAB panier
+ *   BottomNav  : portal document.body — z-40 (z-120 sur fiche produit)
  *
  * Overlay z-index layers (all position:absolute within AppShell):
  *   70  Toast          — floats above nav
@@ -94,6 +94,19 @@ export function AppShell({ children, bottomNav = true }: AppShellProps) {
   const navVisible = bottomNav && showNav(mode);
   const stackedListingCategory = getStackedListingCategory(overlay);
   const productOverListing = isProductOpenedOverListing(overlay);
+  const productOverlayOpen = overlay?.type === "product";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (productOverlayOpen) {
+      root.dataset.lncosProductOverlay = "true";
+    } else {
+      delete root.dataset.lncosProductOverlay;
+    }
+    return () => {
+      delete root.dataset.lncosProductOverlay;
+    };
+  }, [productOverlayOpen]);
 
   return (
     <div

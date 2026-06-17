@@ -4741,9 +4741,9 @@
   }
 }
 
-/* Fiche produit avec tab bar — overlay au-dessus de la nav, pas par-dessus */
-.app-shell--with-nav .pd-overlay {
-  bottom: var(--bottom-nav-h);
+/* Tab bar au-dessus de la fiche produit plein écran (dataset posé par AppShell) */
+html[data-lncos-product-overlay] .bottom-nav {
+  z-index: 120;
 }
 
 .pd-overlay__handle {
@@ -4787,6 +4787,7 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
+  /* Scroll derrière CTA sticky — clearance tab bar gérée par bottom-action-bar */
 }
 
 /* Fallback SSR /produit/[slug] — safe-top fourni par app-shell-main */
@@ -5002,9 +5003,9 @@
   overflow: visible;
 }
 
-/* Espace de respiration entre le CTA et la bottom nav (fiche produit overlay) */
+/* Espace entre CTA sticky et tab bar flottante (fiche produit plein écran) */
 .pd-overlay .bottom-action-bar--product {
-  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
+  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--tab-bar-height));
 }
 
 .pd-overlay .bottom-action-bar__meta {
@@ -5460,7 +5461,7 @@
   }
 
   .pd-overlay .bottom-action-bar--product {
-    padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
+    padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--tab-bar-height));
   }
 
   .bottom-action-bar .lncos-cta,
@@ -5478,7 +5479,7 @@ html.standalone-pwa .pd-overlay .bottom-action-bar--product {
 }
 
 html.standalone-pwa .pd-overlay .bottom-action-bar--product {
-  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--sticky-cart-nav-gap));
+  padding-bottom: calc(var(--sticky-cart-bar-pad-y) + var(--tab-bar-height));
 }
 
 html.standalone-pwa .bottom-action-bar .lncos-cta,
@@ -5809,12 +5810,9 @@ html.standalone-pwa .app-shell {
 
 html.standalone-pwa .pd-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: var(--bottom-nav-h);
-  height: auto;
-  min-height: 0;
+  inset: 0;
+  height: 100%;
+  min-height: 100%;
   max-height: none;
 }
 
