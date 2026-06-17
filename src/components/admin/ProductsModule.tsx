@@ -10,7 +10,7 @@ import { ProductImageGalleryEditor } from "@/components/admin/ProductImageGaller
 import { ProductMainImageEditor } from "@/components/admin/ProductMainImageEditor";
 import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import { ProductContentSectionsEditor } from "@/components/admin/ProductContentSectionsEditor";
-import { DEFAULT_SECTION_TOGGLES } from "@/lib/product-sections";
+import { DEFAULT_SECTION_TOGGLES, NEW_PRODUCT_SECTION_TOGGLES } from "@/lib/product-sections";
 import { ProductHomeVisibilityEditor } from "@/components/admin/ProductHomeVisibilityEditor";
 import { ProductReviewsPanel } from "@/components/admin/ProductReviewsPanel";
 import { ProductBeforeAfterEditor } from "@/components/admin/ProductBeforeAfterEditor";
@@ -43,6 +43,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
   const [oldPriceEnabled, setOldPriceEnabled] = useState(
     () => product.old != null && Number(product.old) > 0
   );
+  const sectionTogglesBase = form.sectionToggles ?? (isNew ? NEW_PRODUCT_SECTION_TOGGLES : DEFAULT_SECTION_TOGGLES);
   const seoScore = computeProductSeoScore(form);
   const categoryName = categories.find((c) => c.id === form.cat)?.name ?? form.cat;
   const contentSectionRef = useRef<HTMLDivElement>(null);
@@ -298,7 +299,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
             onBenefitsChange={(items) => set("benefits", items)}
             usageTips={form.usageTips ?? []}
             onUsageTipsChange={(tips) => set("usageTips", tips)}
-            toggles={form.sectionToggles ?? DEFAULT_SECTION_TOGGLES}
+            toggles={sectionTogglesBase}
             onTogglesChange={(t) => set("sectionToggles", t)}
             extraSections={form.extraSections ?? []}
             onExtraSectionsChange={(sections) => set("extraSections", sections)}
@@ -319,7 +320,7 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
 
           <div className="adm-form-section-title">Miniatures du produit</div>
           <p className="adm-form-section-desc">
-            Galerie de la fiche produit uniquement (max. 5 images). N&apos;utilise pas l&apos;image principale.
+            Galerie de la fiche produit uniquement (max. 8 images). N&apos;utilise pas l&apos;image principale.
           </p>
           <ProductImageGalleryEditor
             productId={productId}
@@ -347,10 +348,10 @@ function ProductEditModal({ product, categories, onClose, onSave, isNew, onNotif
             productId={productId}
             variants={variants}
             onChange={setVariants}
-            showOnStorefront={form.sectionToggles?.variants ?? true}
+            showOnStorefront={sectionTogglesBase.variants}
             onShowOnStorefrontChange={(variantsToggle) =>
               set("sectionToggles", {
-                ...(form.sectionToggles ?? DEFAULT_SECTION_TOGGLES),
+                ...sectionTogglesBase,
                 variants: variantsToggle,
               })
             }
@@ -400,7 +401,7 @@ const BLANK_PRODUCT: Product = {
   variants: [],
   desc: "",
   usageTips: [],
-  sectionToggles: { ...DEFAULT_SECTION_TOGGLES },
+  sectionToggles: { ...NEW_PRODUCT_SECTION_TOGGLES },
   extraSections: [],
   mainImageUrl: null,
   galleryImages: [],

@@ -19,7 +19,7 @@ export function ProductVariantsEditor({
   productId,
   variants,
   onChange,
-  showOnStorefront = true,
+  showOnStorefront = false,
   onShowOnStorefrontChange,
 }: ProductVariantsEditorProps) {
   const [uploadingId, setUploadingId] = useState<string | null>(null);

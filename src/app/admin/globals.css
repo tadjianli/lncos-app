@@ -1753,10 +1753,10 @@ body.adm-app {
   border-radius: 10px;
 }
 
-/* Rangée de 5 miniatures (Shopify) */
+/* Rangée de miniatures fiche produit (max 8) */
 .adm-gallery-strip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 10px;
 }
 @media (max-width: 640px) {

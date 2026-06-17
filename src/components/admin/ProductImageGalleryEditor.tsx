@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import { uploadProductImage } from "@/lib/admin-media";
 
-export const MAX_PRODUCT_GALLERY_IMAGES = 5;
+export const MAX_PRODUCT_GALLERY_IMAGES = 8;
 
 export interface GalleryItem {
   id: string;
@@ -184,7 +184,7 @@ export function ProductImageGalleryEditor({
           {uploading
             ? "Optimisation & envoi…"
             : atMax
-              ? "Limite de 5 miniatures atteinte"
+              ? `Limite de ${MAX_PRODUCT_GALLERY_IMAGES} miniatures atteinte`
               : "Ajouter des miniatures"}
         </div>
         <div className="adm-gallery-dropzone-sub">

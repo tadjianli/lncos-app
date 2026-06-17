@@ -37,7 +37,7 @@ export interface Product {
   extraSections?: ProductExtraSection[];
   /** Image principale — cartes, listing, panier, favoris (main_image_url) */
   mainImageUrl?: string | null;
-  /** Miniatures fiche produit uniquement (gallery_images, max 5) */
+  /** Miniatures fiche produit uniquement (gallery_images, max 8) */
   galleryImages?: string[];
   /** Réservé vidéo produit (futur) */
   videoUrl?: string | null;

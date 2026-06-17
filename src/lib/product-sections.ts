@@ -33,6 +33,15 @@ export const DEFAULT_SECTION_TOGGLES: ProductSectionToggles = {
   reference: true,
 };
 
+/** Valeurs initiales à la création — l'admin active uniquement ce dont il a besoin. */
+export const NEW_PRODUCT_SECTION_TOGGLES: ProductSectionToggles = {
+  description: false,
+  usageTips: false,
+  benefits: false,
+  variants: false,
+  reference: false,
+};
+
 export function normalizeSectionToggles(raw: unknown): ProductSectionToggles {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_SECTION_TOGGLES };
   const o = raw as Record<string, unknown>;
