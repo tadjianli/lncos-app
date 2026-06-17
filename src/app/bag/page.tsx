@@ -15,7 +15,7 @@ import { findVariantByName, resolveProductImage } from "@/lib/product-catalog";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
 import { formatOrderRef } from "@/lib/order-ref";
-import { getBrowserUser, isSupabaseConfigured } from "@/lib/supabase";
+import { getBrowserUser, isSupabaseConfigured, subscribeAuthChanges } from "@/lib/supabase";
 import {
   useActiveShippingMethods,
   type ShippingMethod,
@@ -30,6 +30,18 @@ import {
   formatShippingPriceLabel,
   getShippingClientHints,
 } from "@/lib/shipping-rules";
+import {
+  EMPTY_CHECKOUT_ADDRESS,
+  toShippingAddressPayload,
+  validateCheckoutAccountPasswords,
+  validateCheckoutAddress,
+  type CheckoutAddress,
+  type CheckoutAddressFieldKey,
+} from "@/lib/checkout-address";
+import { loadCheckoutPrefill } from "@/lib/checkout-profile";
+import { CheckoutAddressStep } from "@/components/checkout/CheckoutAddressStep";
+import { CheckoutLoginModal } from "@/components/checkout/CheckoutLoginModal";
+import { CheckoutAccountOffer } from "@/components/checkout/CheckoutAccountOffer";
 
 /* ─── Pending checkout shape stored in sessionStorage ────────────── */
 interface PendingCheckout {
@@ -40,7 +52,10 @@ interface PendingCheckout {
   discount: number;
   promo_code?: string;
   total: number;
-  shipping_address?: CheckoutAddress;
+  shipping_address?: ReturnType<typeof toShippingAddressPayload>;
+  customer_email?: string;
+  create_account?: boolean;
+  account_password?: string;
 }
 
 /* ─── Row helper ─────────────────────────────────────────────────── */
@@ -55,126 +70,7 @@ function Row({ l, r, gold, pink }: { l: string; r: string; gold?: boolean; pink?
   );
 }
 
-/* ─── Checkout address ────────────────────────────────────────────── */
-interface CheckoutAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  zip: string;
-  city: string;
-  phone: string;
-}
-
-const EMPTY_CHECKOUT_ADDRESS: CheckoutAddress = {
-  firstName: "",
-  lastName: "",
-  address: "",
-  zip: "",
-  city: "",
-  phone: "",
-};
-
-type AddressFieldKey = keyof CheckoutAddress;
-
-function validateCheckoutAddress(addr: CheckoutAddress): Partial<Record<AddressFieldKey, string>> {
-  const errors: Partial<Record<AddressFieldKey, string>> = {};
-  if (!addr.firstName.trim()) errors.firstName = "Le prénom est requis";
-  if (!addr.lastName.trim()) errors.lastName = "Le nom est requis";
-  if (!addr.address.trim()) errors.address = "L'adresse est requise";
-  if (!addr.zip.trim()) errors.zip = "Le code postal est requis";
-  if (!addr.city.trim()) errors.city = "La ville est requise";
-  if (!addr.phone.trim()) errors.phone = "Le téléphone est requis";
-  return errors;
-}
-
 /* ─── Checkout steps ──────────────────────────────────────────────── */
-function StepAddress({
-  value,
-  onChange,
-  errors,
-  showErrors,
-}: {
-  value: CheckoutAddress;
-  onChange: (patch: Partial<CheckoutAddress>) => void;
-  errors: Partial<Record<AddressFieldKey, string>>;
-  showErrors: boolean;
-}) {
-  const fields: {
-    key: AddressFieldKey;
-    label: string;
-    half: boolean;
-    type?: string;
-    autoComplete?: string;
-  }[] = [
-    { key: "firstName", label: "Prénom", half: true, autoComplete: "given-name" },
-    { key: "lastName", label: "Nom", half: true, autoComplete: "family-name" },
-    { key: "address", label: "Adresse", half: false, autoComplete: "street-address" },
-    { key: "zip", label: "Code postal", half: true, autoComplete: "postal-code" },
-    { key: "city", label: "Ville", half: true, autoComplete: "address-level2" },
-    { key: "phone", label: "Téléphone", half: false, type: "tel", autoComplete: "tel" },
-  ];
-
-  return (
-    <div style={{ animation: "fadeUp .4s ease both" }}>
-      <h3 style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)", margin: "0 0 16px" }}>
-        Adresse de livraison
-      </h3>
-      {showErrors && Object.keys(errors).length > 0 && (
-        <div
-          style={{
-            marginBottom: 14,
-            padding: "12px 14px",
-            borderRadius: "var(--r-sm)",
-            background: "rgba(194,85,122,.1)",
-            border: "1px solid rgba(194,85,122,.25)",
-            fontSize: 12.5,
-            color: "var(--pink)",
-            lineHeight: 1.45,
-          }}
-        >
-          Veuillez remplir tous les champs obligatoires pour continuer.
-        </div>
-      )}
-      {fields.map(({ key, label, half, type, autoComplete }) => {
-        const invalid = showErrors && !!errors[key];
-        return (
-          <div
-            key={key}
-            style={{
-              flex: half ? "1 1 0" : "1 1 100%",
-              marginBottom: 14,
-              display: "inline-block",
-              width: half ? "calc(50% - 6px)" : "100%",
-              marginRight: half ? "12px" : 0,
-            }}
-          >
-            <div style={{ fontSize: 11.5, color: "var(--ink-soft)", marginBottom: 7, fontWeight: 500 }}>
-              {label}
-              <span style={{ color: "var(--pink)", marginLeft: 3 }}>*</span>
-            </div>
-            <input
-              value={value[key]}
-              onChange={(e) => onChange({ [key]: e.target.value })}
-              type={type ?? "text"}
-              autoComplete={autoComplete}
-              required
-              aria-invalid={invalid}
-              aria-describedby={invalid ? `${key}-error` : undefined}
-              className="lncos-form-control lncos-form-control--field"
-              placeholder={label}
-            />
-            {invalid && (
-              <div id={`${key}-error`} style={{ fontSize: 11, color: "var(--pink)", marginTop: 5 }}>
-                {errors[key]}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function StepDelivery({
   methods,
   loading: methodsLoading,
@@ -657,20 +553,52 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const [payError, setPayError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null);
   const [address, setAddress] = useState<CheckoutAddress>(EMPTY_CHECKOUT_ADDRESS);
-  const [addressErrors, setAddressErrors] = useState<Partial<Record<AddressFieldKey, string>>>({});
+  const [addressErrors, setAddressErrors] = useState<Partial<Record<CheckoutAddressFieldKey, string>>>({});
   const [addressSubmitted, setAddressSubmitted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState("");
+  const [accountPasswordConfirm, setAccountPasswordConfirm] = useState("");
+  const [accountSubmitted, setAccountSubmitted] = useState(false);
+  const [accountErrors, setAccountErrors] = useState<{ password?: string; confirm?: string }>({});
+
+  const applyPrefill = async (userId: string) => {
+    const prefill = await loadCheckoutPrefill(userId);
+    setAddress((prev) => ({
+      email: prefill.email ?? prev.email,
+      firstName: prefill.firstName ?? prev.firstName,
+      lastName: prefill.lastName ?? prev.lastName,
+      address: prefill.address ?? prev.address,
+      zip: prefill.zip ?? prev.zip,
+      city: prefill.city ?? prev.city,
+      phone: prefill.phone ?? prev.phone,
+    }));
+    setCreateAccount(false);
+    setAccountPassword("");
+    setAccountPasswordConfirm("");
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
-    void getBrowserUser().then((user) => {
-      if (!user) return;
-      const full = user.user_metadata?.full_name ?? "";
-      const parts = full.trim().split(" ");
-      setAddress((prev) => ({
-        ...prev,
-        firstName: prev.firstName || (parts[0] ?? ""),
-        lastName: prev.lastName || (parts.slice(1).join(" ") ?? ""),
-      }));
+
+    void getBrowserUser().then(async (user) => {
+      if (!user) {
+        setIsLoggedIn(false);
+        return;
+      }
+      setIsLoggedIn(true);
+      await applyPrefill(user.id);
+    });
+
+    return subscribeAuthChanges(async () => {
+      const user = await getBrowserUser();
+      if (!user) {
+        setIsLoggedIn(false);
+        return;
+      }
+      setIsLoggedIn(true);
+      await applyPrefill(user.id);
     });
   }, []);
 
@@ -711,13 +639,21 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
   const next = async () => {
     if (step === 0) {
       const errors = validateCheckoutAddress(address);
-      if (Object.keys(errors).length > 0) {
+      let pwdErrors: { password?: string; confirm?: string } = {};
+      if (!isLoggedIn && createAccount) {
+        pwdErrors = validateCheckoutAccountPasswords(accountPassword, accountPasswordConfirm);
+      }
+      if (Object.keys(errors).length > 0 || Object.keys(pwdErrors).length > 0) {
         setAddressErrors(errors);
+        setAccountErrors(pwdErrors);
         setAddressSubmitted(true);
+        setAccountSubmitted(true);
         return;
       }
       setAddressErrors({});
+      setAccountErrors({});
       setAddressSubmitted(false);
+      setAccountSubmitted(false);
       setStep(1);
       return;
     }
@@ -736,6 +672,8 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           variant: it.variant ?? "",
         }));
 
+        const shippingPayload = toShippingAddressPayload(address);
+
         const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -744,7 +682,8 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
             subtotal,
             shipping_cost: shippingCost,
             shipping_method_name: selectedShipping?.name,
-            shipping_address: address,
+            shipping_address: shippingPayload,
+            customer_email: address.email.trim(),
             discount,
             ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
             total,
@@ -766,7 +705,11 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           discount,
           ...(appliedPromo ? { promo_code: appliedPromo.code } : {}),
           total,
-          shipping_address: address,
+          shipping_address: shippingPayload,
+          customer_email: address.email.trim(),
+          ...(!isLoggedIn && createAccount && accountPassword
+            ? { create_account: true, account_password: accountPassword }
+            : {}),
         };
         sessionStorage.setItem("lncos-pending-checkout", JSON.stringify(snapshot));
 
@@ -829,11 +772,13 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
 
       <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4 checkout-flow">
         {step === 0 && (
-          <StepAddress
+          <CheckoutAddressStep
             value={address}
             onChange={patchAddress}
             errors={addressErrors}
             showErrors={addressSubmitted}
+            isLoggedIn={isLoggedIn}
+            onOpenLogin={() => setLoginOpen(true)}
           />
         )}
         {step === 1 && (
@@ -856,6 +801,34 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
           <span style={{ fontSize: 12.5, color: "var(--pink)", flex: 1, lineHeight: 1.4 }}>{payError}</span>
         </div>
       )}
+
+      {step === 0 && !isLoggedIn ? (
+        <div className="checkout-account-offer-wrap">
+          <CheckoutAccountOffer
+            checked={createAccount}
+            onCheckedChange={setCreateAccount}
+            password={accountPassword}
+            confirmPassword={accountPasswordConfirm}
+            onPasswordChange={setAccountPassword}
+            onConfirmChange={setAccountPasswordConfirm}
+            showErrors={accountSubmitted}
+            passwordError={accountErrors.password}
+            confirmError={accountErrors.confirm}
+          />
+        </div>
+      ) : null}
+
+      <CheckoutLoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          void getBrowserUser().then(async (user) => {
+            if (!user) return;
+            setIsLoggedIn(true);
+            await applyPrefill(user.id);
+          });
+        }}
+      />
 
       <div className="bottom-action-bar bottom-action-bar--in-shell">
         <PinkBtn icon={step === 2 ? "check" : "arrowR"} onClick={next} disabled={placing}>
@@ -905,6 +878,21 @@ export default function BagPage() {
 
       if (!res.ok || data.error) {
         throw new Error(data.error ?? "Vérification du paiement échouée");
+      }
+
+      if (pending?.create_account && pending.account_password) {
+        try {
+          await fetch("/api/checkout/create-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session_id: sessionId,
+              password: pending.account_password,
+            }),
+          });
+        } catch (accountErr) {
+          console.warn("[checkout] create-account after payment:", accountErr);
+        }
       }
 
       sessionStorage.removeItem("lncos-pending-checkout");

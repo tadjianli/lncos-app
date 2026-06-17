@@ -9,20 +9,12 @@ import { Icon } from "@/components/shared/Icon";
 import { MobileBackButton } from "@/components/shared/ActionButtons";
 import { getSupabase } from "@/lib/supabase";
 import { isVipProgramEnabled } from "@/lib/feature-flags";
+import { translateAuthError } from "@/lib/auth-errors";
 
 type Tab = "login" | "signup";
 
 interface AuthScreenProps {
   onClose: () => void;
-}
-
-function translateError(msg: string): string {
-  if (msg.includes("Invalid login credentials")) return "Email ou mot de passe incorrect.";
-  if (msg.includes("already registered") || msg.includes("already been registered")) return "Cet email est déjà utilisé.";
-  if (msg.includes("Password should be at least 6")) return "Le mot de passe doit comporter au moins 6 caractères.";
-  if (msg.includes("Unable to validate email address")) return "Adresse email invalide.";
-  if (msg.includes("Email not confirmed")) return "Confirmez votre email avant de vous connecter.";
-  return msg;
 }
 
 export function AuthScreen({ onClose }: AuthScreenProps) {
@@ -55,7 +47,7 @@ export function AuthScreen({ onClose }: AuthScreenProps) {
         setSent(true);
       }
     } catch (err: unknown) {
-      setError(translateError((err as { message?: string }).message ?? "Erreur inconnue."));
+      setError(translateAuthError((err as { message?: string }).message ?? "Erreur inconnue."));
     } finally {
       setLoading(false);
     }

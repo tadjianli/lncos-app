@@ -18,6 +18,7 @@ interface CheckoutBody {
   shipping_cost: number;
   shipping_method_name?: string;
   shipping_address?: ShippingAddress;
+  customer_email?: string;
   discount: number;
   promo_code?: string;
   total: number;
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
       shipping_cost,
       shipping_method_name,
       shipping_address,
+      customer_email,
       discount,
       promo_code,
       total,
@@ -64,6 +66,11 @@ export async function POST(req: Request) {
       !shipping_address?.phone?.trim()
     ) {
       return NextResponse.json({ error: "Adresse de livraison incomplète" }, { status: 400 });
+    }
+
+    const normalizedEmail = customer_email?.trim().toLowerCase() ?? "";
+    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json({ error: "Email invalide" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -218,6 +225,7 @@ export async function POST(req: Request) {
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
+      ...(normalizedEmail ? { customer_email: normalizedEmail } : {}),
       ...(discounts ? { discounts } : {}),
       metadata: {
         type: "shop_order",

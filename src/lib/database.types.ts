@@ -322,6 +322,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: {
+          user_id?: string | null;
           status?: "preparing" | "shipped" | "in_transit" | "delivered" | "cancelled";
           payment_status?: "pending" | "paid" | "refunded";
           tracking_number?: string | null;
