@@ -249,6 +249,19 @@ export function getPopupBlockReason(
   return isPopupFrequencyBlocked(popup);
 }
 
+/** Délai avant affichage — uniquement pour le déclencheur « délai ». */
+export function getPopupShowDelayMs(
+  popup: Pick<Popup, "trigger" | "delaySec">
+): number {
+  if (popup.trigger === "delay") {
+    return Math.max(0, (popup.delaySec ?? 7) * 1000);
+  }
+  return 0;
+}
+
+/** Seuil scroll (0–1) pour le déclencheur « scroll ». */
+export const POPUP_SCROLL_TRIGGER_RATIO = 0.35;
+
 /** Conteneur scroll AppShell (PWA iOS : scroll interne, pas window). */
 export const POPUP_SCROLL_ROOT_SELECTOR =
   ".app-scroll-page, .home-scroll, .overlay-screen-scroll, .mobile-page-layout__body";

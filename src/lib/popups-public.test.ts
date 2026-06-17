@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import type { Popup } from "./rdv-store";
 import {
   getPopupBlockReason,
+  getPopupShowDelayMs,
   isPopupScheduleActive,
   markPopupDismissed,
   pathnameMatchesPopupPages,
@@ -151,6 +152,15 @@ describe("pickEligiblePopup", () => {
       promosEnabled: false,
     });
     expect(reason).toBe("promos_disabled");
+  });
+});
+
+describe("getPopupShowDelayMs", () => {
+  it("n'applique le délai qu'au trigger delay", () => {
+    expect(getPopupShowDelayMs({ trigger: "delay", delaySec: 10 })).toBe(10_000);
+    expect(getPopupShowDelayMs({ trigger: "scroll", delaySec: 10 })).toBe(0);
+    expect(getPopupShowDelayMs({ trigger: "exit", delaySec: 10 })).toBe(0);
+    expect(getPopupShowDelayMs({ trigger: "immediate", delaySec: 10 })).toBe(0);
   });
 });
 

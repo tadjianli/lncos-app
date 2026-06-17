@@ -11,9 +11,11 @@ import type { Popup } from "@/lib/rdv-store";
 import { isImageUrl } from "@/lib/admin-media";
 import {
   getPopupScrollProgress,
+  getPopupShowDelayMs,
   incrementPopupVisitCount,
   markPopupDismissed,
   pickEligiblePopup,
+  POPUP_SCROLL_TRIGGER_RATIO,
   popupLog,
   type PopupEligibilityContext,
 } from "@/lib/popups-public";
@@ -93,10 +95,13 @@ export function PopupPromo() {
   const scheduleShow = useCallback(
     (popup: Popup) => {
       clearTriggerTimer();
-      const delayMs =
-        popup.trigger === "immediate"
-          ? 0
-          : Math.max(0, (popup.delaySec ?? 7) * 1000);
+      const delayMs = getPopupShowDelayMs(popup);
+
+      if (delayMs === 0) {
+        if (!mountedRef.current) return;
+        openPopup(popup);
+        return;
+      }
 
       triggerTimerRef.current = window.setTimeout(() => {
         if (!mountedRef.current) return;
@@ -140,15 +145,16 @@ export function PopupPromo() {
     const { popup } = pickEligiblePopup(popups, eligibilityCtx);
     if (!popup || popup.trigger !== "scroll") return;
 
-    const onScroll = () => {
+    const tryScrollTrigger = () => {
       if (scrollTriggeredRef.current || visible) return;
-      if (getPopupScrollProgress() < 0.35) return;
+      if (getPopupScrollProgress() < POPUP_SCROLL_TRIGGER_RATIO) return;
       scrollTriggeredRef.current = true;
       scheduleShow(popup);
     };
 
-    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
-    return () => document.removeEventListener("scroll", onScroll, { capture: true });
+    tryScrollTrigger();
+    document.addEventListener("scroll", tryScrollTrigger, { passive: true, capture: true });
+    return () => document.removeEventListener("scroll", tryScrollTrigger, { capture: true });
   }, [popups, loading, eligibilityCtx, previewMode, overlayOpen, visible, scheduleShow]);
 
   /* Déclencheur exit intent (desktop web) */

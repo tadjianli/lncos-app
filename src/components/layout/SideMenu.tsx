@@ -30,9 +30,6 @@ const MENU_SECTIONS: MenuSection[] = [
     links: [
       { i: "home", t: "Accueil", href: "/" },
       { i: "sparkle", t: "Nouveautés", href: "/discover" },
-      { i: "bag", t: "Meilleures ventes", href: "/boutique" },
-      { i: "tag", t: "Vernis semi-permanent", href: "/boutique" },
-      { i: "grid", t: "Accessoires ongles", href: "/categorie/accessoires" },
       { i: "sparkle", t: "Promotions", href: "/promotions" },
       { i: "flame", t: "Ventes Flash", href: "/flash-sales" },
     ],
