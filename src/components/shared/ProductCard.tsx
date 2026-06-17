@@ -9,6 +9,12 @@ import { hasProductImage, resolveProductImage } from "@/lib/product-catalog";
 import { preloadImage } from "@/lib/image-session-cache";
 import { isFlashSaleProduct } from "@/lib/flash-sales";
 
+const MARKETING_TAGS = new Set(["Best-seller", "Nouveau", "Nouveauté", "Flash"]);
+
+function isMarketingTag(tag: string | null | undefined): boolean {
+  return tag != null && MARKETING_TAGS.has(tag);
+}
+
 interface ProductCardProps {
   p: Product;
   onOpen?: (p: Product) => void;
@@ -89,7 +95,11 @@ export const ProductCard = memo(function ProductCard({
         )}
 
         {displayTag && (
-          <span className={`prod-tag${flashBadge || p.tag === "Flash" ? " prod-tag--flash" : ""}`}>
+          <span
+            className={`prod-tag${
+              isMarketingTag(displayTag) ? " prod-tag--marketing" : ""
+            }${flashBadge || p.tag === "Flash" ? " prod-tag--flash" : ""}`}
+          >
             {displayTag}
           </span>
         )}
@@ -133,7 +143,7 @@ export const ProductCard = memo(function ProductCard({
             className={`prod-add prod-card-add${popping ? " pop" : ""}`}
             aria-label="Ajouter au panier"
           >
-            <Icon name="plus" size={plusSize} color="#3a1020" stroke={2.4} />
+            <Icon name="plus" size={plusSize} color="var(--primary-on)" stroke={2.4} />
             {pops.map((id) => (
               <span key={id} className="prod-plusone">
                 +1

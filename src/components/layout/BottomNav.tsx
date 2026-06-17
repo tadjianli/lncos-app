@@ -39,8 +39,8 @@ function navIconProps(active: boolean, filledWhenActive = false): LucideProps {
   return {
     size: ICON_SIZE,
     strokeWidth: active ? 2.2 : 1.8,
-    color: active ? "var(--gold-soft)" : "rgba(255,255,255,0.42)",
-    fill: active && filledWhenActive ? "rgba(212,175,55,.24)" : "none",
+    color: active ? "var(--beige-soft)" : "rgba(255,255,255,0.42)",
+    fill: active && filledWhenActive ? "rgba(255,238,216,.24)" : "none",
     strokeLinecap: "round",
     strokeLinejoin: "round",
     "aria-hidden": true,
@@ -133,8 +133,8 @@ export function BottomNav({ cartCount = 0 }: BottomNavProps) {
             <ShoppingBag
               size={28}
               strokeWidth={2}
-              color="#1a1306"
-              fill="rgba(26,19,6,.08)"
+              color="var(--beige-on)"
+              fill="rgba(42,34,24,.08)"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden

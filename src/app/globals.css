@@ -18,6 +18,9 @@
   --color-gold:              var(--gold);
   --color-gold-soft:         var(--gold-soft);
   --color-gold-deep:         var(--gold-deep);
+  --color-beige:             var(--beige);
+  --color-beige-soft:        var(--beige-soft);
+  --color-beige-deep:        var(--beige-deep);
   --color-pink:              var(--pink);
   --color-pink-deep:         var(--pink-deep);
   --color-pink-light:        var(--pink-light);
@@ -58,6 +61,10 @@
   --color-secondary:         var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary:           var(--primary);
+  --color-primary-lncos:     var(--primary-lncos);
+  --color-primary-soft:      var(--primary-soft);
+  --color-primary-deep:      var(--primary-deep);
+  --color-primary-on:        var(--primary-on);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover:           var(--popover);
   --color-card-foreground:   var(--card-foreground);
@@ -73,7 +80,22 @@
 /* ─── Design Token Root ─────────────────────────────────────── */
 
 :root {
-  /* ── Brand palette (exact from tokens.css) ── */
+  /* ── LN COS palette officielle ── */
+  /* Primary — beige chaud (#FFEED8) */
+  --primary-lncos:  #FFEED8;
+  --primary-soft:   #FFF6EB;
+  --primary-deep:   #E5D4BC;
+  --primary-on:     #2A2218;
+  --primary-grad:   linear-gradient(135deg, #FFF6EB 0%, #FFEED8 42%, #E5D4BC 100%);
+
+  /* Alias sémantiques (primary) */
+  --beige:       var(--primary-lncos);
+  --beige-soft:  var(--primary-soft);
+  --beige-deep:  var(--primary-deep);
+  --beige-on:    var(--primary-on);
+  --beige-grad:  var(--primary-grad);
+
+  /* Accent — or (highlights, prix promo, détails premium uniquement) */
   --gold:        #D4AF37;
   --gold-soft:   #E7C96B;
   --gold-deep:   #B8902B;
@@ -95,6 +117,11 @@
   /* ── Gradients ── */
   --gold-grad:  linear-gradient(135deg, #F0D98C 0%, #D4AF37 42%, #B8902B 100%);
   --pink-grad:  linear-gradient(135deg, #FFE6EE 0%, #F7C6D7 100%);
+
+  /* ── Marketing badges (Best-seller, Nouveauté, Flash) ── */
+  --badge-marketing-bg:     var(--primary-grad);
+  --badge-marketing-color:  var(--primary-on);
+  --badge-marketing-border: rgba(255, 238, 216, 0.35);
 
   /* ── Type scale (mobile-first) ── */
   --fs-display: 40px;
@@ -188,10 +215,13 @@
   --shadow-soft: 0 18px 50px -20px rgba(0,0,0,.65);
   --shadow-card: 0 10px 30px -16px rgba(0,0,0,.55);
   --shadow-lift: 0 36px 80px -40px rgba(0,0,0,.9);
-  --glow-gold:   0 12px 30px -12px rgba(212,175,55,.55);
+  --glow-gold:   0 12px 30px -12px rgba(212,175,55,.27);
+  --glow-beige:  0 12px 30px -12px rgba(255, 238, 216, 0.108);
+  --glow-primary: var(--glow-beige);
   --glow-pink:   0 12px 30px -12px rgba(239,169,192,.7);
   --hairline:      1px solid rgba(255,255,255,.06);
   --hairline-gold: 1px solid rgba(212,175,55,.20);
+  --hairline-primary: 1px solid rgba(255, 238, 216, 0.22);
 
   /* ── Motion ── */
   --dur-fast:    .18s;
@@ -208,8 +238,8 @@
   --card-foreground:       var(--ink);
   --popover:               var(--charcoal-2);
   --popover-foreground:    var(--ink);
-  --primary:               var(--gold);
-  --primary-foreground:    var(--black);
+  --primary:               var(--primary-lncos);
+  --primary-foreground:    var(--primary-on);
   --secondary:             var(--charcoal-2);
   --secondary-foreground:  var(--ink);
   --muted:                 var(--charcoal);
@@ -219,7 +249,7 @@
   --destructive:           #8B2D2D;
   --border:                rgba(255,255,255,.06);
   --input:                 var(--charcoal-2);
-  --ring:                  rgba(212,175,55,.45);
+  --ring:                  rgba(255, 238, 216, 0.28);
 
   --chart-1: #D4AF37;
   --chart-2: #B8902B;
@@ -1527,11 +1557,11 @@
 .hero-carousel-cta {
   padding: 12px 24px;
   border-radius: var(--r-pill);
-  background: var(--pink-grad);
-  color: #3a1020;
+  background: var(--primary-grad);
+  color: var(--primary-on);
   font-weight: 700;
   font-size: 13px;
-  box-shadow: 0 10px 24px -10px rgba(239, 169, 192, 0.7);
+  box-shadow: 0 10px 24px -10px rgba(255, 238, 216, 0.25);
   cursor: pointer;
   border: none;
 }
@@ -1741,19 +1771,20 @@
   z-index: 3;
   padding: 4px 9px;
   border-radius: var(--r-pill);
-  background: rgba(0,0,0,.55);
+  background: var(--badge-marketing-bg);
   backdrop-filter: blur(6px);
-  color: var(--pink);
+  color: var(--badge-marketing-color);
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: .05em;
   text-transform: uppercase;
-  border: 1px solid rgba(247,198,215,.25);
+  border: 1px solid var(--badge-marketing-border);
 }
-.prod-tag--flash {
-  background: var(--gold-grad);
-  color: #1a1306;
-  border: none;
+.prod-tag--flash,
+.prod-tag--marketing {
+  background: var(--badge-marketing-bg);
+  color: var(--badge-marketing-color);
+  border: 1px solid var(--badge-marketing-border);
 }
 .prod-fav-btn {
   position: absolute;
@@ -1846,7 +1877,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--pink-grad);
+  background: var(--primary-grad);
   display: grid;
   place-items: center;
   flex: 0 0 auto;
@@ -1873,7 +1904,7 @@
 }
 .prod-add:hover {
   filter: brightness(1.05);
-  box-shadow: 0 8px 18px -8px rgba(239,169,192,.8);
+  box-shadow: 0 8px 18px -8px rgba(255, 238, 216, 0.35);
 }
 .prod-add:active { transform: scale(.82); }
 .prod-add.pop { animation: addPop .5s var(--ease-spring); }
@@ -2086,7 +2117,7 @@
   border-radius: 20px;
   overflow: hidden;
   background: linear-gradient(160deg, #1c1610 0%, #120e12 100%);
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  border: 1px solid rgba(255, 238, 216, 0.28);
   box-shadow:
     0 28px 64px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.04) inset;
@@ -2139,7 +2170,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--popup-accent, var(--gold));
+  color: var(--popup-accent, var(--primary-lncos));
 }
 
 .popup-promo-title {
@@ -2162,13 +2193,13 @@
   margin: 0 0 12px;
   padding: 8px 14px;
   border-radius: 10px;
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px dashed rgba(212, 175, 55, 0.35);
+  background: rgba(255, 238, 216, 0.12);
+  border: 1px dashed rgba(255, 238, 216, 0.35);
   font-family: var(--font-geist-mono, monospace);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: var(--popup-accent, var(--gold));
+  color: var(--popup-accent, var(--primary-lncos));
 }
 
 .popup-promo-countdown {
@@ -2182,12 +2213,12 @@
   min-height: 46px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  color: #1a1306;
+  background: var(--primary-grad);
+  color: var(--primary-on);
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.28);
+  box-shadow: 0 8px 24px rgba(255, 238, 216, 0.054);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2869,8 +2900,8 @@
   padding: 9px 12px;
   border: none;
   border-radius: var(--r-pill);
-  background: var(--gold);
-  color: #3a1020;
+  background: var(--primary-grad);
+  color: var(--primary-on);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -3357,7 +3388,7 @@
 }
 
 .bottom-nav-item--active::before {
-  background: rgba(212, 175, 55, 0.14);
+  background: rgba(255, 238, 216, 0.14);
 }
 
 .bottom-nav-item:active::before {
@@ -3365,11 +3396,11 @@
 }
 
 .bottom-nav-item--active {
-  color: var(--gold-soft);
+  color: var(--primary-soft);
 }
 
 .bottom-nav-item--active .bottom-nav-lucide {
-  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.35));
+  filter: drop-shadow(0 0 6px rgba(255, 238, 216, 0.069));
 }
 
 .bottom-nav-icon-wrap {
@@ -3410,7 +3441,7 @@
 
 .bottom-nav-item--active .bottom-nav-label {
   font-weight: 700;
-  color: var(--gold-soft);
+  color: var(--primary-soft);
   opacity: 1;
 }
 
@@ -3424,10 +3455,10 @@
   height: var(--bottom-nav-cart-size);
   border-radius: 999px;
   text-decoration: none;
-  background: linear-gradient(145deg, var(--gold-soft) 0%, var(--gold) 52%, var(--gold-deep) 100%);
+  background: linear-gradient(145deg, var(--primary-soft) 0%, var(--primary-lncos) 52%, var(--primary-deep) 100%);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 10px 28px rgba(212, 175, 55, 0.42),
+    0 10px 28px rgba(255, 238, 216, 0.083),
     0 4px 12px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition:
@@ -3443,8 +3474,8 @@
 
 .bottom-nav-cart-fab--active {
   box-shadow:
-    0 8px 22px rgba(212, 175, 55, 0.55),
-    0 0 0 2px rgba(212, 175, 55, 0.35),
+    0 8px 22px rgba(255, 238, 216, 0.108),
+    0 0 0 2px rgba(255, 238, 216, 0.069),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -3477,7 +3508,7 @@
   height: 17px;
   padding: 0 4px;
   background: #1a1306;
-  color: var(--gold-soft);
+  color: var(--primary-soft);
   border-radius: 999px;
   font-size: 9.5px;
   font-weight: 800;
@@ -4532,13 +4563,13 @@
 .gold-btn {
   transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease-lux);
 }
-.gold-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(212,175,55,.65); }
+.gold-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(255, 238, 216, 0.127); }
 .gold-btn:active { transform: scale(.96) translateY(0); }
 
 .pink-btn {
   transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease-lux);
 }
-.pink-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(247,198,215,.75); }
+.pink-btn:hover  { transform: translateY(-2px); box-shadow: 0 16px 40px -16px rgba(255, 238, 216, 0.127); }
 .pink-btn:active { transform: scale(.96) translateY(0); }
 
 /* Press feedback: any element tagged with data-press */
@@ -4597,20 +4628,133 @@
 
 .loyalty-cream-card {
   background: linear-gradient(135deg, #FAF0E4 0%, #F5E8D6 50%, #EFE0C8 100%);
-  color: #1a1306;
+  color: var(--primary-on);
   border-radius: var(--r-xl);
-  border: 1px solid rgba(212,175,55,.3);
-  box-shadow: 0 20px 50px -20px rgba(0,0,0,.3), 0 12px 30px -12px rgba(212,175,55,.25);
+  border: 1px solid rgba(255, 238, 216, 0.3);
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,.3), 0 12px 30px -12px rgba(255, 238, 216, 0.049);
 }
 .loyalty-cream-card .gold-pts {
   font-size: 52px;
   font-weight: 700;
   line-height: 1;
-  background: linear-gradient(135deg, #B8902B, #D4AF37, #F0D98C);
+  background: linear-gradient(135deg, #E5D4BC, #FFEED8, #FFF6EB);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+/* ─── Loyalty VIP card (beige theme test) ─────────────────────── */
+
+.loyalty-vip-card {
+  background: linear-gradient(135deg, #1a1816 0%, #121010 45%, #1e1a18 100%);
+  border-radius: 20px;
+  padding: 24px 22px 20px;
+  border: 1px solid rgba(255, 238, 216, 0.28);
+  box-shadow: 0 24px 60px -20px rgba(255, 238, 216, 0.069);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+.loyalty-vip-card__pattern {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    60deg,
+    rgba(255, 238, 216, 0.03) 0px,
+    rgba(255, 238, 216, 0.03) 1px,
+    transparent 1px,
+    transparent 20px
+  );
+  pointer-events: none;
+}
+.loyalty-vip-card__glow {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 238, 216, 0.044), transparent 70%);
+  pointer-events: none;
+}
+.loyalty-vip-card__eyebrow {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 238, 216, 0.6);
+  margin-bottom: 3px;
+}
+.loyalty-vip-card__title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary-lncos);
+  letter-spacing: 0.04em;
+}
+.loyalty-vip-card__chip {
+  width: 38px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--primary-grad);
+  border: 1px solid rgba(255, 238, 216, 0.4);
+  display: grid;
+  place-items: center;
+}
+.loyalty-vip-card__chip-inner {
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #FFF6EB, #E5D4BC);
+}
+.loyalty-vip-card__number {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 238, 216, 0.8);
+  letter-spacing: 0.18em;
+  margin-bottom: 14px;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+}
+.loyalty-vip-card__label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 238, 216, 0.45);
+  margin-bottom: 2px;
+}
+.loyalty-vip-card__holder {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-lncos);
+  letter-spacing: 0.06em;
+}
+.loyalty-vip-card__tier-badge {
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--primary-grad);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primary-on);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.loyalty-vip-card__expiry {
+  font-size: 10px;
+  color: rgba(255, 238, 216, 0.4);
+  font-weight: 600;
+}
+.loyalty-vip-card__crown {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-grad);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 20px -8px rgba(255, 238, 216, 0.168);
+  margin-bottom: 8px;
 }
 
 /* ─── Notification cards ─────────────────────────────────────── */
@@ -4876,15 +5020,20 @@ html[data-lncos-side-menu-open] .bottom-nav {
   left: 16px;
   padding: 5px 12px;
   border-radius: var(--r-pill);
-  background: var(--pink-grad);
-  color: #3a1020;
+  background: var(--badge-marketing-bg);
+  color: var(--badge-marketing-color);
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
   pointer-events: none;
+  border: 1px solid var(--badge-marketing-border);
 }
-.pd-gallery-tag[data-flash="1"] { background: var(--gold-grad); }
+.pd-gallery-tag[data-flash="1"],
+.pd-gallery-tag[data-marketing="1"] {
+  background: var(--badge-marketing-bg);
+  color: var(--badge-marketing-color);
+}
 
 .pd-gallery-counter {
   position: absolute;
@@ -5160,16 +5309,16 @@ html[data-lncos-side-menu-open] .bottom-nav {
 
 .lncos-cta--pink,
 .pd-cta-btn--pink {
-  background: var(--pink-grad);
-  color: #3a1020;
+  background: var(--primary-grad);
+  color: var(--primary-on);
   box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .lncos-cta--gold {
-  background: var(--gold-grad);
-  color: #1a1306;
+  background: var(--primary-grad);
+  color: var(--primary-on);
   box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
@@ -5194,13 +5343,19 @@ html[data-lncos-side-menu-open] .bottom-nav {
   opacity: 0.85;
 }
 
+.lncos-cta--gold::after,
+.lncos-cta--pink::after,
+.pd-cta-btn--pink::after {
+  opacity: 0.167;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .lncos-cta--pink:not(:disabled):not(.lncos-cta--disabled):not(.lncos-cta--sticky-cart):hover,
   .pd-cta-btn--pink:not(.pd-cta-btn--disabled):not(.lncos-cta--sticky-cart):hover {
     transform: translate3d(0, -2px, 0);
     box-shadow:
       0 12px 35px rgba(0, 0, 0, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
   }
 
   .lncos-cta--gold:not(:disabled):not(.lncos-cta--disabled):hover {
@@ -5333,7 +5488,7 @@ html[data-lncos-side-menu-open] .bottom-nav {
   overflow: visible;
 }
 
-/* Glow rose sous le bouton — synchronisé au pulse */
+/* Glow beige sous le bouton — synchronisé au pulse */
 .lncos-sticky-cta-wrap::before {
   content: "";
   position: absolute;
@@ -5344,8 +5499,8 @@ html[data-lncos-side-menu-open] .bottom-nav {
   border-radius: 50%;
   background: radial-gradient(
     ellipse 100% 75% at 50% 0%,
-    rgba(239, 169, 192, 0.75) 0%,
-    rgba(239, 169, 192, 0.38) 42%,
+    rgba(255, 238, 216, 0.28) 0%,
+    rgba(255, 238, 216, 0.14) 42%,
     transparent 74%
   );
   z-index: 0;
@@ -5369,9 +5524,9 @@ html[data-lncos-side-menu-open] .bottom-nav {
   animation: lncos-sticky-cta-pulse 2.5s ease-in-out infinite;
   transition: background 0.35s var(--ease-lux);
   box-shadow:
-    0 10px 28px rgba(239, 169, 192, 0.48),
+    0 10px 28px rgba(255, 238, 216, 0.15),
     0 4px 14px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .lncos-cta--sticky-cart.lncos-cta--pink:not(.lncos-cta--disabled):not(.lncos-cta--success)::before {
@@ -5410,9 +5565,9 @@ html[data-lncos-side-menu-open] .bottom-nav {
 @media (hover: hover) and (pointer: fine) {
   .lncos-cta--sticky-cart.lncos-cta--pink:not(.pd-cta-btn--disabled):not(.lncos-cta--success):hover {
     box-shadow:
-      0 12px 32px rgba(239, 169, 192, 0.55),
+      0 12px 32px rgba(255, 238, 216, 0.18),
       0 4px 14px rgba(0, 0, 0, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.36);
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 }
 

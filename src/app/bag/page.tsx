@@ -453,7 +453,7 @@ function CartScreen({
                       <Icon name="minus" size={13} />
                     </button>
                     <span style={{ minWidth: 18, textAlign: "center", fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{it.qty}</span>
-                    <button onClick={() => setQty(it.key, it.qty + 1)} style={{ width: 26, height: 26, borderRadius: "50%", display: "grid", placeItems: "center", color: "#3a1020", background: "var(--pink)" }}>
+                    <button onClick={() => setQty(it.key, it.qty + 1)} style={{ width: 26, height: 26, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--primary-on)", background: "var(--primary-lncos)" }}>
                       <Icon name="plus" size={13} stroke={2.4} />
                     </button>
                   </div>

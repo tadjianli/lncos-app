@@ -10,6 +10,17 @@ import { FadeImage } from "@/components/shared/FadeImage";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
 
+const MARKETING_TAGS = new Set(["Best-seller", "Nouveau", "Nouveauté", "Flash"]);
+
+function galleryTagAttrs(tag: string) {
+  const isMarketing = MARKETING_TAGS.has(tag);
+  const isFlash = tag === "Flash" || tag === "Édition limitée";
+  return {
+    "data-marketing": isMarketing ? "1" : "0",
+    "data-flash": isFlash ? "1" : "0",
+  } as const;
+}
+
 interface ProductGalleryProps {
   images: string[];
   activeIndex: number;
@@ -124,10 +135,7 @@ export function ProductGallery({
             <ProductImagePlaceholder label={alt} className="prod-img-placeholder--hero" />
           </div>
           {tag && (
-            <span
-              className="pd-gallery-tag"
-              data-flash={["Flash", "Édition limitée"].includes(tag) ? "1" : "0"}
-            >
+            <span className="pd-gallery-tag" {...galleryTagAttrs(tag)}>
               {tag}
             </span>
           )}
@@ -154,10 +162,7 @@ export function ProductGallery({
           <div className="pd-gallery-hero-overlay" aria-hidden />
 
           {tag && (
-            <span
-              className="pd-gallery-tag"
-              data-flash={["Flash", "Édition limitée"].includes(tag) ? "1" : "0"}
-            >
+            <span className="pd-gallery-tag" {...galleryTagAttrs(tag)}>
               {tag}
             </span>
           )}

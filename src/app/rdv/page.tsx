@@ -1106,7 +1106,7 @@ export default function RdvPage() {
                       </div>
                       <button
                         onClick={() => setBooking({ serviceId: s.id })}
-                        style={{ padding: "8px 16px", borderRadius: "var(--r-pill)", background: "var(--pink-grad)", color: "#3a1020", fontSize: 12, fontWeight: 700, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
+                        style={{ padding: "8px 16px", borderRadius: "var(--r-pill)", background: "var(--primary-grad)", color: "var(--primary-on)", fontSize: 12, fontWeight: 700, WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
                       >
                         Réserver
                       </button>

@@ -87,7 +87,7 @@ export function BlogRecommendedProductCard({
             onClick={handleAdd}
             disabled={outOfStock}
           >
-            <Icon name="plus" size={15} color="#3a1020" stroke={2.4} />
+            <Icon name="plus" size={15} color="var(--primary-on)" stroke={2.4} />
             {outOfStock ? "Indisponible" : "Ajouter au panier"}
           </button>
           <Link href={path} className="blog-reco-card__view">

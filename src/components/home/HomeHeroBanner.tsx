@@ -92,16 +92,8 @@ export function HomeHeroBanner({ onDiscover, section, preview }: HomeHeroBannerP
           <button
             type="button"
             onClick={preview ? undefined : onDiscover}
-            style={{
-              padding: "12px 24px",
-              borderRadius: "var(--r-pill)",
-              background: "var(--pink-grad)",
-              color: "#3a1020",
-              fontWeight: 700,
-              fontSize: 13,
-              boxShadow: "0 10px 24px -10px rgba(239,169,192,.7)",
-              cursor: preview ? "default" : "pointer",
-            }}
+            className="hero-carousel-cta"
+            style={{ cursor: preview ? "default" : "pointer" }}
           >
             {cta}
           </button>

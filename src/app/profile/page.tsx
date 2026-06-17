@@ -136,16 +136,16 @@ export default function ProfilePage() {
             border: "1px solid rgba(212,175,55,.25)",
           }}>
             <div style={{ position: "absolute", right: -30, top: -30, width: 130, height: 130, borderRadius: "50%", background: "radial-gradient(circle, rgba(212,175,55,.18), transparent 70%)" }} />
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--pink-grad)", display: "grid", placeItems: "center", flex: "0 0 auto", fontSize: 26, fontWeight: 600, color: "#3a1020" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--primary-grad)", display: "grid", placeItems: "center", flex: "0 0 auto", fontSize: 26, fontWeight: 600, color: "var(--primary-on)" }}>
               {authLoading ? "…" : userInitial}
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 19, color: "var(--ink)" }}>{authLoading ? "Chargement…" : userName}</div>
               <div style={{ fontSize: 12, color: "var(--ink-mute)", marginTop: 2 }}>{userEmail || (isLoggedIn ? "" : "Non connecté")}</div>
               {isLoggedIn && vipEnabled && (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, padding: "4px 11px", borderRadius: "var(--r-pill)", background: "rgba(212,175,55,.15)", border: "1px solid rgba(212,175,55,.3)" }}>
-                  <Icon name="crown" size={13} color="var(--gold)" fill="rgba(212,175,55,.4)" />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gold)", letterSpacing: ".04em" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, padding: "4px 11px", borderRadius: "var(--r-pill)", background: "rgba(255,238,216,.15)", border: "1px solid rgba(255,238,216,.3)" }}>
+                  <Icon name="crown" size={13} color="var(--beige)" fill="rgba(255,238,216,.4)" />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--beige)", letterSpacing: ".04em" }}>
                     MEMBRE {TIER_LABELS[loyaltyTier] ?? "BRONZE"}
                   </span>
                 </div>
@@ -162,21 +162,21 @@ export default function ProfilePage() {
               style={{
                 width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 14,
                 padding: 16, borderRadius: "var(--r-lg)", position: "relative", overflow: "hidden",
-                background: "var(--pink-grad)", boxShadow: "0 14px 32px -16px rgba(247,198,215,.5)",
+                background: "var(--primary-grad)", boxShadow: "0 14px 32px -16px rgba(255,238,216,.25)",
                 border: "none", cursor: "pointer",
               }}
             >
               <span style={{ position: "absolute", right: -24, top: -24, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,.14)" }} />
               <span style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(58,16,32,.16)", display: "grid", placeItems: "center", flex: "0 0 auto", position: "relative" }}>
-                <Icon name="user" size={24} color="#3a1020" />
+                <Icon name="user" size={24} color="var(--primary-on)" />
               </span>
               <div style={{ flex: 1, position: "relative" }}>
-                <div style={{ fontWeight: 700, fontSize: 17, color: "#3a1020" }}>Se connecter</div>
+                <div style={{ fontWeight: 700, fontSize: 17, color: "var(--primary-on)" }}>Se connecter</div>
                 <div style={{ fontSize: 12, color: "rgba(58,16,32,.7)", marginTop: 2 }}>
                   {vipEnabled ? "Accédez à vos commandes et au programme VIP" : "Accédez à vos commandes et favoris"}
                 </div>
               </div>
-              <Icon name="arrowR" size={20} color="#3a1020" stroke={2.2} />
+              <Icon name="arrowR" size={20} color="var(--primary-on)" stroke={2.2} />
             </button>
           </div>
         )}
