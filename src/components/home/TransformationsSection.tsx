@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { BeforeAfterCompare } from "@/components/commerce/BeforeAfterCompare";
-import { BeforeAfterBadges } from "@/components/shared/BeforeAfterBadges";
 import { Icon } from "@/components/shared/Icon";
 import { useFeaturedBeforeAfter } from "@/lib/client-supabase";
 
@@ -57,18 +56,18 @@ export function TransformationsSection({ title = "Transformations clients" }: { 
                 }}
               >
                 <BeforeAfterCompare beforeUrl={r.beforeImageUrl} afterUrl={r.afterImageUrl} />
-                <div style={{ marginTop: 12 }}>
-                  <BeforeAfterBadges verified={r.verified} compact />
-                  {r.description && (
-                    <p style={{ margin: "8px 0 4px", fontSize: 13, fontWeight: 600, color: "var(--ink)", lineHeight: 1.4 }}>
-                      {r.description}
-                    </p>
-                  )}
-                  <div style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
-                    {r.durationLabel}
-                    {r.authorName ? ` · ${r.authorName}` : ""}
+                {(r.description || r.authorName) && (
+                  <div style={{ marginTop: 12 }}>
+                    {r.description && (
+                      <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 600, color: "var(--ink)", lineHeight: 1.4 }}>
+                        {r.description}
+                      </p>
+                    )}
+                    {r.authorName && (
+                      <div style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>{r.authorName}</div>
+                    )}
                   </div>
-                </div>
+                )}
               </article>
             ))}
           </div>

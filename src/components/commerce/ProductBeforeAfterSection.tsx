@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { BeforeAfterCompare } from "@/components/commerce/BeforeAfterCompare";
-import { BeforeAfterBadges } from "@/components/shared/BeforeAfterBadges";
 import { Icon } from "@/components/shared/Icon";
 import { useProductBeforeAfter } from "@/lib/client-supabase";
 import type { PublicBeforeAfterResult } from "@/lib/before-after";
@@ -17,35 +16,33 @@ function ResultCard({ item }: { item: PublicBeforeAfterResult }) {
       }}
     >
       <BeforeAfterCompare beforeUrl={item.beforeImageUrl} afterUrl={item.afterImageUrl} />
-      <div style={{ marginTop: 14 }}>
-        <BeforeAfterBadges verified={item.verified} />
-        {item.title && (
-          <p style={{ margin: "10px 0 6px", fontSize: 15, fontWeight: 700, color: "var(--ink)", lineHeight: 1.35 }}>
-            {item.title}
-          </p>
-        )}
-        {item.description && (
-          <p style={{ margin: item.title ? "0 0 6px" : "10px 0 6px", fontSize: 14, fontWeight: item.title ? 500 : 600, color: item.title ? "var(--ink-soft)" : "var(--ink)", lineHeight: 1.4 }}>
-            {item.description}
-          </p>
-        )}
-        <div style={{ fontSize: 12.5, color: "var(--ink-mute)", marginBottom: 6 }}>
-          Durée : {item.durationLabel}
+      {(item.title || item.description || item.authorName || item.rating) && (
+        <div style={{ marginTop: 14 }}>
+          {item.title && (
+            <p style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700, color: "var(--ink)", lineHeight: 1.35 }}>
+              {item.title}
+            </p>
+          )}
+          {item.description && (
+            <p style={{ margin: item.title ? "0 0 6px" : "0 0 6px", fontSize: 14, fontWeight: item.title ? 500 : 600, color: item.title ? "var(--ink-soft)" : "var(--ink)", lineHeight: 1.4 }}>
+              {item.description}
+            </p>
+          )}
+          {(item.authorName || item.rating) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              {item.authorName && (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{item.authorName}</span>
+              )}
+              {item.rating != null && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--gold)" }}>
+                  <Icon name="star" size={12} color="var(--gold)" fill="var(--gold)" />
+                  {item.rating}/5
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        {(item.authorName || item.rating) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            {item.authorName && (
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{item.authorName}</span>
-            )}
-            {item.rating != null && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--gold)" }}>
-                <Icon name="star" size={12} color="var(--gold)" fill="var(--gold)" />
-                {item.rating}/5
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </article>
   );
 }
