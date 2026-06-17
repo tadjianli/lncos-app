@@ -754,8 +754,9 @@
     padding-top: var(--safe-top);
   }
 
+  /* Tab bar flottante : pas de bande réservée — le scroll passe derrière (comme overlay Paramètres) */
   .app-shell--with-nav .app-shell-main {
-    padding-bottom: var(--bottom-nav-h);
+    padding-bottom: 0;
   }
 
   /* Mobile screen header — safe areas, 44px touch targets */
@@ -2856,7 +2857,7 @@
   box-sizing: border-box;
   padding-left: max(0px, var(--safe-left));
   padding-right: max(0px, var(--safe-right));
-  padding-bottom: var(--bottom-nav-safe-bottom);
+  background: transparent;
   pointer-events: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2866,7 +2867,8 @@
   display: flex;
   align-items: center;
   gap: var(--bottom-nav-dock-gap);
-  padding: 0 var(--bottom-nav-float-gap) var(--bottom-nav-float-gap);
+  padding: 0 var(--bottom-nav-float-gap)
+    calc(var(--bottom-nav-float-gap) + var(--bottom-nav-safe-bottom));
 }
 
 .bottom-nav-bar {

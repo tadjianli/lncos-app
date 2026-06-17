@@ -426,7 +426,7 @@ function BookingWizard({
       </div>
 
       {/* Step content */}
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "18px 18px 20px" }}>
+      <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4">
 
         {/* Step 0 — Service */}
         {step === 0 && (
@@ -1018,7 +1018,7 @@ export default function RdvPage() {
     <AppShell>
       <div style={{ position: "relative", display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {/* Page content */}
-        <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "6px 0 26px" }}>
+        <div className="noscroll app-scroll-page scroll-region--y4">
           {/* Hero */}
           <div style={{ padding: "6px 18px 4px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 40 }}>

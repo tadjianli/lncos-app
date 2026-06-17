@@ -5,7 +5,7 @@
  * Architecture: fixed viewport container — the only element with height.
  *   html/body  : inset 0 ; PWA standalone idem (pas de height innerHeight sur le shell)
  *   AppShell   : position fixed, remplit le viewport, max-width 480px
- *   main       : flex:1, safe-top, padding-bottom = hauteur nav si visible
+ *   main       : flex:1, safe-top, pleine hauteur (clearance nav via scroll CSS)
  *   BottomNav  : portal document.body, floating pill + FAB panier
  *
  * Overlay z-index layers (all position:absolute within AppShell):

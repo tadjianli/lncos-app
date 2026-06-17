@@ -676,10 +676,7 @@ export default function HomePage() {
       <TopBar onMenuClick={openSideMenu} onSearchClick={openSearch} />
 
       {/* Scrollable content — dynamic section order driven by home-sections store */}
-      <div
-        className="noscroll home-scroll"
-        style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}
-      >
+      <div className="noscroll app-scroll-page home-scroll">
         {activeSections.map((section, i) => renderSection(section, i))}
       </div>
     </AppShell>

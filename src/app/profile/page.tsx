@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { Icon } from "@/components/shared/Icon";
 import { useStore } from "@/lib/store";
 import { useLoyaltyStore } from "@/lib/stores/loyalty-store";
@@ -114,7 +115,7 @@ export default function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="noscroll" style={{ flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "8px 0 24px" }}>
+      <ScrollRegion variant="page" className="scroll-region--y4">
         <PageSectionsView sections={profileSections.filter((s) => s.type === "hero")} />
 
         {/* Header */}
@@ -260,7 +261,7 @@ export default function ProfilePage() {
         {vipEnabled && (
           <PageSectionsView sections={profileSections.filter((s) => s.type === "newsletter")} />
         )}
-      </div>
+      </ScrollRegion>
     </AppShell>
   );
 }

@@ -175,7 +175,7 @@ export default function AppointmentsPage() {
         </div>
       )}
 
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "0 16px 24px" }}>
+      <div className="noscroll app-scroll-page scroll-region--x16">
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
             {[0, 1].map((i) => (

@@ -387,7 +387,7 @@ function ConfirmedScreen({ orderRef, onHome }: { orderRef: string; onHome: () =>
       <div style={{ paddingTop: 4, flex: "0 0 auto" }}>
         <SubHeader title="Commande" onBack={onHome} />
       </div>
-      <div className="noscroll" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
+      <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4">
         <StepConfirm orderRef={orderRef} />
       </div>
       <div className="bottom-action-bar bottom-action-bar--in-shell">
@@ -827,7 +827,7 @@ function CheckoutScreen({ onBack, appliedPromo }: { onBack: () => void; appliedP
         ))}
       </div>
 
-      <div className="noscroll checkout-flow" style={{ flex: "1 1 auto", overflowY: "auto", padding: "4px 18px 20px" }}>
+      <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4 checkout-flow">
         {step === 0 && (
           <StepAddress
             value={address}

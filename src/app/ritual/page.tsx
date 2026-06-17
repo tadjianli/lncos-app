@@ -1,6 +1,7 @@
 "use client";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { useStore } from "@/lib/store";
 import { usePublicProducts } from "@/lib/client-supabase";
@@ -16,7 +17,8 @@ export default function RitualPage() {
 
   return (
     <AppShell>
-      <div style={{ padding: "58px 18px 16px" }}>
+      <ScrollRegion variant="page" insetX={18} padBottom={false}>
+      <div style={{ padding: "58px 0 16px" }}>
         <p
           style={{
             fontSize: "var(--fs-nano)",
@@ -46,7 +48,7 @@ export default function RitualPage() {
         </p>
       </div>
 
-      <div className="prodbento prodbento--2" style={{ padding: "0 16px 24px" }}>
+      <div className="prodbento prodbento--2 product-grid--clear-bottom" style={{ padding: "0 0 24px" }}>
         {favProducts.map((p) => (
           <div key={p.id} className="prodbento-cell">
             <ProductCard
@@ -73,6 +75,7 @@ export default function RitualPage() {
           Aucun favori pour l&apos;instant.
         </div>
       )}
+      </ScrollRegion>
     </AppShell>
   );
 }
