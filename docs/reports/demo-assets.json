@@ -1,0 +1,646 @@
+{
+  "generatedAt": "2026-06-18T12:19:06.545Z",
+  "scannedDirectories": [
+    "public",
+    "src"
+  ],
+  "summary": {
+    "totalFiles": 34,
+    "totalBytes": 5099801,
+    "usedFiles": 14,
+    "unusedFiles": 20,
+    "safeToDeleteCount": 20,
+    "safeToDeleteBytes": 3843785,
+    "byCategory": {
+      "demo_payment": {
+        "count": 2,
+        "bytes": 244326
+      },
+      "brand": {
+        "count": 7,
+        "bytes": 200958
+      },
+      "demo_editorial": {
+        "count": 1,
+        "bytes": 636082
+      },
+      "duplicate": {
+        "count": 1,
+        "bytes": 63069
+      },
+      "demo_product_ai": {
+        "count": 10,
+        "bytes": 3763657
+      },
+      "demo_product_gallery": {
+        "count": 5,
+        "bytes": 76814
+      },
+      "nextjs_starter": {
+        "count": 5,
+        "bytes": 3314
+      },
+      "nextjs_app_icon": {
+        "count": 3,
+        "bytes": 111581
+      }
+    }
+  },
+  "safeToDelete": [
+    {
+      "path": "public/assets/products/brume-corps.png",
+      "bytes": 375871,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/01-flatlay.webp",
+      "bytes": 11048,
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/02-lifestyle.webp",
+      "bytes": 23978,
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/03-styled.webp",
+      "bytes": 13994,
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/04-features.webp",
+      "bytes": 17050,
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/05-packaging.webp",
+      "bytes": 10744,
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/coffret-rituel.png",
+      "bytes": 372761,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/creme-hydra.png",
+      "bytes": 375331,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/huile-demaq.png",
+      "bytes": 385963,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/masque-purifiant.png",
+      "bytes": 380218,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/palette-glow.png",
+      "bytes": 367232,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/parfum-noir.png",
+      "bytes": 375890,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/rouge-mat.png",
+      "bytes": 393164,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/serum-cheveux.png",
+      "bytes": 391546,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/serum-eclat.png",
+      "bytes": 345681,
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/file.svg",
+      "bytes": 391,
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/globe.svg",
+      "bytes": 1035,
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/next.svg",
+      "bytes": 1375,
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/vercel.svg",
+      "bytes": 128,
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/window.svg",
+      "bytes": 385,
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "reason": "Aucune référence code — asset démo ou doublon"
+    }
+  ],
+  "files": [
+    {
+      "path": "public/assets/Moyens de paiement.png",
+      "bytes": 122163,
+      "createdAt": "2026-06-10T20:08:56.543Z",
+      "modifiedAt": "2026-06-11T16:51:56.495Z",
+      "category": "demo_payment",
+      "categoryLabel": "Badge moyens de paiement — jamais câblé en UI",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 1 fichier(s)"
+    },
+    {
+      "path": "public/assets/apple-touch-icon.png",
+      "bytes": 18736,
+      "createdAt": "2026-06-09T02:38:24.575Z",
+      "modifiedAt": "2026-06-09T02:38:24.576Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "public/manifest.json",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 3 fichier(s)"
+    },
+    {
+      "path": "public/assets/favicon-32.png",
+      "bytes": 2776,
+      "createdAt": "2026-06-09T02:38:24.619Z",
+      "modifiedAt": "2026-06-09T02:38:24.620Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "public/admin-push-sw.js",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 2 fichier(s)"
+    },
+    {
+      "path": "public/assets/hero.png",
+      "bytes": 636082,
+      "createdAt": "2026-06-08T02:27:02.117Z",
+      "modifiedAt": "2026-06-08T02:27:02.117Z",
+      "category": "demo_editorial",
+      "categoryLabel": "Visuel hero éditorial — non référencé",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 1 fichier(s)"
+    },
+    {
+      "path": "public/assets/icon-192.png",
+      "bytes": 20756,
+      "createdAt": "2026-06-09T02:38:24.527Z",
+      "modifiedAt": "2026-06-09T02:38:24.529Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "docs/AUDIT-PRODUCTION.md",
+        "public/admin-push-sw.js",
+        "public/manifest.json",
+        "scripts/audit-demo-assets.mjs",
+        "src/components/profile/NotificationsScreen.tsx"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 6 fichier(s)"
+    },
+    {
+      "path": "public/assets/icon-512.png",
+      "bytes": 90069,
+      "createdAt": "2026-06-09T02:38:24.475Z",
+      "modifiedAt": "2026-06-09T02:38:24.482Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "docs/seo-search-appearance-audit.md",
+        "public/manifest.json",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 4 fichier(s)"
+    },
+    {
+      "path": "public/assets/logo lncos.jpg",
+      "bytes": 63069,
+      "createdAt": "2025-03-26T03:09:36.411Z",
+      "modifiedAt": "2025-03-26T03:09:36.411Z",
+      "category": "duplicate",
+      "categoryLabel": "Doublon de logo-lncos.jpg (espace dans le nom)",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 1 fichier(s)"
+    },
+    {
+      "path": "public/assets/logo-lncos.jpg",
+      "bytes": 63069,
+      "createdAt": "2026-06-09T02:37:45.041Z",
+      "modifiedAt": "2026-06-09T02:37:45.043Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 2 fichier(s)"
+    },
+    {
+      "path": "public/assets/payment-methods.png",
+      "bytes": 122163,
+      "createdAt": "2026-06-11T17:01:20.164Z",
+      "modifiedAt": "2026-06-11T17:01:20.165Z",
+      "category": "demo_payment",
+      "categoryLabel": "Badge moyens de paiement — jamais câblé en UI",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 1 fichier(s)"
+    },
+    {
+      "path": "public/assets/products/brume-corps.png",
+      "bytes": 375871,
+      "createdAt": "2026-06-08T02:27:02.110Z",
+      "modifiedAt": "2026-06-08T02:27:02.111Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/01-flatlay.webp",
+      "bytes": 11048,
+      "createdAt": "2026-06-10T02:17:28.101Z",
+      "modifiedAt": "2026-06-10T02:17:28.109Z",
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/02-lifestyle.webp",
+      "bytes": 23978,
+      "createdAt": "2026-06-10T02:17:28.109Z",
+      "modifiedAt": "2026-06-10T02:17:28.121Z",
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/03-styled.webp",
+      "bytes": 13994,
+      "createdAt": "2026-06-10T02:17:28.121Z",
+      "modifiedAt": "2026-06-10T02:17:28.131Z",
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/04-features.webp",
+      "bytes": 17050,
+      "createdAt": "2026-06-10T02:17:28.131Z",
+      "modifiedAt": "2026-06-10T02:17:28.142Z",
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/cils-magnetique/05-packaging.webp",
+      "bytes": 10744,
+      "createdAt": "2026-06-10T02:17:28.143Z",
+      "modifiedAt": "2026-06-10T02:17:28.151Z",
+      "category": "demo_product_gallery",
+      "categoryLabel": "Galerie démo cils magnétiques (upload admin prévu)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/coffret-rituel.png",
+      "bytes": 372761,
+      "createdAt": "2026-06-08T02:27:02.111Z",
+      "modifiedAt": "2026-06-08T02:27:02.111Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/creme-hydra.png",
+      "bytes": 375331,
+      "createdAt": "2026-06-08T02:27:02.112Z",
+      "modifiedAt": "2026-06-08T02:27:02.112Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/huile-demaq.png",
+      "bytes": 385963,
+      "createdAt": "2026-06-08T02:27:02.112Z",
+      "modifiedAt": "2026-06-08T02:27:02.112Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/masque-purifiant.png",
+      "bytes": 380218,
+      "createdAt": "2026-06-08T02:27:02.112Z",
+      "modifiedAt": "2026-06-08T02:27:02.113Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/palette-glow.png",
+      "bytes": 367232,
+      "createdAt": "2026-06-08T02:27:02.113Z",
+      "modifiedAt": "2026-06-08T02:27:02.113Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/parfum-noir.png",
+      "bytes": 375890,
+      "createdAt": "2026-06-08T02:27:02.113Z",
+      "modifiedAt": "2026-06-08T02:27:02.113Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/rouge-mat.png",
+      "bytes": 393164,
+      "createdAt": "2026-06-08T02:27:02.113Z",
+      "modifiedAt": "2026-06-08T02:27:02.113Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/serum-cheveux.png",
+      "bytes": 391546,
+      "createdAt": "2026-06-08T02:27:02.114Z",
+      "modifiedAt": "2026-06-08T02:27:02.114Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/assets/products/serum-eclat.png",
+      "bytes": 345681,
+      "createdAt": "2026-06-08T02:27:02.114Z",
+      "modifiedAt": "2026-06-08T02:27:02.114Z",
+      "category": "demo_product_ai",
+      "categoryLabel": "Mock produit IA / seed démarrage (data.js sans imageUrl)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/favicon.ico",
+      "bytes": 2776,
+      "createdAt": "2026-06-09T02:38:07.566Z",
+      "modifiedAt": "2026-06-09T02:38:24.625Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs",
+        "src/middleware.ts"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 2 fichier(s)"
+    },
+    {
+      "path": "public/favicon.png",
+      "bytes": 2776,
+      "createdAt": "2026-06-09T02:37:45.293Z",
+      "modifiedAt": "2026-06-09T02:38:24.624Z",
+      "category": "brand",
+      "categoryLabel": "Logo / favicon / PWA — branding actif",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 2 fichier(s)"
+    },
+    {
+      "path": "public/file.svg",
+      "bytes": 391,
+      "createdAt": "2026-06-07T15:34:39.918Z",
+      "modifiedAt": "2026-06-07T15:34:39.919Z",
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/globe.svg",
+      "bytes": 1035,
+      "createdAt": "2026-06-07T15:34:39.920Z",
+      "modifiedAt": "2026-06-07T15:34:39.921Z",
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/next.svg",
+      "bytes": 1375,
+      "createdAt": "2026-06-07T15:34:39.920Z",
+      "modifiedAt": "2026-06-07T15:34:39.921Z",
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/vercel.svg",
+      "bytes": 128,
+      "createdAt": "2026-06-07T15:34:39.921Z",
+      "modifiedAt": "2026-06-07T15:34:39.921Z",
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "public/window.svg",
+      "bytes": 385,
+      "createdAt": "2026-06-07T15:34:39.921Z",
+      "modifiedAt": "2026-06-07T15:34:39.922Z",
+      "category": "nextjs_starter",
+      "categoryLabel": "SVG template Next.js (non utilisé)",
+      "used": false,
+      "references": [],
+      "canDeleteSafely": true,
+      "deleteReason": "Aucune référence code — asset démo ou doublon"
+    },
+    {
+      "path": "src/app/apple-icon.png",
+      "bytes": 18736,
+      "createdAt": "2026-06-09T02:37:51.259Z",
+      "modifiedAt": "2026-06-09T02:38:24.629Z",
+      "category": "nextjs_app_icon",
+      "categoryLabel": "Icône Next.js App Router (metadata automatique)",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 1 fichier(s)"
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "bytes": 2776,
+      "createdAt": "2026-06-07T15:34:39.918Z",
+      "modifiedAt": "2026-06-09T02:38:24.631Z",
+      "category": "nextjs_app_icon",
+      "categoryLabel": "Icône Next.js App Router (metadata automatique)",
+      "used": true,
+      "references": [
+        "scripts/audit-demo-assets.mjs",
+        "src/middleware.ts"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 2 fichier(s)"
+    },
+    {
+      "path": "src/app/icon.png",
+      "bytes": 90069,
+      "createdAt": "2026-06-09T02:37:51.255Z",
+      "modifiedAt": "2026-06-09T02:38:24.627Z",
+      "category": "nextjs_app_icon",
+      "categoryLabel": "Icône Next.js App Router (metadata automatique)",
+      "used": true,
+      "references": [
+        "config/branding.ts",
+        "public/manifest.json",
+        "scripts/audit-demo-assets.mjs"
+      ],
+      "canDeleteSafely": false,
+      "deleteReason": "Référencé par 3 fichier(s)"
+    }
+  ]
+}

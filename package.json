@@ -14,7 +14,9 @@
     "ui:screenshots:p2": "node scripts/ui-p2-product-screenshots.mjs --label after",
     "ui:screenshots:info-header": "node scripts/ui-info-header-screenshots.mjs --label after",
     "audit:product-images": "node scripts/audit-product-images.mjs",
-    "migrate:legacy-images": "node scripts/migrate-legacy-images.mjs"
+    "migrate:legacy-images": "node scripts/migrate-legacy-images.mjs",
+    "audit:orphan-images": "node scripts/audit-orphan-images.mjs",
+    "audit:demo-assets": "node scripts/audit-demo-assets.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
