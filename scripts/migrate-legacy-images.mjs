@@ -75,6 +75,20 @@ async function downloadObject(supabase, path) {
   return Buffer.from(await data.arrayBuffer());
 }
 
+function collectDbUrls(products, variants, supabaseUrl) {
+  const urls = new Set();
+  const add = (url) => {
+    if (url && typeof url === "string" && url.trim()) urls.add(url.trim());
+  };
+  for (const product of products ?? []) {
+    add(product.main_image_url);
+    add(product.image_url);
+    for (const img of product.gallery_images ?? []) add(img);
+  }
+  for (const variant of variants ?? []) add(variant.image_url);
+  return urls;
+}
+
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const deleteLegacy = process.argv.includes("--delete-legacy");
@@ -86,16 +100,6 @@ async function main() {
   const allPaths = await listAllFiles(supabase, BUCKET);
   const pathSet = new Set(allPaths);
 
-  const sources = allPaths.filter((p) => {
-    if (isVariantObjectPath(p)) return false;
-    if (!IMAGE_EXT.test(p)) return false;
-    const base = basePathFromObject(p);
-    return !variantsExist(pathSet, base);
-  });
-
-  console.log(`Objets bucket: ${allPaths.length}`);
-  console.log(`Sources legacy à migrer: ${sources.length}\n`);
-
   const { data: products } = await supabase
     .from("products")
     .select("id, main_image_url, image_url, gallery_images");
@@ -103,9 +107,37 @@ async function main() {
     .from("product_variants")
     .select("id, product_id, image_url");
 
+  const dbUrls = collectDbUrls(products, variants, supabaseUrl);
+
+  const sources = allPaths.filter((p) => {
+    if (isVariantObjectPath(p)) return false;
+    if (!IMAGE_EXT.test(p)) return false;
+    const base = basePathFromObject(p);
+    return !variantsExist(pathSet, base);
+  });
+
+  const legacyWithVariants = allPaths.filter((p) => {
+    if (!deleteLegacy) return false;
+    if (isVariantObjectPath(p)) return false;
+    if (!IMAGE_EXT.test(p)) return false;
+    const base = basePathFromObject(p);
+    if (!variantsExist(pathSet, base)) return false;
+    const legacyUrl = publicObjectUrl(supabaseUrl, BUCKET, p);
+    return !dbUrls.has(legacyUrl);
+  });
+
+  console.log(`Objets bucket: ${allPaths.length}`);
+  console.log(`Sources legacy à migrer: ${sources.length}`);
+  if (deleteLegacy) {
+    console.log(`Legacy supprimables (variantes OK, hors DB): ${legacyWithVariants.length}\n`);
+  } else {
+    console.log("");
+  }
+
   const migrated = [];
   const skipped = [];
   const errors = [];
+  const deletedLegacy = [];
 
   for (const sourcePath of sources) {
     const basePath = basePathFromObject(sourcePath);
@@ -201,16 +233,33 @@ async function main() {
     }
   }
 
+  for (const sourcePath of legacyWithVariants) {
+    try {
+      console.log(`🗑 ${sourcePath}`);
+      if (!dryRun) {
+        const { error } = await supabase.storage.from(BUCKET).remove([sourcePath]);
+        if (error) throw new Error(error.message);
+      }
+      deletedLegacy.push({ sourcePath, reason: "variants-exist-not-in-db" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`  ✗ ${message}`);
+      errors.push({ sourcePath, error: message, phase: "delete-legacy" });
+    }
+  }
+
   const report = {
     generatedAt: new Date().toISOString(),
     dryRun,
     deleteLegacy,
     bucketObjects: allPaths.length,
     legacySourcesFound: sources.length,
+    legacyDeleted: deletedLegacy.length,
     migrated: migrated.length,
     skipped: skipped.length,
     errors: errors.length,
     migratedItems: migrated,
+    deletedLegacyItems: deletedLegacy,
     skippedItems: skipped,
     errorItems: errors,
   };
@@ -220,7 +269,9 @@ async function main() {
   const outPath = resolve(outDir, "product-images-migration.json");
   writeFileSync(outPath, JSON.stringify(report, null, 2));
 
-  console.log(`\nMigrés: ${migrated.length} | Ignorés: ${skipped.length} | Erreurs: ${errors.length}`);
+  console.log(
+    `\nMigrés: ${migrated.length} | Legacy supprimés: ${deletedLegacy.length} | Ignorés: ${skipped.length} | Erreurs: ${errors.length}`
+  );
   console.log(`Rapport: ${outPath}\n`);
 }
 

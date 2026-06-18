@@ -1,0 +1,429 @@
+{
+  "generatedAt": "2026-06-18T12:37:55.782Z",
+  "confirmed": true,
+  "sourceReport": {
+    "path": "/Users/tadjinouroumohamadianli/Documents/lncos-app/docs/reports/orphan-images.json",
+    "generatedAt": "2026-06-18T12:30:50.311Z",
+    "bucket": "product-images"
+  },
+  "summary": {
+    "candidatesFromReport": 102,
+    "verifiedOrphans": 102,
+    "ignoredCount": 0,
+    "deletedCount": 102,
+    "deletedBytes": 4457926,
+    "errorCount": 0
+  },
+  "deleted": [
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-gallery.webp",
+      "bytes": 26140
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-main.webp",
+      "bytes": 46200
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-thumb.webp",
+      "bytes": 6826
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-gallery.webp",
+      "bytes": 27652
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-main.webp",
+      "bytes": 46048
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-thumb.webp",
+      "bytes": 7686
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-gallery.webp",
+      "bytes": 20636
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-main.webp",
+      "bytes": 32424
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-thumb.webp",
+      "bytes": 4798
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-gallery.webp",
+      "bytes": 16312
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-main.webp",
+      "bytes": 26744
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-thumb.webp",
+      "bytes": 3954
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-gallery.webp",
+      "bytes": 20172
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-main.webp",
+      "bytes": 32138
+    },
+    {
+      "path": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-thumb.webp",
+      "bytes": 5264
+    },
+    {
+      "path": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-gallery.webp",
+      "bytes": 13206
+    },
+    {
+      "path": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-main.webp",
+      "bytes": 14254
+    },
+    {
+      "path": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-thumb.webp",
+      "bytes": 4596
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-gallery.webp",
+      "bytes": 44170
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-main.webp",
+      "bytes": 81558
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-thumb.webp",
+      "bytes": 9252
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-gallery.webp",
+      "bytes": 41138
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-main.webp",
+      "bytes": 75076
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-thumb.webp",
+      "bytes": 8744
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-gallery.webp",
+      "bytes": 41138
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-main.webp",
+      "bytes": 75076
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-thumb.webp",
+      "bytes": 8744
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-gallery.webp",
+      "bytes": 41138
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-main.webp",
+      "bytes": 75076
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-thumb.webp",
+      "bytes": 8744
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-gallery.webp",
+      "bytes": 46544
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-main.webp",
+      "bytes": 82172
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-thumb.webp",
+      "bytes": 10482
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-gallery.webp",
+      "bytes": 50290
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-main.webp",
+      "bytes": 95754
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-thumb.webp",
+      "bytes": 9728
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-gallery.webp",
+      "bytes": 46544
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-main.webp",
+      "bytes": 82172
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-thumb.webp",
+      "bytes": 10482
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-gallery.webp",
+      "bytes": 42088
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-main.webp",
+      "bytes": 74132
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-thumb.webp",
+      "bytes": 9976
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-gallery.webp",
+      "bytes": 44170
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-main.webp",
+      "bytes": 81558
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-thumb.webp",
+      "bytes": 9252
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-gallery.webp",
+      "bytes": 50290
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-main.webp",
+      "bytes": 95754
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-thumb.webp",
+      "bytes": 9728
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-gallery.webp",
+      "bytes": 46544
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-main.webp",
+      "bytes": 82172
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-thumb.webp",
+      "bytes": 10482
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-gallery.webp",
+      "bytes": 24088
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-main.webp",
+      "bytes": 40190
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-thumb.webp",
+      "bytes": 6586
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-gallery.webp",
+      "bytes": 42088
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-main.webp",
+      "bytes": 74132
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-thumb.webp",
+      "bytes": 9976
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-gallery.webp",
+      "bytes": 44170
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-main.webp",
+      "bytes": 81558
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-thumb.webp",
+      "bytes": 9252
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-gallery.webp",
+      "bytes": 50290
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-main.webp",
+      "bytes": 95754
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-thumb.webp",
+      "bytes": 9728
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-gallery.webp",
+      "bytes": 46544
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-main.webp",
+      "bytes": 82172
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-thumb.webp",
+      "bytes": 10482
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-gallery.webp",
+      "bytes": 24088
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-main.webp",
+      "bytes": 40190
+    },
+    {
+      "path": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-thumb.webp",
+      "bytes": 6586
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-gallery.webp",
+      "bytes": 11620
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-main.webp",
+      "bytes": 139692
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-thumb.webp",
+      "bytes": 174
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-gallery.webp",
+      "bytes": 47676
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-main.webp",
+      "bytes": 127080
+    },
+    {
+      "path": "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-thumb.webp",
+      "bytes": 8842
+    },
+    {
+      "path": "brume-corps/image-1781020468236-2bef8bc2-gallery.webp",
+      "bytes": 16132
+    },
+    {
+      "path": "brume-corps/image-1781020468236-2bef8bc2-main.webp",
+      "bytes": 21434
+    },
+    {
+      "path": "brume-corps/image-1781020468236-2bef8bc2-thumb.webp",
+      "bytes": 5052
+    },
+    {
+      "path": "brume-corps/image-1781056519008-949785ed-gallery.webp",
+      "bytes": 58366
+    },
+    {
+      "path": "brume-corps/image-1781056519008-949785ed-main.webp",
+      "bytes": 109882
+    },
+    {
+      "path": "brume-corps/image-1781056519008-949785ed-thumb.webp",
+      "bytes": 11132
+    },
+    {
+      "path": "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-gallery.webp",
+      "bytes": 53100
+    },
+    {
+      "path": "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-main.webp",
+      "bytes": 114628
+    },
+    {
+      "path": "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-thumb.webp",
+      "bytes": 9908
+    },
+    {
+      "path": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-gallery.webp",
+      "bytes": 68778
+    },
+    {
+      "path": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-main.webp",
+      "bytes": 151014
+    },
+    {
+      "path": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-thumb.webp",
+      "bytes": 12792
+    },
+    {
+      "path": "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-gallery.webp",
+      "bytes": 43450
+    },
+    {
+      "path": "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-main.webp",
+      "bytes": 83572
+    },
+    {
+      "path": "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-thumb.webp",
+      "bytes": 9482
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-gallery.webp",
+      "bytes": 67306
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-main.webp",
+      "bytes": 149522
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-thumb.webp",
+      "bytes": 9264
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-gallery.webp",
+      "bytes": 43476
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-main.webp",
+      "bytes": 90376
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-thumb.webp",
+      "bytes": 8474
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-gallery.webp",
+      "bytes": 67306
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-main.webp",
+      "bytes": 149522
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-thumb.webp",
+      "bytes": 9264
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-gallery.webp",
+      "bytes": 68254
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-main.webp",
+      "bytes": 124946
+    },
+    {
+      "path": "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-thumb.webp",
+      "bytes": 13318
+    }
+  ],
+  "ignored": [],
+  "errors": []
+}

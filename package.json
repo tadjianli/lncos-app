@@ -16,6 +16,7 @@
     "audit:product-images": "node scripts/audit-product-images.mjs",
     "migrate:legacy-images": "node scripts/migrate-legacy-images.mjs",
     "audit:orphan-images": "node scripts/audit-orphan-images.mjs",
+    "cleanup:orphan-images": "node scripts/cleanup-orphan-images.mjs",
     "audit:demo-assets": "node scripts/audit-demo-assets.mjs"
   },
   "dependencies": {

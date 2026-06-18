@@ -1,792 +1,274 @@
 {
-  "generatedAt": "2026-06-18T12:06:45.264Z",
+  "generatedAt": "2026-06-18T12:28:00.378Z",
   "dryRun": false,
-  "deleteLegacy": false,
-  "bucketObjects": 65,
-  "legacySourcesFound": 65,
-  "migrated": 65,
+  "deleteLegacy": true,
+  "bucketObjects": 260,
+  "legacySourcesFound": 0,
+  "legacyDeleted": 65,
+  "migrated": 0,
   "skipped": 0,
   "errors": 0,
-  "migratedItems": [
+  "migratedItems": [],
+  "deletedLegacyItems": [
     {
       "sourcePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31.webp",
-      "basePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-main.webp",
-      "variantPaths": [
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-main.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-gallery.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005151583-c3596f31-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 79166
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9.webp",
-      "basePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-main.webp",
-      "variantPaths": [
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-main.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-gallery.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005158435-e7d893b9-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 81386
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd.webp",
-      "basePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-main.webp",
-      "variantPaths": [
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-main.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-gallery.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005191799-f480e3bd-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 57858
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df.webp",
-      "basePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-main.webp",
-      "variantPaths": [
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-main.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-gallery.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005196599-d2d012df-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 47010
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5.webp",
-      "basePath": "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-main.webp",
-      "variantPaths": [
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-main.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-gallery.webp",
-        "10c450d5-64da-4292-8c91-acdf7b7aece6/image-1781005205302-dab444c5-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 57574
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff.webp",
-      "basePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff-main.webp",
-      "variantPaths": [
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff-main.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff-gallery.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/image-1781537175210-ac4fbfff-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 32056
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose.webp",
-      "basePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-main.webp",
-      "variantPaths": [
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-main.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-gallery.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5/rose-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 32056
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca.webp",
-      "basePath": "50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca-main.webp",
-      "variantPaths": [
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca-main.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca-gallery.webp",
-        "50ee1570-260c-41c4-b07c-15ff5ff74ce5gallery/image-1781537191918-270cc3ca-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 108772
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781700503159-fd1bc5a2-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 134980
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701015849-2bd98082-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 124958
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781701854766-0e40bb46-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 124958
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3a/image-1781702028645-21efc333-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 124958
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700525812-0ddc073b-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 124958
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700541154-c0de6e02-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 139198
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700566797-7bf548c5-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 155772
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781700634950-d1e0daa0-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 139198
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701033329-1ab4518b-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 126196
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701036691-9875cdd7-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 134980
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701040621-360cf789-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 155772
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701043547-b34104a4-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 139198
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701045625-0bc09448-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 70864
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701871655-db1663d0-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 126196
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701875024-ead2b006-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 134980
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701878392-953e41f6-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 155772
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701881611-3b3fce59-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 139198
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781701883924-af0622f7-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 70864
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702039238-72a62c97-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 126196
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702042822-5852f315-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 134980
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702046514-8e461959-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 155772
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702054140-8aeace4f-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 139198
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3.webp",
-      "basePath": "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3-main.webp",
-      "variantPaths": [
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3-main.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3-gallery.webp",
-        "51d0d6f5-c3f5-4d8e-b1c9-2d17fdd49c3agallery/image-1781702060474-92789cf3-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 70864
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781005444911-8552c8f0-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 151486
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/image-1781681675990-d72f2d8c-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 54480
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317/variant-new-1781-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 183598
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681696763-1d3e6968-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 26116
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681717564-49b5a56e-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 62504
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf.webp",
-      "basePath": "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf-main.webp",
-      "variantPaths": [
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf-main.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf-gallery.webp",
-        "996ed446-3c3c-4dc7-ab7e-a53890c40317gallery/image-1781681741531-db5710bf-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 121188
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corps/image-1781020468236-2bef8bc2.webp",
-      "basePath": "brume-corps/image-1781020468236-2bef8bc2",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corps/image-1781020468236-2bef8bc2-main.webp",
-      "variantPaths": [
-        "brume-corps/image-1781020468236-2bef8bc2-main.webp",
-        "brume-corps/image-1781020468236-2bef8bc2-gallery.webp",
-        "brume-corps/image-1781020468236-2bef8bc2-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 42618
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corps/image-1781056519008-949785ed.webp",
-      "basePath": "brume-corps/image-1781056519008-949785ed",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corps/image-1781056519008-949785ed-main.webp",
-      "variantPaths": [
-        "brume-corps/image-1781056519008-949785ed-main.webp",
-        "brume-corps/image-1781056519008-949785ed-gallery.webp",
-        "brume-corps/image-1781056519008-949785ed-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 179380
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corps/image-1781107280320-46e31b9b.webp",
-      "basePath": "brume-corps/image-1781107280320-46e31b9b",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corps/image-1781107280320-46e31b9b-main.webp",
-      "variantPaths": [
-        "brume-corps/image-1781107280320-46e31b9b-main.webp",
-        "brume-corps/image-1781107280320-46e31b9b-gallery.webp",
-        "brume-corps/image-1781107280320-46e31b9b-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 105988
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corpsgallery/image-1781107396531-4ab7013c.webp",
-      "basePath": "brume-corpsgallery/image-1781107396531-4ab7013c",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corpsgallery/image-1781107396531-4ab7013c-main.webp",
-      "variantPaths": [
-        "brume-corpsgallery/image-1781107396531-4ab7013c-main.webp",
-        "brume-corpsgallery/image-1781107396531-4ab7013c-gallery.webp",
-        "brume-corpsgallery/image-1781107396531-4ab7013c-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 191892
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corpsgallery/image-1781107410108-b58f3bd1.webp",
-      "basePath": "brume-corpsgallery/image-1781107410108-b58f3bd1",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corpsgallery/image-1781107410108-b58f3bd1-main.webp",
-      "variantPaths": [
-        "brume-corpsgallery/image-1781107410108-b58f3bd1-main.webp",
-        "brume-corpsgallery/image-1781107410108-b58f3bd1-gallery.webp",
-        "brume-corpsgallery/image-1781107410108-b58f3bd1-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 201624
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corpsgallery/image-1781107431551-62363bfc.webp",
-      "basePath": "brume-corpsgallery/image-1781107431551-62363bfc",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corpsgallery/image-1781107431551-62363bfc-main.webp",
-      "variantPaths": [
-        "brume-corpsgallery/image-1781107431551-62363bfc-main.webp",
-        "brume-corpsgallery/image-1781107431551-62363bfc-gallery.webp",
-        "brume-corpsgallery/image-1781107431551-62363bfc-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 90634
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corpsgallery/image-1781107434583-3c51433f.webp",
-      "basePath": "brume-corpsgallery/image-1781107434583-3c51433f",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corpsgallery/image-1781107434583-3c51433f-main.webp",
-      "variantPaths": [
-        "brume-corpsgallery/image-1781107434583-3c51433f-main.webp",
-        "brume-corpsgallery/image-1781107434583-3c51433f-gallery.webp",
-        "brume-corpsgallery/image-1781107434583-3c51433f-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 63366
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "brume-corpsgallery/image-1781108082164-adc10b0b.webp",
-      "basePath": "brume-corpsgallery/image-1781108082164-adc10b0b",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/brume-corpsgallery/image-1781108082164-adc10b0b-main.webp",
-      "variantPaths": [
-        "brume-corpsgallery/image-1781108082164-adc10b0b-main.webp",
-        "brume-corpsgallery/image-1781108082164-adc10b0b-gallery.webp",
-        "brume-corpsgallery/image-1781108082164-adc10b0b-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 135362
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342.webp",
-      "basePath": "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-main.webp",
-      "variantPaths": [
-        "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-main.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-gallery.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3/image-1781678803010-9a903342-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 177636
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e.webp",
-      "basePath": "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e-main.webp",
-      "variantPaths": [
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e-main.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e-gallery.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781677906392-cc94280e-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 192426
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f.webp",
-      "basePath": "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f-main.webp",
-      "variantPaths": [
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f-main.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f-gallery.webp",
-        "d09ef804-ab13-433b-9c2b-f10b527632b3gallery/image-1781678344234-1b31a99f-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 142700
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700071857-b6699284-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 232584
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590/image-1781700132850-1acbeae4-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 232584
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690214320-4943617c-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 133808
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690362650-2e0dc3fb-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 87714
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690377398-e8f74b7e-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 114294
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8.webp",
-      "basePath": "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8-main.webp",
-      "variantPaths": [
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8-main.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8-gallery.webp",
-        "e320d74e-4353-4460-96dd-ae770706a590gallery/image-1781690440637-6cc095d8-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 232584
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-polygel-completgallery/image-1781702402166-f67f48c8.webp",
-      "basePath": "kit-polygel-completgallery/image-1781702402166-f67f48c8",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-polygel-completgallery/image-1781702402166-f67f48c8-main.webp",
-      "variantPaths": [
-        "kit-polygel-completgallery/image-1781702402166-f67f48c8-main.webp",
-        "kit-polygel-completgallery/image-1781702402166-f67f48c8-gallery.webp",
-        "kit-polygel-completgallery/image-1781702402166-f67f48c8-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 111202
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-polygel-completgallery/image-1781702418270-a0333d8c.webp",
-      "basePath": "kit-polygel-completgallery/image-1781702418270-a0333d8c",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-polygel-completgallery/image-1781702418270-a0333d8c-main.webp",
-      "variantPaths": [
-        "kit-polygel-completgallery/image-1781702418270-a0333d8c-main.webp",
-        "kit-polygel-completgallery/image-1781702418270-a0333d8c-gallery.webp",
-        "kit-polygel-completgallery/image-1781702418270-a0333d8c-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 61392
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-polygel-completgallery/image-1781702446815-20285c5a.webp",
-      "basePath": "kit-polygel-completgallery/image-1781702446815-20285c5a",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-polygel-completgallery/image-1781702446815-20285c5a-main.webp",
-      "variantPaths": [
-        "kit-polygel-completgallery/image-1781702446815-20285c5a-main.webp",
-        "kit-polygel-completgallery/image-1781702446815-20285c5a-gallery.webp",
-        "kit-polygel-completgallery/image-1781702446815-20285c5a-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 80482
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-polygel-completgallery/image-1781702467942-c59fdbea.webp",
-      "basePath": "kit-polygel-completgallery/image-1781702467942-c59fdbea",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-polygel-completgallery/image-1781702467942-c59fdbea-main.webp",
-      "variantPaths": [
-        "kit-polygel-completgallery/image-1781702467942-c59fdbea-main.webp",
-        "kit-polygel-completgallery/image-1781702467942-c59fdbea-gallery.webp",
-        "kit-polygel-completgallery/image-1781702467942-c59fdbea-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 80392
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-polygel-completgallery/image-1781702499546-054a1c5b.webp",
-      "basePath": "kit-polygel-completgallery/image-1781702499546-054a1c5b",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-polygel-completgallery/image-1781702499546-054a1c5b-main.webp",
-      "variantPaths": [
-        "kit-polygel-completgallery/image-1781702499546-054a1c5b-main.webp",
-        "kit-polygel-completgallery/image-1781702499546-054a1c5b-gallery.webp",
-        "kit-polygel-completgallery/image-1781702499546-054a1c5b-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 141714
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781.webp",
-      "basePath": "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-main.webp",
-      "variantPaths": [
-        "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-main.webp",
-        "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-gallery.webp",
-        "kit-professionnel-de-pinceaux-nail-art-15-pieces/variant-new-1781-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 136504
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726.webp",
-      "basePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-main.webp",
-      "variantPaths": [
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-main.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-gallery.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007411394-97996726-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 226092
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce.webp",
-      "basePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-main.webp",
-      "variantPaths": [
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-main.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-gallery.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007487367-4c1a37ce-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 142326
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8.webp",
-      "basePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8-main.webp",
-      "variantPaths": [
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8-main.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8-gallery.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007546014-8e56efd8-thumb.webp"
-      ],
-      "dbUpdates": 1,
-      "bytes": 142326
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7.webp",
-      "basePath": "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-main.webp",
-      "variantPaths": [
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-main.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-gallery.webp",
-        "lot-de-3-pinceaux-nail-art-de-precision/image-1781007563402-5b46e3f7-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 226092
+      "reason": "variants-exist-not-in-db"
     },
     {
       "sourcePath": "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932.webp",
-      "basePath": "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932",
-      "newMainUrl": "https://svxgeoklhylqivszedel.supabase.co/storage/v1/object/public/product-images/lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-main.webp",
-      "variantPaths": [
-        "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-main.webp",
-        "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-gallery.webp",
-        "lot-de-3-pinceaux-nail-art-de-precisiongallery/image-1781284882705-d321f932-thumb.webp"
-      ],
-      "dbUpdates": 0,
-      "bytes": 206518
+      "reason": "variants-exist-not-in-db"
     }
   ],
   "skippedItems": [],
