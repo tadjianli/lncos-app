@@ -153,6 +153,9 @@
   --page-header-pad-top: 4px;
   --page-header-pad-bottom: 8px;
   --page-content-pad-bottom: 8px;
+  /* Pages Informations — offset header sous la zone système iOS (+12–20 px) */
+  --info-page-header-offset: 16px;
+  --info-page-content-offset: 6px;
 
   /* ── Product card (dimensions uniques) ── */
   --prod-card-w: 158px;
@@ -1259,6 +1262,16 @@
       max(var(--page-padding-x), var(--safe-right))
       var(--page-header-pad-bottom)
       max(var(--page-padding-x), var(--safe-left));
+  }
+
+  /* Informations / légales — respiration sous encoche iPhone (flèche + titre descendent ensemble) */
+  .page-layout__header--info {
+    padding-top: calc(var(--page-header-pad-top) + var(--info-page-header-offset));
+    padding-bottom: calc(var(--page-header-pad-bottom) + 4px);
+  }
+
+  .page-layout__scroll.page-layout--info {
+    padding-top: var(--info-page-content-offset);
   }
 
   .page-layout__subheader.mobile-screen-header {

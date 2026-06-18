@@ -50,7 +50,12 @@ export function PageLayout({
   return (
     <AppShell bottomNav={bottomNav}>
       {title ? (
-        <header className="page-layout__header">
+        <header
+          className={cn(
+            "page-layout__header",
+            isInfo && "page-layout__header--info"
+          )}
+        >
           {showBack ? (
             <SubHeader
               title={title}
