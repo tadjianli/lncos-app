@@ -72,6 +72,10 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/login",
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    /*
+     * Session refresh sur les pages — exclut /api/* (upload multipart lourd)
+     * et les assets statiques.
+     */
+    "/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

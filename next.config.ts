@@ -91,6 +91,7 @@ const nextConfig: NextConfig = {
         ],
       }
     : undefined,
+  serverExternalPackages: ["sharp"],
 };
 
 export default nextConfig;
