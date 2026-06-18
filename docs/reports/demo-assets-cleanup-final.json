@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-06-18T12:21:30.000Z",
+  "backupBranch": "backup/pre-demo-assets-cleanup",
+  "backupCommit": "6c5884f",
+  "cleanupCommit": null,
+  "build": {
+    "status": "OK",
+    "command": "npm run build",
+    "typescript": "OK — Finished TypeScript without errors",
+    "nextjs": "OK — Compiled successfully, 71 static pages generated",
+    "importErrors": "none detected",
+    "brokenImages": "none — brand/PWA assets verified present"
+  },
+  "summary": {
+    "filesDeleted": 20,
+    "bytesRecovered": 3843785,
+    "bytesRecoveredHuman": "3.67 Mo",
+    "directoriesRemoved": [
+      "public/assets/products/cils-magnetique"
+    ]
+  },
+  "deletedFiles": [
+    { "path": "public/assets/products/brume-corps.png", "bytes": 375871, "category": "demo_product_ai" },
+    { "path": "public/assets/products/cils-magnetique/01-flatlay.webp", "bytes": 11048, "category": "demo_product_gallery" },
+    { "path": "public/assets/products/cils-magnetique/02-lifestyle.webp", "bytes": 23978, "category": "demo_product_gallery" },
+    { "path": "public/assets/products/cils-magnetique/03-styled.webp", "bytes": 13994, "category": "demo_product_gallery" },
+    { "path": "public/assets/products/cils-magnetique/04-features.webp", "bytes": 17050, "category": "demo_product_gallery" },
+    { "path": "public/assets/products/cils-magnetique/05-packaging.webp", "bytes": 10744, "category": "demo_product_gallery" },
+    { "path": "public/assets/products/coffret-rituel.png", "bytes": 372761, "category": "demo_product_ai" },
+    { "path": "public/assets/products/creme-hydra.png", "bytes": 375331, "category": "demo_product_ai" },
+    { "path": "public/assets/products/huile-demaq.png", "bytes": 385963, "category": "demo_product_ai" },
+    { "path": "public/assets/products/masque-purifiant.png", "bytes": 380218, "category": "demo_product_ai" },
+    { "path": "public/assets/products/palette-glow.png", "bytes": 367232, "category": "demo_product_ai" },
+    { "path": "public/assets/products/parfum-noir.png", "bytes": 375890, "category": "demo_product_ai" },
+    { "path": "public/assets/products/rouge-mat.png", "bytes": 393164, "category": "demo_product_ai" },
+    { "path": "public/assets/products/serum-cheveux.png", "bytes": 391546, "category": "demo_product_ai" },
+    { "path": "public/assets/products/serum-eclat.png", "bytes": 345681, "category": "demo_product_ai" },
+    { "path": "public/file.svg", "bytes": 391, "category": "nextjs_starter" },
+    { "path": "public/globe.svg", "bytes": 1035, "category": "nextjs_starter" },
+    { "path": "public/next.svg", "bytes": 1375, "category": "nextjs_starter" },
+    { "path": "public/vercel.svg", "bytes": 128, "category": "nextjs_starter" },
+    { "path": "public/window.svg", "bytes": 385, "category": "nextjs_starter" }
+  ],
+  "preservedBrandAssets": [
+    "public/assets/logo-lncos.jpg",
+    "public/favicon.png",
+    "public/assets/favicon-32.png",
+    "public/assets/icon-192.png",
+    "public/assets/icon-512.png",
+    "public/assets/apple-touch-icon.png",
+    "src/app/icon.png",
+    "src/app/apple-icon.png",
+    "src/app/favicon.ico"
+  ],
+  "notDeletedFromAudit": [
+    {
+      "path": "public/assets/hero.png",
+      "reason": "canDeleteSafely=false dans demo-assets.json (référence auto dans le rapport)"
+    },
+    {
+      "path": "public/assets/payment-methods.png",
+      "reason": "canDeleteSafely=false — hors liste safeToDelete"
+    },
+    {
+      "path": "public/assets/Moyens de paiement.png",
+      "reason": "canDeleteSafely=false — hors liste safeToDelete"
+    },
+    {
+      "path": "public/assets/logo lncos.jpg",
+      "reason": "canDeleteSafely=false — hors liste safeToDelete"
+    },
+    {
+      "path": "public/favicon.ico",
+      "reason": "canDeleteSafely=false — hors liste safeToDelete"
+    }
+  ]
+}
