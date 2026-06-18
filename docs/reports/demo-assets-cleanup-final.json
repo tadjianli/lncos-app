@@ -2,7 +2,7 @@
   "generatedAt": "2026-06-18T12:21:30.000Z",
   "backupBranch": "backup/pre-demo-assets-cleanup",
   "backupCommit": "6c5884f",
-  "cleanupCommit": null,
+  "cleanupCommit": "04e5604",
   "build": {
     "status": "OK",
     "command": "npm run build",
