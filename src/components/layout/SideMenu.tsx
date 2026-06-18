@@ -210,17 +210,6 @@ export function SideMenu({ onClose }: SideMenuProps) {
             </div>
           </div>
         </div>
-
-        <div className="side-menu-drawer__footer">
-          <Link
-            href="/admin"
-            onClick={(e) => handleMenuLinkClick(e, "/admin")}
-            className="side-menu-link side-menu-link--footer"
-          >
-            <Icon name="sliders" size={17} color="var(--gold)" />
-            Espace commerçant →
-          </Link>
-        </div>
       </div>
     </div>
   );
