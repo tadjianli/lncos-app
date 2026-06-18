@@ -78,9 +78,6 @@ export function ProductBeforeAfterSection({
         <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>
           {sectionTitle?.trim() || "Résultats réels"}
         </h3>
-        <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--ink-mute)" }}>
-          Glissez pour comparer Avant · Après
-        </p>
       </div>
 
       {loading ? (

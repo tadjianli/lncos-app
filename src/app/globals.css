@@ -6588,3 +6588,171 @@ html[data-lncos-debug-nav]::after {
     transform: translateY(0);
   }
 }
+
+/* ── Comparateur Avant / Après ─────────────────────────────────────── */
+
+.ba-compare {
+  width: 100%;
+}
+
+.ba-compare__hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-mute);
+  text-align: center;
+}
+
+.ba-compare__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  touch-action: none;
+  user-select: none;
+  cursor: ew-resize;
+  background: #111;
+}
+
+.ba-compare__stage--motion .ba-compare__clip,
+.ba-compare__stage--motion .ba-compare__handle {
+  transition:
+    width 0.38s cubic-bezier(0.22, 0.68, 0, 1),
+    left 0.38s cubic-bezier(0.22, 0.68, 0, 1);
+}
+
+.ba-compare__stage--dragging {
+  cursor: grabbing;
+}
+
+.ba-compare__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ba-compare__img--before {
+  max-width: none;
+}
+
+.ba-compare__clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-right: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.ba-compare__label {
+  position: absolute;
+  top: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.ba-compare__label--before {
+  left: 12px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.ba-compare__label--after {
+  right: 12px;
+  background: rgba(212, 175, 55, 0.75);
+}
+
+.ba-compare__handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ba-compare__handle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: #1a1306;
+}
+
+.ba-compare__zoom {
+  position: absolute;
+  bottom: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.ba-compare__zoom--before {
+  left: 10px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ba-compare__zoom--after {
+  right: 10px;
+  background: rgba(212, 175, 55, 0.65);
+}
+
+.ba-compare__lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.ba-compare__lightbox-close {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.ba-compare__lightbox-img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ba-compare__stage--motion .ba-compare__clip,
+  .ba-compare__stage--motion .ba-compare__handle {
+    transition: none;
+  }
+}

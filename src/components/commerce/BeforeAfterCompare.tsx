@@ -3,6 +3,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 
+const SESSION_HINT_KEY = "lncos-ba-compare-hint-dismissed";
+const SESSION_ANIM_KEY = "lncos-ba-compare-hint-animated";
+
+function readSessionFlag(key: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeSessionFlag(key: string) {
+  try {
+    sessionStorage.setItem(key, "1");
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 export function BeforeAfterCompare({
   beforeUrl,
   afterUrl,
@@ -14,9 +34,18 @@ export function BeforeAfterCompare({
 }) {
   const [pos, setPos] = useState(50);
   const [dragging, setDragging] = useState(false);
+  const [hintAnimating, setHintAnimating] = useState(false);
+  const [showHint, setShowHint] = useState(true);
   const [zoomed, setZoomed] = useState<"before" | "after" | null>(null);
   const [boxWidth, setBoxWidth] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
+  const hintDismissedRef = useRef(false);
+
+  useEffect(() => {
+    const dismissed = readSessionFlag(SESSION_HINT_KEY);
+    hintDismissedRef.current = dismissed;
+    setShowHint(!dismissed);
+  }, []);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -25,6 +54,48 @@ export function BeforeAfterCompare({
     ro.observe(el);
     setBoxWidth(el.clientWidth);
     return () => ro.disconnect();
+  }, []);
+
+  const dismissHint = useCallback(() => {
+    if (hintDismissedRef.current) return;
+    hintDismissedRef.current = true;
+    setShowHint(false);
+    setHintAnimating(false);
+    writeSessionFlag(SESSION_HINT_KEY);
+  }, []);
+
+  useEffect(() => {
+    if (readSessionFlag(SESSION_HINT_KEY)) return;
+    if (readSessionFlag(SESSION_ANIM_KEY)) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      writeSessionFlag(SESSION_ANIM_KEY);
+      return;
+    }
+
+    writeSessionFlag(SESSION_ANIM_KEY);
+    setHintAnimating(true);
+
+    const steps: Array<{ value: number; at: number }> = [
+      { value: 50, at: 0 },
+      { value: 58, at: 350 },
+      { value: 42, at: 750 },
+      { value: 50, at: 1150 },
+    ];
+
+    const timers = steps.map(({ value, at }) =>
+      window.setTimeout(() => {
+        if (!hintDismissedRef.current) setPos(value);
+      }, at)
+    );
+
+    const endTimer = window.setTimeout(() => {
+      setHintAnimating(false);
+    }, 1500);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(endTimer);
+    };
   }, []);
 
   const updateFromClientX = useCallback((clientX: number) => {
@@ -36,6 +107,7 @@ export function BeforeAfterCompare({
   }, []);
 
   const onPointerDown = (e: React.PointerEvent) => {
+    dismissHint();
     setDragging(true);
     updateFromClientX(e.clientX);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -55,22 +127,20 @@ export function BeforeAfterCompare({
     }
   };
 
+  const motionClass =
+    hintAnimating && !dragging ? " ba-compare__stage--motion" : dragging ? " ba-compare__stage--dragging" : "";
+
   return (
-    <>
+    <div className="ba-compare">
+      {showHint ? (
+        <p className="ba-compare__hint" aria-live="polite">
+          Glissez pour comparer
+        </p>
+      ) : null}
+
       <div
         ref={boxRef}
-        style={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: "4 / 5",
-          borderRadius: 16,
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,.08)",
-          touchAction: "none",
-          userSelect: "none",
-          cursor: dragging ? "grabbing" : "ew-resize",
-          background: "#111",
-        }}
+        className={`ba-compare__stage${motionClass}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -81,122 +151,34 @@ export function BeforeAfterCompare({
         aria-valuemin={0}
         aria-valuemax={100}
       >
-        <img
-          src={afterUrl}
-          alt="Après"
-          draggable={false}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: `${pos}%`,
-            overflow: "hidden",
-            borderRight: "2px solid rgba(255,255,255,.92)",
-            boxShadow: "4px 0 24px rgba(0,0,0,.35)",
-          }}
-        >
+        <img src={afterUrl} alt="Après" draggable={false} className="ba-compare__img ba-compare__img--after" />
+        <div className="ba-compare__clip" style={{ width: `${pos}%` }}>
           <img
             src={beforeUrl}
             alt="Avant"
             draggable={false}
-            style={{
-              width: boxWidth || "100%",
-              height: "100%",
-              maxWidth: "none",
-              objectFit: "cover",
-            }}
+            className="ba-compare__img ba-compare__img--before"
+            style={{ width: boxWidth || "100%" }}
           />
         </div>
 
-        <span
-          style={{
-            position: "absolute",
-            top: 12,
-            left: 12,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: ".1em",
-            textTransform: "uppercase",
-            color: "#fff",
-            background: "rgba(0,0,0,.45)",
-            padding: "4px 8px",
-            borderRadius: 999,
-          }}
-        >
-          Avant
-        </span>
-        <span
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: ".1em",
-            textTransform: "uppercase",
-            color: "#fff",
-            background: "rgba(212,175,55,.75)",
-            padding: "4px 8px",
-            borderRadius: 999,
-          }}
-        >
-          Après
-        </span>
+        <span className="ba-compare__label ba-compare__label--before">Avant</span>
+        <span className="ba-compare__label ba-compare__label--after">Après</span>
 
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: `${pos}%`,
-            transform: "translateX(-50%)",
-            width: 36,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-          }}
-        >
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,.95)",
-              boxShadow: "0 4px 18px rgba(0,0,0,.35)",
-              display: "grid",
-              placeItems: "center",
-              color: "#1a1306",
-            }}
-          >
-            <Icon name="sliders" size={16} color="#1a1306" />
+        <div className="ba-compare__handle" style={{ left: `${pos}%` }}>
+          <span className="ba-compare__handle-btn" aria-hidden>
+            <Icon name="chevL" size={14} color="#1a1306" stroke={2.5} />
+            <Icon name="chevR" size={14} color="#1a1306" stroke={2.5} />
           </span>
         </div>
 
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); setZoomed("before"); }}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            left: 10,
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            border: "none",
-            background: "rgba(0,0,0,.5)",
-            color: "#fff",
-            cursor: "pointer",
-            display: "grid",
-            placeItems: "center",
+          className="ba-compare__zoom ba-compare__zoom--before"
+          onClick={(e) => {
+            e.stopPropagation();
+            dismissHint();
+            setZoomed("before");
           }}
           aria-label="Zoom avant"
         >
@@ -204,20 +186,11 @@ export function BeforeAfterCompare({
         </button>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); setZoomed("after"); }}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            border: "none",
-            background: "rgba(212,175,55,.65)",
-            color: "#1a1306",
-            cursor: "pointer",
-            display: "grid",
-            placeItems: "center",
+          className="ba-compare__zoom ba-compare__zoom--after"
+          onClick={(e) => {
+            e.stopPropagation();
+            dismissHint();
+            setZoomed("after");
           }}
           aria-label="Zoom après"
         >
@@ -229,32 +202,14 @@ export function BeforeAfterCompare({
         <div
           role="dialog"
           aria-modal
+          className="ba-compare__lightbox"
           onClick={() => setZoomed(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(0,0,0,.92)",
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-          }}
         >
           <button
             type="button"
+            className="ba-compare__lightbox-close"
             onClick={() => setZoomed(null)}
-            style={{
-              position: "absolute",
-              top: "max(16px, env(safe-area-inset-top))",
-              right: 16,
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              border: "none",
-              background: "rgba(255,255,255,.12)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
+            aria-label="Fermer"
           >
             <Icon name="x" size={18} color="#fff" />
           </button>
@@ -262,15 +217,10 @@ export function BeforeAfterCompare({
             src={zoomed === "before" ? beforeUrl : afterUrl}
             alt={zoomed === "before" ? "Avant zoom" : "Après zoom"}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "90vh",
-              objectFit: "contain",
-              borderRadius: 12,
-            }}
+            className="ba-compare__lightbox-img"
           />
         </div>
       )}
-    </>
+    </div>
   );
 }
