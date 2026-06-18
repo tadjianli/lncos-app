@@ -71,7 +71,7 @@ function FaqBlock({ items }: { items: ProductPageFaqItem[] }) {
   if (items.length === 0) return null;
   return (
     <div className="ppb-faq" style={{ marginBottom: 24 }}>
-      <h3 style={{ margin: "0 0 12px", fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>
+      <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 500, color: "var(--ink-soft)" }}>
         Questions fréquentes
       </h3>
       {items.map((item, i) => (
@@ -132,87 +132,26 @@ export function ProductPageBlockView({
 
     case "product_info":
       return wrap(
-        <div style={{ paddingTop: padded ? 20 : 20 }}>
-          <div
-            style={{
-              width: 32,
-              height: 2,
-              borderRadius: 999,
-              background: "var(--gold-grad)",
-              marginBottom: 12,
-            }}
-          />
-          <h1
-            style={{
-              margin: "0 0 4px",
-              fontWeight: 700,
-              fontSize: 25,
-              color: "var(--ink)",
-              lineHeight: 1.15,
-            }}
-          >
-            {p.name}
-          </h1>
+        <div className="pd-product-info">
+          <h1 className="pd-product-info__title">{p.name}</h1>
           {s.showCategory !== false && (
-            <div style={{ fontSize: 12, color: "var(--ink-mute)", marginBottom: 10 }}>
+            <div className="pd-product-info__meta">
               {p.cat} · {p.ml}
             </div>
           )}
           {s.showBestSeller !== false && ctx.isBestSeller && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 12,
-                padding: "4px 11px",
-                borderRadius: "var(--r-pill)",
-                background: "rgba(212,175,55,.12)",
-                border: "1px solid rgba(212,175,55,.28)",
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: ".06em",
-                textTransform: "uppercase",
-                color: "var(--gold)",
-              }}
-            >
-              <Icon name="star" size={11} color="var(--gold)" fill="var(--gold)" />
-              Best-seller
-            </span>
+            <span className="pd-product-info__badge">Best-seller</span>
           )}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 10,
-              marginBottom: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <span style={{ fontSize: 26, fontWeight: 800, color: "var(--ink)" }}>
+          <div className="pd-product-info__prices">
+            <span className="pd-product-info__price">
               {ctx.displayPrice.toFixed(2)} €
             </span>
             {p.old && (
               <>
-                <span
-                  style={{
-                    fontSize: 16,
-                    color: "var(--ink-mute)",
-                    textDecoration: "line-through",
-                  }}
-                >
+                <span className="pd-product-info__price-old">
                   {p.old.toFixed(2)} €
                 </span>
-                <span
-                  style={{
-                    fontSize: 11.5,
-                    fontWeight: 700,
-                    color: "var(--pink)",
-                    background: "rgba(247,198,215,.12)",
-                    padding: "3px 9px",
-                    borderRadius: "var(--r-pill)",
-                  }}
-                >
+                <span className="pd-product-info__discount">
                   −{Math.round((1 - ctx.displayPrice / p.old) * 100)}%
                 </span>
               </>
@@ -273,12 +212,12 @@ export function ProductPageBlockView({
         <div style={{ marginBottom: 28 }}>
           <div
             style={{
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: ".08em",
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: ".1em",
               textTransform: "uppercase",
               color: "var(--ink-mute)",
-              marginBottom: 11,
+              marginBottom: 10,
             }}
           >
             {s.label ?? "Quantité"}
@@ -311,7 +250,7 @@ export function ProductPageBlockView({
         <div className="pd-benefits" aria-label="Bénéfices produit">
           {ctx.benefitLines.map((line) => (
             <div key={line} className="pd-benefits-item">
-              <Icon name="check" size={14} color="var(--pink)" stroke={2.5} />
+              <Icon name="check" size={14} color="var(--ink-mute)" stroke={2.2} />
               <span>{line}</span>
             </div>
           ))}
@@ -404,19 +343,8 @@ export function ProductPageBlockView({
       if (ctx.routine.length === 0) return null;
       return wrap(
         <div style={{ marginBottom: 30 }}>
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-              color: "var(--gold)",
-              marginBottom: 5,
-            }}
-          >
-            Routine beauté
-          </div>
-          <h3 style={{ margin: "0 0 14px", fontWeight: 700, fontSize: 17, color: "var(--ink)" }}>
+          <div className="ppd-section-label">Routine beauté</div>
+          <h3 style={{ margin: "0 0 14px", fontWeight: 500, fontSize: 16, color: "var(--ink)" }}>
             {s.title ?? "Complétez votre rituel"}
           </h3>
           <HorizontalProductCarousel fillColumns={2} bleed={false}>
@@ -456,7 +384,7 @@ export function ProductPageBlockView({
       if (items.length === 0) return null;
       return wrap(
         <div style={{ marginBottom: 8, marginTop: 24 }}>
-          <h3 style={{ margin: "0 0 14px", fontWeight: 600, fontSize: 17, color: "var(--ink)" }}>
+          <h3 style={{ margin: "0 0 14px", fontWeight: 500, fontSize: 16, color: "var(--ink-soft)" }}>
             {s.title ?? "Vous aimerez aussi"}
           </h3>
           <HorizontalProductCarousel fillColumns={2} bleed={false}>

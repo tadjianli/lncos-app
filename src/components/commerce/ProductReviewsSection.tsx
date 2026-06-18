@@ -4,7 +4,17 @@ import { Icon } from "@/components/shared/Icon";
 import { useProductReviews } from "@/lib/client-supabase";
 import type { PublicReview } from "@/lib/reviews";
 
-function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
+function Stars({
+  rating,
+  size = 14,
+  muted = false,
+}: {
+  rating: number;
+  size?: number;
+  muted?: boolean;
+}) {
+  const filled = muted ? "var(--ink-mute)" : "var(--gold)";
+  const empty = muted ? "var(--charcoal-3)" : "var(--charcoal-3)";
   return (
     <div style={{ display: "flex", gap: 2 }}>
       {[0, 1, 2, 3, 4].map((s) => (
@@ -12,8 +22,8 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
           key={s}
           name="star"
           size={size}
-          color={s < Math.round(rating) ? "var(--gold)" : "var(--charcoal-3)"}
-          fill={s < Math.round(rating) ? "var(--gold)" : "var(--charcoal-3)"}
+          color={s < Math.round(rating) ? filled : empty}
+          fill={s < Math.round(rating) ? filled : empty}
         />
       ))}
     </div>
@@ -123,8 +133,16 @@ function ReviewCard({ review }: { review: PublicReview }) {
   );
 }
 
-function ReviewStars({ rating, size = 14 }: { rating: number; size?: number }) {
-  return <Stars rating={rating} size={size} />;
+function ReviewStars({
+  rating,
+  size = 14,
+  muted = false,
+}: {
+  rating: number;
+  size?: number;
+  muted?: boolean;
+}) {
+  return <Stars rating={rating} size={size} muted={muted} />;
 }
 
 export function ProductReviewsSummary({
@@ -148,43 +166,13 @@ export function ProductReviewsSummary({
       type="button"
       onClick={onViewReviews}
       className="pd-reviews-summary"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        flexWrap: "wrap",
-        width: "100%",
-        margin: "0 0 18px",
-        padding: "10px 12px",
-        borderRadius: "var(--r-sm)",
-        background: "rgba(212,175,55,.06)",
-        border: "1px solid rgba(212,175,55,.14)",
-        cursor: "pointer",
-        WebkitTapHighlightColor: "transparent",
-        touchAction: "manipulation",
-        textAlign: "left",
-      }}
     >
-      <ReviewStars rating={displayAvg} size={13} />
-      <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>
-        {displayAvg.toFixed(1)}
-      </span>
-      <span style={{ fontSize: 12.5, color: "var(--ink-mute)" }}>
-        ({displayCount} avis)
-      </span>
-      <span
-        style={{
-          marginLeft: "auto",
-          fontSize: 12,
-          fontWeight: 700,
-          color: "var(--gold)",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-        }}
-      >
+      <ReviewStars rating={displayAvg} size={11} muted />
+      <span className="pd-reviews-summary__score">{displayAvg.toFixed(1)}</span>
+      <span className="pd-reviews-summary__count">({displayCount} avis)</span>
+      <span className="pd-reviews-summary__link">
         Voir les avis
-        <Icon name="chevD" size={14} color="var(--gold)" />
+        <Icon name="chevD" size={12} color="var(--ink-mute)" />
       </span>
     </button>
   );

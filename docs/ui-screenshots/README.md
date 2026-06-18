@@ -58,3 +58,23 @@ node scripts/ui-theme-screenshots.mjs --label after
 ```
 
 Viewport : 390×844 · scale 2×.
+
+## P2 — Cartes & fiches produit (premium)
+
+Design épuré : produit dominant, glow −20 %, or réservé aux prix barrés, trust badges en ligne discrète.
+
+| # | Écran | Avant | Après |
+|---|-------|-------|-------|
+| 1 | Carte produit | `p2/before/{iphone,android}/01-carte-produit.png` | `p2/after/{iphone,android}/01-carte-produit.png` |
+| 2 | Liste boutique | `p2/before/.../02-liste-produits.png` | `p2/after/.../02-liste-produits.png` |
+| 3 | Fiche produit | `p2/before/.../03-fiche-produit.png` | `p2/after/.../03-fiche-produit.png` |
+
+```bash
+npm run dev
+# Avant (état courant) :
+UI_SCREENSHOT_BASE=http://127.0.0.1:3002 node scripts/ui-p2-product-screenshots.mjs --label before
+# Après modifications P2 :
+UI_SCREENSHOT_BASE=http://127.0.0.1:3002 npm run ui:screenshots:p2
+```
+
+Viewports : iPhone 390×844 · Android 412×915.

@@ -68,18 +68,17 @@ function StepsList({ steps }: { steps: string[] }) {
         <li key={`${step}-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
           <span
             style={{
-              width: 24,
-              height: 24,
+              width: 22,
+              height: 22,
               borderRadius: "50%",
-              background: "var(--gold-grad)",
+              background: "rgba(255,255,255,.08)",
               display: "grid",
               placeItems: "center",
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#1a1306",
+              fontSize: 10,
+              fontWeight: 600,
+              color: "var(--ink-mute)",
               flexShrink: 0,
               marginTop: 1,
-              boxShadow: "0 4px 12px -6px rgba(212,175,55,.6)",
             }}
           >
             {i + 1}
@@ -118,12 +117,12 @@ function BulletList({ items }: { items: string[] }) {
         >
           <span
             style={{
-              width: 5,
-              height: 5,
+              width: 4,
+              height: 4,
               borderRadius: "50%",
-              background: "var(--gold)",
+              background: "var(--ink-mute)",
               flexShrink: 0,
-              opacity: 0.7,
+              opacity: 0.5,
             }}
           />
           {item}
@@ -186,9 +185,9 @@ function AccordionSection({
       >
         <span
           style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: "var(--ink)",
+            fontSize: 13.5,
+            fontWeight: 500,
+            color: "var(--ink-soft)",
             letterSpacing: ".01em",
           }}
         >

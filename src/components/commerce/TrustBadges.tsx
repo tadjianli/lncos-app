@@ -1,28 +1,24 @@
 "use client";
 /**
- * LN COS — Bloc réassurance premium (fiches produit)
+ * LN COS — Ligne réassurance discrète (fiches produit)
  */
 
-const REASSURANCE_CARDS = [
-  { emoji: "🔒", title: "Paiement 100% sécurisé" },
-  { emoji: "🚚", title: "Livraison express Réunion" },
-  { emoji: "↩️", title: "Satisfait ou remboursé" },
-  { emoji: "📦", title: "Expédition sous 24h" },
+const TRUST_ITEMS = [
+  "Livraison rapide",
+  "Retours faciles",
+  "Paiement sécurisé",
 ] as const;
 
 export function TrustBadges() {
   return (
     <section className="trust-badges" aria-label="Garanties produit">
-      <div className="trust-badges__cards">
-        {REASSURANCE_CARDS.map((card) => (
-          <div key={card.title} className="trust-badges__card">
-            <span className="trust-badges__card-emoji" aria-hidden>
-              {card.emoji}
-            </span>
-            <span className="trust-badges__card-title">{card.title}</span>
-          </div>
+      <ul className="trust-badges__line">
+        {TRUST_ITEMS.map((label) => (
+          <li key={label} className="trust-badges__line-item">
+            {label}
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

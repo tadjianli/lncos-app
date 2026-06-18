@@ -124,7 +124,7 @@ export const ProductCard = memo(function ProductCard({
         <div className="prod-card-title">{p.name}</div>
 
         <div className="prod-card-rating">
-          <Icon name="star" size={starSize} color="var(--gold)" fill="var(--gold)" />
+          <Icon name="star" size={starSize} color="var(--ink-mute)" fill="var(--ink-mute)" />
           <span>{p.rating}</span>
           <span className="prod-card-reviews">({p.reviews})</span>
         </div>

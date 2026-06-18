@@ -32,9 +32,11 @@ export function CheckoutAccountOffer({
           onChange={(e) => onCheckedChange(e.target.checked)}
           className="checkout-account-offer__checkbox"
         />
-        <span>
-          Créer mon compte LN COS pour suivre mes commandes, retrouver mon historique d&apos;achat et
-          bénéficier d&apos;offres exclusives.
+        <span className="checkout-account-offer__copy">
+          <span className="checkout-account-offer__title">Créer un compte LN COS</span>
+          <span className="checkout-account-offer__subtitle">
+            Suivez vos commandes et retrouvez votre historique d&apos;achat.
+          </span>
         </span>
       </label>
 
@@ -81,7 +83,7 @@ export function CheckoutAccountOffer({
       ) : null}
 
       <p className="checkout-account-offer__hint">
-        Vos informations de commande vous seront envoyées par email, même sans création de compte.
+        Les informations de commande seront envoyées par email même sans compte.
       </p>
     </div>
   );

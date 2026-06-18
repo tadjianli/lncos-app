@@ -10,7 +10,8 @@
     "test": "vitest run",
     "ai:smoke": "node scripts/ai-smoke-test.mjs",
     "ui:screenshots": "node scripts/ui-theme-screenshots.mjs",
-    "ui:screenshots:checkout": "node scripts/ui-checkout-screenshots.mjs"
+    "ui:screenshots:checkout": "node scripts/ui-checkout-screenshots.mjs",
+    "ui:screenshots:p2": "node scripts/ui-p2-product-screenshots.mjs --label after"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
