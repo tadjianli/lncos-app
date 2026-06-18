@@ -2,7 +2,7 @@
  * LN COS — Admin media upload helpers
  */
 
-import { optimizeProductImage } from "./image-optimize";
+import { validateProductImageFile } from "./image-optimize";
 
 const SECTION_MAX_BYTES = 5 * 1024 * 1024;
 const SECTION_ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -59,11 +59,9 @@ export async function uploadAdminImage(
 
   let uploadFile = file;
   if (bucket === "product-images") {
-    try {
-      uploadFile = await optimizeProductImage(file);
-    } catch (err) {
-      return { url: null, error: (err as Error).message };
-    }
+    const productValidation = validateProductImageFile(file);
+    if (productValidation) return { url: null, error: productValidation };
+    uploadFile = file;
   }
 
   const form = new FormData();
@@ -87,15 +85,12 @@ export async function uploadProductImage(
   productId: string,
   filename?: string
 ): Promise<{ url: string | null; error: string | null }> {
-  const folder = productId;
+  const validation = validateProductImageFile(file);
+  if (validation) return { url: null, error: validation };
+
   const form = new FormData();
-  try {
-    const optimized = await optimizeProductImage(file);
-    form.append("file", optimized);
-  } catch (err) {
-    return { url: null, error: (err as Error).message };
-  }
-  form.append("folder", folder);
+  form.append("file", file);
+  form.append("folder", productId);
   form.append("bucket", "product-images");
   if (filename) form.append("filename", filename);
 

@@ -20,6 +20,7 @@ import {
   isMissingColumnError,
 } from "@/lib/product-select";
 import { buildProductSchemaOrg, type ProductReviewSchemaInput } from "@/lib/seo-schema";
+import { productImageUrlForSize } from "@/lib/product-image-urls";
 
 type DbVariantRow = {
   id: string;
@@ -463,7 +464,11 @@ export function productMetadata(product: Product) {
     brandCopy("productMetaFallback", { productName: product.name });
   const path = getProductSeoPath(product);
   const canonical = absoluteUrl(path);
-  const image = product.mainImageUrl ?? undefined;
+  const image = product.mainImageUrl
+    ? productImageUrlForSize(product.mainImageUrl, "main") ?? product.mainImageUrl
+    : product.imageUrl
+      ? productImageUrlForSize(product.imageUrl, "main") ?? product.imageUrl
+      : undefined;
 
   return { title, description, canonical, path, image };
 }

@@ -11,6 +11,7 @@ import {
   effectiveStock,
   findVariantByName,
   hasRichVariants,
+  productImageSizes,
   resolveProductImage,
   variantLabels,
 } from "@/lib/product-catalog";
@@ -41,7 +42,7 @@ export function VariantSwatches({ product, selectedName, onSelect }: VariantSwat
             const selected = selectedName === v.name;
             const stock = effectiveStock(product, v);
             const out = stock <= 0;
-            const img = resolveProductImage(product, v);
+            const img = resolveProductImage(product, v, "thumb");
 
             return (
               <button
@@ -62,9 +63,8 @@ export function VariantSwatches({ product, selectedName, onSelect }: VariantSwat
                         src={img}
                         alt={v.name}
                         fill
-                        sizes="56px"
+                        sizes={productImageSizes("swatch")}
                         style={{ objectFit: "cover" }}
-                        unoptimized={img.includes("supabase.co")}
                       />
                     ) : (
                       <ProductImagePlaceholder label={v.name} />

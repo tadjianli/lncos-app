@@ -27,7 +27,7 @@ export function resolveArticleCoverUrl(
   for (const id of article.relatedProductIds) {
     const product = byId(id);
     if (!product) continue;
-    const img = resolveProductImage(product);
+    const img = resolveProductImage(product, null, "thumb");
     if (img) return img;
   }
   return null;

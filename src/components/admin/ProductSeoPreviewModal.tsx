@@ -2,7 +2,7 @@
 
 import type { Product } from "@/lib/data";
 import { Icon } from "@/components/shared/Icon";
-import { resolveProductImage } from "@/lib/product-catalog";
+import { resolveProductImageFull } from "@/lib/product-catalog";
 import {
   computeProductSeoScore,
   generateSeoImageFilename,
@@ -29,7 +29,7 @@ export function ProductSeoPreviewModal({ product, onClose }: ProductSeoPreviewMo
   const score = computeProductSeoScore(product);
   const siteUrl = getClientSiteUrl();
   const google = getGooglePreview(product, siteUrl);
-  const image = resolveProductImage(product);
+  const image = resolveProductImageFull(product);
   const seoFilename = generateSeoImageFilename(product.seoKeyword || product.name);
   const canonical = `${siteUrl}${getProductSeoPath(product)}`;
 

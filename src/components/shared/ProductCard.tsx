@@ -5,8 +5,8 @@ import { Icon } from "./Icon";
 import { FadeImage } from "./FadeImage";
 import { ProductImagePlaceholder } from "./ProductImagePlaceholder";
 import type { Product } from "@/lib/data";
-import { hasProductImage, resolveProductImage } from "@/lib/product-catalog";
-import { preloadImage } from "@/lib/image-session-cache";
+import { hasProductImage, productImageSizes, resolveProductImage } from "@/lib/product-catalog";
+import { preloadProductThumb } from "@/lib/image-session-cache";
 import { isFlashSaleProduct } from "@/lib/flash-sales";
 
 const MARKETING_TAGS = new Set(["Best-seller", "Nouveau", "Nouveauté", "Flash"]);
@@ -49,29 +49,29 @@ export const ProductCard = memo(function ProductCard({
     setTimeout(() => setPops((list) => list.filter((x) => x !== id)), 900);
   }, [onAdd, p]);
 
-  const imgSrc = resolveProductImage(p);
+  const imgSrc = resolveProductImage(p, null, "thumb");
   const showImage = hasProductImage(p) && imgSrc != null;
   const flashBadge = isFlashSaleProduct(p);
   const displayTag = flashBadge ? "Flash" : p.tag;
 
   const handleOpen = useCallback(() => {
-    if (imgSrc) void preloadImage(imgSrc);
+    preloadProductThumb(p);
     onOpen?.(p);
-  }, [imgSrc, onOpen, p]);
+  }, [onOpen, p]);
 
   const handlePrefetch = useCallback(() => {
-    if (imgSrc) void preloadImage(imgSrc);
-  }, [imgSrc]);
+    preloadProductThumb(p);
+  }, [p]);
 
   const favIconSize = layout === "grid-2" ? 15 : layout === "grid-3" ? 13 : 16;
   const starSize = layout === "grid-2" ? 11 : layout === "grid-3" ? 10 : 12;
   const plusSize = layout === "grid-2" ? 16 : layout === "grid-3" ? 14 : 16;
   const imageSizes =
     layout === "grid-2"
-      ? "(max-width: 480px) 46vw, 220px"
+      ? productImageSizes("card")
       : layout === "grid-3"
-        ? "(max-width: 480px) 31vw, 120px"
-        : "(max-width: 480px) 158px, 164px";
+        ? productImageSizes("card-grid-3")
+        : productImageSizes("card-carousel");
 
   return (
     <div

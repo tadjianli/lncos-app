@@ -25,7 +25,7 @@ import {
   HOME_UNIVERSE_OPTIONS,
   type HomeUniverseKey,
 } from "@/lib/product-home-visibility";
-import { resolveProductImage } from "@/lib/product-catalog";
+import { resolveProductImage, productImageSizes } from "@/lib/product-catalog";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { BlogJournalSection } from "@/components/home/BlogJournalSection";
 import { brandCopy } from "@/lib/branding";
@@ -175,10 +175,10 @@ function RoutineSection({
             <div key={p.id} className="routine-step">
               <span className="routine-step-num">{i + 1}</span>
               <span className="routine-step-img">
-                {resolveProductImage(p) ? (
+                {resolveProductImage(p, null, "thumb") ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={resolveProductImage(p)!}
+                    src={resolveProductImage(p, null, "thumb")!}
                     alt=""
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
@@ -316,10 +316,10 @@ function BentoUniversSection({
           <div key={key}>
             <div className="bento-tile" style={{ height: 120, marginBottom: 12, borderRadius: 18 }}>
               <div className="bento-bg">
-                {resolveProductImage(hero) ? (
+                {resolveProductImage(hero, null, "thumb") ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={resolveProductImage(hero)!}
+                    src={resolveProductImage(hero, null, "thumb")!}
                     alt=""
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                   />

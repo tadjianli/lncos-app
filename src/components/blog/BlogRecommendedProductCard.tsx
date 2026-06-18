@@ -22,7 +22,7 @@ export function BlogRecommendedProductCard({
   onAdd,
 }: BlogRecommendedProductCardProps) {
   const [popping, setPopping] = useState(false);
-  const imgSrc = resolveProductImage(product);
+  const imgSrc = resolveProductImage(product, null, "thumb");
   const showImage = hasProductImage(product) && imgSrc != null;
   const path = getProductStorePath(product);
   const stockLabel = getProductStockLabel(product);

@@ -11,7 +11,7 @@ import {
   productMetadata,
 } from "@/lib/seo-server";
 import { getProductSeoPath } from "@/lib/seo";
-import { resolveProductImage } from "@/lib/product-catalog";
+import { resolveProductImageFull } from "@/lib/product-catalog";
 import { ProductPageClient } from "./ProductPageClient";
 
 type Props = {
@@ -89,7 +89,7 @@ export default async function ProduitPage({ params, searchParams }: Props) {
   if (!product) return <ProductNotFoundView slug={normalizedSlug} />;
 
   const { title, description, canonical } = productMetadata(product);
-  const image = resolveProductImage(product);
+  const image = resolveProductImageFull(product);
   const path = getProductSeoPath(product);
   const reviewSnippets = await fetchProductReviewsForSchema(product.id);
   const schemaGraphs = buildProductPageSchema(product, reviewSnippets);

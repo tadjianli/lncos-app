@@ -3,8 +3,10 @@
  */
 
 import type { Product, ProductVariant } from "./data";
+import { productImageUrlForSize, type ProductImageSize } from "./product-image-urls";
 
-export type { ProductVariant };
+export type { ProductImageSize, ProductVariant };
+export { productImageUrlForSize, productImageSizes } from "./product-image-urls";
 
 export interface ProductDraft {
   product: Product;
@@ -92,22 +94,26 @@ export function productFallbackImage(_productId: string): null {
 /** Image affichée partout sauf galerie fiche (cartes, panier, favoris…) — null si aucune image */
 export function resolveProductImage(
   product: Product,
-  variant?: ProductVariant | null
+  variant?: ProductVariant | null,
+  size: ProductImageSize = "thumb"
 ): string | null {
-  if (variant?.imageUrl) return variant.imageUrl;
-  if (product.mainImageUrl) return product.mainImageUrl;
-  if (product.imageUrl) return product.imageUrl;
-  return null;
+  const raw =
+    variant?.imageUrl ??
+    product.mainImageUrl ??
+    product.imageUrl ??
+    null;
+  return productImageUrlForSize(raw, size);
 }
 
-/** Galerie fiche produit — miniatures uniquement (gallery_images) */
+/** Galerie fiche produit — URLs variante gallery (800 px) */
 export function buildProductGallery(
   product: Product,
   variant?: ProductVariant | null
 ): string[] {
   const urls: string[] = [];
   const push = (url?: string | null) => {
-    if (url && !urls.includes(url)) urls.push(url);
+    const sized = productImageUrlForSize(url, "gallery");
+    if (sized && !urls.includes(sized)) urls.push(sized);
   };
 
   push(variant?.imageUrl);
@@ -118,6 +124,14 @@ export function buildProductGallery(
     push(product.imageUrl);
   }
   return urls;
+}
+
+/** URL pleine résolution (lightbox, SEO OG) — variante main 1200 px */
+export function resolveProductImageFull(
+  product: Product,
+  variant?: ProductVariant | null
+): string | null {
+  return resolveProductImage(product, variant, "main");
 }
 
 export function hasRichVariants(product: Product): boolean {

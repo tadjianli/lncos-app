@@ -336,7 +336,7 @@ export function OrdersScreen({ onClose, onBack }: { onClose?: () => void; onBack
   const itemImage = useCallback((item: OrderItem) => {
     if (item.image_url) return item.image_url;
     const product = byId(item.id);
-    return product ? resolveProductImage(product) : null;
+    return product ? resolveProductImage(product, null, "thumb") : null;
   }, [byId]);
 
   return (

@@ -13,7 +13,7 @@ interface ProductImageStorefrontPreviewProps {
 }
 
 function CartLinePreview({ product }: { product: Product }) {
-  const imgSrc = resolveProductImage(product);
+  const imgSrc = resolveProductImage(product, null, "thumb");
   const variant = product.variants[0] ?? "Standard";
 
   return (

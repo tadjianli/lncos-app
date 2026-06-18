@@ -428,7 +428,7 @@ function CartScreen({
                 style={{ width: 78, height: 78, borderRadius: 14, flex: "0 0 auto", overflow: "hidden", position: "relative", background: "#181818" }}
               >
                 {(() => {
-                  const thumb = resolveProductImage(it, findVariantByName(it, it.variant));
+                  const thumb = resolveProductImage(it, findVariantByName(it, it.variant), "thumb");
                   return thumb ? (
                     <FadeImage src={thumb} alt={it.name} fill sizes="78px" style={{ objectFit: "cover" }} />
                   ) : (

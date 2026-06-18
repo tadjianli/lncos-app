@@ -52,14 +52,18 @@ export function preloadImage(url: string): Promise<void> {
   return promise;
 }
 
+/**
+ * Précharge uniquement le strict nécessaire à l'ouverture fiche :
+ * hero galerie (800 px) — pas les miniatures ni les images suivantes.
+ */
 export function preloadProductImages(product: Product) {
-  const urls = new Set<string>();
-  const main = resolveProductImage(product);
-  if (main) urls.add(main);
-  for (const url of buildProductGallery(product)) {
-    if (url) urls.add(url);
-  }
-  for (const url of [...urls].slice(0, 4)) {
-    void preloadImage(url);
-  }
+  const gallery = buildProductGallery(product);
+  const hero = gallery[0];
+  if (hero) void preloadImage(hero);
+}
+
+/** Précharge la miniature pour les cartes / listing. */
+export function preloadProductThumb(product: Product) {
+  const thumb = resolveProductImage(product, null, "thumb");
+  if (thumb) void preloadImage(thumb);
 }

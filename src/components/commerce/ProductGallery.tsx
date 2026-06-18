@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { FadeImage } from "@/components/shared/FadeImage";
 import { ProductImagePlaceholder } from "@/components/shared/ProductImagePlaceholder";
 import { Icon } from "@/components/shared/Icon";
+import { productImageSizes, productImageUrlForSize } from "@/lib/product-image-urls";
 
 const MARKETING_TAGS = new Set(["Best-seller", "Nouveau", "Nouveauté", "Flash"]);
 
@@ -37,12 +38,11 @@ function GalleryHeroImage({ src, alt }: { src: string; alt: string }) {
       src={src}
       alt={alt}
       fill
-      sizes="(max-width: 480px) 100vw, 480px"
+      sizes={productImageSizes("gallery-hero")}
       className="pd-gallery-hero-img"
       fallbackLabel={alt}
       priority
       loading="eager"
-      unoptimized={src.includes("supabase.co")}
     />
   );
 }
@@ -60,6 +60,7 @@ export function ProductGallery({
   const touchStartX = useRef(0);
   const suppressClickRef = useRef(false);
   const heroSrc = images[activeIndex] ?? images[0];
+  const lightboxSrc = heroSrc ? (productImageUrlForSize(heroSrc, "main") ?? heroSrc) : null;
 
   useEffect(() => {
     if (activeIndex >= images.length) onActiveIndexChange(0);
@@ -195,10 +196,9 @@ export function ProductGallery({
                   src={src}
                   alt={`${alt} — vue ${i + 1}`}
                   fill
-                  sizes="72px"
+                  sizes={productImageSizes("gallery-thumb")}
                   className="pd-gallery-thumb-img"
                   loading="lazy"
-                  unoptimized={src.includes("supabase.co")}
                 />
               </button>
             ))}
@@ -258,8 +258,8 @@ export function ProductGallery({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                key={heroSrc}
-                src={heroSrc}
+                key={lightboxSrc ?? heroSrc}
+                src={lightboxSrc ?? heroSrc}
                 alt={alt}
                 className="pd-lightbox-img"
                 onClick={(e) => e.stopPropagation()}

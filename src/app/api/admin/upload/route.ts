@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import {
+  buildProductImageVariants,
+  productImageBaseName,
+} from "@/lib/product-image-pipeline";
 
 const SECTION_MAX = 5 * 1024 * 1024;
 const PRODUCT_MAX = 10 * 1024 * 1024;
@@ -42,7 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Fichier manquant" }, { status: 400 });
   }
 
-  const bucket = (String(formData.get("bucket") ?? "media") as BucketName);
+  const bucket = String(formData.get("bucket") ?? "media") as BucketName;
   if (
     bucket !== "media" &&
     bucket !== "product-images" &&
@@ -67,10 +71,55 @@ export async function POST(req: Request) {
 
   const folder = sanitizeSegment(String(formData.get("folder") ?? "sections"));
   const customName = String(formData.get("filename") ?? "").trim();
+  const inputBuffer = Buffer.from(await file.arrayBuffer());
+
+  if (bucket === "product-images") {
+    try {
+      // Original en mémoire uniquement — seules les variantes WebP sont persistées.
+      const baseName = productImageBaseName(customName || undefined);
+      const baseRelativePath = `${folder}/${baseName}`;
+      const variants = await buildProductImageVariants(inputBuffer, baseRelativePath);
+
+      const uploaded: Record<string, { path: string; url: string; bytes: number }> = {};
+
+      for (const variant of variants) {
+        const { error } = await supabase.storage.from(bucket).upload(variant.relativePath, variant.buffer, {
+          contentType: "image/webp",
+          cacheControl: "31536000",
+          upsert: true,
+        });
+        if (error) {
+          const hint =
+            error.message.includes("Bucket not found") || error.message.includes("not found")
+              ? ` — le bucket « ${bucket} » n'existe pas encore (appliquez les migrations Supabase)`
+              : "";
+          return NextResponse.json({ error: `${error.message}${hint}` }, { status: 500 });
+        }
+        const { data } = supabase.storage.from(bucket).getPublicUrl(variant.relativePath);
+        uploaded[variant.variant] = {
+          path: variant.relativePath,
+          url: data.publicUrl,
+          bytes: variant.bytes,
+        };
+      }
+
+      const main = uploaded.main;
+      return NextResponse.json({
+        url: main.url,
+        path: main.path,
+        variants: uploaded,
+        optimized: true,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Optimisation image impossible";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
   const ext = mime === "image/webp" ? "webp" : mime.split("/")[1] || "jpg";
 
   let path: string;
-  if (bucket === "product-images" || bucket === "review-images" || bucket === "before-after-images") {
+  if (bucket === "review-images" || bucket === "before-after-images") {
     const name = customName
       ? `${sanitizeSegment(customName.replace(/\.[^.]+$/, ""))}.${ext}`
       : `image-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
@@ -79,10 +128,7 @@ export async function POST(req: Request) {
     path = `${folder}/${user.id}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   }
 
-  // Upload via la session admin authentifiée (RLS : is_admin() sur storage.objects).
-  // Ne nécessite pas SUPABASE_SERVICE_ROLE_KEY en local.
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const { error } = await supabase.storage.from(bucket).upload(path, buffer, {
+  const { error } = await supabase.storage.from(bucket).upload(path, inputBuffer, {
     contentType: mime,
     cacheControl: "31536000",
     upsert: true,
