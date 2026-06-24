@@ -266,7 +266,7 @@ export function ProductPageBlockView({
             open={ctx.openSections.has("description")}
             onToggle={() => ctx.toggleSection("description")}
           >
-            <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, margin: 0 }}>
+            <p style={{ fontSize: 13.5, color: "var(--ink-soft)", lineHeight: 1.7, margin: 0, whiteSpace: "pre-wrap" }}>
               {p.desc}
             </p>
           </ctx.AccordionSection>
