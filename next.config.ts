@@ -92,6 +92,9 @@ const nextConfig: NextConfig = {
       }
     : undefined,
   serverExternalPackages: ["sharp"],
+  outputFileTracingIncludes: {
+    "/api/admin/upload": ["./node_modules/sharp/**/*", "./node_modules/@img/**/*"],
+  },
 };
 
 export default nextConfig;

@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/supabase/env";
-import {
-  buildProductImageVariants,
-  productImageBaseName,
-  readProductImageInputMetadata,
-} from "@/lib/product-image-pipeline";
 import { logUploadChannel, logUploadChannelError } from "@/lib/upload-diagnostics";
 import { PRODUCT_UPLOAD_MAX_BYTES, PRODUCT_UPLOAD_MAX_LABEL } from "@/lib/upload-limits";
 
@@ -204,6 +199,9 @@ export async function POST(req: Request) {
 
     if (bucket === "product-images") {
       try {
+        const { buildProductImageVariants, productImageBaseName, readProductImageInputMetadata } =
+          await import("@/lib/product-image-pipeline");
+
         let originalMeta: Awaited<ReturnType<typeof readProductImageInputMetadata>> | null = null;
         try {
           originalMeta = await readProductImageInputMetadata(inputBuffer);

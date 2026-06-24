@@ -2,11 +2,27 @@
  * LN COS — Pipeline serveur d'optimisation images produit (Sharp)
  */
 
-import sharp from "sharp";
 import type { ProductImageSize } from "./product-image-urls";
 import { logUploadChannel, logUploadChannelError } from "./upload-diagnostics";
 
 const LOG = "[product-image-pipeline]" as const;
+
+type SharpModule = typeof import("sharp").default;
+
+let sharpPromise: Promise<SharpModule> | null = null;
+
+async function getSharp(): Promise<SharpModule> {
+  if (!sharpPromise) {
+    sharpPromise = import("sharp")
+      .then((mod) => mod.default)
+      .catch((err) => {
+        sharpPromise = null;
+        logUploadChannelError(LOG, "sharp:import-failed", err);
+        throw err instanceof Error ? err : new Error("Module Sharp indisponible sur le serveur");
+      });
+  }
+  return sharpPromise;
+}
 
 export const PRODUCT_IMAGE_TARGETS: Record<
   ProductImageSize,
@@ -38,6 +54,7 @@ export interface ProductImageInputMetadata {
 /** Lit les dimensions originales avant encodage Sharp. */
 export async function readProductImageInputMetadata(input: Buffer): Promise<ProductImageInputMetadata> {
   try {
+    const sharp = await getSharp();
     const meta = await sharp(input, { animated: false }).metadata();
     return {
       width: meta.width ?? null,
@@ -59,6 +76,7 @@ async function encodeWebpUnderTarget(
   qualityMin: number,
   variantLabel: ProductImageSize
 ): Promise<{ buffer: Buffer; width: number; height: number }> {
+  const sharp = await getSharp();
   let px = maxPx;
   let quality = qualityStart;
   const t0 = Date.now();
@@ -78,12 +96,12 @@ async function encodeWebpUnderTarget(
       });
 
       quality = qualityStart;
-    let last = await base.clone().webp({ quality, effort: 2 }).toBuffer();
+      let last = await base.clone().webp({ quality, effort: 2 }).toBuffer();
 
-    while (last.length > targetBytes && quality > qualityMin) {
-      quality -= 3;
-      last = await base.clone().webp({ quality, effort: 2 }).toBuffer();
-    }
+      while (last.length > targetBytes && quality > qualityMin) {
+        quality -= 3;
+        last = await base.clone().webp({ quality, effort: 2 }).toBuffer();
+      }
 
       if (last.length <= targetBytes || px <= Math.round(maxPx * 0.65)) {
         const meta = await sharp(last).metadata();

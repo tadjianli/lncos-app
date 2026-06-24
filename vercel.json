@@ -2,11 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "functions": {
-    "src/app/api/admin/upload/route.ts": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  }
+  "installCommand": "npm install"
 }
