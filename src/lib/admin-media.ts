@@ -2,7 +2,7 @@
  * LN COS — Admin media upload helpers
  */
 
-import { validateProductImageFile } from "./image-optimize";
+import { optimizeProductImage, validateProductImageFile } from "./image-optimize";
 import {
   classifyHttpResponse,
   formatFetchUploadError,
@@ -198,16 +198,26 @@ export async function uploadProductImage(
   const validation = validateProductImageFile(file);
   if (validation) return { url: null, error: validation };
 
+  let optimized: File;
+  try {
+    optimized = await optimizeProductImage(file);
+  } catch (err) {
+    return {
+      url: null,
+      error: err instanceof Error ? err.message : "Optimisation image impossible",
+    };
+  }
+
   const form = new FormData();
-  form.append("file", file);
+  form.append("file", optimized);
   form.append("folder", productId);
   form.append("bucket", "product-images");
   if (filename) form.append("filename", filename);
 
   return postAdminUpload(form, "uploadProductImage", {
-    name: file.name,
-    type: file.type,
-    bytes: file.size,
+    name: optimized.name,
+    type: optimized.type,
+    bytes: optimized.size,
   });
 }
 

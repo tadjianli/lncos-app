@@ -226,7 +226,7 @@ export function ProductMainImageEditor({
           </div>
 
           <div className="adm-main-image-hint">
-            JPG, PNG, WebP · max 10 Mo · converti en WebP
+            JPG, PNG, WebP · max 4 Mo · converti en WebP
             {!canUpload && " · Saisissez le nom du produit pour l'identifiant"}
           </div>
         </div>

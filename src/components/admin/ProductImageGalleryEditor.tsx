@@ -188,7 +188,7 @@ export function ProductImageGalleryEditor({
               : "Ajouter des miniatures"}
         </div>
         <div className="adm-gallery-dropzone-sub">
-          JPG, PNG, WebP · max 10 Mo · converti en WebP
+          JPG, PNG, WebP · max 4 Mo · converti en WebP
         </div>
         {!canUpload && (
           <div className="adm-gallery-dropzone-hint">

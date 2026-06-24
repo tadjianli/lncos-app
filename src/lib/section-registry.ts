@@ -79,6 +79,21 @@ export const SECTION_SCHEMA_REGISTRY: Record<SectionType, SectionSchema> = {
     allowMultiple: false,
     fields: [
       { key: "variant", label: "Variante", type: "select", options: ["pills", "bar"] },
+      {
+        key: "subtitle",
+        label: "Badges (textes)",
+        type: "textarea",
+        placeholder: "Livraison 48h offerte|Vegan & cruelty-free|Formulé en France",
+        helpText: "Un badge par ligne, ou séparés par |",
+      },
+      {
+        key: "eyebrow",
+        label: "Icônes des badges",
+        type: "textarea",
+        placeholder: "truck|sparkle|heart|star",
+        helpText:
+          "Une icône par badge (même ordre que les textes). Ex. : truck, sparkle, heart, star, check, gift, lock…",
+      },
     ],
   },
   products: {

@@ -86,6 +86,9 @@ export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
     enabled: true,
     variant: "pills",
     title: "Bandeau confiance",
+    subtitle:
+      "Livraison 48h offerte|Vegan & cruelty-free|Formulé en France|+12 000 avis 4.9/5",
+    eyebrow: "truck|sparkle|heart|star",
     device: "all",
     audience: "all",
     schedule: { enabled: false, start: "", end: "" },

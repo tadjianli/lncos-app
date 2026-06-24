@@ -32,6 +32,7 @@ import { brandCopy } from "@/lib/branding";
 import { HomeSitelinksNav } from "@/components/seo/HomeSitelinksNav";
 import { TransformationsSection } from "@/components/home/TransformationsSection";
 import { HomeHeroBanner } from "@/components/home/HomeHeroBanner";
+import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
 import {
   HomeHeroCarousel,
   HomeHeroSingleSlide,
@@ -113,27 +114,6 @@ function Reveal({
       style={{ transitionDelay: delay + "ms" }}
     >
       {children}
-    </div>
-  );
-}
-
-/* ─── Trust strip ───────────────────────────────────────────── */
-
-function TrustStrip() {
-  const items = [
-    { i: "truck",   t: "Livraison 48h offerte" },
-    { i: "sparkle", t: "Vegan & cruelty-free" },
-    { i: "heart",   t: "Formulé en France" },
-    { i: "star",    t: "+12 000 avis 4.9/5" },
-  ];
-  return (
-    <div className="home-trust noscroll">
-      {items.map((it, i) => (
-        <span key={i} className="trust-pill">
-          <Icon name={it.i} size={13} color="var(--gold)" />
-          {it.t}
-        </span>
-      ))}
     </div>
   );
 }
@@ -497,7 +477,7 @@ export default function HomePage() {
         case "trust":
           return (
             <div key={section.id} className="home-z">
-              <TrustStrip />
+              <HomeTrustStrip section={section} />
             </div>
           );
 

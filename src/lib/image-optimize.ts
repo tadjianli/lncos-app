@@ -2,7 +2,9 @@
  * LN COS — Optimisation images côté client (avant upload)
  */
 
-const PRODUCT_MAX_BYTES = 10 * 1024 * 1024;
+import { PRODUCT_UPLOAD_MAX_BYTES } from "./upload-limits";
+
+const PRODUCT_MAX_BYTES = PRODUCT_UPLOAD_MAX_BYTES;
 const PRODUCT_MAX_DIM = 1600;
 const PRODUCT_QUALITY = 0.82;
 
@@ -13,7 +15,7 @@ export function validateProductImageFile(file: File): string | null {
     return "Format accepté : JPG, JPEG, PNG ou WebP";
   }
   if (file.size > PRODUCT_MAX_BYTES) {
-    return "Image trop volumineuse (max 10 Mo)";
+    return "Image trop volumineuse (max 4 Mo)";
   }
   return null;
 }
