@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { calcDeposit, dbToRdvSettings } from "@/lib/rdv-settings";
 import { resolveCheckoutOrigin } from "@/lib/stripe/checkout-origin";
-import { cardFirstHostedCheckoutParams } from "@/lib/stripe/hosted-checkout-wallets";
+import { hostedCheckoutPaymentParams } from "@/lib/stripe/hosted-checkout-wallets";
 
 interface RdvCheckoutBody {
   appointment_id: string;
@@ -93,7 +93,8 @@ export async function POST(req: Request) {
       mode: "payment",
       locale: "fr",
       submit_type: "book",
-      ...cardFirstHostedCheckoutParams(),
+      origin_context: "web",
+      ...hostedCheckoutPaymentParams(),
       line_items: [
         {
           price_data: {

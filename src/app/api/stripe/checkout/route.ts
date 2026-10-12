@@ -12,7 +12,7 @@ import {
 } from "@/lib/stripe/order-fulfillment";
 import { encodeShippingAddress, type ShippingAddress } from "@/lib/stripe/shipping-address";
 import { resolveCheckoutOrigin } from "@/lib/stripe/checkout-origin";
-import { cardFirstHostedCheckoutParams } from "@/lib/stripe/hosted-checkout-wallets";
+import { hostedCheckoutPaymentParams } from "@/lib/stripe/hosted-checkout-wallets";
 
 interface CheckoutBody {
   items: OrderLineItem[];
@@ -217,7 +217,8 @@ export async function POST(req: Request) {
     const shipMeta = encodeShippingAddress(shipping_address);
 
     const session = await stripe.checkout.sessions.create({
-      ...cardFirstHostedCheckoutParams(),
+      origin_context: "web",
+      ...hostedCheckoutPaymentParams(),
       line_items: lineItems,
       mode: "payment",
       locale: "fr",
