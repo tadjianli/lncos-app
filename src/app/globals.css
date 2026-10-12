@@ -5119,12 +5119,13 @@ html[data-lncos-rdv-booking] .bottom-nav {
   padding-top: var(--safe-top);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
+  /* Safe-area iPhone : marge sous le CTA (évite le bouton collé au bord) */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-action-bar--overlay-shell {
-  padding-bottom: calc(
-    var(--sticky-cart-bar-pad-y, 6px) + max(12px, env(safe-area-inset-bottom, 0px))
-  );
+  flex-shrink: 0;
+  padding: 10px 12px 6px;
 }
 
 .rdv-wizard-busy {
