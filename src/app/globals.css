@@ -5127,6 +5127,16 @@ html[data-lncos-rdv-booking] .bottom-nav {
   );
 }
 
+.rdv-wizard-busy {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  pointer-events: all;
+}
+
 /* ─── Product detail gallery (Shopify-style) ─────────────────── */
 
 .pd-gallery {
