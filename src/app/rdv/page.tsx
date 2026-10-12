@@ -426,7 +426,7 @@ function BookingWizard({
       </div>
 
       {/* Step content */}
-      <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4">
+      <div className="noscroll app-scroll-page scroll-region--x18 scroll-region--y4 scroll-region--no-pad-bottom">
 
         {/* Step 0 — Service */}
         {step === 0 && (
@@ -805,7 +805,7 @@ function BookingWizard({
       </div>
 
       {/* Footer CTA */}
-      <div className="bottom-action-bar">
+      <div className="bottom-action-bar bottom-action-bar--overlay-shell">
         <PinkBtn
           onClick={next}
           disabled={
@@ -897,6 +897,18 @@ export default function RdvPage() {
   const [stripeError, setStripeError] = useState<string | null>(null);
 
   const list = services.filter((s) => cat === "all" || s.categoryId === cat);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (booking) {
+      root.dataset.lncosRdvBooking = "true";
+    } else {
+      delete root.dataset.lncosRdvBooking;
+    }
+    return () => {
+      delete root.dataset.lncosRdvBooking;
+    };
+  }, [booking]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1015,7 +1027,7 @@ export default function RdvPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell bottomNav={!booking}>
       <div style={{ position: "relative", display: "flex", flexDirection: "column", flex: "1 1 auto", minHeight: 0 }}>
         {/* Page content */}
         <div className="noscroll app-scroll-page scroll-region--y4">

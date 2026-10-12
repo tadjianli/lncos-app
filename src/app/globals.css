@@ -5029,6 +5029,12 @@ html[data-lncos-checkout-tunnel] .bottom-nav {
   pointer-events: none;
 }
 
+/* Wizard RDV plein écran — tab bar au-dessus du CTA (portal body) */
+html[data-lncos-rdv-booking] .bottom-nav {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .app-shell--checkout-tunnel .app-shell-main {
   padding-bottom: 0;
 }
@@ -5106,6 +5112,19 @@ html[data-lncos-checkout-tunnel] .bottom-nav {
   max-width: var(--app-max-width);
   margin-left: auto;
   margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--noir);
+  box-sizing: border-box;
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.bottom-action-bar--overlay-shell {
+  padding-bottom: calc(
+    var(--sticky-cart-bar-pad-y, 6px) + max(12px, env(safe-area-inset-bottom, 0px))
+  );
 }
 
 /* ─── Product detail gallery (Shopify-style) ─────────────────── */
