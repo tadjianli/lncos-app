@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/shared/Icon";
 import {
-  countdownUnitLabel,
   DEFAULT_FLASH_SALES_COUNTDOWN,
   durationTotalSeconds,
   endAtRemainingSeconds,
@@ -32,7 +31,7 @@ function CountdownBlock({
       </span>
       <span className="flash-countdown-unit">{label}</span>
       <span className="flash-countdown-compact" aria-hidden>
-        {value}
+        {String(value).padStart(2, "0")}
         {shortLabel}
       </span>
     </span>
@@ -141,7 +140,7 @@ export function FlashSaleHead({
             <CountdownBlock
               key={unit.key}
               value={unit.value}
-              label={countdownUnitLabel(unit.key, unit.value)}
+              label={unit.label}
               shortLabel={unit.shortLabel}
             />
           ))}

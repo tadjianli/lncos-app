@@ -115,8 +115,8 @@ export interface CountdownDisplayUnit {
 }
 
 const UNIT_LABELS: Record<CountdownUnitKey, { label: string; shortLabel: string }> = {
-  days: { label: "Jours", shortLabel: "j" },
-  hours: { label: "Heures", shortLabel: "h" },
+  days: { label: "J", shortLabel: "j" },
+  hours: { label: "H", shortLabel: "h" },
   minutes: { label: "Min", shortLabel: "m" },
   seconds: { label: "Sec", shortLabel: "s" },
 };

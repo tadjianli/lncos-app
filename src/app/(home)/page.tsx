@@ -520,7 +520,7 @@ export default function HomePage() {
                 </Reveal>
               ) : (
                 <Reveal>
-                  <SectionHead title={section.title} action="Voir tout" />
+                  <SectionHead title={section.title} />
                   <HorizontalProductCarousel fillColumns={2}>
                     {prods.slice(0, 5).map((p, pi) => (
                       <ProductCard
