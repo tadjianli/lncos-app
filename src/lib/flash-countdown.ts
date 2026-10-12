@@ -136,7 +136,12 @@ export function getCountdownDisplayUnits(totalSeconds: number): CountdownDisplay
         ? ["days", "hours", "minutes", "seconds"]
         : ["hours", "minutes", "seconds"];
 
-  return keys.map((key) => ({
+  const visibleKeys =
+    parts.total < SECONDS_PER_DAY
+      ? keys.filter((key) => key !== "hours" || parts.hours > 0)
+      : keys;
+
+  return visibleKeys.map((key) => ({
     key,
     value: parts[key],
     label: UNIT_LABELS[key].label,

@@ -74,6 +74,13 @@ describe("getCountdownDisplayUnits", () => {
     expect(units[0].value).toBe(1);
   });
 
+  it("masque les heures à 0 quand il reste moins de 24h", () => {
+    const units = getCountdownDisplayUnits(125);
+    expect(units.map((u) => u.key)).toEqual(["minutes", "seconds"]);
+    expect(units[0].value).toBe(2);
+    expect(units[1].value).toBe(5);
+  });
+
   it("chaque unité a un libellé court", () => {
     const units = getCountdownDisplayUnits(3600);
     for (const u of units) {

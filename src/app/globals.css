@@ -2005,18 +2005,26 @@
   gap: 7px;
   min-width: 0;
   flex: 1 1 auto;
+  overflow: hidden;
+}
+.flash-head-title svg {
+  flex-shrink: 0;
 }
 .flash-countdown {
   display: flex;
   align-items: stretch;
   gap: 5px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
+  width: fit-content;
+  min-width: min-content;
+  max-width: 100%;
   container-type: inline-size;
   container-name: flash-countdown;
 }
 
 .flash-countdown-block {
-  flex: 1 1 0;
+  flex: 0 0 auto;
+  width: 44px;
   min-width: 40px;
   max-width: 52px;
   display: flex;
@@ -4836,8 +4844,16 @@
     --prod-card-w: 148px;
   }
   .trust-pill { font-size: 11px; padding: 8px 12px; }
-  .flash-head-title { font-size: 18px; }
-  .flash-countdown-block { min-width: 36px; max-width: 48px; }
+  .flash-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .flash-head-title { font-size: 18px; flex: 1 1 120px; }
+  .flash-countdown {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+  .flash-countdown-block { min-width: 36px; max-width: 48px; width: 40px; }
   .flash-countdown-value { font-size: 12px; }
   .flash-countdown-unit { font-size: 8px; }
   .flash-countdown-compact { font-size: 11px; }
